@@ -256,6 +256,7 @@ export const en: Messages = {
     },
   },
   controls: {
+    display: "Display: language and theme",
     language: "Language",
     theme: "Theme",
     light: "Light",

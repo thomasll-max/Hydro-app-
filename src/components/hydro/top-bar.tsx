@@ -1,16 +1,18 @@
-import { Monitor, Moon, Sun } from "lucide-react"
+import { Monitor, Moon, Settings, Sun } from "lucide-react"
+import { Popover } from "radix-ui"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useSettings } from "@/app/settings-context"
 import type { ThemePref } from "@/lib/settings"
 import type { Lang } from "@/i18n/types"
 import { Emoji } from "./emoji"
 import { SpacePill } from "./space-pill"
+import { cn } from "@/lib/utils"
 
 const pill = "rounded-full border border-line bg-surface-2 p-[3px] gap-0"
 const pillItem =
   "h-8 min-w-8 rounded-full! px-2.5 text-[12px] font-semibold text-fg-3 hover:bg-transparent hover:text-fg data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-all duration-200"
 
-export function LangSwitch() {
+export function LangSwitch({ wide }: { wide?: boolean } = {}) {
   const { settings, setLang, t } = useSettings()
   return (
     <ToggleGroup
@@ -18,19 +20,19 @@ export function LangSwitch() {
       value={settings.lang}
       onValueChange={(v) => v && setLang(v as Lang)}
       aria-label={t("controls.language")}
-      className={pill}
+      className={cn(pill, wide && "flex w-full")}
     >
-      <ToggleGroupItem value="fr" className={pillItem} aria-label="Français">
-        FR
+      <ToggleGroupItem value="fr" className={cn(pillItem, wide && "h-9 flex-1")} aria-label="Français">
+        {wide ? "Français" : "FR"}
       </ToggleGroupItem>
-      <ToggleGroupItem value="en" className={pillItem} aria-label="English">
-        EN
+      <ToggleGroupItem value="en" className={cn(pillItem, wide && "h-9 flex-1")} aria-label="English">
+        {wide ? "English" : "EN"}
       </ToggleGroupItem>
     </ToggleGroup>
   )
 }
 
-export function ThemeSwitch() {
+export function ThemeSwitch({ wide }: { wide?: boolean } = {}) {
   const { settings, setTheme, t } = useSettings()
   const items: { v: ThemePref; icon: React.ReactNode; label: string }[] = [
     { v: "light", icon: <Sun className="size-3.5" />, label: t("controls.light") },
@@ -43,11 +45,12 @@ export function ThemeSwitch() {
       value={settings.theme}
       onValueChange={(v) => v && setTheme(v as ThemePref)}
       aria-label={t("controls.theme")}
-      className={pill}
+      className={cn(pill, wide && "flex w-full")}
     >
       {items.map((i) => (
-        <ToggleGroupItem key={i.v} value={i.v} className={pillItem} aria-label={i.label} title={i.label}>
+        <ToggleGroupItem key={i.v} value={i.v} className={cn(pillItem, wide && "h-9 flex-1 gap-1 px-1.5")} aria-label={i.label} title={i.label}>
           {i.icon}
+          {wide && <span className="text-[11.5px]">{i.label}</span>}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
@@ -63,12 +66,48 @@ export function TopBar() {
           <Emoji name="pottedPlant" size={26} />
           {t("app.name")}
         </div>
-        <div className="flex items-center gap-1.5">
-          <LangSwitch />
-          <ThemeSwitch />
-        </div>
+        <DisplayMenu />
       </div>
       <SpacePill />
     </header>
+  )
+}
+
+/** Small gear pill in the top bar: language and theme in a popover (they used to take the whole right side). */
+export function DisplayMenu() {
+  const { settings, t } = useSettings()
+  const ThemeIcon = settings.theme === "light" ? Sun : settings.theme === "dark" ? Moon : Monitor
+  return (
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          aria-label={t("controls.display")}
+          id="display-menu"
+          className="flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface-2 pr-2.5 pl-2 text-[12px] font-semibold text-fg-2 transition-colors hover:text-fg data-[state=open]:border-primary/40 data-[state=open]:text-fg"
+        >
+          <Settings className="size-4" />
+          <span className="uppercase">{settings.lang}</span>
+          <ThemeIcon className="size-3.5" />
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          align="end"
+          sideOffset={8}
+          collisionPadding={12}
+          className="z-50 flex w-[264px] flex-col gap-3 rounded-[18px] border border-line-strong bg-surface p-3.5 shadow-card outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+        >
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11.5px] font-semibold text-fg-3">{t("controls.language")}</span>
+            <LangSwitch wide />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11.5px] font-semibold text-fg-3">{t("controls.theme")}</span>
+            <ThemeSwitch wide />
+          </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   )
 }

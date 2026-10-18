@@ -256,6 +256,7 @@ export const fr = {
     },
   },
   controls: {
+    display: "Affichage : langue et thème",
     language: "Langue",
     theme: "Thème",
     light: "Clair",

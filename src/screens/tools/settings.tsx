@@ -21,6 +21,7 @@ import { NutritionFields } from "./nutrition-settings"
 import { RootProductsField, useRootProducts } from "@/screens/root-products"
 import { SpaceSheet } from "./space-sheet"
 import { SwitchRow } from "./equipment-shared"
+import { ResetCard } from "./reset-card"
 
 export function SettingsTool() {
   const { t, dm, saveState, setActiveCycle } = useSettings()
@@ -204,6 +205,7 @@ export function SettingsTool() {
         </Card>
       </Reveal>
 
+      <ResetCard i={9} />
       <SpaceSheet open={spaceSheet.open} onOpenChange={(o) => setSpaceSheet((s) => ({ ...s, open: o }))} space={spaceSheet.space} />
       <SiteSheet open={siteSheet.open} onOpenChange={(o) => setSiteSheet((s) => ({ ...s, open: o }))} site={siteSheet.site} />
       <TransferSheet open={transfer.open} onOpenChange={(o) => setTransfer((s) => ({ ...s, open: o }))} cycle={transfer.cycle} />

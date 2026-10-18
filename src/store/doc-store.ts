@@ -20,6 +20,8 @@ export interface PhotoStore {
   upload(blob: Blob): Promise<string> // returns photo id
   url(id: string): Promise<string>
   remove(id: string): Promise<void>
+  /** Deletes every photo kept on this device (reset). */
+  clear?(): Promise<void>
 }
 
 /** Split "a/b/c/d" into collection "a/b/c" and id "d". */

@@ -1,0 +1,19 @@
+# Version locale de Hydro (amis) : site statique, hors ligne, sans compte.
+# Netlify relié au dépôt GitHub : chaque push sur main reconstruit le site.
+[build]
+  command = "npm run build:local"
+  publish = "dist-local"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Le service worker doit toujours être relu pour que les mises à jour arrivent.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"

@@ -7,6 +7,7 @@
     "dev": "vite",
     "emoji": "node scripts/gen-emoji.mjs",
     "build": "node scripts/gen-emoji.mjs && tsc --noEmit -p . && vite build && node scripts/to-artifact.mjs",
+    "build:local": "node scripts/gen-emoji.mjs --inline && tsc --noEmit -p . && VITE_TARGET=local vite build --outDir dist-local && node scripts/gen-emoji.mjs",
     "test": "vitest run",
     "preview:build": "node scripts/gen-emoji.mjs --inline && vite build --outDir dist-preview && node scripts/gen-emoji.mjs"
   },

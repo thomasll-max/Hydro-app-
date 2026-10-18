@@ -47,6 +47,12 @@ class Boundary extends Component<{ children: ReactNode }, { error: Error | null 
   }
 }
 
+// Local (friends') version: works offline and keeps its data (installable, storage marked persistent).
+if (import.meta.env.VITE_TARGET === "local") {
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(() => {})
+  navigator.storage?.persist?.().catch(() => {})
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Boundary>

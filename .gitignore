@@ -1,7 +1,9 @@
 node_modules/
 dist/
 dist-preview/
+dist-local/
 emoji-stage/
 *.png
 !docs/**/*.png
+!pwa/*.png
 .DS_Store

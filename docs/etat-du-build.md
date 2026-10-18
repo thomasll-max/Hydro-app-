@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b et 9 poussés le 18/10/2026. Dernier commit de lot : « Lot 9 : tâche du matin, réglages par espace, finition ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -25,7 +25,8 @@
 - [x] Lot 6b : export / import JSON, « Demander à Claude » (186 tests)
 - [x] Lot 9 : tâche du matin + passe de finition (189 tests) — **en attente de la validation de Thomas**
 - [ ] Lot 7 : nutrition multi-marques (après validation)
-- [ ] Lot 8 : version locale (Netlify relié au dépôt, après validation)
+- [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)
+- [ ] Lot 8b : assistant de premier lancement, guide
 
 ## Règles de relais
 1. **Une seule session à la fois** sur le code. Si deux tournent quand même : avant chaque commit **et** chaque republication, `git fetch`, se remettre sur `main`, relancer tous les tests et publier un build qui contient le travail de l'autre.
@@ -85,7 +86,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 189 au lot 9
+npm test                          # tests (Vitest), 193 au lot 8a
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -204,4 +205,20 @@ PYTHONPATH=scripts python3 scripts/e2e-2b.py dist-preview/index.html <dossier>  
 ```
 
 ### Prochain lot
-**Validation par Thomas.** Ensuite : lot 7 (nutrition multi-marques), puis lot 8 (version locale, Netlify).
+Voir « Lot 8a — notes ».
+
+## Lot 8a — notes
+- Lot 8 commencé à la demande de Thomas (avant sa validation du lot 9), coupé en **8a** (version locale, réinitialiser, transfert) et **8b** (assistant de premier lancement, guide).
+- Build local : `VITE_TARGET=local` active le plugin `hydro-local-target` de `vite.config.ts` (retire Google Fonts, ajoute `src/fonts-local.css`, manifeste, icônes, métas iOS ; ordre `pre`) et `publicDir: "pwa"` (manifest, `sw.js`, icônes PNG). Le service worker est enregistré dans `main.tsx` seulement en version locale et en HTTP(S).
+- **Netlify** : à relier par Thomas (Netlify → Add new site → Import from GitHub → `thomasll-max/Hydro-app-`, branche `main`) ; `netlify.toml` donne la commande et le dossier. Je n'ai pas accès à Netlify depuis la session.
+- Réinitialiser : `lib/reset.ts` (le grow en dernier, sinon l'app réensemence au milieu). Transfert : `navigator.share` (fichier) si disponible, presse-papiers sinon.
+- Le rappel de sauvegarde garde la date dans `localStorage["hydro.lastBackup"]` (confort par appareil).
+
+### Commandes (lot 8a)
+```bash
+npm run build:local                                      # dist-local/ (Netlify)
+PYTHONPATH=scripts python3 scripts/e2e-8a.py dist-local <dossier>
+```
+
+### Prochain lot
+**Lot 8b — Assistant de premier lancement (version locale) et guide** : nom du grow → espaces (modèles, dimensions) → équipement (rapide, facultatif) → modules → gamme, add-ons et méthode → premier cycle → heure du résumé ; « Importer une sauvegarde » dès le départ ; guide pour les amis et pour relier Netlify.

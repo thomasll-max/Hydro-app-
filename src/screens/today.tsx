@@ -22,6 +22,7 @@ import { UpcomingCard } from "./calendar-parts"
 import { cn } from "@/lib/utils"
 import type { EmojiName } from "@/assets/emoji"
 import type { Entry } from "@/model/types"
+import { BackupReminder } from "./backup-reminder"
 import type { MessageKey } from "@/i18n/types"
 
 function useNowMinutes() {
@@ -283,5 +284,10 @@ export function TodayScreen() {
   const { t } = useSettings()
   const { ready, selection } = useGrow()
   if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
-  return selection.kind === "space" ? <SpaceToday space={selection.space} Culture={CultureToday} /> : <AllToday />
+  return (
+    <>
+      <BackupReminder />
+      {selection.kind === "space" ? <SpaceToday space={selection.space} Culture={CultureToday} /> : <AllToday />}
+    </>
+  )
 }

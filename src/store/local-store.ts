@@ -97,4 +97,9 @@ export class LocalPhotos implements PhotoStore {
   async remove(id: string) {
     await tx(await this.db, PHOTOS, "readwrite", (s) => s.delete(id))
   }
+  async clear() {
+    await tx(await this.db, PHOTOS, "readwrite", (s) => s.clear())
+    for (const u of this.urls.values()) URL.revokeObjectURL(u)
+    this.urls.clear()
+  }
 }

@@ -6,9 +6,9 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 12 = lot 3)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; version 14 = lot 4b)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1, 2a, 2b, 3 et 4a poussés le 18/10/2026. Dernier commit de lot : « Lot 4a : nutrition à catalogue… ».
+  - Lots 1, 2a, 2b, 3, 4a et 4b poussés le 18/10/2026. Dernier commit de lot : « Lot 4b : arrosage… ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
@@ -18,7 +18,7 @@
 - [x] Lot 2b : journal + Aujourd'hui (artefact v11, 102 tests)
 - [x] Lot 3 : calendrier (artefact v12, 117 tests)
 - [x] Lot 4a : nutrition à catalogue (141 tests)
-- [ ] Lot 4b : arrosage depuis l'équipement, arrosage manuel par gamme
+- [x] Lot 4b : arrosage depuis l'équipement, arrosage manuel par gamme (151 tests)
 - [ ] Lot 5 : pH/Balance, IPW, lumière, climat
 - [ ] Lot 6 : graphiques et données
 - [ ] Lot 9 : tâche du matin + passe de finition (avant la validation de Thomas)
@@ -83,7 +83,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 141 au lot 4a
+npm test                          # tests (Vitest), 151 au lot 4b
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -114,5 +114,18 @@ PYTHONPATH=scripts python3 scripts/shots.py dist-preview/index.html <dossier> do
 PYTHONPATH=scripts python3 scripts/e2e-4a.py dist-preview/index.html <dossier>
 ```
 
+## Lot 4b — notes
+- `spaceIrrigation(spaceId, date, equipment, assignments)` : pots (volume, nombre), pompe (débit, date de mesure), en `Calc` (« donnée manquante »). `withPots` met à jour ou crée le contenant de l'espace.
+- Le volume et le nombre de pots se modifient dans l'outil Arrosage (demande de Thomas) ; le débit reste saisi dans l'équipement (avec sa date de mesure, rappel à 60 jours).
+- « Utiliser ces réglages pour le cycle » recopie volume / nombre de pots / débit de l'équipement dans le cycle (lu par Aujourd'hui).
+- `targets.ts` : `manualRow(catalog, stage, week)`, option `line` de `dayTargets` ; `targetsFor` (grow-context) passe la gamme de l'espace du cycle.
+- Publication : la version 13 venait de cette session, la 14 est passée sans forcer.
+- Reste à voir (existant, pas une régression) : en anglais, les libellés du sélecteur de phase du mode capteur se chevauchent à 390 px.
+
+### Commandes (lot 4b)
+```bash
+PYTHONPATH=scripts python3 scripts/e2e-4b.py dist-preview/index.html <dossier>
+```
+
 ### Prochain lot
-**Lot 4b — Arrosage** : volume des pots et débit tirés de l'équipement de l'espace (« donnée manquante » si absent), arrosage manuel par gamme (Pro p. 41, Blended p. 60 dans les catalogues). Test : arrosage manuel Blended en végé → EC du runoff 3,5–4,5.
+**Lot 5 — pH/Balance, IPW, Lumière, Climat** (cahier des charges §6 et tests du lot 5). Le palier Balance (`balanceStepMl`), `nextBalancePer10L` et les protocoles IPW (`data/nutrients/addons.ts`) existent déjà.

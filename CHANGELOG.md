@@ -1,5 +1,12 @@
 # Changelog
 
+## Lot 4b — Arrosage (18/10/2026)
+- Outil Arrosage : volume des pots, nombre de pots et débit **tirés de l'équipement de l'espace** (`spaceIrrigation` dans `equipment/calc.ts`). Absent → « donnée manquante » (doses en mL et durées masquées, lien vers l'équipement), rien d'inventé. Débit de la pompe de Thomas : toujours à mesurer.
+- **Volume du pot modifiable** (demande de Thomas, pas seulement 15 L) : volume et nombre de pots se changent dans l'outil Arrosage et sont enregistrés sur le contenant de l'espace (`withPots` ; « Pots 15 L » devient « Pots 11 L »), ou créent un contenant s'il n'y en a pas. Le programme suit immédiatement.
+- Arrosage manuel **par gamme** : `dayTargets(..., { line })` lit les tableaux des catalogues (Pro p. 41, Blended p. 60) ; tableau semaine par semaine dans l'outil, ligne du stade surlignée. pH coco en floraison manuelle 5,9–6,3 (p. 41), Fade 6,0–6,4. EC de solution du Blended = programme p. 58 (jamais le 3,0 de la Pro Line).
+- Les cibles du jour (Aujourd'hui, saisie) suivent la gamme de l'espace du cycle.
+- 151 tests (10 nouveaux, dont manuel Blended végé → EC du runoff 3,5–4,5) ; parcours `scripts/e2e-4b.py`.
+
 ## Lot 4a — Nutrition à catalogue (18/10/2026)
 - Catalogues sourcés `src/data/nutrients/` : `athena-pro.ts` (programme p. 31, dosage par EC en poudre et en concentrés 113/226/282 g/L p. 37, arrosage manuel p. 41), `athena-blended.ts` (programme p. 58 semaine par semaine, B avant A, arrosage manuel p. 60), `addons.ts` (Fade, Cleanse et rinçage, Balance par paliers de 1 mL pour 4 L, IPW, CaMg et PK réservés au Blended). Chaque dose porte sa page.
 - Moteur générique `src/calc/nutrients.ts` (remplace `calc/nutrition.ts`) : phase du programme d'après le cycle, recette dans l'ordre de mélange avec la source de chaque ligne, plages publiées affichées telles quelles tant que la dose n'est pas choisie, mise à l'échelle Blended marquée « estimation ». **Fade en S8–S9 à la place du Core** (Core conservé si le Fade est désactivé), pH 6,0–6,4.

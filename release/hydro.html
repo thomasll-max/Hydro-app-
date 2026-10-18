@@ -24335,6 +24335,7 @@ var dictionaries = {
 				missingList: "manque : {list}"
 			},
 			miss: {
+				potVolumeL: "volume des pots",
 				watts: "puissance",
 				efficacy: "µmol/J",
 				l: "longueur",
@@ -24840,6 +24841,22 @@ var dictionaries = {
 			forSpace: "Pour : {name}"
 		},
 		irr: {
+			potCount: "Nombre de pots",
+			potsSave: "Enregistrer dans l'équipement",
+			potsCreate: "Ajouter ces pots à l'équipement de l'espace",
+			potsSaved: "Pots mis à jour dans l'équipement",
+			potsName: "Pots {v} L",
+			fromEquipment: "équipement de l'espace",
+			openEquipment: "Compléter l'équipement de l'espace →",
+			manualSrc: "Méthode manuelle {line}, Athena p. {p}.",
+			manualTable: "Arrosage manuel · {line}",
+			mStage: "Semaine",
+			mEc: "EC sol.",
+			mVeg: "Végé S1–S4",
+			mFlush: "S9 / rinçage",
+			mWeek: "Flo S{w}",
+			mWeeks: "Flo S{a}–S{b}",
+			manualNote: "Athena p. {p} : un arrosage à l'allumage, 10–25 % de runoff. Tolérances : ±1 EC sur le runoff, ±10 % sur le dryback. pH solution et runoff 5,8–6,2 en végé, 5,9–6,3 en floraison.",
 			mode: "Arrosage",
 			substrate: "Substrat",
 			stage: "Stade",
@@ -25469,6 +25486,7 @@ var dictionaries = {
 				missingList: "missing: {list}"
 			},
 			miss: {
+				potVolumeL: "pot volume",
 				watts: "power",
 				efficacy: "µmol/J",
 				l: "length",
@@ -25974,6 +25992,22 @@ var dictionaries = {
 			forSpace: "For: {name}"
 		},
 		irr: {
+			potCount: "Number of pots",
+			potsSave: "Save to the equipment",
+			potsCreate: "Add these pots to the space's equipment",
+			potsSaved: "Pots updated in the equipment",
+			potsName: "{v} L pots",
+			fromEquipment: "space equipment",
+			openEquipment: "Complete the space's equipment →",
+			manualSrc: "Manual method {line}, Athena p. {p}.",
+			manualTable: "Manual watering · {line}",
+			mStage: "Week",
+			mEc: "Sol. EC",
+			mVeg: "Veg W1–W4",
+			mFlush: "W9 / flush",
+			mWeek: "Flower W{w}",
+			mWeeks: "Flower W{a}–W{b}",
+			manualNote: "Athena p. {p}: one watering at lights-on, 10–25 % runoff. Tolerances: ±1 EC on runoff, ±10 % on dryback. Solution and runoff pH 5.8–6.2 in veg, 5.9–6.3 in flower.",
 			mode: "Watering",
 			substrate: "Substrate",
 			stage: "Stage",
@@ -26956,6 +26990,66 @@ function spaceLight(space, date, equipment, assignments, loss = DEFAULT_LOSS_FAC
 		names: lamps.map(({ e }) => e.name)
 	};
 }
+/** Pots and pump of a space at a date (irrigation tool, lot 4b). Missing values stay missing: "donnée manquante". */
+function spaceIrrigation(spaceId, date, equipment, assignments) {
+	const here = equipmentAt(spaceId, date, assignments).map((a) => ({
+		a,
+		e: equipment.find((x) => x.id === a.equipmentId)
+	})).filter((x) => !!x.e);
+	const pots = here.find((x) => x.e.type === "container");
+	const pump = here.find((x) => x.e.type === "pump");
+	const vol = pots?.e.container?.volumeL;
+	const flowV = pump?.e.pump?.flowMlPerMin;
+	const potL = isNum(vol) && vol > 0 ? ok$1(vol) : {
+		ok: false,
+		missing: ["potVolumeL"]
+	};
+	const flow = isNum(flowV) && flowV > 0 ? ok$1(flowV) : {
+		ok: false,
+		missing: ["flowMlPerMin"]
+	};
+	const count = pots ? pots.a.quantity ?? pots.e.container?.count ?? pots.e.quantity : void 0;
+	return {
+		potL,
+		potCount: isNum(count) && count > 0 ? count : void 0,
+		flow,
+		flowMeasuredAt: pump?.e.pump?.flowMeasuredAt,
+		substrate: pots?.e.container?.substrate,
+		containerName: pots?.e.name,
+		containerId: pots?.e.id,
+		containerAssignment: pots?.a,
+		pumpName: pump?.e.name
+	};
+}
+/** Pots typed in the irrigation tool: updates the space's container, or creates one (then assigned to the space). */
+function withPots(existing, p) {
+	if (existing) return {
+		...existing,
+		name: existing.name.replace(/\d+(?:[.,]\d+)?(\s?L\b)/, `${String(p.volumeL).replace(".", ",")}$1`),
+		container: {
+			...existing.container,
+			volumeL: p.volumeL,
+			...p.count ? { count: p.count } : {}
+		},
+		...p.count ? { quantity: p.count } : {},
+		updatedAt: p.now
+	};
+	return {
+		schemaVersion: 1,
+		id: p.id,
+		type: "container",
+		name: p.name,
+		source: "user",
+		container: {
+			volumeL: p.volumeL,
+			...p.count ? { count: p.count } : {},
+			...p.substrate ? { substrate: p.substrate } : {}
+		},
+		...p.count ? { quantity: p.count } : {},
+		createdAt: p.now,
+		updatedAt: p.now
+	};
+}
 //#endregion
 //#region src/calc/formulas.ts
 /** Saturation vapour pressure, kPa — Tetens formula. */
@@ -27141,12 +27235,1092 @@ function plannedHarvest(cycle) {
 	return cycle.flipDate ? addDays(cycle.flipDate, cycle.flowerWeeks * 7) : void 0;
 }
 //#endregion
+//#region src/data/nutrients/athena-blended.ts
+var P58 = {
+	kind: "athena",
+	page: 58
+};
+var P60 = {
+	kind: "athena",
+	page: 60
+};
+var HB$2 = { kind: "athena" };
+var d = (product, per10L) => ({
+	product,
+	per10L,
+	src: P58
+});
+var CAMG = d("camg", [8, 13]);
+var CLEANSE = d("cleanse", [5, 13]);
+/** Flowering week n of p. 58: Bloom A/B, PK, CaMg (S1–S7), Fade (S8–S9), Cleanse, EC. */
+function week(n, bloom, pk, ec, opts = {}) {
+	return {
+		id: `fl${n}`,
+		stage: "flower",
+		weeks: [n, n],
+		ec,
+		doses: [
+			...bloom ? [d("bloomB", bloom), d("bloomA", bloom)] : [],
+			...pk ? [d("pk", pk)] : [],
+			...opts.camg === false ? [] : [CAMG],
+			...opts.fade ? [d("fade", opts.fade)] : [],
+			CLEANSE
+		],
+		ph: n === 9 ? "high" : "substrate",
+		src: P58
+	};
+}
+var ATHENA_BLENDED = {
+	id: "athena-blended",
+	brand: "Athena",
+	name: "Athena Blended",
+	source: "Athena Handbook FR (V8)",
+	products: [
+		{
+			id: "growA",
+			name: "Grow A",
+			form: "liquid",
+			scalesWithEc: true
+		},
+		{
+			id: "growB",
+			name: "Grow B",
+			form: "liquid",
+			scalesWithEc: true
+		},
+		{
+			id: "bloomA",
+			name: "Bloom A",
+			form: "liquid",
+			scalesWithEc: true
+		},
+		{
+			id: "bloomB",
+			name: "Bloom B",
+			form: "liquid",
+			scalesWithEc: true
+		},
+		{
+			id: "pk",
+			name: "PK",
+			form: "liquid",
+			addon: "pk",
+			scalesWithEc: true
+		},
+		{
+			id: "camg",
+			name: "CaMg",
+			form: "liquid",
+			addon: "camg",
+			scalesWithEc: true
+		},
+		{
+			id: "fade",
+			name: "Fade",
+			form: "liquid",
+			addon: "fade"
+		},
+		{
+			id: "cleanse",
+			name: "Cleanse",
+			form: "liquid",
+			addon: "cleanse"
+		},
+		{
+			id: "balance",
+			name: "Balance",
+			form: "liquid",
+			addon: "balance"
+		}
+	],
+	order: [
+		"balance",
+		"growB",
+		"growA",
+		"bloomB",
+		"bloomA",
+		"pk",
+		"camg",
+		"fade",
+		"cleanse"
+	],
+	program: [
+		{
+			id: "presoak",
+			stage: "presoak",
+			ec: 1,
+			doses: [
+				d("bloomB", 13),
+				d("bloomA", 13),
+				d("cleanse", 3)
+			],
+			ph: "clone",
+			src: P58
+		},
+		{
+			id: "clone",
+			stage: "clone",
+			ec: 2,
+			doses: [
+				d("bloomB", 26),
+				d("bloomA", 26),
+				d("cleanse", 3)
+			],
+			ph: "clone",
+			src: P58
+		},
+		{
+			id: "veg",
+			stage: "veg",
+			ec: 2.1,
+			doses: [
+				d("growB", 29),
+				d("growA", 29),
+				CAMG,
+				CLEANSE
+			],
+			ph: "substrate",
+			src: P58
+		},
+		week(1, 32, null, 2.3),
+		week(2, 32, null, 2.3),
+		week(3, 32, 11, 2.5),
+		week(4, 32, 16, 2.6),
+		week(5, 26, 24, 2.4),
+		week(6, 24, 26, 2.3),
+		week(7, 13, 32, 1.7),
+		week(8, null, 32, 1.5, {
+			camg: false,
+			fade: 32
+		}),
+		week(9, null, 32, 1.5, {
+			camg: false,
+			fade: 32
+		}),
+		{
+			id: "flush",
+			stage: "flush",
+			ec: 0,
+			roWater: true,
+			doses: [{
+				product: "cleanse",
+				per10L: 26,
+				src: HB$2
+			}],
+			ph: "high",
+			src: HB$2
+		}
+	],
+	addons: [
+		"fade",
+		"cleanse",
+		"balance",
+		"ipw",
+		"camg",
+		"pk"
+	],
+	defaultAddons: [
+		"fade",
+		"cleanse",
+		"balance",
+		"camg",
+		"pk"
+	],
+	manual: [
+		{
+			stage: "veg",
+			ecIn: [2.1, 2.1],
+			ph: [5.8, 6.2],
+			ecRunoff: [3.5, 4.5],
+			dryback: [30, 40],
+			src: P60
+		},
+		{
+			stage: "flower",
+			weeks: [1, 1],
+			ecIn: [2.3, 2.3],
+			ph: [5.9, 6.3],
+			ecRunoff: [5, 6],
+			dryback: [30, 40],
+			src: P60
+		},
+		{
+			stage: "flower",
+			weeks: [2, 2],
+			ecIn: [2.3, 2.3],
+			ph: [5.9, 6.3],
+			ecRunoff: [5, 6],
+			dryback: [50, 60],
+			src: P60
+		},
+		{
+			stage: "flower",
+			weeks: [3, 3],
+			ecIn: [2.5, 2.5],
+			ph: [5.9, 6.3],
+			ecRunoff: [5, 6],
+			dryback: [50, 60],
+			src: P60
+		},
+		{
+			stage: "flower",
+			weeks: [4, 4],
+			ecIn: [2.6, 2.6],
+			ph: [5.9, 6.3],
+			ecRunoff: [4, 5],
+			dryback: [30, 40],
+			src: P60
+		},
+		{
+			stage: "flower",
+			weeks: [5, 5],
+			ecIn: [2.4, 2.4],
+			ph: [5.9, 6.3],
+			ecRunoff: [4, 5],
+			dryback: [30, 40],
+			src: P60
+		},
+		{
+			stage: "flower",
+			weeks: [6, 6],
+			ecIn: [2.3, 2.3],
+			ph: [5.9, 6.3],
+			ecRunoff: [4, 5],
+			dryback: [30, 40],
+			src: P60
+		},
+		{
+			stage: "flower",
+			weeks: [7, 7],
+			ecIn: [1.7, 1.7],
+			ph: [5.9, 6.3],
+			ecRunoff: [3, 4],
+			dryback: [30, 40],
+			src: P60
+		},
+		{
+			stage: "flower",
+			weeks: [8, 9],
+			ecIn: [1.5, 1.5],
+			ph: [5.9, 6.3],
+			ecRunoff: [2.5, 3],
+			dryback: [50, 60],
+			src: P60
+		},
+		{
+			stage: "flush",
+			ecIn: [0, 1.5],
+			ph: [5.9, 6.3],
+			ecRunoff: [0, 1.5],
+			dryback: [50, 60],
+			src: P60
+		}
+	],
+	ph: {
+		clone: [5.6, 5.6],
+		coco: [5.8, 6.2],
+		high: [6, 6.4],
+		src: P58
+	}
+};
+//#endregion
+//#region src/data/nutrients/athena-pro.ts
+var P31 = {
+	kind: "athena",
+	page: 31
+};
+var P37 = {
+	kind: "athena",
+	page: 37
+};
+var P41 = {
+	kind: "athena",
+	page: 41
+};
+var HB$1 = { kind: "athena" };
+/** g per 10 L by target EC: Grow or Bloom (base) / Core. p. 37. */
+var PRO_GRAMS = [
+	{
+		ec: .5,
+		base: 2.8,
+		core: 1.7
+	},
+	{
+		ec: 1,
+		base: 6.1,
+		core: 3.6
+	},
+	{
+		ec: 1.5,
+		base: 9.4,
+		core: 5.7
+	},
+	{
+		ec: 2,
+		base: 12.9,
+		core: 7.7
+	},
+	{
+		ec: 2.5,
+		base: 16.5,
+		core: 9.9
+	},
+	{
+		ec: 3,
+		base: 20.3,
+		core: 12.2
+	},
+	{
+		ec: 3.5,
+		base: 24.1,
+		core: 14.5
+	},
+	{
+		ec: 4,
+		base: 28.1,
+		core: 16.9
+	}
+];
+/** mL of concentrate per 10 L by target EC, for each strength (g/L). p. 37. */
+var PRO_CONCENTRATES = {
+	226: [
+		{
+			ec: 1,
+			base: 27,
+			core: 16
+		},
+		{
+			ec: 1.5,
+			base: 42,
+			core: 25
+		},
+		{
+			ec: 2,
+			base: 57,
+			core: 34
+		},
+		{
+			ec: 2.5,
+			base: 73,
+			core: 44
+		},
+		{
+			ec: 3,
+			base: 90,
+			core: 54
+		},
+		{
+			ec: 3.5,
+			base: 107,
+			core: 64
+		},
+		{
+			ec: 4,
+			base: 124,
+			core: 75
+		}
+	],
+	113: [
+		{
+			ec: 1,
+			base: 54,
+			core: 32
+		},
+		{
+			ec: 1.5,
+			base: 83,
+			core: 50
+		},
+		{
+			ec: 2,
+			base: 114,
+			core: 69
+		},
+		{
+			ec: 2.5,
+			base: 146,
+			core: 88
+		},
+		{
+			ec: 3,
+			base: 179,
+			core: 108
+		},
+		{
+			ec: 3.5,
+			base: 214,
+			core: 128
+		},
+		{
+			ec: 4,
+			base: 249,
+			core: 149
+		}
+	],
+	282: [
+		{
+			ec: 1,
+			base: 21,
+			core: 13
+		},
+		{
+			ec: 1.5,
+			base: 33,
+			core: 20
+		},
+		{
+			ec: 2,
+			base: 46,
+			core: 27
+		},
+		{
+			ec: 2.5,
+			base: 59,
+			core: 35
+		},
+		{
+			ec: 3,
+			base: 72,
+			core: 43
+		}
+	]
+};
+var ATHENA_PRO = {
+	id: "athena-pro",
+	brand: "Athena",
+	name: "Athena Pro Line",
+	source: "Athena Handbook FR (V8)",
+	products: [
+		{
+			id: "proGrow",
+			name: "Pro Grow",
+			form: "powder"
+		},
+		{
+			id: "proBloom",
+			name: "Pro Bloom",
+			form: "powder"
+		},
+		{
+			id: "proCore",
+			name: "Pro Core",
+			form: "powder"
+		},
+		{
+			id: "fade",
+			name: "Fade",
+			form: "liquid",
+			addon: "fade",
+			scalesWithEc: true
+		},
+		{
+			id: "cleanse",
+			name: "Cleanse",
+			form: "liquid",
+			addon: "cleanse"
+		},
+		{
+			id: "balance",
+			name: "Balance",
+			form: "liquid",
+			addon: "balance"
+		}
+	],
+	order: [
+		"balance",
+		"proGrow",
+		"proBloom",
+		"proCore",
+		"fade",
+		"cleanse"
+	],
+	program: [
+		{
+			id: "clone",
+			stage: "clone",
+			ec: 2,
+			doses: [
+				{
+					product: "proBloom",
+					fromEcTable: "base",
+					src: P31
+				},
+				{
+					product: "proCore",
+					fromEcTable: "core",
+					src: P31
+				},
+				{
+					product: "cleanse",
+					per10L: 3,
+					src: P31
+				}
+			],
+			ph: "clone",
+			src: P31
+		},
+		{
+			id: "veg",
+			stage: "veg",
+			ec: 3,
+			doses: [
+				{
+					product: "proGrow",
+					fromEcTable: "base",
+					src: P31
+				},
+				{
+					product: "proCore",
+					fromEcTable: "core",
+					src: P31
+				},
+				{
+					product: "cleanse",
+					per10L: [5, 13],
+					src: P31
+				}
+			],
+			ph: "substrate",
+			src: P31
+		},
+		{
+			id: "flower",
+			stage: "flower",
+			weeks: [1, 7],
+			ec: 3,
+			doses: [
+				{
+					product: "proBloom",
+					fromEcTable: "base",
+					src: P31
+				},
+				{
+					product: "proCore",
+					fromEcTable: "core",
+					src: P31
+				},
+				{
+					product: "cleanse",
+					per10L: [5, 13],
+					src: P31
+				}
+			],
+			ph: "substrate",
+			src: P31
+		},
+		{
+			id: "finish",
+			stage: "flower",
+			weeks: [8, 9],
+			ec: 3,
+			doses: [
+				{
+					product: "proBloom",
+					fromEcTable: "base",
+					src: P31
+				},
+				{
+					product: "proCore",
+					fromEcTable: "core",
+					unlessAddon: "fade",
+					src: P31
+				},
+				{
+					product: "fade",
+					per10L: 51,
+					src: P31
+				},
+				{
+					product: "cleanse",
+					per10L: [5, 13],
+					src: P31
+				}
+			],
+			ph: "high",
+			src: P31
+		},
+		{
+			id: "flush",
+			stage: "flush",
+			ec: 0,
+			roWater: true,
+			doses: [{
+				product: "cleanse",
+				per10L: 26,
+				src: HB$1
+			}],
+			ph: "high",
+			src: HB$1
+		}
+	],
+	ecTable: {
+		grams: PRO_GRAMS,
+		concentrates: PRO_CONCENTRATES,
+		recommended: 226,
+		src: P37
+	},
+	addons: [
+		"fade",
+		"cleanse",
+		"balance",
+		"ipw"
+	],
+	defaultAddons: [
+		"fade",
+		"cleanse",
+		"balance"
+	],
+	manual: [
+		{
+			stage: "veg",
+			ecIn: [3, 3],
+			ph: [5.8, 6.2],
+			ecRunoff: [4, 5],
+			dryback: [30, 40],
+			src: P41
+		},
+		{
+			stage: "flower",
+			weeks: [1, 1],
+			ecIn: [3, 3],
+			ph: [5.9, 6.3],
+			ecRunoff: [6, 7],
+			dryback: [30, 40],
+			src: P41
+		},
+		{
+			stage: "flower",
+			weeks: [2, 3],
+			ecIn: [3, 3],
+			ph: [5.9, 6.3],
+			ecRunoff: [6, 7],
+			dryback: [50, 60],
+			src: P41
+		},
+		{
+			stage: "flower",
+			weeks: [4, 6],
+			ecIn: [3, 3],
+			ph: [5.9, 6.3],
+			ecRunoff: [5, 6],
+			dryback: [30, 40],
+			src: P41
+		},
+		{
+			stage: "flower",
+			weeks: [7, 7],
+			ecIn: [3, 3],
+			ph: [5.9, 6.3],
+			ecRunoff: [4, 5],
+			dryback: [30, 40],
+			src: P41
+		},
+		{
+			stage: "flower",
+			weeks: [8, 9],
+			ecIn: [3, 3],
+			ph: [5.9, 6.3],
+			ecRunoff: [3, 3.5],
+			dryback: [50, 60],
+			src: P41
+		},
+		{
+			stage: "flush",
+			ecIn: [0, 1],
+			ph: [5.9, 6.3],
+			ecRunoff: [0, 1],
+			dryback: [50, 60],
+			src: P41
+		}
+	],
+	ph: {
+		clone: [5.6, 5.6],
+		coco: [5.8, 6.2],
+		high: [6, 6.4],
+		src: P31
+	}
+};
+//#endregion
+//#region src/data/nutrients/addons.ts
+var HB = { kind: "athena" };
+var ADDONS = {
+	fade: {
+		id: "fade",
+		name: "Fade",
+		application: "tank",
+		lines: ["athena-pro", "athena-blended"],
+		src: {
+			kind: "athena",
+			page: 31
+		}
+	},
+	cleanse: {
+		id: "cleanse",
+		name: "Cleanse",
+		application: "tank",
+		lines: ["athena-pro", "athena-blended"],
+		src: HB
+	},
+	balance: {
+		id: "balance",
+		name: "Balance",
+		application: "tank",
+		lines: ["athena-pro", "athena-blended"],
+		src: HB
+	},
+	ipw: {
+		id: "ipw",
+		name: "IPW",
+		application: "foliar",
+		lines: ["athena-pro", "athena-blended"],
+		src: {
+			kind: "athena",
+			page: 80
+		}
+	},
+	camg: {
+		id: "camg",
+		name: "CaMg",
+		application: "tank",
+		lines: ["athena-blended"],
+		src: {
+			kind: "athena",
+			page: 58
+		}
+	},
+	pk: {
+		id: "pk",
+		name: "PK",
+		application: "tank",
+		lines: ["athena-blended"],
+		src: {
+			kind: "athena",
+			page: 58
+		}
+	}
+};
+/** Balance raises the pH: no fixed dose, steps of 1 mL per 4 L, measuring after each step. */
+var BALANCE_STEP = {
+	ml: 1,
+	perL: 4,
+	src: HB
+};
+/** Balance step for a tank (mL): 100 L → 25 mL. */
+function balanceStepMl(volumeL) {
+	return Math.round(volumeL / BALANCE_STEP.perL * BALANCE_STEP.ml * 10) / 10;
+}
+//#endregion
+//#region src/data/nutrients/index.ts
+var CATALOGS = {
+	[ATHENA_PRO.id]: ATHENA_PRO,
+	[ATHENA_BLENDED.id]: ATHENA_BLENDED
+};
+var DEFAULT_LINE = ATHENA_PRO.id;
+var getCatalog = (id) => CATALOGS[id ?? DEFAULT_LINE] ?? ATHENA_PRO;
+/** Lines offered in the menus. Blended stays hidden in Thomas's (Claude) version until the friends' version (lot 8). */
+function visibleCatalogs(target) {
+	return target === "local" ? Object.values(CATALOGS) : [ATHENA_PRO];
+}
+//#endregion
+//#region src/calc/nutrients.ts
+/** Cycle stage → program position (flowering weeks counted from the 12/12 day). */
+function positionOf(s) {
+	if (s.key === "notStarted" || s.key === "harvested") return null;
+	if (s.key === "seedling") return { stage: "clone" };
+	if (s.key === "veg") return {
+		stage: "veg",
+		week: s.week
+	};
+	if (s.key === "flush") return { stage: "flush" };
+	return {
+		stage: "flower",
+		week: s.flowerWeek ?? 1
+	};
+}
+/** Program phase of a line for a position. Flowering beyond the last row stays on the last row. */
+function phaseAt(cat, pos) {
+	const rows = cat.program.filter((p) => p.stage === pos.stage);
+	if (pos.stage !== "flower") return rows[0] ?? null;
+	const w = Math.max(1, pos.week ?? 1);
+	return rows.find((p) => p.weeks && w >= p.weeks[0] && w <= p.weeks[1]) ?? rows[rows.length - 1] ?? null;
+}
+var phaseById = (cat, id) => cat.program.find((p) => p.id === id) ?? null;
+/** Cycle stage used for targets and labels, from a phase. */
+function phaseStage(p) {
+	if (p.stage === "presoak" || p.stage === "clone") return "seedling";
+	if (p.stage === "veg") return "veg";
+	if (p.stage === "flush") return "flush";
+	const w = p.weeks?.[0] ?? 1;
+	return w >= 8 ? "finish" : w >= 5 ? "bulk" : "stretch";
+}
+/** Mix.kind (v3 field, kept for the journal and charts). */
+function phaseKind(p) {
+	const s = phaseStage(p);
+	return s === "seedling" || s === "veg" || s === "finish" || s === "flush" ? s : "flower";
+}
+/** pH of solution and runoff for a phase: clone 5.6; 6.0–6.4 with Fade / flush; else by substrate. */
+function phFor(cat, phase, substrate = "coco") {
+	if (phase.ph === "clone") return {
+		lo: cat.ph.clone[0],
+		hi: cat.ph.clone[1],
+		src: cat.ph.src
+	};
+	if (phase.ph === "high") return {
+		lo: cat.ph.high[0],
+		hi: cat.ph.high[1],
+		src: cat.ph.src
+	};
+	if (substrate === "soil") return {
+		lo: 6,
+		hi: 6.4,
+		src: "spec"
+	};
+	if (substrate === "mix7030") return {
+		lo: 5.9,
+		hi: 6.3,
+		src: "estimate"
+	};
+	return {
+		lo: cat.ph.coco[0],
+		hi: cat.ph.coco[1],
+		src: cat.ph.src
+	};
+}
+/** Linear interpolation in an EC table; null outside its range. */
+function interpEc(t, ec) {
+	if (!t.length || ec < t[0].ec || ec > t[t.length - 1].ec) return null;
+	for (let i = 0; i < t.length - 1; i++) if (ec <= t[i + 1].ec) {
+		const f = (ec - t[i].ec) / (t[i + 1].ec - t[i].ec);
+		return {
+			base: t[i].base + f * (t[i + 1].base - t[i].base),
+			core: t[i].core + f * (t[i + 1].core - t[i].core)
+		};
+	}
+	return null;
+}
+/** Grams per 10 L at an EC, clamped to the table. */
+function gramsPer10L(cat, ec) {
+	const t = cat.ecTable?.grams ?? [];
+	if (!t.length) return {
+		base: 0,
+		core: 0
+	};
+	return interpEc(t, Math.min(t[t.length - 1].ec, Math.max(t[0].ec, ec))) ?? {
+		base: t[t.length - 1].base,
+		core: t[t.length - 1].core
+	};
+}
+/** mL of concentrate per 10 L: the published table, else grams ÷ strength (marked as estimate). */
+function concMlPer10L(cat, ec, gPerL) {
+	const hit = interpEc(cat.ecTable?.concentrates[gPerL] ?? [], ec);
+	if (hit) return {
+		...hit,
+		estimate: false
+	};
+	const g = gramsPer10L(cat, ec);
+	return {
+		base: g.base / gPerL * 1e3,
+		core: g.core / gPerL * 1e3,
+		estimate: true
+	};
+}
+var r1 = (x) => Math.round(x * 10) / 10;
+var lohi = (p) => typeof p === "number" ? [p, p] : p;
+/** Is a personal product used at this phase (at this flowering week when known, else anywhere in the phase)? */
+function customApplies(p, phase, week) {
+	if (p.application !== "tank" || p.inactive) return false;
+	const u = p.use;
+	if (!u) return true;
+	if (phase.stage === "veg") return !!u.veg;
+	if (phase.stage === "flower" && u.flowerFrom != null) {
+		const to = u.flowerTo ?? u.flowerFrom;
+		if (week != null) return week >= u.flowerFrom && week <= to;
+		const [a, b] = phase.weeks ?? [1, 1];
+		return a <= to && b >= u.flowerFrom;
+	}
+	return false;
+}
+/** Ingredients of a tank, in mixing order. Throws on an unknown phase (never silently mixes lines). */
+function mixRecipe(lineId, input) {
+	const cat = getCatalog(lineId);
+	const phase = phaseById(cat, input.phaseId);
+	if (!phase) throw new Error(`phase ${input.phaseId} not in ${cat.id}`);
+	const k = input.volumeL / 10;
+	const on = new Set(input.addons ?? cat.defaultAddons);
+	const ec = phase.stage === "flush" ? 0 : input.ec ?? phase.ec;
+	const scale = phase.ec > 0 && ec > 0 ? ec / phase.ec : 1;
+	const scaled = Math.abs(scale - 1) > 1e-9;
+	const conc = input.concentrate && input.concentrate > 0 ? input.concentrate : 0;
+	const product = (id) => cat.products.find((p) => p.id === id);
+	const allowed = (id) => {
+		const p = product(id);
+		return !p.addon || on.has(p.addon) && ADDONS[p.addon].lines.includes(cat.id);
+	};
+	const items = [phase.roWater ? {
+		id: "roWater",
+		name: "",
+		kind: "roWater",
+		qty: input.volumeL,
+		unit: "L"
+	} : {
+		id: "water",
+		name: "",
+		kind: "water",
+		qty: input.volumeL,
+		unit: "L"
+	}];
+	const byProduct = /* @__PURE__ */ new Map();
+	for (const dose of phase.doses) {
+		if (dose.unlessAddon && on.has(dose.unlessAddon)) continue;
+		if (!allowed(dose.product)) continue;
+		const p = product(dose.product);
+		if (dose.fromEcTable) {
+			const g = gramsPer10L(cat, ec)[dose.fromEcTable];
+			const note = dose.fromEcTable === "core" ? dose.unlessAddon ? "fadeOff" : "coreAlone" : conc ? "concentrate" : void 0;
+			if (conc) {
+				const c = concMlPer10L(cat, ec, conc);
+				byProduct.set(p.id, {
+					id: p.id,
+					name: p.name,
+					kind: "product",
+					qty: Math.round(c[dose.fromEcTable] * k),
+					unit: "mL",
+					concentrate: conc,
+					grams: r1(g * k),
+					estimate: c.estimate,
+					src: cat.ecTable.src,
+					note
+				});
+			} else byProduct.set(p.id, {
+				id: p.id,
+				name: p.name,
+				kind: "product",
+				qty: r1(g * k),
+				unit: "g",
+				src: cat.ecTable.src,
+				note
+			});
+			continue;
+		}
+		const [lo, hi] = lohi(dose.per10L ?? 0);
+		const f = p.scalesWithEc ? scale : 1;
+		const est = p.scalesWithEc && scaled;
+		const note = p.id === "fade" && phase.doses.some((d) => d.unlessAddon === "fade") ? "replacesCore" : void 0;
+		if (lo === hi) byProduct.set(p.id, {
+			id: p.id,
+			name: p.name,
+			kind: "product",
+			qty: r1(lo * f * k),
+			unit: "mL",
+			estimate: est || void 0,
+			src: dose.src,
+			note
+		});
+		else {
+			const chosen = input.chosenPer10L?.[p.id];
+			byProduct.set(p.id, {
+				id: p.id,
+				name: p.name,
+				kind: "product",
+				qty: chosen != null ? r1(chosen * f * k) : null,
+				range: [r1(lo * f * k), r1(hi * f * k)],
+				unit: "mL",
+				estimate: est || void 0,
+				src: dose.src,
+				note: note ?? "range"
+			});
+		}
+	}
+	if (allowed("balance") && phase.stage !== "flush") {
+		const b = product("balance");
+		const known = input.balanceMlPer10L;
+		byProduct.set(b.id, {
+			id: b.id,
+			name: b.name,
+			kind: "product",
+			qty: known != null ? r1(known * k) : null,
+			unit: "mL",
+			src: ADDONS.balance.src,
+			note: known != null ? "balanceFirst" : "balanceSteps",
+			stepMl: balanceStepMl(input.volumeL)
+		});
+	}
+	for (const id of cat.order) {
+		const it = byProduct.get(id);
+		if (it) items.push(it);
+	}
+	for (const p of input.custom ?? []) {
+		if (!customApplies(p, phase, input.week) || phase.stage === "flush") continue;
+		const d = p.dosePer10L;
+		const typed = d && p.use;
+		if (typed && d.lo === d.hi) items.push({
+			id: p.id,
+			name: p.name,
+			kind: "custom",
+			qty: r1(d.lo * k),
+			unit: p.unit,
+			src: { kind: "label" }
+		});
+		else if (typed) {
+			const chosen = input.chosenPer10L?.[p.id];
+			items.push({
+				id: p.id,
+				name: p.name,
+				kind: "custom",
+				qty: chosen != null ? r1(chosen * k) : null,
+				range: [r1(d.lo * k), r1(d.hi * k)],
+				unit: p.unit,
+				src: { kind: "label" },
+				note: "labelRange"
+			});
+		} else items.push({
+			id: p.id,
+			name: p.name,
+			kind: "custom",
+			qty: null,
+			unit: p.unit,
+			src: { kind: "label" },
+			note: "labelMissing"
+		});
+	}
+	const anyScaled = phase.stage !== "flush" && scaled && phase.doses.some((d) => !d.fromEcTable && cat.products.find((p) => p.id === d.product)?.scalesWithEc && items.some((i) => i.id === d.product));
+	return {
+		line: cat.id,
+		phase,
+		ec,
+		scaled: anyScaled,
+		ph: phFor(cat, phase, input.substrate),
+		items
+	};
+}
+/** EC the meter should read: fertiliser EC + tap water EC. */
+function expectedEc(ec, tapEc) {
+	return Math.round((ec + tapEc) * 100) / 100;
+}
+/** Suggested tank size: ≈ 6 days of real consumption (5–7 days of solution at a time), capped by the reservoir. */
+function suggestedVolume(perDayL, reservoirL = 120) {
+	if (!perDayL || perDayL <= 0) return null;
+	return Math.min(reservoirL, Math.ceil(perDayL * 6 / 5) * 5);
+}
+/** Balance per 10 L to pour first next time: what this tank took (known amount + steps added). */
+function nextBalancePer10L(m) {
+	if (m.balanceAddedMl == null && m.balanceMlPer10L == null) return void 0;
+	if (!m.volumeL) return void 0;
+	const total = (m.balanceMlPer10L ?? 0) * (m.volumeL / 10) + (m.balanceAddedMl ?? 0);
+	return Math.round(total / m.volumeL * 10 * 100) / 100;
+}
+//#endregion
 //#region src/calc/targets.ts
-var r$1 = (lo, hi, src) => ({
+var r$1 = (lo, hi, src, page) => page ? {
+	lo,
+	hi,
+	src,
+	page
+} : {
 	lo,
 	hi,
 	src
-});
+};
 /** pH of solution and runoff (same ranges, Athena). */
 function phTarget(stage, substrate) {
 	if (stage === "seedling") return r$1(5.6, 5.6, "athena");
@@ -27182,40 +28356,28 @@ var AUTO = {
 		steer: "mixed"
 	}
 };
-/** Manual method (1 watering at lights-on, 10–25 % runoff) — dryback and runoff EC by flowering week. */
-function manual(stage, flowerWeek) {
+/** Row of a line's manual method for a stage / flowering week (Pro p. 41, Blended p. 60). */
+function manualRow(cat, stage, flowerWeek) {
+	if (stage === "seedling" || stage === "harvested") return null;
+	if (stage === "veg") return cat.manual.find((m) => m.stage === "veg") ?? null;
+	if (stage === "flush") return cat.manual.find((m) => m.stage === "flush") ?? null;
+	const w = flowerWeek ?? (stage === "finish" ? 8 : stage === "bulk" ? 5 : 1);
+	const rows = cat.manual.filter((m) => m.stage === "flower");
+	return rows.find((m) => m.weeks && w >= m.weeks[0] && w <= m.weeks[1]) ?? rows[rows.length - 1] ?? null;
+}
+/** Manual method (1 watering at lights-on, 10–25 % runoff): dryback, runoff EC and pH by week, from the line's catalog. */
+function manual(stage, flowerWeek, line, substrate) {
 	const run = r$1(10, 25, "athena");
-	if (stage === "veg") return {
-		dryback: r$1(30, 40, "athena"),
-		ecRunoff: r$1(4, 5, "athena"),
+	const row = manualRow(getCatalog(line), stage, flowerWeek);
+	if (!row) return { runoffPct: run };
+	const page = row.src.kind === "athena" ? row.src.page : void 0;
+	const out = {
+		dryback: r$1(row.dryback[0], row.dryback[1], "athena", page),
+		ecRunoff: r$1(row.ecRunoff[0], row.ecRunoff[1], "athena", page),
 		runoffPct: run
 	};
-	const w = flowerWeek ?? 1;
-	if (w === 1) return {
-		dryback: r$1(30, 40, "athena"),
-		ecRunoff: r$1(6, 7, "athena"),
-		runoffPct: run
-	};
-	if (w <= 3) return {
-		dryback: r$1(50, 60, "athena"),
-		ecRunoff: r$1(6, 7, "athena"),
-		runoffPct: run
-	};
-	if (w <= 6) return {
-		dryback: r$1(30, 40, "athena"),
-		ecRunoff: r$1(5, 6, "athena"),
-		runoffPct: run
-	};
-	if (w === 7) return {
-		dryback: r$1(30, 40, "athena"),
-		ecRunoff: r$1(4, 5, "athena"),
-		runoffPct: run
-	};
-	return {
-		dryback: r$1(50, 60, "athena"),
-		ecRunoff: r$1(3, 3.5, "athena"),
-		runoffPct: run
-	};
+	if (substrate === "coco" && stage !== "veg" && stage !== "finish") out.phIn = out.phRunoff = r$1(row.ph[0], row.ph[1], "athena", page);
+	return out;
 }
 /** Common benchmarks (no CO2 added). Replaced by Handbook values in batch 4 if provided. */
 var LIGHT = {
@@ -27259,9 +28421,16 @@ function dayTargets(stage, opts) {
 		phRunoff: ph,
 		...LIGHT[stage]
 	};
+	const cat = getCatalog(opts.line);
 	if (stage === "seedling") t.ecIn = r$1(2, 2, "athena");
 	else if (stage === "flush") t.ecIn = r$1(0, .1, "athena");
-	else t.ecIn = (opts.cycleNumber ?? 1) <= 1 ? r$1(2, 2.4, "spec") : r$1(3, 3, "athena");
+	else if (!cat.ecTable) {
+		const ph = phaseAt(cat, stage === "veg" ? { stage: "veg" } : {
+			stage: "flower",
+			week: opts.flowerWeek ?? (stage === "finish" ? 8 : stage === "bulk" ? 5 : 1)
+		});
+		if (ph) t.ecIn = r$1(ph.ec, ph.ec, "athena", ph.src.kind === "athena" ? ph.src.page : void 0);
+	} else t.ecIn = (opts.cycleNumber ?? 1) <= 1 ? r$1(2, 2.4, "spec") : r$1(3, 3, "athena");
 	if (stage === "seedling" || stage === "flush") return t;
 	if (opts.mode === "auto") {
 		const a = AUTO[stage];
@@ -27271,7 +28440,7 @@ function dayTargets(stage, opts) {
 			runoffPct: a.runoffPct,
 			steer: a.steer
 		});
-	} else Object.assign(t, manual(stage, opts.flowerWeek));
+	} else Object.assign(t, manual(stage, opts.flowerWeek, opts.line, opts.substrate));
 	return t;
 }
 function snapshot(t) {
@@ -27674,13 +28843,19 @@ function GrowProvider({ children }) {
 	const targetsFor = import_react.useCallback((date, c = cycle) => {
 		if (!c) return null;
 		const s = stageOn(c, date);
+		const line = spaceNutrition(grow, spaces.find((x) => x.id === c.spaceId)).line;
 		return dayTargets(s.key, {
 			mode: c.waterMode,
 			substrate: c.substrate,
 			flowerWeek: s.flowerWeek,
-			cycleNumber: cycleNumber(c)
+			cycleNumber: cycleNumber(c),
+			line
 		});
-	}, [cycle]);
+	}, [
+		cycle,
+		grow,
+		spaces
+	]);
 	const all = import_react.useMemo(() => ({
 		entries: list("entries").sort(byDateDesc),
 		events: list("events").sort(byDateDesc),
@@ -40891,793 +42066,6 @@ function stockStatus(stock, stocks, mixes) {
 /** Open jerrycans (not marked finished), newest first. */
 function openStocks(stocks, line) {
 	return stocks.filter((s) => !s.finishedOn && (!line || s.line === line)).sort((a, b) => b.madeOn.localeCompare(a.madeOn));
-}
-//#endregion
-//#region src/data/nutrients/athena-blended.ts
-var P58 = {
-	kind: "athena",
-	page: 58
-};
-var P60 = {
-	kind: "athena",
-	page: 60
-};
-var HB$2 = { kind: "athena" };
-var d = (product, per10L) => ({
-	product,
-	per10L,
-	src: P58
-});
-var CAMG = d("camg", [8, 13]);
-var CLEANSE = d("cleanse", [5, 13]);
-/** Flowering week n of p. 58: Bloom A/B, PK, CaMg (S1–S7), Fade (S8–S9), Cleanse, EC. */
-function week(n, bloom, pk, ec, opts = {}) {
-	return {
-		id: `fl${n}`,
-		stage: "flower",
-		weeks: [n, n],
-		ec,
-		doses: [
-			...bloom ? [d("bloomB", bloom), d("bloomA", bloom)] : [],
-			...pk ? [d("pk", pk)] : [],
-			...opts.camg === false ? [] : [CAMG],
-			...opts.fade ? [d("fade", opts.fade)] : [],
-			CLEANSE
-		],
-		ph: n === 9 ? "high" : "substrate",
-		src: P58
-	};
-}
-var ATHENA_BLENDED = {
-	id: "athena-blended",
-	brand: "Athena",
-	name: "Athena Blended",
-	source: "Athena Handbook FR (V8)",
-	products: [
-		{
-			id: "growA",
-			name: "Grow A",
-			form: "liquid",
-			scalesWithEc: true
-		},
-		{
-			id: "growB",
-			name: "Grow B",
-			form: "liquid",
-			scalesWithEc: true
-		},
-		{
-			id: "bloomA",
-			name: "Bloom A",
-			form: "liquid",
-			scalesWithEc: true
-		},
-		{
-			id: "bloomB",
-			name: "Bloom B",
-			form: "liquid",
-			scalesWithEc: true
-		},
-		{
-			id: "pk",
-			name: "PK",
-			form: "liquid",
-			addon: "pk",
-			scalesWithEc: true
-		},
-		{
-			id: "camg",
-			name: "CaMg",
-			form: "liquid",
-			addon: "camg",
-			scalesWithEc: true
-		},
-		{
-			id: "fade",
-			name: "Fade",
-			form: "liquid",
-			addon: "fade"
-		},
-		{
-			id: "cleanse",
-			name: "Cleanse",
-			form: "liquid",
-			addon: "cleanse"
-		},
-		{
-			id: "balance",
-			name: "Balance",
-			form: "liquid",
-			addon: "balance"
-		}
-	],
-	order: [
-		"balance",
-		"growB",
-		"growA",
-		"bloomB",
-		"bloomA",
-		"pk",
-		"camg",
-		"fade",
-		"cleanse"
-	],
-	program: [
-		{
-			id: "presoak",
-			stage: "presoak",
-			ec: 1,
-			doses: [
-				d("bloomB", 13),
-				d("bloomA", 13),
-				d("cleanse", 3)
-			],
-			ph: "clone",
-			src: P58
-		},
-		{
-			id: "clone",
-			stage: "clone",
-			ec: 2,
-			doses: [
-				d("bloomB", 26),
-				d("bloomA", 26),
-				d("cleanse", 3)
-			],
-			ph: "clone",
-			src: P58
-		},
-		{
-			id: "veg",
-			stage: "veg",
-			ec: 2.1,
-			doses: [
-				d("growB", 29),
-				d("growA", 29),
-				CAMG,
-				CLEANSE
-			],
-			ph: "substrate",
-			src: P58
-		},
-		week(1, 32, null, 2.3),
-		week(2, 32, null, 2.3),
-		week(3, 32, 11, 2.5),
-		week(4, 32, 16, 2.6),
-		week(5, 26, 24, 2.4),
-		week(6, 24, 26, 2.3),
-		week(7, 13, 32, 1.7),
-		week(8, null, 32, 1.5, {
-			camg: false,
-			fade: 32
-		}),
-		week(9, null, 32, 1.5, {
-			camg: false,
-			fade: 32
-		}),
-		{
-			id: "flush",
-			stage: "flush",
-			ec: 0,
-			roWater: true,
-			doses: [{
-				product: "cleanse",
-				per10L: 26,
-				src: HB$2
-			}],
-			ph: "high",
-			src: HB$2
-		}
-	],
-	addons: [
-		"fade",
-		"cleanse",
-		"balance",
-		"ipw",
-		"camg",
-		"pk"
-	],
-	defaultAddons: [
-		"fade",
-		"cleanse",
-		"balance",
-		"camg",
-		"pk"
-	],
-	manual: [
-		{
-			stage: "veg",
-			ecIn: [2.1, 2.1],
-			ph: [5.8, 6.2],
-			ecRunoff: [3.5, 4.5],
-			dryback: [30, 40],
-			src: P60
-		},
-		{
-			stage: "flower",
-			weeks: [1, 1],
-			ecIn: [2.3, 2.3],
-			ph: [5.9, 6.3],
-			ecRunoff: [5, 6],
-			dryback: [30, 40],
-			src: P60
-		},
-		{
-			stage: "flower",
-			weeks: [2, 2],
-			ecIn: [2.3, 2.3],
-			ph: [5.9, 6.3],
-			ecRunoff: [5, 6],
-			dryback: [50, 60],
-			src: P60
-		},
-		{
-			stage: "flower",
-			weeks: [3, 3],
-			ecIn: [2.5, 2.5],
-			ph: [5.9, 6.3],
-			ecRunoff: [5, 6],
-			dryback: [50, 60],
-			src: P60
-		},
-		{
-			stage: "flower",
-			weeks: [4, 4],
-			ecIn: [2.6, 2.6],
-			ph: [5.9, 6.3],
-			ecRunoff: [4, 5],
-			dryback: [30, 40],
-			src: P60
-		},
-		{
-			stage: "flower",
-			weeks: [5, 5],
-			ecIn: [2.4, 2.4],
-			ph: [5.9, 6.3],
-			ecRunoff: [4, 5],
-			dryback: [30, 40],
-			src: P60
-		},
-		{
-			stage: "flower",
-			weeks: [6, 6],
-			ecIn: [2.3, 2.3],
-			ph: [5.9, 6.3],
-			ecRunoff: [4, 5],
-			dryback: [30, 40],
-			src: P60
-		},
-		{
-			stage: "flower",
-			weeks: [7, 7],
-			ecIn: [1.7, 1.7],
-			ph: [5.9, 6.3],
-			ecRunoff: [3, 4],
-			dryback: [30, 40],
-			src: P60
-		},
-		{
-			stage: "flower",
-			weeks: [8, 9],
-			ecIn: [1.5, 1.5],
-			ph: [5.9, 6.3],
-			ecRunoff: [2.5, 3],
-			dryback: [50, 60],
-			src: P60
-		},
-		{
-			stage: "flush",
-			ecIn: [0, 1.5],
-			ph: [5.9, 6.3],
-			ecRunoff: [0, 1.5],
-			dryback: [50, 60],
-			src: P60
-		}
-	],
-	ph: {
-		clone: [5.6, 5.6],
-		coco: [5.8, 6.2],
-		high: [6, 6.4],
-		src: P58
-	}
-};
-//#endregion
-//#region src/data/nutrients/athena-pro.ts
-var P31 = {
-	kind: "athena",
-	page: 31
-};
-var P37 = {
-	kind: "athena",
-	page: 37
-};
-var P41 = {
-	kind: "athena",
-	page: 41
-};
-var HB$1 = { kind: "athena" };
-/** g per 10 L by target EC: Grow or Bloom (base) / Core. p. 37. */
-var PRO_GRAMS = [
-	{
-		ec: .5,
-		base: 2.8,
-		core: 1.7
-	},
-	{
-		ec: 1,
-		base: 6.1,
-		core: 3.6
-	},
-	{
-		ec: 1.5,
-		base: 9.4,
-		core: 5.7
-	},
-	{
-		ec: 2,
-		base: 12.9,
-		core: 7.7
-	},
-	{
-		ec: 2.5,
-		base: 16.5,
-		core: 9.9
-	},
-	{
-		ec: 3,
-		base: 20.3,
-		core: 12.2
-	},
-	{
-		ec: 3.5,
-		base: 24.1,
-		core: 14.5
-	},
-	{
-		ec: 4,
-		base: 28.1,
-		core: 16.9
-	}
-];
-/** mL of concentrate per 10 L by target EC, for each strength (g/L). p. 37. */
-var PRO_CONCENTRATES = {
-	226: [
-		{
-			ec: 1,
-			base: 27,
-			core: 16
-		},
-		{
-			ec: 1.5,
-			base: 42,
-			core: 25
-		},
-		{
-			ec: 2,
-			base: 57,
-			core: 34
-		},
-		{
-			ec: 2.5,
-			base: 73,
-			core: 44
-		},
-		{
-			ec: 3,
-			base: 90,
-			core: 54
-		},
-		{
-			ec: 3.5,
-			base: 107,
-			core: 64
-		},
-		{
-			ec: 4,
-			base: 124,
-			core: 75
-		}
-	],
-	113: [
-		{
-			ec: 1,
-			base: 54,
-			core: 32
-		},
-		{
-			ec: 1.5,
-			base: 83,
-			core: 50
-		},
-		{
-			ec: 2,
-			base: 114,
-			core: 69
-		},
-		{
-			ec: 2.5,
-			base: 146,
-			core: 88
-		},
-		{
-			ec: 3,
-			base: 179,
-			core: 108
-		},
-		{
-			ec: 3.5,
-			base: 214,
-			core: 128
-		},
-		{
-			ec: 4,
-			base: 249,
-			core: 149
-		}
-	],
-	282: [
-		{
-			ec: 1,
-			base: 21,
-			core: 13
-		},
-		{
-			ec: 1.5,
-			base: 33,
-			core: 20
-		},
-		{
-			ec: 2,
-			base: 46,
-			core: 27
-		},
-		{
-			ec: 2.5,
-			base: 59,
-			core: 35
-		},
-		{
-			ec: 3,
-			base: 72,
-			core: 43
-		}
-	]
-};
-var ATHENA_PRO = {
-	id: "athena-pro",
-	brand: "Athena",
-	name: "Athena Pro Line",
-	source: "Athena Handbook FR (V8)",
-	products: [
-		{
-			id: "proGrow",
-			name: "Pro Grow",
-			form: "powder"
-		},
-		{
-			id: "proBloom",
-			name: "Pro Bloom",
-			form: "powder"
-		},
-		{
-			id: "proCore",
-			name: "Pro Core",
-			form: "powder"
-		},
-		{
-			id: "fade",
-			name: "Fade",
-			form: "liquid",
-			addon: "fade",
-			scalesWithEc: true
-		},
-		{
-			id: "cleanse",
-			name: "Cleanse",
-			form: "liquid",
-			addon: "cleanse"
-		},
-		{
-			id: "balance",
-			name: "Balance",
-			form: "liquid",
-			addon: "balance"
-		}
-	],
-	order: [
-		"balance",
-		"proGrow",
-		"proBloom",
-		"proCore",
-		"fade",
-		"cleanse"
-	],
-	program: [
-		{
-			id: "clone",
-			stage: "clone",
-			ec: 2,
-			doses: [
-				{
-					product: "proBloom",
-					fromEcTable: "base",
-					src: P31
-				},
-				{
-					product: "proCore",
-					fromEcTable: "core",
-					src: P31
-				},
-				{
-					product: "cleanse",
-					per10L: 3,
-					src: P31
-				}
-			],
-			ph: "clone",
-			src: P31
-		},
-		{
-			id: "veg",
-			stage: "veg",
-			ec: 3,
-			doses: [
-				{
-					product: "proGrow",
-					fromEcTable: "base",
-					src: P31
-				},
-				{
-					product: "proCore",
-					fromEcTable: "core",
-					src: P31
-				},
-				{
-					product: "cleanse",
-					per10L: [5, 13],
-					src: P31
-				}
-			],
-			ph: "substrate",
-			src: P31
-		},
-		{
-			id: "flower",
-			stage: "flower",
-			weeks: [1, 7],
-			ec: 3,
-			doses: [
-				{
-					product: "proBloom",
-					fromEcTable: "base",
-					src: P31
-				},
-				{
-					product: "proCore",
-					fromEcTable: "core",
-					src: P31
-				},
-				{
-					product: "cleanse",
-					per10L: [5, 13],
-					src: P31
-				}
-			],
-			ph: "substrate",
-			src: P31
-		},
-		{
-			id: "finish",
-			stage: "flower",
-			weeks: [8, 9],
-			ec: 3,
-			doses: [
-				{
-					product: "proBloom",
-					fromEcTable: "base",
-					src: P31
-				},
-				{
-					product: "proCore",
-					fromEcTable: "core",
-					unlessAddon: "fade",
-					src: P31
-				},
-				{
-					product: "fade",
-					per10L: 51,
-					src: P31
-				},
-				{
-					product: "cleanse",
-					per10L: [5, 13],
-					src: P31
-				}
-			],
-			ph: "high",
-			src: P31
-		},
-		{
-			id: "flush",
-			stage: "flush",
-			ec: 0,
-			roWater: true,
-			doses: [{
-				product: "cleanse",
-				per10L: 26,
-				src: HB$1
-			}],
-			ph: "high",
-			src: HB$1
-		}
-	],
-	ecTable: {
-		grams: PRO_GRAMS,
-		concentrates: PRO_CONCENTRATES,
-		recommended: 226,
-		src: P37
-	},
-	addons: [
-		"fade",
-		"cleanse",
-		"balance",
-		"ipw"
-	],
-	defaultAddons: [
-		"fade",
-		"cleanse",
-		"balance"
-	],
-	manual: [
-		{
-			stage: "veg",
-			ecIn: [3, 3],
-			ph: [5.8, 6.2],
-			ecRunoff: [4, 5],
-			dryback: [30, 40],
-			src: P41
-		},
-		{
-			stage: "flower",
-			weeks: [1, 1],
-			ecIn: [3, 3],
-			ph: [5.9, 6.3],
-			ecRunoff: [6, 7],
-			dryback: [30, 40],
-			src: P41
-		},
-		{
-			stage: "flower",
-			weeks: [2, 3],
-			ecIn: [3, 3],
-			ph: [5.9, 6.3],
-			ecRunoff: [6, 7],
-			dryback: [50, 60],
-			src: P41
-		},
-		{
-			stage: "flower",
-			weeks: [4, 6],
-			ecIn: [3, 3],
-			ph: [5.9, 6.3],
-			ecRunoff: [5, 6],
-			dryback: [30, 40],
-			src: P41
-		},
-		{
-			stage: "flower",
-			weeks: [7, 7],
-			ecIn: [3, 3],
-			ph: [5.9, 6.3],
-			ecRunoff: [4, 5],
-			dryback: [30, 40],
-			src: P41
-		},
-		{
-			stage: "flower",
-			weeks: [8, 9],
-			ecIn: [3, 3],
-			ph: [5.9, 6.3],
-			ecRunoff: [3, 3.5],
-			dryback: [50, 60],
-			src: P41
-		},
-		{
-			stage: "flush",
-			ecIn: [0, 1],
-			ph: [5.9, 6.3],
-			ecRunoff: [0, 1],
-			dryback: [50, 60],
-			src: P41
-		}
-	],
-	ph: {
-		clone: [5.6, 5.6],
-		coco: [5.8, 6.2],
-		high: [6, 6.4],
-		src: P31
-	}
-};
-//#endregion
-//#region src/data/nutrients/addons.ts
-var HB = { kind: "athena" };
-var ADDONS = {
-	fade: {
-		id: "fade",
-		name: "Fade",
-		application: "tank",
-		lines: ["athena-pro", "athena-blended"],
-		src: {
-			kind: "athena",
-			page: 31
-		}
-	},
-	cleanse: {
-		id: "cleanse",
-		name: "Cleanse",
-		application: "tank",
-		lines: ["athena-pro", "athena-blended"],
-		src: HB
-	},
-	balance: {
-		id: "balance",
-		name: "Balance",
-		application: "tank",
-		lines: ["athena-pro", "athena-blended"],
-		src: HB
-	},
-	ipw: {
-		id: "ipw",
-		name: "IPW",
-		application: "foliar",
-		lines: ["athena-pro", "athena-blended"],
-		src: {
-			kind: "athena",
-			page: 80
-		}
-	},
-	camg: {
-		id: "camg",
-		name: "CaMg",
-		application: "tank",
-		lines: ["athena-blended"],
-		src: {
-			kind: "athena",
-			page: 58
-		}
-	},
-	pk: {
-		id: "pk",
-		name: "PK",
-		application: "tank",
-		lines: ["athena-blended"],
-		src: {
-			kind: "athena",
-			page: 58
-		}
-	}
-};
-/** Balance raises the pH: no fixed dose, steps of 1 mL per 4 L, measuring after each step. */
-var BALANCE_STEP = {
-	ml: 1,
-	perL: 4,
-	src: HB
-};
-/** Balance step for a tank (mL): 100 L → 25 mL. */
-function balanceStepMl(volumeL) {
-	return Math.round(volumeL / BALANCE_STEP.perL * BALANCE_STEP.ml * 10) / 10;
-}
-//#endregion
-//#region src/data/nutrients/index.ts
-var CATALOGS = {
-	[ATHENA_PRO.id]: ATHENA_PRO,
-	[ATHENA_BLENDED.id]: ATHENA_BLENDED
-};
-var DEFAULT_LINE = ATHENA_PRO.id;
-var getCatalog = (id) => CATALOGS[id ?? DEFAULT_LINE] ?? ATHENA_PRO;
-/** Lines offered in the menus. Blended stays hidden in Thomas's (Claude) version until the friends' version (lot 8). */
-function visibleCatalogs(target) {
-	return target === "local" ? Object.values(CATALOGS) : [ATHENA_PRO];
 }
 function deadlines(data, today) {
 	const out = [];
@@ -68030,7 +68418,18 @@ var STEER_TO_STAGE = {
 };
 function IrrigationTool() {
 	const { t, num, range, settings } = useSettings();
-	const { cycle, saveCycle } = useGrow();
+	const { cycle, saveCycle, space, equipment, assignments, nutrition, saveEquipment, assignEquipment, addAssignment } = useGrow();
+	const eq = space ? spaceIrrigation(space.id, todayIso(), equipment, assignments) : null;
+	const [pots, setPots] = (0, import_react.useState)({
+		vol: "",
+		n: ""
+	});
+	const potTyped = parseNum(pots.vol);
+	const countTyped = parseNum(pots.n);
+	const potL = potTyped && potTyped > 0 ? potTyped : eq?.potL.ok ? eq.potL.value : void 0;
+	const potOk = potL != null;
+	const potsDirty = potTyped != null && potTyped !== (eq?.potL.ok ? eq.potL.value : void 0) || countTyped != null && countTyped !== eq?.potCount;
+	const cat = getCatalog(nutrition.line);
 	const show = (v) => v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v);
 	const base = cycle ?? defaultCycle();
 	const cycleStage = cycle ? steerStage(stageOn(cycle, todayIso()).key, cycle.establishing) : null;
@@ -68046,8 +68445,6 @@ function IrrigationTool() {
 		setSubstrate(b.substrate);
 		setLightsOn(b.lightsOn);
 		setF({
-			flow: show(b.flowMlPerMin),
-			pot: show(b.potVolumeL),
 			shotPct: show(b.shotPct),
 			p1n: show(b.p1Shots),
 			gap: show(b.p1IntervalMin),
@@ -68065,26 +68462,69 @@ function IrrigationTool() {
 		waterMode: mode,
 		substrate,
 		lightsOn,
-		potVolumeL: parseNum(f.pot) ?? 15,
+		potVolumeL: potL ?? 0,
 		shotPct: Math.min(6, Math.max(.5, parseNum(f.shotPct) ?? 3)),
 		p1Shots: parseNum(f.p1n) ?? 5,
 		p1IntervalMin: parseNum(f.gap) ?? 20,
 		p0DelayMin: parseNum(f.p0) ?? 90,
-		flowMlPerMin: parseNum(f.flow)
+		flowMlPerMin: eq?.flow.ok ? eq.flow.value : void 0
 	}), [
 		mode,
 		substrate,
 		lightsOn,
-		f
+		f,
+		potL,
+		eq?.flow
 	]);
 	const prec = isPrecision(input);
 	const rows = buildProgram(input, stage);
 	const totals = programTotals(rows);
+	const cs = cycle ? stageOn(cycle, todayIso()) : null;
+	const flowerWeek = stage === cycleStage && cs?.flowerWeek ? cs.flowerWeek : stage === "str" ? 2 : void 0;
 	const tg = dayTargets(STEER_TO_STAGE[stage], {
 		mode,
 		substrate,
-		flowerWeek: stage === "str" ? 2 : void 0
+		flowerWeek,
+		line: cat.id
 	});
+	const currentManual = manualRow(cat, STEER_TO_STAGE[stage], flowerWeek);
+	const potCount = (countTyped && countTyped > 0 ? countTyped : eq?.potCount) ?? base.potCount;
+	(0, import_react.useEffect)(() => {
+		setPots({
+			vol: show(eq?.potL.ok ? eq.potL.value : void 0),
+			n: show(eq?.potCount)
+		});
+	}, [
+		space?.id,
+		eq?.containerId,
+		eq?.potL.ok && eq.potL.value,
+		eq?.potCount,
+		settings.lang
+	]);
+	const savePots = async () => {
+		if (!space || !potTyped || potTyped <= 0) return;
+		try {
+			const existing = equipment.find((e) => e.id === eq?.containerId);
+			const count = countTyped && countTyped > 0 ? Math.round(countTyped) : void 0;
+			const next = withPots(existing, {
+				volumeL: potTyped,
+				count,
+				substrate,
+				id: newId("eq-"),
+				now: (/* @__PURE__ */ new Date()).toISOString(),
+				name: t("irr.potsName", { v: num(potTyped, potTyped % 1 ? 1 : 0) })
+			});
+			await saveEquipment(next);
+			if (!existing) await assignEquipment(next.id, space.id);
+			else if (count && eq?.containerAssignment?.quantity != null) await addAssignment({
+				...eq.containerAssignment,
+				quantity: count
+			});
+			toast.success(t("irr.potsSaved"));
+		} catch (e) {
+			toast.error(t("common.saveError", { reason: e.message }));
+		}
+	};
 	const shotMl = Math.round(input.potVolumeL * 10 * input.shotPct);
 	const ml = (v) => v >= 1e3 ? `${num(v / 1e3, 1)} L` : `${num(v)} mL`;
 	const dur = (s) => s == null ? "—" : s >= 60 ? `${Math.floor(s / 60)} min ${String(Math.round(s % 60)).padStart(2, "0")} s` : `${num(Math.round(s))} s`;
@@ -68096,12 +68536,13 @@ function IrrigationTool() {
 			waterMode: mode,
 			substrate,
 			lightsOn,
-			potVolumeL: input.potVolumeL,
+			potVolumeL: potOk ? input.potVolumeL : cycle.potVolumeL,
+			potCount,
 			shotPct: input.shotPct,
 			p1Shots: input.p1Shots,
 			p1IntervalMin: input.p1IntervalMin,
 			p0DelayMin: input.p0DelayMin,
-			flowMlPerMin: input.flowMlPerMin,
+			flowMlPerMin: input.flowMlPerMin ?? cycle.flowMlPerMin,
 			establishing: stage === "inst",
 			sensor: {
 				phase: sPhase,
@@ -68227,104 +68668,162 @@ function IrrigationTool() {
 				i: 2,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
 					className: "gap-3",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-						emoji: "gear",
-						children: t("irr.settings")
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TextField, {
-							id: "i-on",
-							type: "time",
-							label: t("irr.lightsOn"),
-							value: lightsOn,
-							onChange: (v) => setLightsOn(v || "06:00")
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							emoji: "gear",
+							children: t("irr.settings")
 						}),
-						mode === "auto" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
-							id: "i-flow",
-							integer: true,
-							label: t("irr.flow"),
-							hint: t("irr.flowHint"),
-							value: f.flow ?? "",
-							onChange: set("flow")
-						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
-							id: "i-pot",
-							label: t("irr.pot"),
-							value: f.pot ?? "",
-							onChange: set("pot")
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "rounded-md border border-line bg-surface-2 px-3 py-1",
+							id: "irr-equipment",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "border-b border-line py-2",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "mb-1.5 flex items-center justify-between gap-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											className: "text-[11px] text-fg-3",
+											children: eq?.containerName ?? t("irr.fromEquipment")
+										}), eq && !eq.potL.ok && !potTyped && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcValue, {
+											c: eq.potL,
+											fmt: (v) => `${num(v)} L`
+										})]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+										id: "i-pot",
+										label: t("irr.pot"),
+										value: pots.vol,
+										onChange: (v) => setPots((x) => ({
+											...x,
+											vol: v
+										}))
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+										id: "i-pots",
+										integer: true,
+										label: t("irr.potCount"),
+										value: pots.n,
+										onChange: (v) => setPots((x) => ({
+											...x,
+											n: v
+										}))
+									})] }),
+									potsDirty && potTyped != null && potTyped > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+										type: "button",
+										onClick: savePots,
+										className: "mt-2 h-9 rounded-full border border-primary/40 bg-primary/10 px-3 text-[12.5px] font-semibold text-primary",
+										children: eq?.containerId ? t("irr.potsSave") : t("irr.potsCreate")
+									})
+								]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "flex min-h-11 items-center justify-between gap-3 py-1.5",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+									className: "min-w-0",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+										className: "block text-[13.5px] font-medium",
+										children: t("irr.flow")
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+										className: "block text-[11px] text-fg-3",
+										children: eq?.pumpName ?? t("irr.fromEquipment")
+									})]
+								}), eq ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcValue, {
+									c: eq.flow,
+									fmt: (v) => `${num(v)} mL/min`
+								}) : "—"]
+							})]
 						}),
-						mode === "auto" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
-							id: "i-pot2",
-							label: t("irr.pot"),
-							value: f.pot ?? "",
-							onChange: set("pot")
+						(!eq?.potL.ok || !eq?.flow.ok) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+							href: "#equipment",
+							className: "-mt-1 text-[12.5px] font-semibold text-primary",
+							children: t("irr.openEquipment")
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
-							id: "i-shot",
-							label: prec ? t("irr.shotPct") : t("irr.shotPctPass"),
-							hint: t("irr.shotHint"),
-							value: f.shotPct ?? "",
-							onChange: set("shotPct")
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
-							id: "i-p1n",
-							integer: true,
-							label: prec ? t("irr.p1n") : t("irr.p1nPass"),
-							hint: t("irr.p1nHint"),
-							value: f.p1n ?? "",
-							onChange: set("p1n")
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
-							id: "i-gap",
-							integer: true,
-							label: t("irr.gap"),
-							hint: t("irr.gapHint"),
-							value: f.gap ?? "",
-							onChange: set("gap")
-						}),
-						prec && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
-							id: "i-p0",
-							integer: true,
-							label: t("irr.p0"),
-							hint: t("irr.p0Hint"),
-							value: f.p0 ?? "",
-							onChange: set("p0")
-						})
-					] })]
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TextField, {
+								id: "i-on",
+								type: "time",
+								label: t("irr.lightsOn"),
+								value: lightsOn,
+								onChange: (v) => setLightsOn(v || "06:00")
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+								id: "i-shot",
+								label: prec ? t("irr.shotPct") : t("irr.shotPctPass"),
+								hint: t("irr.shotHint"),
+								value: f.shotPct ?? "",
+								onChange: set("shotPct")
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+								id: "i-p1n",
+								integer: true,
+								label: prec ? t("irr.p1n") : t("irr.p1nPass"),
+								hint: t("irr.p1nHint"),
+								value: f.p1n ?? "",
+								onChange: set("p1n")
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+								id: "i-gap",
+								integer: true,
+								label: t("irr.gap"),
+								hint: t("irr.gapHint"),
+								value: f.gap ?? "",
+								onChange: set("gap")
+							}),
+							prec && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+								id: "i-p0",
+								integer: true,
+								label: t("irr.p0"),
+								hint: t("irr.p0Hint"),
+								value: f.p0 ?? "",
+								onChange: set("p0")
+							})
+						] })
+					]
 				})
 			}),
 			tg && stage !== "inst" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
 				i: 3,
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-					emoji: "chart",
-					children: t("irr.targets")
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: "mt-2.5 grid grid-cols-2 gap-2",
-					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
-							k: t("irr.steer"),
-							v: tg.steer ? t(`steer.${tg.steer}`) : "—"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
-							k: prec ? t("irr.dose") : t("irr.pass"),
-							v: `${num(shotMl)} mL${mode === "auto" ? ` · ${input.flowMlPerMin ? dur(shotMl / input.flowMlPerMin * 60) : "?"}` : ""}`
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
-							k: t("irr.drybackT"),
-							v: tg.dryback ? `${range(tg.dryback.lo, tg.dryback.hi)} %` : "—"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
-							k: t("irr.runoffT"),
-							v: prec && tg.runoffPct ? t("irr.runoffPerPot", { range: `${ml(input.potVolumeL * 10 * tg.runoffPct.lo)}–${ml(input.potVolumeL * 10 * tg.runoffPct.hi)}` }) : t("irr.runoffManual")
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
-							k: t("irr.ecRunoffT"),
-							v: tg.ecRunoff ? range(tg.ecRunoff.lo, tg.ecRunoff.hi, 1) : "—"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
-							k: t("irr.phT"),
-							v: tg.phIn ? range(tg.phIn.lo, tg.phIn.hi, 1) : "—"
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, { children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+						emoji: "chart",
+						children: t("irr.targets")
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "mt-2.5 grid grid-cols-2 gap-2",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
+								k: t("irr.steer"),
+								v: tg.steer ? t(`steer.${tg.steer}`) : "—"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
+								k: prec ? t("irr.dose") : t("irr.pass"),
+								v: potOk ? `${num(shotMl)} mL${mode === "auto" ? ` · ${input.flowMlPerMin ? dur(shotMl / input.flowMlPerMin * 60) : "?"}` : ""}` : `${num(input.shotPct, 1)} % · ${t("equip.missing")}`,
+								warn: !potOk
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
+								k: t("irr.drybackT"),
+								v: tg.dryback ? `${range(tg.dryback.lo, tg.dryback.hi)} %` : "—"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
+								k: t("irr.runoffT"),
+								v: prec && tg.runoffPct && potOk ? t("irr.runoffPerPot", { range: `${ml(input.potVolumeL * 10 * tg.runoffPct.lo)}–${ml(input.potVolumeL * 10 * tg.runoffPct.hi)}` }) : t("irr.runoffManual")
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
+								k: t("irr.ecRunoffT"),
+								v: tg.ecRunoff ? range(tg.ecRunoff.lo, tg.ecRunoff.hi, 1) : "—"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
+								k: t("irr.phT"),
+								v: tg.phIn ? range(tg.phIn.lo, tg.phIn.hi, 1) : "—"
+							})
+						]
+					}),
+					mode === "manual" && tg.ecRunoff?.page && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-2 text-[11px] text-fg-3",
+						children: t("irr.manualSrc", {
+							line: cat.name,
+							p: tg.ecRunoff.page
 						})
-					]
-				})] })
+					})
+				] })
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
 				i: 4,
@@ -68339,15 +68838,18 @@ function IrrigationTool() {
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
 						className: "mt-2 flex flex-col",
-						children: rows.map((r, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProgramLine, { r }, i))
+						children: rows.map((r, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProgramLine, {
+							r,
+							showMl: potOk
+						}, i))
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					potOk && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 						className: "mt-2 text-[12px] text-fg-2",
 						children: t("irr.totals", {
 							fixed: ml(totals.fixed),
 							opt: totals.optional ? t("irr.totalsOpt", { v: ml(totals.optional) }) : "",
-							pots: base.potCount,
-							all: ml(totals.fixed * base.potCount)
+							pots: potCount,
+							all: ml(totals.fixed * potCount)
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
@@ -68355,6 +68857,14 @@ function IrrigationTool() {
 						children: prec ? t("irr.progNotePrec") : t("irr.progNoteManual")
 					})
 				] })
+			}),
+			mode === "manual" && cat.manual.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 5,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ManualTable, {
+					rows: cat.manual,
+					current: currentManual,
+					line: cat.name
+				})
 			}),
 			mode === "auto" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
 				i: 5,
@@ -68429,12 +68939,13 @@ function IrrigationTool() {
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
 									k: t("irr.sP1Dose"),
-									v: `${num(sensor.p1Ml)} mL · ${dur(sensor.p1Seconds)}`
+									v: potOk ? `${num(sensor.p1Ml)} mL · ${dur(sensor.p1Seconds)}` : t("equip.missing"),
+									warn: !potOk
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
 									k: t("irr.sP2Dose"),
-									v: `${num(sensor.p2Ml)} mL · ${dur(sensor.p2Seconds)}`,
-									warn: sensor.tooShort
+									v: potOk ? `${num(sensor.p2Ml)} mL · ${dur(sensor.p2Seconds)}` : t("equip.missing"),
+									warn: sensor.tooShort || !potOk
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
 									k: t("irr.sShots"),
@@ -68454,7 +68965,8 @@ function IrrigationTool() {
 							className: "flex flex-col",
 							children: sensor.rows.map((r, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProgramLine, {
 								r,
-								trigger: sensor.trigger
+								trigger: sensor.trigger,
+								showMl: potOk
 							}, i))
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
@@ -68480,6 +68992,49 @@ function IrrigationTool() {
 				children: t("irr.noCycle")
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourceNote, { children: t("irr.sources") })
+		]
+	});
+}
+/** The line's manual method, week by week (Pro p. 41, Blended p. 60); the row of the chosen stage is highlighted. */
+function ManualTable({ rows, current, line }) {
+	const { t, num, range } = useSettings();
+	const label = (m) => m.stage === "veg" ? t("irr.mVeg") : m.stage === "flush" ? t("irr.mFlush") : m.weeks[0] === m.weeks[1] ? t("irr.mWeek", { w: m.weeks[0] }) : t("irr.mWeeks", {
+		a: m.weeks[0],
+		b: m.weeks[1]
+	});
+	const r1 = (x) => x[0] === x[1] ? num(x[0], 1) : range(x[0], x[1], 1);
+	const page = rows[0]?.src.kind === "athena" ? rows[0].src.page : void 0;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+		className: "gap-2",
+		id: "irr-manual",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+				emoji: "droplet",
+				children: t("irr.manualTable", { line })
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "grid grid-cols-[1.2fr_0.8fr_1fr_1fr] gap-x-2 px-1 text-[10.5px] font-semibold text-fg-3 uppercase",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t("irr.mStage") }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t("irr.mEc") }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t("irr.ecRunoffT") }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t("irr.drybackT") })
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", { children: rows.map((m, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+				"data-current": m === current || void 0,
+				className: cn("grid grid-cols-[1.2fr_0.8fr_1fr_1fr] items-center gap-x-2 rounded-md px-1 py-2 text-[13px] tabular-nums", m === current ? "bg-primary/12 font-semibold text-fg" : "text-fg-2"),
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label(m) }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: r1(m.ecIn) }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: r1(m.ecRunoff) }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [range(m.dryback[0], m.dryback[1]), " %"] })
+				]
+			}, i)) }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "text-[11px] leading-[1.45] text-fg-3",
+				children: t("irr.manualNote", { p: page ?? "" })
+			})
 		]
 	});
 }
@@ -68517,7 +69072,7 @@ function rowText(t, r) {
 			});
 	}
 }
-function ProgramLine({ r, trigger }) {
+function ProgramLine({ r, trigger, showMl = true }) {
 	const { t, num } = useSettings();
 	const note = r.noteKey ? t(`irr.${r.noteKey}`, { trigger: trigger != null ? num(Math.round(trigger)) : "?" }) : null;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
@@ -68537,7 +69092,7 @@ function ProgramLine({ r, trigger }) {
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
 				className: "text-right text-[12.5px] text-fg-2 tabular-nums",
-				children: [r.ml ? `${num(r.ml)} mL` : "", r.seconds != null && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				children: [r.ml && showMl ? `${num(r.ml)} mL` : "", r.seconds != null && showMl && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
 					className: "block text-[11px] text-fg-3",
 					children: [num(r.seconds), " s"]
 				})]
@@ -68570,21 +69125,17 @@ function useNowMinutes() {
 /** Culture view of one space (stage, targets, program, last entry, one correction). `extra` goes under the hero. */
 function CultureToday({ extra }) {
 	const { t, num, range, locale, dm } = useSettings();
-	const { ready, cycle, entries, space } = useGrow();
+	const { ready, cycle, entries, space, targetsFor } = useGrow();
 	const ed = useEditors();
 	const nowMin = useNowMinutes();
 	const [allRows, setAllRows] = (0, import_react.useState)(false);
 	const today = todayIso();
 	const s = cycle ? stageOn(cycle, today) : null;
-	const tg = (0, import_react.useMemo)(() => cycle && s ? dayTargets(s.key, {
-		mode: cycle.waterMode,
-		substrate: cycle.substrate,
-		flowerWeek: s.flowerWeek,
-		cycleNumber: cycleNumber(cycle)
-	}) : null, [
+	const tg = (0, import_react.useMemo)(() => cycle && s ? targetsFor(today, cycle) : null, [
 		cycle,
 		s?.key,
-		s?.flowerWeek
+		s?.flowerWeek,
+		targetsFor
 	]);
 	const room = entries.filter((e) => !e.plantId);
 	const last = room[0];
@@ -69662,294 +70213,6 @@ function ChartsScreen() {
 			})
 		})
 	] });
-}
-//#endregion
-//#region src/calc/nutrients.ts
-/** Cycle stage → program position (flowering weeks counted from the 12/12 day). */
-function positionOf(s) {
-	if (s.key === "notStarted" || s.key === "harvested") return null;
-	if (s.key === "seedling") return { stage: "clone" };
-	if (s.key === "veg") return {
-		stage: "veg",
-		week: s.week
-	};
-	if (s.key === "flush") return { stage: "flush" };
-	return {
-		stage: "flower",
-		week: s.flowerWeek ?? 1
-	};
-}
-/** Program phase of a line for a position. Flowering beyond the last row stays on the last row. */
-function phaseAt(cat, pos) {
-	const rows = cat.program.filter((p) => p.stage === pos.stage);
-	if (pos.stage !== "flower") return rows[0] ?? null;
-	const w = Math.max(1, pos.week ?? 1);
-	return rows.find((p) => p.weeks && w >= p.weeks[0] && w <= p.weeks[1]) ?? rows[rows.length - 1] ?? null;
-}
-var phaseById = (cat, id) => cat.program.find((p) => p.id === id) ?? null;
-/** Cycle stage used for targets and labels, from a phase. */
-function phaseStage(p) {
-	if (p.stage === "presoak" || p.stage === "clone") return "seedling";
-	if (p.stage === "veg") return "veg";
-	if (p.stage === "flush") return "flush";
-	const w = p.weeks?.[0] ?? 1;
-	return w >= 8 ? "finish" : w >= 5 ? "bulk" : "stretch";
-}
-/** Mix.kind (v3 field, kept for the journal and charts). */
-function phaseKind(p) {
-	const s = phaseStage(p);
-	return s === "seedling" || s === "veg" || s === "finish" || s === "flush" ? s : "flower";
-}
-/** pH of solution and runoff for a phase: clone 5.6; 6.0–6.4 with Fade / flush; else by substrate. */
-function phFor(cat, phase, substrate = "coco") {
-	if (phase.ph === "clone") return {
-		lo: cat.ph.clone[0],
-		hi: cat.ph.clone[1],
-		src: cat.ph.src
-	};
-	if (phase.ph === "high") return {
-		lo: cat.ph.high[0],
-		hi: cat.ph.high[1],
-		src: cat.ph.src
-	};
-	if (substrate === "soil") return {
-		lo: 6,
-		hi: 6.4,
-		src: "spec"
-	};
-	if (substrate === "mix7030") return {
-		lo: 5.9,
-		hi: 6.3,
-		src: "estimate"
-	};
-	return {
-		lo: cat.ph.coco[0],
-		hi: cat.ph.coco[1],
-		src: cat.ph.src
-	};
-}
-/** Linear interpolation in an EC table; null outside its range. */
-function interpEc(t, ec) {
-	if (!t.length || ec < t[0].ec || ec > t[t.length - 1].ec) return null;
-	for (let i = 0; i < t.length - 1; i++) if (ec <= t[i + 1].ec) {
-		const f = (ec - t[i].ec) / (t[i + 1].ec - t[i].ec);
-		return {
-			base: t[i].base + f * (t[i + 1].base - t[i].base),
-			core: t[i].core + f * (t[i + 1].core - t[i].core)
-		};
-	}
-	return null;
-}
-/** Grams per 10 L at an EC, clamped to the table. */
-function gramsPer10L(cat, ec) {
-	const t = cat.ecTable?.grams ?? [];
-	if (!t.length) return {
-		base: 0,
-		core: 0
-	};
-	return interpEc(t, Math.min(t[t.length - 1].ec, Math.max(t[0].ec, ec))) ?? {
-		base: t[t.length - 1].base,
-		core: t[t.length - 1].core
-	};
-}
-/** mL of concentrate per 10 L: the published table, else grams ÷ strength (marked as estimate). */
-function concMlPer10L(cat, ec, gPerL) {
-	const hit = interpEc(cat.ecTable?.concentrates[gPerL] ?? [], ec);
-	if (hit) return {
-		...hit,
-		estimate: false
-	};
-	const g = gramsPer10L(cat, ec);
-	return {
-		base: g.base / gPerL * 1e3,
-		core: g.core / gPerL * 1e3,
-		estimate: true
-	};
-}
-var r1 = (x) => Math.round(x * 10) / 10;
-var lohi = (p) => typeof p === "number" ? [p, p] : p;
-/** Is a personal product used at this phase (at this flowering week when known, else anywhere in the phase)? */
-function customApplies(p, phase, week) {
-	if (p.application !== "tank" || p.inactive) return false;
-	const u = p.use;
-	if (!u) return true;
-	if (phase.stage === "veg") return !!u.veg;
-	if (phase.stage === "flower" && u.flowerFrom != null) {
-		const to = u.flowerTo ?? u.flowerFrom;
-		if (week != null) return week >= u.flowerFrom && week <= to;
-		const [a, b] = phase.weeks ?? [1, 1];
-		return a <= to && b >= u.flowerFrom;
-	}
-	return false;
-}
-/** Ingredients of a tank, in mixing order. Throws on an unknown phase (never silently mixes lines). */
-function mixRecipe(lineId, input) {
-	const cat = getCatalog(lineId);
-	const phase = phaseById(cat, input.phaseId);
-	if (!phase) throw new Error(`phase ${input.phaseId} not in ${cat.id}`);
-	const k = input.volumeL / 10;
-	const on = new Set(input.addons ?? cat.defaultAddons);
-	const ec = phase.stage === "flush" ? 0 : input.ec ?? phase.ec;
-	const scale = phase.ec > 0 && ec > 0 ? ec / phase.ec : 1;
-	const scaled = Math.abs(scale - 1) > 1e-9;
-	const conc = input.concentrate && input.concentrate > 0 ? input.concentrate : 0;
-	const product = (id) => cat.products.find((p) => p.id === id);
-	const allowed = (id) => {
-		const p = product(id);
-		return !p.addon || on.has(p.addon) && ADDONS[p.addon].lines.includes(cat.id);
-	};
-	const items = [phase.roWater ? {
-		id: "roWater",
-		name: "",
-		kind: "roWater",
-		qty: input.volumeL,
-		unit: "L"
-	} : {
-		id: "water",
-		name: "",
-		kind: "water",
-		qty: input.volumeL,
-		unit: "L"
-	}];
-	const byProduct = /* @__PURE__ */ new Map();
-	for (const dose of phase.doses) {
-		if (dose.unlessAddon && on.has(dose.unlessAddon)) continue;
-		if (!allowed(dose.product)) continue;
-		const p = product(dose.product);
-		if (dose.fromEcTable) {
-			const g = gramsPer10L(cat, ec)[dose.fromEcTable];
-			const note = dose.fromEcTable === "core" ? dose.unlessAddon ? "fadeOff" : "coreAlone" : conc ? "concentrate" : void 0;
-			if (conc) {
-				const c = concMlPer10L(cat, ec, conc);
-				byProduct.set(p.id, {
-					id: p.id,
-					name: p.name,
-					kind: "product",
-					qty: Math.round(c[dose.fromEcTable] * k),
-					unit: "mL",
-					concentrate: conc,
-					grams: r1(g * k),
-					estimate: c.estimate,
-					src: cat.ecTable.src,
-					note
-				});
-			} else byProduct.set(p.id, {
-				id: p.id,
-				name: p.name,
-				kind: "product",
-				qty: r1(g * k),
-				unit: "g",
-				src: cat.ecTable.src,
-				note
-			});
-			continue;
-		}
-		const [lo, hi] = lohi(dose.per10L ?? 0);
-		const f = p.scalesWithEc ? scale : 1;
-		const est = p.scalesWithEc && scaled;
-		const note = p.id === "fade" && phase.doses.some((d) => d.unlessAddon === "fade") ? "replacesCore" : void 0;
-		if (lo === hi) byProduct.set(p.id, {
-			id: p.id,
-			name: p.name,
-			kind: "product",
-			qty: r1(lo * f * k),
-			unit: "mL",
-			estimate: est || void 0,
-			src: dose.src,
-			note
-		});
-		else {
-			const chosen = input.chosenPer10L?.[p.id];
-			byProduct.set(p.id, {
-				id: p.id,
-				name: p.name,
-				kind: "product",
-				qty: chosen != null ? r1(chosen * f * k) : null,
-				range: [r1(lo * f * k), r1(hi * f * k)],
-				unit: "mL",
-				estimate: est || void 0,
-				src: dose.src,
-				note: note ?? "range"
-			});
-		}
-	}
-	if (allowed("balance") && phase.stage !== "flush") {
-		const b = product("balance");
-		const known = input.balanceMlPer10L;
-		byProduct.set(b.id, {
-			id: b.id,
-			name: b.name,
-			kind: "product",
-			qty: known != null ? r1(known * k) : null,
-			unit: "mL",
-			src: ADDONS.balance.src,
-			note: known != null ? "balanceFirst" : "balanceSteps",
-			stepMl: balanceStepMl(input.volumeL)
-		});
-	}
-	for (const id of cat.order) {
-		const it = byProduct.get(id);
-		if (it) items.push(it);
-	}
-	for (const p of input.custom ?? []) {
-		if (!customApplies(p, phase, input.week) || phase.stage === "flush") continue;
-		const d = p.dosePer10L;
-		const typed = d && p.use;
-		if (typed && d.lo === d.hi) items.push({
-			id: p.id,
-			name: p.name,
-			kind: "custom",
-			qty: r1(d.lo * k),
-			unit: p.unit,
-			src: { kind: "label" }
-		});
-		else if (typed) {
-			const chosen = input.chosenPer10L?.[p.id];
-			items.push({
-				id: p.id,
-				name: p.name,
-				kind: "custom",
-				qty: chosen != null ? r1(chosen * k) : null,
-				range: [r1(d.lo * k), r1(d.hi * k)],
-				unit: p.unit,
-				src: { kind: "label" },
-				note: "labelRange"
-			});
-		} else items.push({
-			id: p.id,
-			name: p.name,
-			kind: "custom",
-			qty: null,
-			unit: p.unit,
-			src: { kind: "label" },
-			note: "labelMissing"
-		});
-	}
-	const anyScaled = phase.stage !== "flush" && scaled && phase.doses.some((d) => !d.fromEcTable && cat.products.find((p) => p.id === d.product)?.scalesWithEc && items.some((i) => i.id === d.product));
-	return {
-		line: cat.id,
-		phase,
-		ec,
-		scaled: anyScaled,
-		ph: phFor(cat, phase, input.substrate),
-		items
-	};
-}
-/** EC the meter should read: fertiliser EC + tap water EC. */
-function expectedEc(ec, tapEc) {
-	return Math.round((ec + tapEc) * 100) / 100;
-}
-/** Suggested tank size: ≈ 6 days of real consumption (5–7 days of solution at a time), capped by the reservoir. */
-function suggestedVolume(perDayL, reservoirL = 120) {
-	if (!perDayL || perDayL <= 0) return null;
-	return Math.min(reservoirL, Math.ceil(perDayL * 6 / 5) * 5);
-}
-/** Balance per 10 L to pour first next time: what this tank took (known amount + steps added). */
-function nextBalancePer10L(m) {
-	if (m.balanceAddedMl == null && m.balanceMlPer10L == null) return void 0;
-	if (!m.volumeL) return void 0;
-	const total = (m.balanceMlPer10L ?? 0) * (m.volumeL / 10) + (m.balanceAddedMl ?? 0);
-	return Math.round(total / m.volumeL * 10 * 100) / 100;
 }
 //#endregion
 //#region src/screens/tools/nutrition-settings.tsx
@@ -74645,7 +74908,14 @@ var Boundary = class extends import_react.Component {
       --tw-rotate-z: initial;
       --tw-skew-x: initial;
       --tw-skew-y: initial;
+      --tw-pan-x: initial;
+      --tw-pan-y: initial;
+      --tw-pinch-zoom: initial;
+      --tw-space-y-reverse: 0;
+      --tw-space-x-reverse: 0;
+      --tw-divide-x-reverse: 0;
       --tw-border-style: solid;
+      --tw-divide-y-reverse: 0;
       --tw-gradient-position: initial;
       --tw-gradient-from: #0000;
       --tw-gradient-via: #0000;
@@ -74748,6 +75018,8 @@ var Boundary = class extends import_react.Component {
     --leading-tight: 1.25;
     --leading-snug: 1.375;
     --radius-2xl: 1rem;
+    --ease-in: cubic-bezier(.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, .2, 1);
     --ease-in-out: cubic-bezier(.4, 0, .2, 1);
     --animate-spin: spin 1s linear infinite;
     --blur-md: 12px;
@@ -75072,12 +75344,24 @@ var Boundary = class extends import_react.Component {
     container: card-header / inline-size;
   }
 
+  .\@container {
+    container-type: inline-size;
+  }
+
   .pointer-events-auto {
     pointer-events: auto;
   }
 
   .pointer-events-none {
     pointer-events: none;
+  }
+
+  .collapse {
+    visibility: collapse;
+  }
+
+  .invisible {
+    visibility: hidden;
   }
 
   .visible {
@@ -75094,6 +75378,17 @@ var Boundary = class extends import_react.Component {
     padding: 0;
     position: absolute;
     overflow: hidden;
+  }
+
+  .not-sr-only {
+    clip-path: none;
+    white-space: normal;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    position: static;
+    overflow: visible;
   }
 
   .absolute {
@@ -75130,6 +75425,10 @@ var Boundary = class extends import_react.Component {
 
   .inset-x-1 {
     inset-inline: var(--spacing);
+  }
+
+  .inset-y-0 {
+    inset-block: 0;
   }
 
   .inset-y-0\.5 {
@@ -75178,6 +75477,14 @@ var Boundary = class extends import_react.Component {
 
   .left-\[50\%\] {
     left: 50%;
+  }
+
+  .isolate {
+    isolation: isolate;
+  }
+
+  .isolation-auto {
+    isolation: auto;
   }
 
   .-z-10 {
@@ -75262,12 +75569,28 @@ var Boundary = class extends import_react.Component {
     margin-block: calc(var(--spacing) * -2);
   }
 
+  .my-0 {
+    margin-block: 0;
+  }
+
   .my-0\.5 {
     margin-block: calc(var(--spacing) * .5);
   }
 
+  .my-1 {
+    margin-block: var(--spacing);
+  }
+
   .my-1\.5 {
     margin-block: calc(var(--spacing) * 1.5);
+  }
+
+  .-mt-1 {
+    margin-top: calc(var(--spacing) * -1);
+  }
+
+  .mt-0 {
+    margin-top: 0;
   }
 
   .mt-0\.5 {
@@ -75318,12 +75641,20 @@ var Boundary = class extends import_react.Component {
     margin-bottom: calc(var(--spacing) * -1);
   }
 
+  .mb-0 {
+    margin-bottom: 0;
+  }
+
   .mb-0\.5 {
     margin-bottom: calc(var(--spacing) * .5);
   }
 
   .mb-1 {
     margin-bottom: var(--spacing);
+  }
+
+  .mb-1\.5 {
+    margin-bottom: calc(var(--spacing) * 1.5);
   }
 
   .mb-2 {
@@ -75344,6 +75675,10 @@ var Boundary = class extends import_react.Component {
 
   .-ml-1 {
     margin-left: calc(var(--spacing) * -1);
+  }
+
+  .ml-0 {
+    margin-left: 0;
   }
 
   .ml-0\.5 {
@@ -75373,8 +75708,16 @@ var Boundary = class extends import_react.Component {
     display: block;
   }
 
+  .contents {
+    display: contents;
+  }
+
   .flex {
     display: flex;
+  }
+
+  .flow-root {
+    display: flow-root;
   }
 
   .grid {
@@ -75397,8 +75740,52 @@ var Boundary = class extends import_react.Component {
     display: inline-flex;
   }
 
+  .inline-grid {
+    display: inline-grid;
+  }
+
+  .inline-table {
+    display: inline-table;
+  }
+
+  .list-item {
+    display: list-item;
+  }
+
   .table {
     display: table;
+  }
+
+  .table-caption {
+    display: table-caption;
+  }
+
+  .table-cell {
+    display: table-cell;
+  }
+
+  .table-column {
+    display: table-column;
+  }
+
+  .table-column-group {
+    display: table-column-group;
+  }
+
+  .table-footer-group {
+    display: table-footer-group;
+  }
+
+  .table-header-group {
+    display: table-header-group;
+  }
+
+  .table-row {
+    display: table-row;
+  }
+
+  .table-row-group {
+    display: table-row-group;
   }
 
   .field-sizing-content {
@@ -75415,6 +75802,11 @@ var Boundary = class extends import_react.Component {
 
   .aspect-video {
     aspect-ratio: var(--aspect-video);
+  }
+
+  .size-1 {
+    width: var(--spacing);
+    height: var(--spacing);
   }
 
   .size-1\.5 {
@@ -75656,6 +76048,10 @@ var Boundary = class extends import_react.Component {
     width: calc(var(--spacing) * 2.5);
   }
 
+  .w-3 {
+    width: calc(var(--spacing) * 3);
+  }
+
   .w-3\.5 {
     width: calc(var(--spacing) * 3.5);
   }
@@ -75752,11 +76148,15 @@ var Boundary = class extends import_react.Component {
     flex: 1;
   }
 
+  .flex-shrink, .shrink {
+    flex-shrink: 1;
+  }
+
   .shrink-0 {
     flex-shrink: 0;
   }
 
-  .grow {
+  .flex-grow, .grow {
     flex-grow: 1;
   }
 
@@ -75766,6 +76166,11 @@ var Boundary = class extends import_react.Component {
 
   .translate-x-\[-50\%\] {
     --tw-translate-x: -50%;
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+
+  .translate-y-0 {
+    --tw-translate-y: 0px;
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
@@ -75779,11 +76184,19 @@ var Boundary = class extends import_react.Component {
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
+  .translate-none {
+    translate: none;
+  }
+
   .scale-105 {
     --tw-scale-x: 105%;
     --tw-scale-y: 105%;
     --tw-scale-z: 105%;
     scale: var(--tw-scale-x) var(--tw-scale-y);
+  }
+
+  .scale-3d {
+    scale: var(--tw-scale-x) var(--tw-scale-y) var(--tw-scale-z);
   }
 
   .transform {
@@ -75802,8 +76215,17 @@ var Boundary = class extends import_react.Component {
     cursor: pointer;
   }
 
+  .touch-pinch-zoom {
+    --tw-pinch-zoom: pinch-zoom;
+    touch-action: var(--tw-pan-x, ) var(--tw-pan-y, ) var(--tw-pinch-zoom, );
+  }
+
   .touch-none {
     touch-action: none;
+  }
+
+  .resize {
+    resize: both;
   }
 
   .list-decimal {
@@ -75832,6 +76254,10 @@ var Boundary = class extends import_react.Component {
 
   .grid-cols-7 {
     grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
+  .grid-cols-\[1\.2fr_0\.8fr_1fr_1fr\] {
+    grid-template-columns: 1.2fr .8fr 1fr 1fr;
   }
 
   .grid-cols-\[28px_1fr_auto\] {
@@ -75950,8 +76376,20 @@ var Boundary = class extends import_react.Component {
     gap: 5px;
   }
 
+  :where(.space-y-reverse > :not(:last-child)) {
+    --tw-space-y-reverse: 1;
+  }
+
+  .gap-x-2 {
+    column-gap: calc(var(--spacing) * 2);
+  }
+
   .gap-x-3 {
     column-gap: calc(var(--spacing) * 3);
+  }
+
+  :where(.space-x-reverse > :not(:last-child)) {
+    --tw-space-x-reverse: 1;
   }
 
   .gap-y-1 {
@@ -75960,6 +76398,25 @@ var Boundary = class extends import_react.Component {
 
   .gap-y-2 {
     row-gap: calc(var(--spacing) * 2);
+  }
+
+  :where(.divide-x > :not(:last-child)) {
+    --tw-divide-x-reverse: 0;
+    border-inline-style: var(--tw-border-style);
+    border-inline-start-width: calc(1px * var(--tw-divide-x-reverse));
+    border-inline-end-width: calc(1px * calc(1 - var(--tw-divide-x-reverse)));
+  }
+
+  :where(.divide-y > :not(:last-child)) {
+    --tw-divide-y-reverse: 0;
+    border-bottom-style: var(--tw-border-style);
+    border-top-style: var(--tw-border-style);
+    border-top-width: calc(1px * var(--tw-divide-y-reverse));
+    border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+  }
+
+  :where(.divide-y-reverse > :not(:last-child)) {
+    --tw-divide-y-reverse: 1;
   }
 
   .self-start {
@@ -75978,6 +76435,10 @@ var Boundary = class extends import_react.Component {
 
   .overflow-hidden {
     overflow: hidden;
+  }
+
+  .overflow-visible {
+    overflow: visible;
   }
 
   .overflow-x-auto {
@@ -76044,9 +76505,71 @@ var Boundary = class extends import_react.Component {
     border-radius: var(--r-xl);
   }
 
+  .rounded-s {
+    border-start-start-radius: .25rem;
+    border-end-start-radius: .25rem;
+  }
+
+  .rounded-ss {
+    border-start-start-radius: .25rem;
+  }
+
+  .rounded-e {
+    border-start-end-radius: .25rem;
+    border-end-end-radius: .25rem;
+  }
+
+  .rounded-se {
+    border-start-end-radius: .25rem;
+  }
+
+  .rounded-ee {
+    border-end-end-radius: .25rem;
+  }
+
+  .rounded-es {
+    border-end-start-radius: .25rem;
+  }
+
+  .rounded-t {
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+  }
+
   .rounded-t-\[24px\]\! {
     border-top-left-radius: 24px !important;
     border-top-right-radius: 24px !important;
+  }
+
+  .rounded-l {
+    border-top-left-radius: .25rem;
+    border-bottom-left-radius: .25rem;
+  }
+
+  .rounded-tl {
+    border-top-left-radius: .25rem;
+  }
+
+  .rounded-r {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+  }
+
+  .rounded-tr {
+    border-top-right-radius: .25rem;
+  }
+
+  .rounded-b {
+    border-bottom-right-radius: .25rem;
+    border-bottom-left-radius: .25rem;
+  }
+
+  .rounded-br {
+    border-bottom-right-radius: .25rem;
+  }
+
+  .rounded-bl {
+    border-bottom-left-radius: .25rem;
   }
 
   .border {
@@ -76079,14 +76602,54 @@ var Boundary = class extends import_react.Component {
     border-width: 9px;
   }
 
+  .border-x {
+    border-inline-style: var(--tw-border-style);
+    border-inline-width: 1px;
+  }
+
+  .border-y {
+    border-block-style: var(--tw-border-style);
+    border-block-width: 1px;
+  }
+
+  .border-s {
+    border-inline-start-style: var(--tw-border-style);
+    border-inline-start-width: 1px;
+  }
+
+  .border-e {
+    border-inline-end-style: var(--tw-border-style);
+    border-inline-end-width: 1px;
+  }
+
+  .border-bs {
+    border-block-start-style: var(--tw-border-style);
+    border-block-start-width: 1px;
+  }
+
+  .border-be {
+    border-block-end-style: var(--tw-border-style);
+    border-block-end-width: 1px;
+  }
+
   .border-t {
     border-top-style: var(--tw-border-style);
     border-top-width: 1px;
   }
 
+  .border-r {
+    border-right-style: var(--tw-border-style);
+    border-right-width: 1px;
+  }
+
   .border-b {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
+  }
+
+  .border-l {
+    border-left-style: var(--tw-border-style);
+    border-left-width: 1px;
   }
 
   .border-dashed {
@@ -76098,7 +76661,7 @@ var Boundary = class extends import_react.Component {
     border-color: var(--color-border);
   }
 
-  .border-bad\/40 {
+  .border-bad, .border-bad\/40 {
     border-color: var(--bad);
   }
 
@@ -76108,7 +76671,7 @@ var Boundary = class extends import_react.Component {
     }
   }
 
-  .border-border\/50 {
+  .border-border, .border-border\/50 {
     border-color: var(--border);
   }
 
@@ -76138,7 +76701,7 @@ var Boundary = class extends import_react.Component {
     border-color: var(--line-strong);
   }
 
-  .border-primary\/35 {
+  .border-primary, .border-primary\/35 {
     border-color: var(--primary);
   }
 
@@ -76186,7 +76749,7 @@ var Boundary = class extends import_react.Component {
     border-color: #0000;
   }
 
-  .border-warn\/30 {
+  .border-warn, .border-warn\/30 {
     border-color: var(--warn);
   }
 
@@ -76260,6 +76823,10 @@ var Boundary = class extends import_react.Component {
     }
   }
 
+  .bg-black {
+    background-color: var(--color-black);
+  }
+
   .bg-black\/50 {
     background-color: #00000080;
   }
@@ -76326,7 +76893,7 @@ var Boundary = class extends import_react.Component {
     background-color: var(--muted);
   }
 
-  .bg-phase-3\/14 {
+  .bg-phase-3, .bg-phase-3\/14 {
     background-color: var(--phase-3);
   }
 
@@ -76489,6 +77056,10 @@ var Boundary = class extends import_react.Component {
     mask-image: linear-gradient(#0000, #0000), linear-gradient(#000, #000);
   }
 
+  .bg-repeat {
+    background-repeat: repeat;
+  }
+
   .mask-intersect {
     -webkit-mask-composite: source-in;
     -webkit-mask-composite: source-in;
@@ -76500,8 +77071,22 @@ var Boundary = class extends import_react.Component {
     mask-clip: padding-box, border-box;
   }
 
+  .mask-no-clip {
+    -webkit-mask-clip: no-clip;
+    mask-clip: no-clip;
+  }
+
+  .mask-repeat {
+    -webkit-mask-repeat: repeat;
+    mask-repeat: repeat;
+  }
+
   .object-cover {
     object-fit: cover;
+  }
+
+  .p-1 {
+    padding: var(--spacing);
   }
 
   .p-1\.5 {
@@ -76514,6 +77099,10 @@ var Boundary = class extends import_react.Component {
 
   .p-2\.5 {
     padding: calc(var(--spacing) * 2.5);
+  }
+
+  .p-3 {
+    padding: calc(var(--spacing) * 3);
   }
 
   .p-3\.5 {
@@ -76580,6 +77169,10 @@ var Boundary = class extends import_react.Component {
     padding-inline: 18px;
   }
 
+  .py-0 {
+    padding-block: 0;
+  }
+
   .py-0\.5 {
     padding-block: calc(var(--spacing) * .5);
   }
@@ -76638,6 +77231,10 @@ var Boundary = class extends import_react.Component {
 
   .pt-1 {
     padding-top: var(--spacing);
+  }
+
+  .pt-2 {
+    padding-top: calc(var(--spacing) * 2);
   }
 
   .pt-2\.5 {
@@ -76920,8 +77517,20 @@ var Boundary = class extends import_react.Component {
     letter-spacing: .6px;
   }
 
+  .text-wrap {
+    text-wrap: wrap;
+  }
+
   .break-all {
     word-break: break-all;
+  }
+
+  .text-clip {
+    text-overflow: clip;
+  }
+
+  .text-ellipsis {
+    text-overflow: ellipsis;
   }
 
   .whitespace-nowrap {
@@ -76998,6 +77607,10 @@ var Boundary = class extends import_react.Component {
     text-transform: capitalize;
   }
 
+  .lowercase {
+    text-transform: lowercase;
+  }
+
   .normal-case {
     text-transform: none;
   }
@@ -77006,13 +77619,68 @@ var Boundary = class extends import_react.Component {
     text-transform: uppercase;
   }
 
+  .italic {
+    font-style: italic;
+  }
+
+  .not-italic {
+    font-style: normal;
+  }
+
+  .diagonal-fractions {
+    --tw-numeric-fraction: diagonal-fractions;
+    font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+  }
+
+  .lining-nums {
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+  }
+
+  .oldstyle-nums {
+    --tw-numeric-figure: oldstyle-nums;
+    font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+  }
+
+  .ordinal {
+    --tw-ordinal: ordinal;
+    font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+  }
+
+  .proportional-nums {
+    --tw-numeric-spacing: proportional-nums;
+    font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+  }
+
+  .slashed-zero {
+    --tw-slashed-zero: slashed-zero;
+    font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+  }
+
+  .stacked-fractions {
+    --tw-numeric-fraction: stacked-fractions;
+    font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+  }
+
   .tabular-nums {
     --tw-numeric-spacing: tabular-nums;
     font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
   }
 
+  .normal-nums {
+    font-variant-numeric: normal;
+  }
+
   .line-through {
     text-decoration-line: line-through;
+  }
+
+  .no-underline {
+    text-decoration-line: none;
+  }
+
+  .overline {
+    text-decoration-line: overline;
   }
 
   .underline {
@@ -77027,6 +77695,16 @@ var Boundary = class extends import_react.Component {
 
   .underline-offset-4 {
     text-underline-offset: 4px;
+  }
+
+  .antialiased {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .subpixel-antialiased {
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
   }
 
   .opacity-40 {
@@ -77051,6 +77729,11 @@ var Boundary = class extends import_react.Component {
 
   .opacity-85 {
     opacity: .85;
+  }
+
+  .shadow {
+    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, #0000001a), 0 1px 2px -1px var(--tw-shadow-color, #0000001a);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
 
   .shadow-\[0_1px_3px_rgba\(0\,0\,0\,0\.25\)\] {
@@ -77097,8 +77780,18 @@ var Boundary = class extends import_react.Component {
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
 
+  .ring {
+    --tw-ring-shadow: var(--tw-ring-inset, ) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+
   .ring-0 {
     --tw-ring-shadow: var(--tw-ring-inset, ) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+
+  .inset-ring {
+    --tw-inset-ring-shadow: inset 0 0 0 1px var(--tw-inset-ring-color, currentcolor);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
 
@@ -77132,6 +77825,12 @@ var Boundary = class extends import_react.Component {
     filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
   }
 
+  .drop-shadow {
+    --tw-drop-shadow-size: drop-shadow(0 1px 2px var(--tw-drop-shadow-color, #0000001a)) drop-shadow(0 1px 1px var(--tw-drop-shadow-color, #0000000f));
+    --tw-drop-shadow: drop-shadow(0 1px 2px #0000001a) drop-shadow(0 1px 1px #0000000f);
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
   .drop-shadow-\[0_8px_14px_rgba\(0\,0\,0\,0\.35\)\] {
     --tw-drop-shadow-size: drop-shadow(0 8px 14px var(--tw-drop-shadow-color, #00000059));
     --tw-drop-shadow: var(--tw-drop-shadow-size);
@@ -77144,8 +77843,23 @@ var Boundary = class extends import_react.Component {
     filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
   }
 
+  .grayscale {
+    --tw-grayscale: grayscale(100%);
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
   .grayscale-\[35\%\] {
     --tw-grayscale: grayscale(35%);
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
+  .invert {
+    --tw-invert: invert(100%);
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
+  .sepia {
+    --tw-sepia: sepia(100%);
     filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
   }
 
@@ -77161,6 +77875,29 @@ var Boundary = class extends import_react.Component {
 
   .backdrop-blur-md {
     --tw-backdrop-blur: blur(var(--blur-md));
+    -webkit-backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+    backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+  }
+
+  .backdrop-grayscale {
+    --tw-backdrop-grayscale: grayscale(100%);
+    -webkit-backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+    backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+  }
+
+  .backdrop-invert {
+    --tw-backdrop-invert: invert(100%);
+    -webkit-backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+    backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+  }
+
+  .backdrop-sepia {
+    --tw-backdrop-sepia: sepia(100%);
+    -webkit-backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+    backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
+  }
+
+  .backdrop-filter {
     -webkit-backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
     backdrop-filter: var(--tw-backdrop-blur, ) var(--tw-backdrop-brightness, ) var(--tw-backdrop-contrast, ) var(--tw-backdrop-grayscale, ) var(--tw-backdrop-hue-rotate, ) var(--tw-backdrop-invert, ) var(--tw-backdrop-opacity, ) var(--tw-backdrop-saturate, ) var(--tw-backdrop-sepia, );
   }
@@ -77200,9 +77937,19 @@ var Boundary = class extends import_react.Component {
     transition-duration: .2s;
   }
 
+  .ease-in {
+    --tw-ease: var(--ease-in);
+    transition-timing-function: var(--ease-in);
+  }
+
   .ease-in-out {
     --tw-ease: var(--ease-in-out);
     transition-timing-function: var(--ease-in-out);
+  }
+
+  .ease-out {
+    --tw-ease: var(--ease-out);
+    transition-timing-function: var(--ease-out);
   }
 
   .outline-none {
@@ -77215,8 +77962,28 @@ var Boundary = class extends import_react.Component {
     user-select: none;
   }
 
+  :where(.divide-x-reverse > :not(:last-child)) {
+    --tw-divide-x-reverse: 1;
+  }
+
+  .paused {
+    animation-play-state: paused;
+  }
+
+  .ring-inset {
+    --tw-ring-inset: inset;
+  }
+
   .running {
     animation-play-state: running;
+  }
+
+  .zoom-in {
+    --tw-enter-scale: 0;
+  }
+
+  .zoom-out {
+    --tw-exit-scale: 0;
   }
 
   .group-data-\[disabled\=true\]\:pointer-events-none:is(:where(.group)[data-disabled="true"] *) {
@@ -78374,10 +79141,49 @@ html, body {
   inherits: false
 }
 
+@property --tw-pan-x {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-pan-y {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-pinch-zoom {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-space-y-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --tw-space-x-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --tw-divide-x-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+
 @property --tw-border-style {
   syntax: "*";
   inherits: false;
   initial-value: solid;
+}
+
+@property --tw-divide-y-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
 }
 
 @property --tw-gradient-position {

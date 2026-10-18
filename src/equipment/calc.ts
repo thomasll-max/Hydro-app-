@@ -136,3 +136,52 @@ export function spaceLight(space: Pick<Space, "id" | "dimensionsCm">, date: IsoD
   const watts = lamps.every(({ e }) => isNum(e!.lamp?.watts)) ? lamps.reduce((s, { a, e }) => s + e!.lamp!.watts! * (a.quantity ?? e!.quantity ?? 1), 0) : undefined
   return { ppf: total, ppfd: ppfd(total, space.dimensionsCm, loss), wPerM2: wattsPerM2(watts, space.dimensionsCm), watts, names: lamps.map(({ e }) => e!.name) }
 }
+
+/** Pots and pump of a space at a date (irrigation tool, lot 4b). Missing values stay missing: "donnée manquante". */
+export function spaceIrrigation(spaceId: string, date: IsoDate, equipment: Equipment[], assignments: EquipmentAssignment[]) {
+  const here = equipmentAt(spaceId, date, assignments)
+    .map((a) => ({ a, e: equipment.find((x) => x.id === a.equipmentId) }))
+    .filter((x): x is { a: EquipmentAssignment; e: Equipment } => !!x.e)
+  const pots = here.find((x) => x.e.type === "container")
+  const pump = here.find((x) => x.e.type === "pump")
+  const vol = pots?.e.container?.volumeL
+  const flowV = pump?.e.pump?.flowMlPerMin
+  const potL: Calc = isNum(vol) && vol > 0 ? ok(vol) : { ok: false, missing: ["potVolumeL"] }
+  const flow: Calc = isNum(flowV) && flowV > 0 ? ok(flowV) : { ok: false, missing: ["flowMlPerMin"] }
+  const count = pots ? (pots.a.quantity ?? pots.e.container?.count ?? pots.e.quantity) : undefined
+  return {
+    potL,
+    potCount: isNum(count) && count > 0 ? count : undefined,
+    flow,
+    flowMeasuredAt: pump?.e.pump?.flowMeasuredAt,
+    substrate: pots?.e.container?.substrate,
+    containerName: pots?.e.name,
+    containerId: pots?.e.id,
+    containerAssignment: pots?.a,
+    pumpName: pump?.e.name,
+  }
+}
+
+/** Pots typed in the irrigation tool: updates the space's container, or creates one (then assigned to the space). */
+export function withPots(existing: Equipment | undefined, p: { volumeL: number; count?: number; substrate?: string; id: string; now: string; name: string }): Equipment {
+  if (existing)
+    return {
+      ...existing,
+      // "Pots 15 L" follows the new volume; a name without a volume in it is kept.
+      name: existing.name.replace(/\d+(?:[.,]\d+)?(\s?L\b)/, `${String(p.volumeL).replace(".", ",")}$1`),
+      container: { ...existing.container, volumeL: p.volumeL, ...(p.count ? { count: p.count } : {}) },
+      ...(p.count ? { quantity: p.count } : {}),
+      updatedAt: p.now,
+    }
+  return {
+    schemaVersion: 1,
+    id: p.id,
+    type: "container",
+    name: p.name,
+    source: "user",
+    container: { volumeL: p.volumeL, ...(p.count ? { count: p.count } : {}), ...(p.substrate ? { substrate: p.substrate } : {}) },
+    ...(p.count ? { quantity: p.count } : {}),
+    createdAt: p.now,
+    updatedAt: p.now,
+  }
+}

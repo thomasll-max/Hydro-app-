@@ -12,6 +12,11 @@ import { stageOn, todayIso } from "@/calc/stage"
 import { dayTargets } from "@/calc/targets"
 import { buildProgram, isPrecision, programTotals, sensorPlan, steerStage, SENSOR, type ProgramRow, type SensorPhase, type SteerStage } from "@/calc/program"
 import { defaultCycle } from "@/screens/sheets"
+import { spaceIrrigation, withPots } from "@/equipment/calc"
+import { newId } from "@/app/grow-context"
+import { CalcValue } from "./equipment-shared"
+import { getCatalog, type ManualPhase } from "@/data/nutrients"
+import { manualRow } from "@/calc/targets"
 import type { Cycle, StageKey, Substrate, WaterMode } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
@@ -20,7 +25,17 @@ const STEER_TO_STAGE: Record<SteerStage, StageKey> = { inst: "veg", veg: "veg", 
 
 export function IrrigationTool() {
   const { t, num, range, settings } = useSettings()
-  const { cycle, saveCycle } = useGrow()
+  const { cycle, saveCycle, space, equipment, assignments, nutrition, saveEquipment, assignEquipment, addAssignment } = useGrow()
+  // Pot volume and pump flow come from the space's equipment (lot 4b). The pots can be changed here: the change is
+  // written to the space's container (created if there is none). Nothing is guessed: empty stays "donnée manquante".
+  const eq = space ? spaceIrrigation(space.id, todayIso(), equipment, assignments) : null
+  const [pots, setPots] = useState<{ vol: string; n: string }>({ vol: "", n: "" })
+  const potTyped = parseNum(pots.vol)
+  const countTyped = parseNum(pots.n)
+  const potL = potTyped && potTyped > 0 ? potTyped : eq?.potL.ok ? eq.potL.value : undefined
+  const potOk = potL != null
+  const potsDirty = (potTyped != null && potTyped !== (eq?.potL.ok ? eq.potL.value : undefined)) || (countTyped != null && countTyped !== eq?.potCount)
+  const cat = getCatalog(nutrition.line)
   const show = (v?: number) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
 
   const base = cycle ?? defaultCycle()
@@ -38,8 +53,6 @@ export function IrrigationTool() {
     setSubstrate(b.substrate)
     setLightsOn(b.lightsOn)
     setF({
-      flow: show(b.flowMlPerMin),
-      pot: show(b.potVolumeL),
       shotPct: show(b.shotPct),
       p1n: show(b.p1Shots),
       gap: show(b.p1IntervalMin),
@@ -57,19 +70,41 @@ export function IrrigationTool() {
       waterMode: mode,
       substrate,
       lightsOn,
-      potVolumeL: parseNum(f.pot) ?? 15,
+      potVolumeL: potL ?? 0,
       shotPct: Math.min(6, Math.max(0.5, parseNum(f.shotPct) ?? 3)),
       p1Shots: parseNum(f.p1n) ?? 5,
       p1IntervalMin: parseNum(f.gap) ?? 20,
       p0DelayMin: parseNum(f.p0) ?? 90,
-      flowMlPerMin: parseNum(f.flow),
+      flowMlPerMin: eq?.flow.ok ? eq.flow.value : undefined,
     }),
-    [mode, substrate, lightsOn, f],
+    [mode, substrate, lightsOn, f, potL, eq?.flow],
   )
   const prec = isPrecision(input)
   const rows = buildProgram(input, stage)
   const totals = programTotals(rows)
-  const tg = dayTargets(STEER_TO_STAGE[stage], { mode, substrate, flowerWeek: stage === "str" ? 2 : undefined })
+  const cs = cycle ? stageOn(cycle, todayIso()) : null
+  const flowerWeek = stage === cycleStage && cs?.flowerWeek ? cs.flowerWeek : stage === "str" ? 2 : undefined
+  const tg = dayTargets(STEER_TO_STAGE[stage], { mode, substrate, flowerWeek, line: cat.id })
+  const currentManual = manualRow(cat, STEER_TO_STAGE[stage], flowerWeek)
+  const potCount = (countTyped && countTyped > 0 ? countTyped : eq?.potCount) ?? base.potCount
+  useEffect(() => {
+    setPots({ vol: show(eq?.potL.ok ? eq.potL.value : undefined), n: show(eq?.potCount) })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [space?.id, eq?.containerId, eq?.potL.ok && eq.potL.value, eq?.potCount, settings.lang])
+  const savePots = async () => {
+    if (!space || !potTyped || potTyped <= 0) return
+    try {
+      const existing = equipment.find((e) => e.id === eq?.containerId)
+      const count = countTyped && countTyped > 0 ? Math.round(countTyped) : undefined
+      const next = withPots(existing, { volumeL: potTyped, count, substrate, id: newId("eq-"), now: new Date().toISOString(), name: t("irr.potsName", { v: num(potTyped, potTyped % 1 ? 1 : 0) }) })
+      await saveEquipment(next)
+      if (!existing) await assignEquipment(next.id, space.id)
+      else if (count && eq?.containerAssignment?.quantity != null) await addAssignment({ ...eq.containerAssignment, quantity: count })
+      toast.success(t("irr.potsSaved"))
+    } catch (e) {
+      toast.error(t("common.saveError", { reason: (e as Error).message }))
+    }
+  }
   const shotMl = Math.round(input.potVolumeL * 10 * input.shotPct)
   const ml = (v: number) => (v >= 1000 ? `${num(v / 1000, 1)} L` : `${num(v)} mL`)
   const dur = (s?: number) => (s == null ? "—" : s >= 60 ? `${Math.floor(s / 60)} min ${String(Math.round(s % 60)).padStart(2, "0")} s` : `${num(Math.round(s))} s`)
@@ -83,12 +118,13 @@ export function IrrigationTool() {
       waterMode: mode,
       substrate,
       lightsOn,
-      potVolumeL: input.potVolumeL,
+      potVolumeL: potOk ? input.potVolumeL : cycle.potVolumeL,
+      potCount,
       shotPct: input.shotPct,
       p1Shots: input.p1Shots,
       p1IntervalMin: input.p1IntervalMin,
       p0DelayMin: input.p0DelayMin,
-      flowMlPerMin: input.flowMlPerMin,
+      flowMlPerMin: input.flowMlPerMin ?? cycle.flowMlPerMin,
       establishing: stage === "inst",
       sensor: { phase: sPhase, base: parseNum(f.sBase), peak: parseNum(f.sPeak), p2Pct: parseNum(f.sP2) },
     }
@@ -155,14 +191,37 @@ export function IrrigationTool() {
       <Reveal i={2}>
         <Card className="gap-3">
           <Label emoji="gear">{t("irr.settings")}</Label>
+          <div className="rounded-md border border-line bg-surface-2 px-3 py-1" id="irr-equipment">
+            <div className="border-b border-line py-2">
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <span className="text-[11px] text-fg-3">{eq?.containerName ?? t("irr.fromEquipment")}</span>
+                {eq && !eq.potL.ok && !potTyped && <CalcValue c={eq.potL} fmt={(v) => `${num(v)} L`} />}
+              </div>
+              <Grid>
+                <NumField id="i-pot" label={t("irr.pot")} value={pots.vol} onChange={(v) => setPots((x) => ({ ...x, vol: v }))} />
+                <NumField id="i-pots" integer label={t("irr.potCount")} value={pots.n} onChange={(v) => setPots((x) => ({ ...x, n: v }))} />
+              </Grid>
+              {potsDirty && potTyped != null && potTyped > 0 && (
+                <button type="button" onClick={savePots} className="mt-2 h-9 rounded-full border border-primary/40 bg-primary/10 px-3 text-[12.5px] font-semibold text-primary">
+                  {eq?.containerId ? t("irr.potsSave") : t("irr.potsCreate")}
+                </button>
+              )}
+            </div>
+            <div className="flex min-h-11 items-center justify-between gap-3 py-1.5">
+              <span className="min-w-0">
+                <span className="block text-[13.5px] font-medium">{t("irr.flow")}</span>
+                <span className="block text-[11px] text-fg-3">{eq?.pumpName ?? t("irr.fromEquipment")}</span>
+              </span>
+              {eq ? <CalcValue c={eq.flow} fmt={(v) => `${num(v)} mL/min`} /> : "—"}
+            </div>
+          </div>
+          {(!eq?.potL.ok || !eq?.flow.ok) && (
+            <a href="#equipment" className="-mt-1 text-[12.5px] font-semibold text-primary">
+              {t("irr.openEquipment")}
+            </a>
+          )}
           <Grid>
             <TextField id="i-on" type="time" label={t("irr.lightsOn")} value={lightsOn} onChange={(v) => setLightsOn(v || "06:00")} />
-            {mode === "auto" ? (
-              <NumField id="i-flow" integer label={t("irr.flow")} hint={t("irr.flowHint")} value={f.flow ?? ""} onChange={set("flow")} />
-            ) : (
-              <NumField id="i-pot" label={t("irr.pot")} value={f.pot ?? ""} onChange={set("pot")} />
-            )}
-            {mode === "auto" && <NumField id="i-pot2" label={t("irr.pot")} value={f.pot ?? ""} onChange={set("pot")} />}
             <NumField id="i-shot" label={prec ? t("irr.shotPct") : t("irr.shotPctPass")} hint={t("irr.shotHint")} value={f.shotPct ?? ""} onChange={set("shotPct")} />
             <NumField id="i-p1n" integer label={prec ? t("irr.p1n") : t("irr.p1nPass")} hint={t("irr.p1nHint")} value={f.p1n ?? ""} onChange={set("p1n")} />
             <NumField id="i-gap" integer label={t("irr.gap")} hint={t("irr.gapHint")} value={f.gap ?? ""} onChange={set("gap")} />
@@ -177,15 +236,20 @@ export function IrrigationTool() {
             <Label emoji="chart">{t("irr.targets")}</Label>
             <div className="mt-2.5 grid grid-cols-2 gap-2">
               <Tile k={t("irr.steer")} v={tg.steer ? t(`steer.${tg.steer}`) : "—"} />
-              <Tile k={prec ? t("irr.dose") : t("irr.pass")} v={`${num(shotMl)} mL${mode === "auto" ? ` · ${input.flowMlPerMin ? dur((shotMl / input.flowMlPerMin) * 60) : "?"}` : ""}`} />
+              <Tile
+                k={prec ? t("irr.dose") : t("irr.pass")}
+                v={potOk ? `${num(shotMl)} mL${mode === "auto" ? ` · ${input.flowMlPerMin ? dur((shotMl / input.flowMlPerMin) * 60) : "?"}` : ""}` : `${num(input.shotPct, 1)} % · ${t("equip.missing")}`}
+                warn={!potOk}
+              />
               <Tile k={t("irr.drybackT")} v={tg.dryback ? `${range(tg.dryback.lo, tg.dryback.hi)} %` : "—"} />
               <Tile
                 k={t("irr.runoffT")}
-                v={prec && tg.runoffPct ? t("irr.runoffPerPot", { range: `${ml(input.potVolumeL * 10 * tg.runoffPct.lo)}–${ml(input.potVolumeL * 10 * tg.runoffPct.hi)}` }) : t("irr.runoffManual")}
+                v={prec && tg.runoffPct && potOk ? t("irr.runoffPerPot", { range: `${ml(input.potVolumeL * 10 * tg.runoffPct.lo)}–${ml(input.potVolumeL * 10 * tg.runoffPct.hi)}` }) : t("irr.runoffManual")}
               />
               <Tile k={t("irr.ecRunoffT")} v={tg.ecRunoff ? range(tg.ecRunoff.lo, tg.ecRunoff.hi, 1) : "—"} />
               <Tile k={t("irr.phT")} v={tg.phIn ? range(tg.phIn.lo, tg.phIn.hi, 1) : "—"} />
             </div>
+            {mode === "manual" && tg.ecRunoff?.page && <p className="mt-2 text-[11px] text-fg-3">{t("irr.manualSrc", { line: cat.name, p: tg.ecRunoff.page })}</p>}
           </Card>
         </Reveal>
       )}
@@ -196,20 +260,26 @@ export function IrrigationTool() {
           {mode === "auto" && !input.flowMlPerMin && <p className="mt-2 rounded-md bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn">{t("irr.noFlow")}</p>}
           <ol className="mt-2 flex flex-col">
             {rows.map((r, i) => (
-              <ProgramLine key={i} r={r} />
+              <ProgramLine key={i} r={r} showMl={potOk} />
             ))}
           </ol>
-          <p className="mt-2 text-[12px] text-fg-2">
+          {potOk && <p className="mt-2 text-[12px] text-fg-2">
             {t("irr.totals", {
               fixed: ml(totals.fixed),
               opt: totals.optional ? t("irr.totalsOpt", { v: ml(totals.optional) }) : "",
-              pots: base.potCount,
-              all: ml(totals.fixed * base.potCount),
+              pots: potCount,
+              all: ml(totals.fixed * potCount),
             })}
-          </p>
+          </p>}
           <p className="mt-2 text-[11.5px] leading-[1.45] text-fg-3">{prec ? t("irr.progNotePrec") : t("irr.progNoteManual")}</p>
         </Card>
       </Reveal>
+
+      {mode === "manual" && cat.manual.length > 0 && (
+        <Reveal i={5}>
+          <ManualTable rows={cat.manual} current={currentManual} line={cat.name} />
+        </Reveal>
+      )}
 
       {mode === "auto" && (
         <Reveal i={5}>
@@ -235,15 +305,15 @@ export function IrrigationTool() {
             <div className="grid grid-cols-2 gap-2">
               <Tile k={t("irr.sTrigger")} v={sensor.trigger != null ? `${num(Math.round(sensor.trigger))} %` : "—"} />
               <Tile k={t("irr.sDryback")} v={sensor.dryback != null ? `${num(sensor.dryback, 1)} %` : "—"} />
-              <Tile k={t("irr.sP1Dose")} v={`${num(sensor.p1Ml)} mL · ${dur(sensor.p1Seconds)}`} />
-              <Tile k={t("irr.sP2Dose")} v={`${num(sensor.p2Ml)} mL · ${dur(sensor.p2Seconds)}`} warn={sensor.tooShort} />
+              <Tile k={t("irr.sP1Dose")} v={potOk ? `${num(sensor.p1Ml)} mL · ${dur(sensor.p1Seconds)}` : t("equip.missing")} warn={!potOk} />
+              <Tile k={t("irr.sP2Dose")} v={potOk ? `${num(sensor.p2Ml)} mL · ${dur(sensor.p2Seconds)}` : t("equip.missing")} warn={sensor.tooShort || !potOk} />
               <Tile k={t("irr.sShots")} v={SENSOR[sPhase].shots} />
               <Tile k={t("irr.sRunoff")} v={`${SENSOR[sPhase].runoff} %`} />
             </div>
             {sensor.tooShort && <p className="rounded-md bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn">{t("irr.tooShort")}</p>}
             <ol className="flex flex-col">
               {sensor.rows.map((r, i) => (
-                <ProgramLine key={i} r={r} trigger={sensor.trigger} />
+                <ProgramLine key={i} r={r} trigger={sensor.trigger} showMl={potOk} />
               ))}
             </ol>
             <ul className="flex flex-col gap-1.5 text-[11.5px] leading-[1.45] text-fg-3">
@@ -261,6 +331,41 @@ export function IrrigationTool() {
       {!cycle && <p className="text-center text-[12px] text-fg-3">{t("irr.noCycle")}</p>}
       <SourceNote>{t("irr.sources")}</SourceNote>
     </div>
+  )
+}
+
+/** The line's manual method, week by week (Pro p. 41, Blended p. 60); the row of the chosen stage is highlighted. */
+function ManualTable({ rows, current, line }: { rows: ManualPhase[]; current: ManualPhase | null; line: string }) {
+  const { t, num, range } = useSettings()
+  const label = (m: ManualPhase) =>
+    m.stage === "veg" ? t("irr.mVeg") : m.stage === "flush" ? t("irr.mFlush") : m.weeks![0] === m.weeks![1] ? t("irr.mWeek", { w: m.weeks![0] }) : t("irr.mWeeks", { a: m.weeks![0], b: m.weeks![1] })
+  const r1 = (x: [number, number]) => (x[0] === x[1] ? num(x[0], 1) : range(x[0], x[1], 1))
+  const page = rows[0]?.src.kind === "athena" ? rows[0].src.page : undefined
+  return (
+    <Card className="gap-2" id="irr-manual">
+      <Label emoji="droplet">{t("irr.manualTable", { line })}</Label>
+      <div className="grid grid-cols-[1.2fr_0.8fr_1fr_1fr] gap-x-2 px-1 text-[10.5px] font-semibold text-fg-3 uppercase">
+        <span>{t("irr.mStage")}</span>
+        <span>{t("irr.mEc")}</span>
+        <span>{t("irr.ecRunoffT")}</span>
+        <span>{t("irr.drybackT")}</span>
+      </div>
+      <ol>
+        {rows.map((m, i) => (
+          <li
+            key={i}
+            data-current={m === current || undefined}
+            className={cn("grid grid-cols-[1.2fr_0.8fr_1fr_1fr] items-center gap-x-2 rounded-md px-1 py-2 text-[13px] tabular-nums", m === current ? "bg-primary/12 font-semibold text-fg" : "text-fg-2")}
+          >
+            <span>{label(m)}</span>
+            <span>{r1(m.ecIn)}</span>
+            <span>{r1(m.ecRunoff)}</span>
+            <span>{range(m.dryback[0], m.dryback[1])} %</span>
+          </li>
+        ))}
+      </ol>
+      <p className="text-[11px] leading-[1.45] text-fg-3">{t("irr.manualNote", { p: page ?? "" })}</p>
+    </Card>
   )
 }
 
@@ -292,7 +397,7 @@ export function rowText(t: (k: MessageKey, v?: Record<string, string | number>) 
   }
 }
 
-function ProgramLine({ r, trigger }: { r: ProgramRow; trigger?: number | null }) {
+function ProgramLine({ r, trigger, showMl = true }: { r: ProgramRow; trigger?: number | null; showMl?: boolean }) {
   const { t, num } = useSettings()
   const note = r.noteKey ? t(`irr.${r.noteKey}` as MessageKey, { trigger: trigger != null ? num(Math.round(trigger)) : "?" }) : null
   return (
@@ -304,8 +409,8 @@ function ProgramLine({ r, trigger }: { r: ProgramRow; trigger?: number | null })
         {note && <span className="block text-[11.5px] leading-snug text-fg-3">{note}</span>}
       </span>
       <span className="text-right text-[12.5px] text-fg-2 tabular-nums">
-        {r.ml ? `${num(r.ml)} mL` : ""}
-        {r.seconds != null && <span className="block text-[11px] text-fg-3">{num(r.seconds)} s</span>}
+        {r.ml && showMl ? `${num(r.ml)} mL` : ""}
+        {r.seconds != null && showMl && <span className="block text-[11px] text-fg-3">{num(r.seconds)} s</span>}
       </span>
     </li>
   )

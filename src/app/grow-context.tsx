@@ -188,9 +188,11 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
     (date: string, c: Cycle | null = cycle) => {
       if (!c) return null
       const s = stageOn(c, date)
-      return dayTargets(s.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(c) })
+      // Manual method and solution EC follow the line of the cycle's space (Pro p. 41, Blended p. 60).
+      const line = spaceNutrition(grow, spaces.find((x) => x.id === c.spaceId)).line
+      return dayTargets(s.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(c), line })
     },
-    [cycle],
+    [cycle, grow, spaces],
   )
   const all = React.useMemo(
     () => ({

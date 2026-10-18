@@ -14,7 +14,7 @@ import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
 import { stageLine } from "@/app/labels"
 import { stageOn, todayIso } from "@/calc/stage"
-import { cycleNumber, dayTargets, type DayTargets, type Target } from "@/calc/targets"
+import { type DayTargets, type Target } from "@/calc/targets"
 import { oneCorrection, status, type Status } from "@/calc/advice"
 import { buildProgram, nextIndex, PHOTOPERIOD, steerStage } from "@/calc/program"
 import { PhaseTag, rowText } from "./tools/irrigation"
@@ -40,7 +40,7 @@ function useNowMinutes() {
 /** Culture view of one space (stage, targets, program, last entry, one correction). `extra` goes under the hero. */
 function CultureToday({ extra }: { extra?: React.ReactNode }) {
   const { t, num, range, locale, dm } = useSettings()
-  const { ready, cycle, entries, space } = useGrow()
+  const { ready, cycle, entries, space, targetsFor } = useGrow()
   const ed = useEditors()
   const nowMin = useNowMinutes()
   const [allRows, setAllRows] = useState(false)
@@ -48,8 +48,8 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
 
   const s = cycle ? stageOn(cycle, today) : null
   const tg: DayTargets | null = useMemo(
-    () => (cycle && s ? dayTargets(s.key, { mode: cycle.waterMode, substrate: cycle.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(cycle) }) : null),
-    [cycle, s?.key, s?.flowerWeek], // eslint-disable-line react-hooks/exhaustive-deps
+    () => (cycle && s ? targetsFor(today, cycle) : null),
+    [cycle, s?.key, s?.flowerWeek, targetsFor], // eslint-disable-line react-hooks/exhaustive-deps
   )
   const room = entries.filter((e) => !e.plantId)
   const last: Entry | undefined = room[0]

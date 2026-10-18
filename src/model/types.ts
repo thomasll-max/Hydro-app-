@@ -102,6 +102,10 @@ export type Entry = {
   groupId?: string
   plantId?: PlantId // absent = whole space
   reservoirL?: number // litres left in the reservoir (optional)
+  // propagation
+  sownCount?: number
+  germinatedCount?: number
+  domeOn?: boolean
   time?: string // "07:42"
   // climate
   tempDay?: number
@@ -151,6 +155,8 @@ export type GrowEvent = {
   cycleId?: string
   spaceId?: string
   equipmentId?: string
+  /** One-off products used at this event (e.g. mycorrhizae on the roots at a transfer). Dose only as typed from the label. */
+  products?: { productId: string; qty?: number; unit?: string }[]
   note?: string
   createdAt: string
 }

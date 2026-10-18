@@ -20,7 +20,7 @@ describe("saisie", () => {
   })
   it("reprend les réglages de la veille, pas les mesures", () => {
     const prev = { ...base, date: "2026-10-17", ecIn: 2.2, phIn: 5.9, ppfd: 850, tempDay: 26, ecRunoff: 7.1 }
-    const e = blankEntry("2026-10-18", cycle, prev)
+    const e = blankEntry("2026-10-18", { spaceId: "floraison", cycle }, prev)
     expect(e).toMatchObject({ ecIn: 2.2, phIn: 5.9, ppfd: 850, shots: 6, leafOffsetC: -2 })
     expect(e.tempDay).toBeUndefined()
     expect(e.ecRunoff).toBeUndefined()

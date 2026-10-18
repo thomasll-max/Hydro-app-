@@ -25,31 +25,37 @@ export function derive(e: Entry, leafOffsetDefault = -2): Entry {
 }
 
 /** Settings that usually stay the same from one day to the next: copied as values. */
-export const CARRIED = ["volumePerPotMl", "shots", "ecIn", "phIn", "mixId", "lightPct", "lightHeightCm", "ppfd", "photoperiodH", "leafOffsetC"] as const
+export const CARRIED = ["volumePerPotMl", "shots", "ecIn", "phIn", "mixId", "lightPct", "lightHeightCm", "ppfd", "photoperiodH", "leafOffsetC", "sownCount"] as const
 /** Daily measurements: yesterday's value is shown as a hint (placeholder), never saved unless typed. */
-export const HINTED = ["tempDay", "tempNight", "rh", "weightMorningKg", "weightPeakKg", "runoffMl", "sensorPct", "ecRunoff", "phRunoff", "heightCm"] as const
+export const HINTED = ["tempDay", "tempNight", "rh", "weightMorningKg", "weightPeakKg", "runoffMl", "sensorPct", "ecRunoff", "phRunoff", "heightCm", "germinatedCount", "reservoirL"] as const
 
-export function blankEntry(date: IsoDate, cycle: Cycle, prev: Entry | undefined, plantId?: PlantId): Entry {
+/** New entry for a space (and its running cycle, if any), prefilled from the previous one of the same scope. */
+export function blankEntry(date: IsoDate, ctx: { spaceId: string; cycle?: Cycle | null }, prev: Entry | undefined, plantId?: PlantId): Entry {
   const now = new Date().toISOString()
-  const spaceId = cycle.spaceId ?? ""
-  const e: Entry = { schemaVersion: SCHEMA.entry, id: entryId(date, spaceId, plantId), date, spaceId, cycleId: cycle.id, plantId, createdAt: now, updatedAt: now }
+  const { spaceId, cycle } = ctx
+  const e: Entry = { schemaVersion: SCHEMA.entry, id: entryId(date, spaceId, plantId), date, spaceId, cycleId: cycle?.id, plantId, createdAt: now, updatedAt: now }
+  if (!cycle) delete e.cycleId
   if (prev) for (const k of CARRIED) if (prev[k] != null) (e as Record<string, unknown>)[k] = prev[k]
-  e.leafOffsetC ??= cycle.leafOffsetC
-  e.shots ??= cycle.waterMode === "auto" ? cycle.p1Shots + (cycle.p2Shots ?? 0) : 1
+  if (prev?.domeOn != null) e.domeOn = prev.domeOn
+  if (cycle) {
+    e.leafOffsetC ??= cycle.leafOffsetC
+    e.shots ??= cycle.waterMode === "auto" ? cycle.p1Shots + (cycle.p2Shots ?? 0) : 1
+  }
   return e
 }
 
 /** Most recent entry strictly before `date` for the same scope (room or one plant). */
-export function previousEntry(entries: Entry[], date: IsoDate, plantId?: PlantId): Entry | undefined {
+export function previousEntry(entries: Entry[], date: IsoDate, plantId?: PlantId, spaceId?: string): Entry | undefined {
   return entries
-    .filter((e) => e.date < date && e.plantId === plantId)
+    .filter((e) => e.date < date && e.plantId === plantId && (!spaceId || e.spaceId === spaceId))
     .sort((a, b) => (a.date < b.date ? 1 : -1))[0]
 }
 
-export type EntryFilter = { plant: "all" | "room" | PlantId; tag: string; stage: string }
+export type EntryFilter = { plant: "all" | "room" | PlantId; tag: string; stage: string; space?: string }
 /** History filter: by plant (or whole room), tag (observation or action) and stage (from the stored snapshot). */
 export function filterEntries(list: Entry[], f: EntryFilter): Entry[] {
   return list.filter((e) => {
+    if (f.space && f.space !== "all" && e.spaceId !== f.space) return false
     if (f.plant === "room" && e.plantId) return false
     if (f.plant !== "all" && f.plant !== "room" && e.plantId !== f.plant) return false
     if (f.tag !== "all" && !e.observations?.some((o) => o.tag === f.tag) && !e.actions?.includes(f.tag as never)) return false

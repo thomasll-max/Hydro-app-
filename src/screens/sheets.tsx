@@ -8,6 +8,7 @@ import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
+import { RootProductsField, useRootProducts } from "./root-products"
 import { EVENT_TYPES, SCHEMA, type Cycle, type EventType, type GrowEvent, type Mix, type Plant, type PlantId, type Substrate, type WaterMode } from "@/model/types"
 
 /** Defaults for cycle 1 — each one from the setup or the fiche (Athena / RAIN). Flow is left empty: it must be measured. */
@@ -252,15 +253,23 @@ export function EventSheet({ open, onOpenChange, event }: { open: boolean; onOpe
   const { saveEvent, deleteEvent } = useGrow()
   const [e, setE] = useState<GrowEvent>({ schemaVersion: SCHEMA.event, id: "", date: todayIso(), type: "flip", createdAt: "" })
   const { busy, run } = useSaver(() => onOpenChange(false))
+  const rootState = useRootProducts(open, event?.products, false)
+  const rooting = e.type === "transplant" || e.type === "transfer"
   useEffect(() => {
     if (open) setE(event ?? { schemaVersion: SCHEMA.event, id: newId("ev-"), date: todayIso(), type: "other", createdAt: new Date().toISOString() })
   }, [open, event])
+  const build = (): GrowEvent => {
+    const out = { ...e }
+    if (rooting && rootState.value.length) out.products = rootState.value
+    else delete out.products
+    return out
+  }
   return (
     <Sheet
       open={open}
       onOpenChange={onOpenChange}
       title={t("event.title")}
-      footer={<SaveBar busy={busy} onSave={() => run(() => saveEvent(e))} onDelete={event ? async () => { await deleteEvent(event.id); onOpenChange(false) } : undefined} />}
+      footer={<SaveBar busy={busy} onSave={() => run(() => saveEvent(build()))} onDelete={event ? async () => { await deleteEvent(event.id); onOpenChange(false) } : undefined} />}
     >
       <div className="flex flex-col gap-2.5">
         <TextField id="ev-date" type="date" label={t("event.date")} value={e.date} onChange={(v) => setE((x) => ({ ...x, date: v }))} />
@@ -278,6 +287,7 @@ export function EventSheet({ open, onOpenChange, event }: { open: boolean; onOpe
             </button>
           ))}
         </div>
+        {rooting && <RootProductsField state={rootState} />}
         <AreaField id="ev-note" label={t("event.note")} value={e.note ?? ""} onChange={(v) => setE((x) => ({ ...x, note: v || undefined }))} />
       </div>
     </Sheet>

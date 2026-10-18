@@ -18,6 +18,7 @@ import { groupBySite, transferCycle } from "@/model/grow-ops"
 import { SCHEMA, type Cycle } from "@/model/types"
 import { cn } from "@/lib/utils"
 import { NutritionFields } from "./nutrition-settings"
+import { RootProductsField, useRootProducts } from "@/screens/root-products"
 import { SpaceSheet } from "./space-sheet"
 import { SwitchRow } from "./equipment-shared"
 
@@ -276,6 +277,7 @@ function TransferSheet({ open, onOpenChange, cycle }: { open: boolean; onOpenCha
   const [partial, setPartial] = useState(false)
   const [plants, setPlants] = useState<string[]>([])
   const { busy, run } = useSaver(() => onOpenChange(false))
+  const rootState = useRootProducts(open, undefined, true)
   useEffect(() => {
     if (!open) return
     setTo(others[0]?.id ?? "")
@@ -300,7 +302,17 @@ function TransferSheet({ open, onOpenChange, cycle }: { open: boolean; onOpenCha
               if (!to) return
               const next = transferCycle(cycle, to, date, new Date().toISOString(), partial ? { partial: true, plantIds: plants.map((p) => `${cycle.id}_${p}`) } : {})
               await saveCycle(next)
-              await saveEvent({ schemaVersion: SCHEMA.event, id: newId("ev"), date, type: "transfer", cycleId: cycle.id, spaceId: to, note: partial ? plants.join(", ") : undefined, createdAt: new Date().toISOString() })
+              await saveEvent({
+                schemaVersion: SCHEMA.event,
+                id: newId("ev"),
+                date,
+                type: "transfer",
+                cycleId: cycle.id,
+                spaceId: to,
+                note: partial ? plants.join(", ") : undefined,
+                ...(rootState.value.length ? { products: rootState.value } : {}),
+                createdAt: new Date().toISOString(),
+              })
               if (!partial) setSpace(to)
               toast.success(t("growSet.transferred"))
             })
@@ -314,6 +326,7 @@ function TransferSheet({ open, onOpenChange, cycle }: { open: boolean; onOpenCha
       <Group title={t("growSet.transferDate")}>
         <TextField id="tr-date" type="date" label={t("growSet.transferDate")} value={date} onChange={(v) => setDate(v || todayIso())} />
       </Group>
+      <RootProductsField state={rootState} />
       <div className="mt-3 rounded-md border border-line bg-surface px-3">
         <SwitchRow id="tr-partial" label={t("growSet.partial")} hint={t("growSet.partialD")} checked={partial} onChange={setPartial} />
       </div>

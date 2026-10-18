@@ -33,7 +33,7 @@ function initialTab(): TabId {
 
 function Shell() {
   const { t, resolvedTheme } = useSettings()
-  const { cycle, storeKind } = useGrow()
+  const { cycle, storeKind, spaces, selection } = useGrow()
   const ed = useEditors()
   const [tab, setTab] = useState<TabId>(initialTab)
   const Screen = SCREENS[tab]
@@ -77,7 +77,14 @@ function Shell() {
           </motion.div>
         </AnimatePresence>
       </main>
-      <Fab label={t("fab.label")} onClick={() => (cycle ? ed.openEntry({ date: todayIso() }) : ed.openCycle())} />
+      <Fab
+        label={t("fab.label")}
+        onClick={() => {
+          if (!spaces.length) ed.openCycle()
+          else if (selection.kind !== "space" && spaces.length > 1) ed.openQuick()
+          else ed.openEntry({ date: todayIso(), spaceId: selection.kind === "space" ? selection.space.id : (cycle?.spaceId ?? spaces[0].id) })
+        }}
+      />
       <TabBar active={tab} onChange={setTab} />
       <Toaster
         theme={resolvedTheme}

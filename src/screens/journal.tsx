@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { CalendarPlus, ChevronRight, FlaskConical, Pencil } from "lucide-react"
+import { CalendarPlus, ChevronRight, FlaskConical, Layers, Pencil, Plus } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -14,16 +14,29 @@ import { round } from "@/calc/formulas"
 import { filterEntries, type EntryFilter } from "@/model/entry"
 import { PLANT_IDS, type Entry, type StageKey } from "@/model/types"
 import { PhotoThumb } from "./entry-sheet"
+import { SpaceDot } from "@/components/hydro/space-pill"
 import { cn } from "@/lib/utils"
 
 const PAGE = 12
 
 export function JournalScreen() {
   const { t, num, dm } = useSettings()
-  const { ready, cycle, plants, entries, events, mixes, photoUrl } = useGrow()
+  const { ready, cycle, plants, all, spaces, selection, photoUrl, space } = useGrow()
   const ed = useEditors()
-  const [filter, setFilter] = useState<EntryFilter>({ plant: "all", tag: "all", stage: "all" })
+  const [filter, setFilter] = useState<EntryFilter>({ plant: "all", tag: "all", stage: "all", space: "all" })
   const [shown, setShown] = useState(PAGE)
+  // The journal follows the space selector: one space, one room, or everything.
+  const scope = useMemo(
+    () => (selection.kind === "space" ? [selection.space] : selection.kind === "site" ? spaces.filter((x) => x.siteId === selection.site.id) : spaces),
+    [selection, spaces],
+  )
+  const ids = useMemo(() => new Set(scope.map((x) => x.id)), [scope])
+  const multi = scope.length > 1
+  const entries = useMemo(() => all.entries.filter((e) => ids.has(e.spaceId)), [all.entries, ids])
+  const events = useMemo(() => all.events.filter((e) => (e.spaceId ? ids.has(e.spaceId) : !!cycle && e.cycleId === cycle.id)), [all.events, ids, cycle])
+  const mixes = useMemo(() => all.mixes.filter((m) => m.spaceIds?.some((x) => ids.has(x)) || (!!cycle && m.cycleId === cycle.id)), [all.mixes, ids, cycle])
+  const spaceOf = (id?: string) => spaces.find((x) => x.id === id)
+  const showCycle = selection.kind === "space" && !!cycle
 
   const list = useMemo(() => filterEntries(entries, filter), [entries, filter])
   const tagsPresent = useMemo(() => {
@@ -38,36 +51,32 @@ export function JournalScreen() {
 
   if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
 
-  if (!cycle)
-    return (
-      <>
-        <ScreenHero emoji="notebook" title={t("journal.title")}>
-          <p className="mt-1 text-[13px] leading-snug text-fg-2">{t("journal.subtitle")}</p>
-        </ScreenHero>
-        <Reveal>
-          <Card className="items-start gap-2 px-4 py-4">
-            <b className="text-[15px] font-semibold">{t("journal.emptyTitle")}</b>
-            <p className="text-[13px] leading-[1.45] text-fg-2">{t("journal.emptyBody")}</p>
-            <Button onClick={() => ed.openCycle()} className="mt-1 h-12 w-full rounded-full text-[15px] font-bold">
-              {t("journal.create")}
-            </Button>
-          </Card>
-        </Reveal>
-      </>
-    )
-
-  const s = stageOn(cycle, todayIso())
-  const harvestPlanned = plannedHarvest(cycle)
-  const h = cycle.harvest
+  const s = cycle ? stageOn(cycle, todayIso()) : null
+  const harvestPlanned = cycle ? plannedHarvest(cycle) : undefined
+  const h = cycle?.harvest
   const gPerW = h?.dryG && h?.watts ? round(h.dryG / h.watts, 2) : undefined
+  const eyebrow = selection.kind === "space" ? (cycle ? `${selection.space.name} · ${cycle.name} · ${cycle.cultivars.join(", ")}` : selection.space.name) : selection.kind === "site" ? selection.site.name : t("space.all")
+  const potIds = PLANT_IDS.slice(0, Math.max(1, Math.min(PLANT_IDS.length, cycle?.potCount ?? 4)))
 
   return (
     <>
-      <ScreenHero emoji="notebook" eyebrow={`${cycle.name} · ${cycle.cultivars.join(", ")}`} title={t("journal.title")}>
+      <ScreenHero emoji="notebook" eyebrow={eyebrow} title={t("journal.title")}>
         <p className="mt-1 text-[13px] leading-snug text-fg-2">{t("journal.subtitle")}</p>
       </ScreenHero>
 
+      {selection.kind === "space" && !cycle && (
+        <Reveal i={0} className="mb-3">
+          <Card className="flex-row items-center gap-3 px-4 py-3.5">
+            <p className="min-w-0 flex-1 text-[13px] leading-snug text-fg-2">{t("journal.noCycleHere")}</p>
+            <Button variant="outline" className="h-10 shrink-0 rounded-full border-line-strong text-[13px] font-semibold" onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })}>
+              <Plus /> {t("growSet.newCycle")}
+            </Button>
+          </Card>
+        </Reveal>
+      )}
+
       {/* Cycle */}
+      {showCycle && cycle && s && (
       <Reveal i={0} className="mb-3">
         <Card className="gap-3">
           <div className="flex items-center justify-between">
@@ -91,13 +100,15 @@ export function JournalScreen() {
           </dl>
         </Card>
       </Reveal>
+      )}
 
       {/* Plants */}
+      {showCycle && space?.modules.plants && (
       <Reveal i={1} className="mb-3">
         <Card>
           <Label emoji="pottedPlant">{t("journal.plants")}</Label>
           <div className="mt-2.5 grid grid-cols-4 gap-2">
-            {PLANT_IDS.map((id) => {
+            {potIds.map((id) => {
               const p = plants.find((x) => x.label === id)
               return (
                 <button
@@ -115,8 +126,14 @@ export function JournalScreen() {
           </div>
         </Card>
       </Reveal>
+      )}
 
       <Reveal i={2} className="mb-3 grid grid-cols-2 gap-2.5">
+        {spaces.length > 1 && (
+          <Button className="col-span-2 h-12 rounded-full text-[14px] font-bold" onClick={() => ed.openQuick()}>
+            <Layers /> {t("quick.open")}
+          </Button>
+        )}
         <Button variant="outline" className="h-12 rounded-full border-line-strong bg-surface text-[13.5px] font-semibold" onClick={() => ed.openEvent()}>
           <CalendarPlus /> {t("journal.addEvent")}
         </Button>
@@ -132,12 +149,22 @@ export function JournalScreen() {
             <Label emoji="book">{t("journal.history")}</Label>
             <span className="text-[11.5px] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
           </div>
-          <FilterRow
-            label={t("journal.filterPlant")}
-            value={filter.plant}
-            onChange={(v) => setFilter((f) => ({ ...f, plant: v as EntryFilter["plant"] }))}
-            options={[{ v: "all", l: t("common.all") }, { v: "room", l: t("common.room") }, ...PLANT_IDS.map((p) => ({ v: p, l: p }))]}
-          />
+          {multi && (
+            <FilterRow
+              label={t("entry.space")}
+              value={filter.space ?? "all"}
+              onChange={(v) => setFilter((f) => ({ ...f, space: v }))}
+              options={[{ v: "all", l: t("common.all") }, ...scope.map((x) => ({ v: x.id, l: x.name }))]}
+            />
+          )}
+          {entries.some((e) => e.plantId) && (
+            <FilterRow
+              label={t("journal.filterPlant")}
+              value={filter.plant}
+              onChange={(v) => setFilter((f) => ({ ...f, plant: v as EntryFilter["plant"] }))}
+              options={[{ v: "all", l: t("common.all") }, { v: "room", l: t("entry.wholeSpace") }, ...PLANT_IDS.map((p) => ({ v: p, l: p }))]}
+            />
+          )}
           {stagesPresent.length > 1 && (
             <FilterRow
               label={t("journal.filterStage")}
@@ -156,7 +183,7 @@ export function JournalScreen() {
           )}
           <ul className="mt-1">
             {list.slice(0, shown).map((e) => (
-              <EntryRow key={e.id} e={e} onOpen={() => ed.openEntry({ date: e.date, plantId: e.plantId })} photoUrl={photoUrl} />
+              <EntryRow key={e.id} e={e} space={multi ? spaceOf(e.spaceId) : undefined} onOpen={() => ed.openEntry({ date: e.date, plantId: e.plantId, spaceId: e.spaceId })} photoUrl={photoUrl} />
             ))}
           </ul>
           {list.length === 0 && <p className="px-3.5 py-6 text-center text-[13px] text-fg-3">{t("journal.historyEmpty")}</p>}
@@ -184,6 +211,7 @@ export function JournalScreen() {
                       <li key={ev.id}>
                         <button onClick={() => ed.openEvent(ev)} className="flex w-full items-center gap-3 border-t border-line py-2.5 text-left first:border-t-0">
                           <span className="w-12 text-[12.5px] text-fg-3 tabular">{dm(ev.date)}</span>
+                          {multi && <SpaceDot color={spaceOf(ev.spaceId)?.color} />}
                           <span className="flex-1 text-[13.5px] font-medium">{t(`event.${ev.type}`)}</span>
                           {ev.note && <span className="max-w-[40%] truncate text-[12px] text-fg-3">{ev.note}</span>}
                           <ChevronRight className="size-4 text-fg-3" />
@@ -219,6 +247,7 @@ export function JournalScreen() {
                 )}
               </AccordionContent>
             </AccordionItem>
+            {cycle && (
             <AccordionItem value="harvest" className="border-0">
               <AccordionTrigger className="py-3.5 hover:no-underline">
                 <Label emoji="jar">{t("journal.harvest")}</Label>
@@ -237,6 +266,7 @@ export function JournalScreen() {
                 </Button>
               </AccordionContent>
             </AccordionItem>
+            )}
           </Accordion>
         </Card>
       </Reveal>
@@ -274,7 +304,7 @@ function FilterRow({ label, value, onChange, options }: { label: string; value: 
   )
 }
 
-function EntryRow({ e, onOpen, photoUrl }: { e: Entry; onOpen: () => void; photoUrl: (id: string) => Promise<string> }) {
+function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: string; color: Parameters<typeof SpaceDot>[0]["color"] }; onOpen: () => void; photoUrl: (id: string) => Promise<string> }) {
   const { t, num, dm } = useSettings()
   const tg = e.targets
   const m = (k: "dryback" | "ecRunoff" | "phRunoff" | "vpd", label: string, d: number, unit = "") => {
@@ -294,7 +324,12 @@ function EntryRow({ e, onOpen, photoUrl }: { e: Entry; onOpen: () => void; photo
         <div className="flex w-full items-center gap-2">
           <span className="text-[14px] font-semibold tabular-nums">{dm(e.date)}</span>
           {e.time && <span className="text-[12px] text-fg-3 tabular-nums">{e.time}</span>}
-          <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-fg-2">{e.plantId ?? t("common.room")}</span>
+          {space && (
+            <span className="flex items-center gap-1 text-[11.5px] font-semibold text-fg-2">
+              <SpaceDot color={space.color} /> {space.name}
+            </span>
+          )}
+          {e.plantId && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-fg-2">{e.plantId}</span>}
           {tg && <span className="text-[11px] text-fg-3">{t(`stage.${tg.stage}`)}</span>}
           <ChevronRight className="ml-auto size-4 text-fg-3" />
         </div>
@@ -303,6 +338,21 @@ function EntryRow({ e, onOpen, photoUrl }: { e: Entry; onOpen: () => void; photo
           {m("ecRunoff", "EC RO", 1)}
           {m("phRunoff", "pH RO", 1)}
           {m("vpd", "VPD", 2)}
+          {e.tempDay != null && (
+            <span className="text-[12px] text-fg-2">
+              T/HR <b className="font-semibold text-fg tabular-nums">{`${num(e.tempDay)}°/${e.rh != null ? num(e.rh) : "—"}`}</b>
+            </span>
+          )}
+          {e.reservoirL != null && (
+            <span className="text-[12px] text-fg-2">
+              {t("entry.reservoir")} <b className="font-semibold text-fg tabular-nums">{num(e.reservoirL)} L</b>
+            </span>
+          )}
+          {e.sownCount != null && (
+            <span className="text-[12px] text-fg-2">
+              {t("today.germination")} <b className="font-semibold text-fg tabular-nums">{`${e.germinatedCount ?? 0}/${e.sownCount}`}</b>
+            </span>
+          )}
         </div>
         {(e.observations?.length || e.actions?.length) && (
           <div className="flex flex-wrap gap-1">

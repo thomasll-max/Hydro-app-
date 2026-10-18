@@ -2,6 +2,7 @@
 import * as React from "react"
 import { EntrySheet, type EntryInit } from "@/screens/entry-sheet"
 import { CycleSheet, EventSheet, MixSheet, PlantSheet } from "@/screens/sheets"
+import { QuickSheet } from "@/screens/quick-sheet"
 import type { GrowEvent, Mix, PlantId } from "@/model/types"
 
 type Editors = {
@@ -10,6 +11,7 @@ type Editors = {
   openPlant: (id: PlantId) => void
   openEvent: (e?: GrowEvent) => void
   openMix: (m?: Mix) => void
+  openQuick: () => void
 }
 const Ctx = React.createContext<Editors | null>(null)
 
@@ -19,6 +21,7 @@ type State =
   | { kind: "plant"; id: PlantId }
   | { kind: "event"; event?: GrowEvent }
   | { kind: "mix"; mix?: Mix }
+  | { kind: "quick" }
   | null
 
 export function EditorsProvider({ children }: { children: React.ReactNode }) {
@@ -37,6 +40,7 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
       openPlant: (id) => open({ kind: "plant", id }),
       openEvent: (event) => open({ kind: "event", event }),
       openMix: (mix) => open({ kind: "mix", mix }),
+      openQuick: () => open({ kind: "quick" }),
     }),
     [],
   )
@@ -55,6 +59,7 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
       <PlantSheet open={is("plant")} onOpenChange={close} plantId={last.kind === "plant" ? last.id : "P1"} />
       <EventSheet open={is("event")} onOpenChange={close} event={last.kind === "event" ? last.event : undefined} />
       <MixSheet open={is("mix")} onOpenChange={close} mix={last.kind === "mix" ? last.mix : undefined} />
+      <QuickSheet open={is("quick")} onOpenChange={close} onFull={(spaceId) => open({ kind: "entry", init: { spaceId } })} />
     </Ctx.Provider>
   )
 }

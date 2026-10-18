@@ -9,19 +9,33 @@ import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { blankEntry, CARRIED, derive, entryId, HINTED, previousEntry } from "@/model/entry"
 import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, type ActionTag, type Entry, type ObsTag, type PlantId, type Severity } from "@/model/types"
+import { equipmentAt } from "@/equipment/calc"
+import { SpaceDot } from "@/components/hydro/space-pill"
+import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { parseNum } from "@/calc/formulas"
 import { status } from "@/calc/advice"
 import { todayIso } from "@/calc/stage"
 import type { MessageKey } from "@/i18n/types"
 
-export type EntryInit = { date?: string; plantId?: PlantId }
+export type EntryInit = { date?: string; plantId?: PlantId; spaceId?: string }
 
 type NumKey = (typeof CARRIED)[number] | (typeof HINTED)[number]
 const NUMS: NumKey[] = [...CARRIED.filter((k) => k !== "mixId"), ...HINTED] as NumKey[]
 
 export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpenChange: (o: boolean) => void; init: EntryInit }) {
   const { t, num, range, dm, settings } = useSettings()
-  const { cycle, entries, mixes, saveEntry, deleteEntry, targetsFor, uploadPhoto, photoUrl } = useGrow()
+  const { spaces, space: curSpace, all, cycleIn, equipment, assignments, saveEntry, deleteEntry, targetsFor, uploadPhoto, photoUrl } = useGrow()
+  const [spaceId, setSpaceId] = useState(init.spaceId ?? curSpace?.id ?? "")
+  const space = spaces.find((x) => x.id === spaceId) ?? curSpace ?? null
+  const cycle = space ? cycleIn(space.id) : null
+  const on = (m: keyof NonNullable<typeof space>["modules"]) => !!space?.modules[m]
+  const entries = useMemo(() => all.entries.filter((e) => e.spaceId === space?.id), [all.entries, space?.id])
+  const mixes = useMemo(() => all.mixes.filter((m) => !m.spaceIds || (space && m.spaceIds.includes(space.id)) || (cycle && m.cycleId === cycle.id)), [all.mixes, space, cycle])
+  const hasReservoir = useMemo(
+    () => (space ? equipmentAt(space.id, todayIso(), assignments).some((a) => equipment.find((x) => x.id === a.equipmentId && x.type === "reservoir" && x.reservoir?.kind !== "runoff")) : false),
+    [space, equipment, assignments],
+  )
+  const [domeOn, setDomeOn] = useState(false)
   const [date, setDate] = useState(init.date ?? todayIso())
   const [plantId, setPlantId] = useState<PlantId | undefined>(init.plantId)
   const [time, setTime] = useState("")
@@ -43,15 +57,18 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     if (!open) return
     setDate(init.date ?? todayIso())
     setPlantId(init.plantId)
-  }, [open, init.date, init.plantId])
+    setSpaceId(init.spaceId ?? curSpace?.id ?? spaces[0]?.id ?? "")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, init.date, init.plantId, init.spaceId])
 
   // Load the entry for (date, plant) or prefill a new one from the previous entry.
   const prev = useMemo(() => previousEntry(entries, date, plantId), [entries, date, plantId])
   useEffect(() => {
-    if (!open || !cycle || !date) return
-    const found = entries.find((e) => e.id === entryId(date, cycle.spaceId ?? "", plantId)) ?? null
+    if (!open || !space || !date) return
+    const found = entries.find((e) => e.id === entryId(date, space.id, plantId)) ?? null
     setExisting(found)
-    const src = found ?? blankEntry(date, cycle, prev, plantId)
+    const src = found ?? blankEntry(date, { spaceId: space.id, cycle }, prev, plantId)
+    setDomeOn(!!src.domeOn)
     const nf: Partial<Record<NumKey, string>> = {}
     for (const k of NUMS) nf[k] = show(src[k] as number | undefined)
     setF(nf)
@@ -63,11 +80,12 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     const d = new Date()
     setTime(found?.time ?? `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, date, plantId, cycle?.id])
+  }, [open, date, plantId, space?.id, cycle?.id])
 
   const build = (): Entry => {
-    const base: Entry = existing ?? blankEntry(date, cycle!, undefined, plantId)
-    const e: Entry = { ...base, id: entryId(date, cycle!.spaceId ?? "", plantId), date, plantId, time: time || undefined }
+    const base: Entry = existing ?? blankEntry(date, { spaceId: space!.id, cycle }, undefined, plantId)
+    const e: Entry = { ...base, id: entryId(date, space!.id, plantId), date, plantId, time: time || undefined }
+    e.domeOn = on("propagation") ? domeOn : base.domeOn
     for (const k of NUMS) (e as Record<string, unknown>)[k] = parseNum(f[k])
     e.mixId = mixId || undefined
     e.observations = obs.length ? obs : undefined
@@ -77,8 +95,8 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     return e
   }
 
-  const tg = targetsFor(date)
-  const live = cycle ? derive(build(), cycle.leafOffsetC) : null
+  const tg = targetsFor(date, cycle)
+  const live = space ? derive(build(), cycle?.leafOffsetC) : null
   const st = (k: "vpd" | "dryback" | "runoffPct" | "dli") => {
     const v = live?.[k]
     const r = tg?.[k]
@@ -119,7 +137,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   }
 
   const save = async () => {
-    if (!date || !cycle) return
+    if (!date || !space) return
     setBusy(true)
     try {
       await saveEntry(build())
@@ -132,7 +150,14 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     }
   }
 
-  if (!cycle) return null
+  if (!space) return null
+  const plantIds = PLANT_IDS.slice(0, Math.max(1, Math.min(PLANT_IDS.length, cycle?.potCount ?? 4)))
+  const computed = [
+    on("climate") && <Computed key="v" label={t("entry.vpd")} value={fmt(live?.vpd, 2)} status={st("vpd")} />,
+    on("irrigation") && <Computed key="d" label={t("entry.dryback")} value={fmt(live?.dryback, 0, " %")} status={st("dryback")} />,
+    on("irrigation") && <Computed key="r" label={t("entry.runoffPct")} value={fmt(live?.runoffPct, 0, " %")} status={st("runoffPct")} />,
+    on("light") && <Computed key="l" label={t("entry.dli")} value={fmt(live?.dli, 1)} status={st("dli")} />,
+  ].filter(Boolean)
   return (
     <Sheet
       open={open}
@@ -166,60 +191,93 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
         <TextField id="e-date" type="date" label={`${t("entry.date")} · ${t("common.required")}`} value={date} onChange={setDate} />
         <TextField id="e-time" type="time" label={t("entry.time")} value={time} onChange={setTime} />
       </Grid>
-      <div className="mt-2.5">
-        <Seg<string>
-          label={t("entry.scope")}
-          value={plantId ?? "room"}
-          onChange={(v) => setPlantId(v === "room" ? undefined : (v as PlantId))}
-          options={[{ value: "room", label: t("common.room") }, ...PLANT_IDS.map((p) => ({ value: p, label: p }))]}
-        />
-      </div>
-
-      <div className="sticky top-0 z-10 -mx-4 mt-3 bg-background/95 px-4 py-2 backdrop-blur">
-        <div className="grid grid-cols-4 gap-1.5" aria-live="polite">
-          <Computed label={t("entry.vpd")} value={fmt(live?.vpd, 2)} status={st("vpd")} />
-          <Computed label={t("entry.dryback")} value={fmt(live?.dryback, 0, " %")} status={st("dryback")} />
-          <Computed label={t("entry.runoffPct")} value={fmt(live?.runoffPct, 0, " %")} status={st("runoffPct")} />
-          <Computed label={t("entry.dli")} value={fmt(live?.dli, 1)} status={st("dli")} />
+      {spaces.length > 1 && (
+        <div className="mt-2.5">
+          <Seg<string> label={t("entry.space")} value={space.id} onChange={setSpaceId} options={spaces.map((x) => ({ value: x.id, label: x.name }))} />
         </div>
-      </div>
+      )}
+      <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-fg-3">
+        <SpaceDot color={space.color} /> {cycle ? t("entry.forCycle", { space: space.name, cycle: cycle.name }) : t("entry.noCycle", { space: space.name })}
+      </p>
+      {on("plants") && cycle && (
+        <div className="mt-2.5">
+          <Seg<string>
+            label={t("entry.scope")}
+            value={plantId ?? "room"}
+            onChange={(v) => setPlantId(v === "room" ? undefined : (v as PlantId))}
+            options={[{ value: "room", label: t("entry.wholeSpace") }, ...plantIds.map((p) => ({ value: p, label: p }))]}
+          />
+        </div>
+      )}
 
-      <Group title={t("entry.climate")}>
-        <Grid cols={3}>
-          {nf("tempDay", "entry.tempDay")}
-          {nf("tempNight", "entry.tempNight")}
-          {nf("rh", "entry.rh")}
-        </Grid>
-      </Group>
-      <Group title={t("entry.irrigation")} aside={tg?.dryback && <span className="text-[11px] text-fg-3">{t("today.dryback")} {range(tg.dryback.lo, tg.dryback.hi)} %</span>}>
-        <Grid>
-          {nf("weightMorningKg", "entry.weightMorning")}
-          {nf("weightPeakKg", "entry.weightPeak")}
-          {nf("runoffMl", "entry.runoffMl", { integer: true })}
-          {nf("sensorPct", "entry.sensorPct")}
-        </Grid>
-      </Group>
-      <Group title={t("entry.runoffSection")} aside={tg?.phRunoff && <span className="text-[11px] text-fg-3">pH {range(tg.phRunoff.lo, tg.phRunoff.hi, 1)}</span>}>
-        <Grid>
-          {nf("ecRunoff", "entry.ecRunoff")}
-          {nf("phRunoff", "entry.phRunoff")}
-        </Grid>
-      </Group>
-      <Group title={t("entry.plant")}>
-        <Grid>{nf("heightCm", "entry.height")}</Grid>
-      </Group>
+      {computed.length > 0 && (
+        <div className="sticky top-0 z-10 -mx-4 mt-3 bg-background/95 px-4 py-2 backdrop-blur">
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${computed.length}, minmax(0, 1fr))` }} aria-live="polite">
+            {computed}
+          </div>
+        </div>
+      )}
+
+      {on("climate") && (
+        <Group title={t("entry.climate")}>
+          <Grid cols={3}>
+            {nf("tempDay", "entry.tempDay")}
+            {nf("tempNight", "entry.tempNight")}
+            {nf("rh", "entry.rh")}
+          </Grid>
+        </Group>
+      )}
+      {on("propagation") && (
+        <Group title={t("entry.propagation")}>
+          <Grid>
+            {nf("sownCount", "entry.sown", { integer: true })}
+            {nf("germinatedCount", "entry.germinated", { integer: true })}
+          </Grid>
+          <div className="mt-2 rounded-md border border-line bg-surface px-3">
+            <SwitchRow id="e-dome" label={t("entry.dome")} checked={domeOn} onChange={setDomeOn} />
+          </div>
+        </Group>
+      )}
+      {on("irrigation") && (
+        <>
+          <Group title={t("entry.irrigation")} aside={tg?.dryback && <span className="text-[11px] text-fg-3">{t("today.dryback")} {range(tg.dryback.lo, tg.dryback.hi)} %</span>}>
+            <Grid>
+              {nf("weightMorningKg", "entry.weightMorning")}
+              {nf("weightPeakKg", "entry.weightPeak")}
+              {nf("runoffMl", "entry.runoffMl", { integer: true })}
+              {nf("sensorPct", "entry.sensorPct")}
+            </Grid>
+          </Group>
+          <Group title={t("entry.runoffSection")} aside={tg?.phRunoff && <span className="text-[11px] text-fg-3">pH {range(tg.phRunoff.lo, tg.phRunoff.hi, 1)}</span>}>
+            <Grid>
+              {nf("ecRunoff", "entry.ecRunoff")}
+              {nf("phRunoff", "entry.phRunoff")}
+            </Grid>
+          </Group>
+        </>
+      )}
+      {(hasReservoir || on("plants")) && (
+        <Group title={hasReservoir && on("plants") ? `${t("entry.plant")} · ${t("entry.reservoir")}` : hasReservoir ? t("entry.reservoir") : t("entry.plant")}>
+          <Grid>
+            {on("plants") && nf("heightCm", "entry.height")}
+            {hasReservoir && nf("reservoirL", "entry.reservoirL")}
+          </Grid>
+        </Group>
+      )}
 
       <Accordion type="single" collapsible className="mt-3 rounded-lg border border-line bg-surface px-3">
         <AccordionItem value="carried" className="border-0">
           <AccordionTrigger className="py-3 text-[13px] font-semibold hover:no-underline">{t("entry.carried")}</AccordionTrigger>
           <AccordionContent className="flex flex-col gap-3 pb-3">
-            <Grid>
-              {nf("volumePerPotMl", "entry.volumePerPot", { integer: true })}
-              {nf("shots", "entry.shots", { integer: true })}
-              {nf("ecIn", "entry.ecIn")}
-              {nf("phIn", "entry.phIn")}
-            </Grid>
-            <div className="flex flex-col gap-1">
+            {(on("irrigation") || on("nutrition")) && (
+              <Grid>
+                {on("irrigation") && nf("volumePerPotMl", "entry.volumePerPot", { integer: true })}
+                {on("irrigation") && nf("shots", "entry.shots", { integer: true })}
+                {on("nutrition") && nf("ecIn", "entry.ecIn")}
+                {on("nutrition") && nf("phIn", "entry.phIn")}
+              </Grid>
+            )}
+            {on("nutrition") && <div className="flex flex-col gap-1">
               <span className="text-[12px] font-medium text-fg-2">{t("entry.mix")}</span>
               <Seg<string>
                 label={t("entry.mix")}
@@ -227,13 +285,13 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
                 onChange={(v) => setMixId(v === "none" ? "" : v)}
                 options={[{ value: "none", label: t("entry.noMix") }, ...mixes.slice(0, 3).map((m) => ({ value: m.id, label: `${dm(m.date)} · ${num(m.volumeL)} L` }))]}
               />
-            </div>
+            </div>}
             <Grid>
-              {nf("lightPct", "entry.lightPct", { integer: true })}
-              {nf("lightHeightCm", "entry.lightHeight", { integer: true })}
-              {nf("ppfd", "entry.ppfd", { integer: true })}
-              {nf("photoperiodH", "entry.photoperiod")}
-              {nf("leafOffsetC", "entry.leafOffset")}
+              {on("light") && nf("lightPct", "entry.lightPct", { integer: true })}
+              {on("light") && nf("lightHeightCm", "entry.lightHeight", { integer: true })}
+              {on("light") && nf("ppfd", "entry.ppfd", { integer: true })}
+              {on("light") && nf("photoperiodH", "entry.photoperiod")}
+              {on("climate") && nf("leafOffsetC", "entry.leafOffset")}
             </Grid>
           </AccordionContent>
         </AccordionItem>

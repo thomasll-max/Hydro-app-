@@ -3,7 +3,7 @@ import * as React from "react"
 import { getStores, TARGET, type Stores } from "@/store"
 import { useSettings } from "./settings-context"
 import { SCHEMA, type Cycle, type Entry, type GrowEvent, type Mix, type Plant } from "@/model/types"
-import { GROW_SCHEMA, type Equipment, type EquipmentAssignment, type Grow, type Group, type NutritionSettings, type Site, type Space } from "@/model/grow"
+import { GROW_SCHEMA, type CustomProduct, type Equipment, type EquipmentAssignment, type Grow, type Group, type NutritionSettings, type Site, type Space } from "@/model/grow"
 import { DEFAULT_NUTRITION, newGrow, spaceNutrition } from "@/model/grow-ops"
 import { moveEquipment } from "@/equipment/calc"
 import { derive } from "@/model/entry"
@@ -11,6 +11,7 @@ import { stageOn, todayIso } from "@/calc/stage"
 import { cycleNumber, dayTargets, snapshot, type DayTargets } from "@/calc/targets"
 import { compressPhoto } from "@/lib/photo"
 import { seedDocs, thomasGrow } from "@/data/thomas-grow"
+import type { Digest } from "@/calc/digest"
 
 const byDateDesc = <T extends { date: string; id: string }>(a: T, b: T) => (a.date === b.date ? (a.id < b.id ? 1 : -1) : a.date < b.date ? 1 : -1)
 const byOrder = <T extends { order: number }>(a: T, b: T) => a.order - b.order
@@ -29,6 +30,7 @@ type GrowCtx = {
   equipment: Equipment[]
   assignments: EquipmentAssignment[]
   groups: Group[]
+  customProducts: CustomProduct[]
   selection: Selection
   /** Space shown by the tools: the selected one, else the space of the active cycle, else the first. */
   space: Space | null
@@ -39,7 +41,11 @@ type GrowCtx = {
   entries: Entry[] // newest first
   events: GrowEvent[]
   mixes: Mix[]
-  targetsFor: (date: string) => DayTargets | null
+  targetsFor: (date: string, c?: Cycle | null) => DayTargets | null
+  /** Unfiltered collections (every space and cycle), newest first. */
+  all: { entries: Entry[]; events: GrowEvent[]; mixes: Mix[]; plants: Plant[] }
+  /** Running cycle of a space (the active one if it is there), else null. */
+  cycleIn: (spaceId: string) => Cycle | null
   // writes
   saveGrow: (g: Partial<Grow>) => Promise<void>
   saveSite: (s: Site) => Promise<void>
@@ -59,6 +65,8 @@ type GrowCtx = {
   /** Remove one placement (for items shared by several spaces). */
   unassign: (assignmentId: string, date?: string) => Promise<void>
   addAssignment: (a: EquipmentAssignment) => Promise<void>
+  /** Claude version: the morning task reads digest/latest. */
+  saveDigest: (d: Digest) => Promise<void>
   uploadPhoto: (file: Blob) => Promise<string>
   photoUrl: (id: string) => Promise<string>
 }
@@ -70,7 +78,7 @@ export function newId(prefix: string) {
 }
 
 type Raw = Record<string, Record<string, unknown>>
-const COLS = ["sites", "spaces", "cycles", "plants", "groups", "entries", "events", "mixes", "equipment", "equipmentAssignments"] as const
+const COLS = ["sites", "spaces", "cycles", "plants", "groups", "entries", "events", "mixes", "equipment", "equipmentAssignments", "customProducts"] as const
 type ColName = (typeof COLS)[number]
 
 export function GrowProvider({ children }: { children: React.ReactNode }) {
@@ -123,6 +131,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
   const equipment = React.useMemo(() => list<Equipment>("equipment").sort((a, b) => a.name.localeCompare(b.name)), [raw.equipment]) // eslint-disable-line react-hooks/exhaustive-deps
   const assignments = React.useMemo(() => list<EquipmentAssignment>("equipmentAssignments"), [raw.equipmentAssignments]) // eslint-disable-line react-hooks/exhaustive-deps
   const groups = React.useMemo(() => list<Group>("groups"), [raw.groups]) // eslint-disable-line react-hooks/exhaustive-deps
+  const customProducts = React.useMemo(() => list<CustomProduct>("customProducts").sort((a, b) => a.name.localeCompare(b.name)), [raw.customProducts]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const sel = settings.space ?? "all"
   const selection: Selection = React.useMemo(() => {
@@ -163,12 +172,29 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
   const mixes = React.useMemo(() => list<Mix>("mixes").filter((m) => m.cycleId === cid || (!!cycle?.spaceId && m.spaceIds?.includes(cycle.spaceId))).sort(byDateDesc), [raw.mixes, cid, cycle?.spaceId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const targetsFor = React.useCallback(
-    (date: string) => {
-      if (!cycle) return null
-      const s = stageOn(cycle, date)
-      return dayTargets(s.key, { mode: cycle.waterMode, substrate: cycle.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(cycle) })
+    (date: string, c: Cycle | null = cycle) => {
+      if (!c) return null
+      const s = stageOn(c, date)
+      return dayTargets(s.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(c) })
     },
     [cycle],
+  )
+  const all = React.useMemo(
+    () => ({
+      entries: list<Entry>("entries").sort(byDateDesc),
+      events: list<GrowEvent>("events").sort(byDateDesc),
+      mixes: list<Mix>("mixes").sort(byDateDesc),
+      plants: list<Plant>("plants"),
+    }),
+    [raw.entries, raw.events, raw.mixes, raw.plants], // eslint-disable-line react-hooks/exhaustive-deps
+  )
+  const cycleIn = React.useCallback(
+    (spaceId: string) => {
+      const pref = cycles.find((c) => c.id === settings.activeCycleId)
+      if (pref && pref.spaceId === spaceId && !pref.harvestDate && !pref.archived) return pref
+      return live.find((c) => c.spaceId === spaceId) ?? null
+    },
+    [cycles, live, settings.activeCycleId],
   )
 
   const value = React.useMemo<GrowCtx>(() => {
@@ -189,6 +215,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       equipment,
       assignments,
       groups,
+      customProducts,
       selection,
       space,
       nutrition,
@@ -198,6 +225,8 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       events,
       mixes,
       targetsFor,
+      all,
+      cycleIn,
       saveGrow: async (g) => {
         const base = grow ?? newGrow("Mon grow", stamp())
         await need().set("grow/main", { ...base, ...g, nutrition: { ...DEFAULT_NUTRITION, ...base.nutrition, ...(g.nutrition ?? {}) }, schemaVersion: GROW_SCHEMA.grow, updatedAt: stamp() })
@@ -226,20 +255,23 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       },
       savePlant: async (p) => need().set(`plants/${p.id}`, { ...p, schemaVersion: SCHEMA.plant, updatedAt: stamp() }),
       saveEntry: async (e) => {
-        const d = derive(e, cycle?.leafOffsetC)
+        // Targets come from the cycle the entry belongs to (a space without a cycle has none).
+        const spaceId = e.spaceId || cycle?.spaceId || space?.id || ""
+        const ec = (e.cycleId ? cycles.find((c) => c.id === e.cycleId) : cycleIn(spaceId)) ?? null
+        const d = derive(e, ec?.leafOffsetC)
         const full: Entry = {
           ...d,
-          spaceId: e.spaceId || cycle?.spaceId || space?.id || "",
-          cycleId: e.cycleId ?? cycle?.id,
+          spaceId,
+          cycleId: ec?.id,
           schemaVersion: SCHEMA.entry,
-          targets: snapshot(targetsFor(e.date)),
+          targets: snapshot(targetsFor(e.date, ec)),
           updatedAt: stamp(),
         }
         await need().set(`entries/${full.id}`, full)
         return full
       },
       deleteEntry: async (id) => need().delete(`entries/${id}`),
-      saveEvent: async (e) => need().set(`events/${e.id}`, { ...e, cycleId: e.cycleId ?? cycle?.id, spaceId: e.spaceId ?? cycle?.spaceId, schemaVersion: SCHEMA.event }),
+      saveEvent: async (e) => need().set(`events/${e.id}`, { ...e, cycleId: e.cycleId ?? cycle?.id, spaceId: e.spaceId ?? (selection.kind === "space" ? selection.space.id : cycle?.spaceId), schemaVersion: SCHEMA.event }),
       deleteEvent: async (id) => need().delete(`events/${id}`),
       saveMix: async (m) =>
         need().set(`mixes/${m.id}`, { ...m, cycleId: m.cycleId ?? cycle?.id, spaceIds: m.spaceIds ?? (cycle?.spaceId ? [cycle.spaceId] : space ? [space.id] : []), schemaVersion: SCHEMA.mix }),
@@ -277,13 +309,14 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
         else await need().set(`equipmentAssignments/${id}`, { ...a, to: date })
       },
       addAssignment: async (a) => need().set(`equipmentAssignments/${a.id}`, { ...a, schemaVersion: GROW_SCHEMA.assignment }),
+      saveDigest: async (d) => need().set("digest/latest", { ...d, updatedAt: stamp() }),
       uploadPhoto: async (file) => {
         if (!stores) throw new Error("store not ready")
         return stores.photos.upload(await compressPhoto(file))
       },
       photoUrl: async (id) => (stores ? stores.photos.url(id) : ""),
     }
-  }, [stores, growLoaded, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, settings.activeCycleId, setActiveCycle])
+  }, [stores, growLoaded, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, customProducts, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, all, cycleIn, settings.activeCycleId, setActiveCycle])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

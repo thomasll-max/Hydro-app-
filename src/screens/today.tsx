@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { SpaceToday, AllToday } from "./today-spaces"
 import { motion } from "motion/react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -36,9 +37,10 @@ function useNowMinutes() {
   return m
 }
 
-export function TodayScreen() {
+/** Culture view of one space (stage, targets, program, last entry, one correction). `extra` goes under the hero. */
+function CultureToday({ extra }: { extra?: React.ReactNode }) {
   const { t, num, range, locale, dm } = useSettings()
-  const { ready, cycle, entries, mixes } = useGrow()
+  const { ready, cycle, entries, mixes, space } = useGrow()
   const ed = useEditors()
   const nowMin = useNowMinutes()
   const [allRows, setAllRows] = useState(false)
@@ -58,11 +60,12 @@ export function TodayScreen() {
   if (!cycle || !s)
     return (
       <>
-        <ScreenHero emoji="sprout" title={t("today.emptyTitle")} />
+        <ScreenHero emoji="sprout" eyebrow={space?.name} title={t("today.emptyTitle")} />
+        {extra}
         <Reveal>
           <Card className="gap-3 px-4 py-4">
             <p className="text-[13.5px] leading-[1.5] text-fg-2">{t("today.emptyBody")}</p>
-            <Button onClick={() => ed.openCycle()} className="h-12 rounded-full text-[15px] font-bold">
+            <Button onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })} className="h-12 rounded-full text-[15px] font-bold">
               {t("today.emptyCta")}
             </Button>
           </Card>
@@ -93,13 +96,14 @@ export function TodayScreen() {
 
   return (
     <>
-      <ScreenHero emoji="sprout" eyebrow={t("today.cycle", { name: cycle.name, cultivar: cycle.cultivars[0] ?? "" })} title={stageLine(t, s)}>
+      <ScreenHero emoji={s.flowerWeek ? "blossom" : s.key === "seedling" || s.key === "notStarted" ? "sprout" : "herb"} eyebrow={`${space ? `${space.name} · ` : ""}${t("today.cycle", { name: cycle.name, cultivar: cycle.cultivars[0] ?? "" })}`} title={stageLine(t, s)}>
         <Chips>
           {tg?.steer && <Chip tone="primary">{`${t(`steer.${tg.steer}`)} · ${t(`stage.${s.key}`)}`}</Chip>}
           {!tg?.steer && s.key !== "notStarted" && <Chip tone="primary">{t(`stage.${s.key}`)}</Chip>}
           <Chip>{`${t(`mode.${cycle.waterMode}Short`)} · ${t(`substrate.${cycle.substrate}`).toLowerCase()}`}</Chip>
         </Chips>
       </ScreenHero>
+      {extra}
 
       {/* One correction */}
       <Reveal i={0} className="mb-3">
@@ -302,4 +306,11 @@ function ReminderRow({ r }: { r: Reminder }) {
       </span>
     </li>
   )
+}
+
+export function TodayScreen() {
+  const { t } = useSettings()
+  const { ready, selection } = useGrow()
+  if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
+  return selection.kind === "space" ? <SpaceToday space={selection.space} Culture={CultureToday} /> : <AllToday />
 }

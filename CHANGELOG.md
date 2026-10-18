@@ -1,5 +1,12 @@
 # Changelog
 
+## Lot 6a — Graphiques (18/10/2026)
+- Onglet **Graphiques** (`calc/series.ts`, `screens/charts.tsx`, Recharts 3 via le composant Chart de shadcn) : 17 courbes au choix (dryback, EC entrée et runoff, pH entrée et runoff, Balance des bidons, volume par pot, % de runoff, température, humidité, VPD, PPFD, DLI, hauteur, levée, consommation, réservoir).
+- **Un graphique par courbe** (zone cible enregistrée avec chaque saisie, donc juste même si la cible a changé ; événements en repères verticaux) ou **courbes superposées** (chaque courbe à l'échelle de sa propre plage, légende avec la plage, vraies valeurs dans l'infobulle).
+- Comparaison jusqu'à **4 espaces** (couleur de l'espace), périodes **7 j, 30 j, cycle**. Choix des courbes, de la vue et de la période gardés sur l'appareil.
+- Fluidité : saisies indexées par espace, recherche par dichotomie, au plus 120 points par courbe (jours moyennés par paquets au-delà). Test : 20 espaces × 2 ans (14 600 saisies), toutes les courbes de 4 espaces en moins de 250 ms.
+- 179 tests (8 nouveaux) ; parcours `scripts/e2e-6a.py` (saisies de test écrites dans le stockage local).
+
 ## Lot 5b — Lumière et Climat (18/10/2026)
 - Outil **Lumière** (`calc/light.ts`, `screens/tools/light.tsx`) : PPFD estimé depuis les lampes de l'espace au réglage de gradation saisi (enregistrable dans l'équipement), DLI sur la photopériode, calcul inverse (DLI visé → PPFD nécessaire et gradation estimée), W/m², PPF, hauteur libre (espace − pot − épaisseur de lampe − distance minimale, « donnée manquante » tant que ces champs sont vides). **Schéma de l'espace à l'échelle** (Floraison carré, Colonne 1 : 3) avec lampes dessinées à leur taille quand leurs dimensions sont saisies, grille 3 × 3 et **carte de PPFD mesurée** (moyenne, min, max, uniformité ; la mesure remplace l'estimation pour le DLI), enregistrée sur l'espace (`space.lightMap`). Cibles du stade avec leur source (repère courant, hors Handbook).
 - Outil **Climat et air** (`calc/climate.ts`, `screens/tools/climate.tsx`) : VPD feuille (Tetens) depuis la dernière saisie ou les valeurs tapées, cible du stade (repère courant), humidité à viser à cette température, renouvellement d'air depuis l'extracteur de l'espace à la vitesse saisie (enregistrable), repère courant 1 à 3 min, avertissement filtre à charbon. Débit du Cloudline S6 : « donnée manquante » tant qu'il n'est pas saisi.

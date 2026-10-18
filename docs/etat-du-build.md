@@ -6,9 +6,9 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1 à 5b poussés le 18/10/2026. Dernier commit de lot : « Lot 5b : lumière et climat… ».
+  - Lots 1 à 6a poussés le 18/10/2026. Dernier commit de lot : « Lot 6a : graphiques… ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
@@ -21,7 +21,8 @@
 - [x] Lot 4b : arrosage depuis l'équipement, arrosage manuel par gamme (151 tests)
 - [x] Lot 5a : pH / Balance, IPW (161 tests)
 - [x] Lot 5b : lumière, climat (171 tests)
-- [ ] Lot 6 : graphiques et données
+- [x] Lot 6a : graphiques (179 tests)
+- [ ] Lot 6b : export / import JSON, « Demander à Claude »
 - [ ] Lot 9 : tâche du matin + passe de finition (avant la validation de Thomas)
 - [ ] Lot 7 : nutrition multi-marques (après validation)
 - [ ] Lot 8 : version locale (Netlify relié au dépôt, après validation)
@@ -84,7 +85,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 171 au lot 5b
+npm test                          # tests (Vitest), 179 au lot 6a
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -160,4 +161,18 @@ PYTHONPATH=scripts python3 scripts/e2e-5b.py dist-preview/index.html <dossier>
 ```
 
 ### Prochain lot
-**Lot 6 — Graphiques, exports et import, « Demander à Claude »** (cahier des charges §5 et tests du lot 6 : export puis import JSON → données identiques ; 20 espaces sur 2 ans restent fluides).
+Voir « Lot 6a — notes ».
+
+## Lot 6a — notes
+- Lot 6 coupé en deux : **6a** graphiques, **6b** export / import JSON et « Demander à Claude ».
+- `calc/series.ts` : `CURVE_DEFS` (valeur, unité, cible du snapshot), `periodRange`, `indexEntries`, `buildSeries` (saisies de l'espace sans les saisies par plante ; Balance depuis les bidons), `downsample` (`MAX_POINTS = 120`), `chartRows`, `normalize`, `eventsIn`.
+- Préférences des graphiques : `localStorage["hydro.charts"]` (courbes, vue, période), lecture/écriture protégées.
+- Décision Thomas (NOTES-lots) appliquée : choix des courbes + vue séparée en plus de la vue superposée.
+
+### Commandes (lot 6a)
+```bash
+PYTHONPATH=scripts python3 scripts/e2e-6a.py dist-preview/index.html <dossier>
+```
+
+### Prochain lot
+**Lot 6b — Export / import JSON et « Demander à Claude »** (test : export puis import JSON → données identiques).

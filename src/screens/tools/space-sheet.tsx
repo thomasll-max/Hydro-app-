@@ -14,7 +14,8 @@ import { parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { areaM2, equipmentAt, spaceIrrigation, volumeM3, withPots } from "@/equipment/calc"
 import { MODULES, SPACE_COLORS, TEMPLATES, modulesFor, type Equipment, type Space, type TemplateId } from "@/model/grow"
-import type { Cycle, Substrate, WaterMode } from "@/model/types"
+import { DRYBACK_METHODS, type Cycle, type Substrate, type WaterMode } from "@/model/types"
+import { drybackMethodOf } from "@/model/entry"
 import { CalcValue } from "./equipment-shared"
 import { archiveSpace, duplicateSpace, newSpace } from "@/model/grow-ops"
 import { cn } from "@/lib/utils"
@@ -75,6 +76,11 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
   const vol = volumeM3(d)
   const build = (): Space => {
     const out: Space = { ...s, name: s.name.trim() }
+    // Dryback method: weighing is the default, so it is not stored; a sensor name only for "Autre capteur".
+    const dm = drybackMethodOf(s)
+    const sensorName = dm === "sensor" ? s.irrigation?.sensorName?.trim() : undefined
+    if (dm === "weight") delete out.irrigation
+    else out.irrigation = { drybackMethod: dm, ...(sensorName ? { sensorName } : {}) }
     const hours = parseNum(f.hours)
     if (hours && hours > 0 && hours <= 24) out.light = { ...(out.light ?? {}), photoperiodH: hours }
     else delete out.light
@@ -244,6 +250,32 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
       {space && s.modules.irrigation && shows("irrigation") && (
         <Group title={t("space.secIrrigation")} id="sp-sec-irrigation">
           <div className="flex flex-col gap-2.5">
+            <div id="sp-dryback">
+              <div className="mb-1 text-[12px] font-medium text-fg-2">{t("space.drybackMethod")}</div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {DRYBACK_METHODS.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    aria-pressed={drybackMethodOf(s) === m}
+                    onClick={() => setS((x) => ({ ...x, irrigation: { ...x.irrigation, drybackMethod: m } }))}
+                    className={cn("min-h-11 rounded-md border px-2 text-[13px] leading-tight font-semibold", drybackMethodOf(s) === m ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
+                  >
+                    {t(`space.dm.${m}`)}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[11.5px] leading-snug text-fg-3">{t(`space.dmD.${drybackMethodOf(s)}`)}</p>
+              {drybackMethodOf(s) === "sensor" && (
+                <TextField
+                  id="sp-sensor-name"
+                  className="mt-2"
+                  label={t("space.sensorName")}
+                  value={s.irrigation?.sensorName ?? ""}
+                  onChange={(v) => setS((x) => ({ ...x, irrigation: { ...x.irrigation, sensorName: v } }))}
+                />
+              )}
+            </div>
             {!cycle && <p className="text-[11.5px] text-fg-3">{t("space.noCycleIrr")}</p>}
             {cycle && (
               <>

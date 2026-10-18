@@ -287,6 +287,7 @@ function JournalLines({ x }: { x: DayData }) {
       e.tempDay != null && `${num(e.tempDay, 1)} °C`,
       e.rh != null && `${num(e.rh)} %HR`,
       e.dryback != null && `${t("today.dryback")} ${num(e.dryback)} %`,
+      e.drybackSensor != null && `${t("today.drybackSensor")} ${num(e.drybackSensor)} %`,
       e.ecIn != null && `EC ${num(e.ecIn, 1)}`,
       e.reservoirL != null && `${num(e.reservoirL)} L`,
     ]

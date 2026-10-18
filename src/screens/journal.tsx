@@ -335,6 +335,11 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
         </div>
         <div className="flex flex-wrap gap-x-3 gap-y-1">
           {m("dryback", t("entry.dryback"), 0, " %")}
+          {e.drybackSensor != null && (
+            <span className="text-[12px] text-fg-2">
+              {t("entry.drybackSensor")} <b className="font-semibold text-fg tabular-nums">{`${num(e.drybackSensor, 0)} %`}</b>
+            </span>
+          )}
           {m("ecRunoff", "EC RO", 1)}
           {m("phRunoff", "pH RO", 1)}
           {m("vpd", "VPD", 2)}

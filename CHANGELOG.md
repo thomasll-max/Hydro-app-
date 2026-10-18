@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 8d — Dryback : méthode de mesure par espace, correctif runoff (18/10/2026)
+- **Correctif** : `derive` (`model/entry.ts`) recopiait l'humidité du capteur de sol (`sensorPct`) dans le % de runoff quand aucun runoff n'était saisi. Le repli est supprimé : le % de runoff ne vient que du runoff mesuré. L'ancien test qui validait ce comportement est remplacé.
+- **Méthode de mesure du dryback, par espace** (Réglages de l'espace → Arrosage, mémorisée dans `space.irrigation`) : **Pesée** (par défaut, comme avant), **Capteur AC Infinity**, **Autre capteur** (avec son nom), **Aucune**. La saisie du jour n'affiche que les champs de la méthode : poids matin et pic, ou humidité du capteur matin et pic (%).
+- **Dryback capteur** = (pic − matin) ÷ pic (même formule que la fiche Athena), stocké à part (`drybackSensor`) avec la méthode (`drybackMethod`, `sensorName`). Le champ `dryback` reste celui de la pesée.
+- Les **cibles Athena ne jugent que la pesée** : pour un capteur, pas de pastille verte / orange / rouge ni de correction, la mention « échelle capteur, à comparer entre tes propres journées (guide Bonorum) », une jauge neutre sur Aujourd'hui et une **courbe séparée** « Dryback capteur (échelle capteur) » dans les graphiques, sans zone cible. Journal, calendrier, cartes d'espace, CSV et « Demander à Claude » affichent le dryback capteur à part.
+- L'ancien champ « Capteur de sol (%) » n'est plus proposé ; une valeur déjà saisie reste visible (« ancien relevé »).
+- 216 tests (5 nouveaux + correctif) ; parcours `scripts/e2e-8d.py` (pesée → AC Infinity → autre capteur nommé → aucune → pesée) ; 2b, 4b, 5a, 6a et 8c repassés.
+
 ## Lot 8c — Premiers pas (18/10/2026)
 - **Guide de démarrage « Premiers pas »** (demande de Thomas ; `calc/getting-started.ts`, `screens/tools/start.tsx`, deux versions) : **ce qu'il faut rentrer**, coché d'après les données (lampe : PPF, ou watts réels et efficacité, comme l'estimation du PPFD ; pots de chaque espace arrosé ; cycle avec date de germination ou de 12/12 ; débit de la pompe si arrosage automatique ; premier bidon ; première saisie ; première sauvegarde dans la version locale). Une ligne n'apparaît que si elle s'applique ; chaque ligne ouvre le bon endroit (Équipement, fiche de l'espace à l'Arrosage, cycle, Nutrition, saisie, Sauvegarde). Puis **comment ça marche** en 9 rubriques (journée type, bidon, arrosage, cycle, calendrier, graphiques, réglages, origine des chiffres, sauvegarde).
 - Carte **« Premiers pas · n / total »** sur Aujourd'hui avec la prochaine chose à rentrer, masquable (et à remettre depuis le guide). L'assistant de la version locale se termine sur le guide.

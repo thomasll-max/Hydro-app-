@@ -43,7 +43,7 @@ export function setModule(space: Space, module: ModuleId, on: boolean, now: stri
 /** Fields of a daily entry owned by each module. Hidden (not deleted) when the module is off. */
 export const MODULE_FIELDS: Partial<Record<ModuleId, (keyof Entry)[]>> = {
   climate: ["tempDay", "tempNight", "rh", "leafOffsetC", "vpd"],
-  irrigation: ["weightMorningKg", "weightPeakKg", "dryback", "volumePerPotMl", "shots", "runoffMl", "runoffPct", "sensorPct", "ecRunoff", "phRunoff"],
+  irrigation: ["weightMorningKg", "weightPeakKg", "dryback", "volumePerPotMl", "shots", "runoffMl", "runoffPct", "sensorPct", "sensorPeakPct", "sensorMorningPct", "drybackSensor", "ecRunoff", "phRunoff"],
   nutrition: ["ecIn", "phIn", "mixId"],
   light: ["lightPct", "lightHeightCm", "ppfd", "photoperiodH", "dli"],
   plants: ["heightCm"],

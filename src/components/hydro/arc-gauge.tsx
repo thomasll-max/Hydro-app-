@@ -27,7 +27,8 @@ export function ArcGauge({
   unit?: string
   locale: string
   delay?: number
-  tone?: "ok" | "warn" | "bad"
+  /** neutral: a value on its own scale, not judged against a target (sensor dryback). */
+  tone?: "ok" | "warn" | "bad" | "neutral"
 }) {
   const f = (x: number) => clamp01((x - min) / (max - min))
   const track = arcDash(0, 1)
@@ -60,7 +61,7 @@ export function ArcGauge({
         />
         <circle
           {...common}
-          stroke={tone === "bad" ? "var(--bad)" : tone === "warn" ? "var(--warn)" : "var(--primary)"}
+          stroke={tone === "bad" ? "var(--bad)" : tone === "warn" ? "var(--warn)" : tone === "neutral" ? "var(--fg-3)" : "var(--primary)"}
           strokeDasharray={`${track.length} ${track.circumference}`}
           strokeDashoffset={track.length - shown * track.length}
           style={{ transition: "stroke-dashoffset 1.4s var(--ease)" }}

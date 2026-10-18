@@ -15,8 +15,11 @@ describe("saisie", () => {
     const d = derive({ ...base, tempDay: 26, rh: 60, weightPeakKg: 10, weightMorningKg: 8.5, volumePerPotMl: 450, runoffMl: 27, ppfd: 600, photoperiodH: 18 })
     expect(d).toMatchObject({ vpd: 0.97, dryback: 15, runoffPct: 6, dli: 38.9 })
   })
-  it("% du capteur de sol si pas de mesure de runoff", () => {
-    expect(derive({ ...base, sensorPct: 4 }).runoffPct).toBe(4)
+  it("l'humidité du capteur de sol n'est jamais prise pour un % de runoff", () => {
+    expect(derive({ ...base, sensorPct: 4 }).runoffPct).toBeUndefined()
+    expect(derive({ ...base, sensorPeakPct: 40, sensorMorningPct: 30 }).runoffPct).toBeUndefined()
+    // With a real runoff, the runoff % still comes from it.
+    expect(derive({ ...base, sensorPct: 4, volumePerPotMl: 500, runoffMl: 30 }).runoffPct).toBe(6)
   })
   it("reprend les réglages de la veille, pas les mesures", () => {
     const prev = { ...base, date: "2026-10-17", ecIn: 2.2, phIn: 5.9, ppfd: 850, tempDay: 26, ecRunoff: 7.1 }

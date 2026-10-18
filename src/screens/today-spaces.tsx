@@ -137,6 +137,7 @@ function SpaceCard({ space, onOpen }: { space: Space; onOpen: () => void }) {
   const tg = last?.targets
   const pills: { k: string; v: string; s?: ReturnType<typeof status> }[] = []
   if (space.modules.irrigation && last?.dryback != null) pills.push({ k: t("today.dryback"), v: `${num(last.dryback)} %`, s: tg?.dryback ? status(last.dryback, tg.dryback) : undefined })
+  if (space.modules.irrigation && last?.drybackSensor != null) pills.push({ k: t("today.drybackSensor"), v: `${num(last.drybackSensor)} %` })
   if (space.modules.irrigation && last?.ecRunoff != null) pills.push({ k: t("today.ecRunoff"), v: num(last.ecRunoff, 1), s: tg?.ecRunoff ? status(last.ecRunoff, tg.ecRunoff) : undefined })
   if (space.modules.climate && last?.tempDay != null) pills.push({ k: t("today.tempRh"), v: `${num(last.tempDay)}° / ${last.rh != null ? num(last.rh) : "—"}` })
   if (space.modules.climate && last?.vpd != null) pills.push({ k: t("today.vpd"), v: num(last.vpd, 2), s: tg?.vpd ? status(last.vpd, tg.vpd) : undefined })

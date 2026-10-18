@@ -7,6 +7,9 @@ export const SCHEMA = { cycle: 3, plant: 2, entry: 2, event: 2, mix: 4 } as cons
 
 export type IsoDate = string // "2026-10-18"
 export type Substrate = "coco" | "soil" | "mix7030"
+/** How the dryback is measured in a space: weighing (Athena's targets apply), a soil sensor, or not at all. */
+export const DRYBACK_METHODS = ["weight", "acinfinity", "sensor", "none"] as const
+export type DrybackMethod = (typeof DRYBACK_METHODS)[number]
 export type WaterMode = "auto" | "manual"
 export type PlantId = "P1" | "P2" | "P3" | "P4"
 export const PLANT_IDS: PlantId[] = ["P1", "P2", "P3", "P4"]
@@ -120,12 +123,22 @@ export type Entry = {
   // irrigation
   weightMorningKg?: number
   weightPeakKg?: number
-  dryback?: number // computed, %
+  /** Computed from the weights, % — the only dryback compared with Athena's targets. */
+  dryback?: number
   volumePerPotMl?: number
   shots?: number
   runoffMl?: number
-  runoffPct?: number // computed (or from sensor)
-  sensorPct?: number // AC Infinity soil sensor reading, if used
+  runoffPct?: number // computed from runoffMl and volumePerPotMl
+  /** Old single soil-sensor reading (before the dryback methods); kept, no longer offered for new entries. */
+  sensorPct?: number
+  /** Soil sensor, moisture %: at the peak (after the last shot) and in the morning (before the first). */
+  sensorPeakPct?: number
+  sensorMorningPct?: number
+  /** Computed (peak − morning) ÷ peak on the sensor's own scale, %. Never compared with Athena's weighing targets. */
+  drybackSensor?: number
+  /** Method of the space when the entry was saved (none = absent), and the sensor's name for "sensor". */
+  drybackMethod?: Exclude<DrybackMethod, "none">
+  sensorName?: string
   // solution / runoff
   ecIn?: number
   phIn?: number

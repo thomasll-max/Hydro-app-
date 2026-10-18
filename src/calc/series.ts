@@ -7,6 +7,7 @@ import { balanceTotalMl } from "./balance"
 
 export const CURVES = [
   "dryback",
+  "drybackSensor",
   "ecIn",
   "ecRunoff",
   "phIn",
@@ -42,6 +43,8 @@ const pos = (v?: number) => (v != null && Number.isFinite(v) ? v : null)
 
 export const CURVE_DEFS: Record<CurveId, CurveDef> = {
   dryback: { id: "dryback", unit: "%", decimals: 0, value: (e) => pos(e.dryback), target: "dryback" },
+  // Sensor scale: its own curve, never drawn against Athena's weighing targets.
+  drybackSensor: { id: "drybackSensor", unit: "%", decimals: 0, value: (e) => pos(e.drybackSensor) },
   ecIn: { id: "ecIn", unit: "mS/cm", decimals: 1, value: (e) => pos(e.ecIn), target: "ecIn" },
   ecRunoff: { id: "ecRunoff", unit: "mS/cm", decimals: 1, value: (e) => pos(e.ecRunoff), target: "ecRunoff" },
   phIn: { id: "phIn", unit: "pH", decimals: 1, value: (e) => pos(e.phIn), target: "phIn" },

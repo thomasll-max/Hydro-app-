@@ -2,7 +2,7 @@
 // Flat collections, same in both versions: grow/main, sites/{id}, spaces/{id}, cycles/{id}, groups/{id}, plants/{id},
 // entries/{YYYY-MM-DD}_{spaceId}[_{target}], events/{id}, mixes/{id}, reminders/{id}, concentrateStocks/{id},
 // sprays/{id}, customProducts/{id}, equipment/{id}, equipmentAssignments/{id}, settings/main (+ digest/latest, Claude).
-import type { IsoDate, Range } from "./types"
+import type { DrybackMethod, IsoDate, Range } from "./types"
 import type { AddonId } from "@/data/nutrients/types"
 
 export const GROW_SCHEMA = {
@@ -91,6 +91,8 @@ export type Space = {
   dimensionsCm?: Partial<DimensionsCm>
   /** Module switches. Turning one off hides its data, never deletes it. */
   modules: Record<ModuleId, boolean>
+  /** How the dryback is measured here (absent = weighing) and the name of a sensor other than AC Infinity. */
+  irrigation?: { drybackMethod?: DrybackMethod; sensorName?: string }
   /** Photoperiod set for the space (hours of light); absent = by stage (18 h veg, 12 h flower). */
   light?: { photoperiodH?: number }
   /** Last PPFD map measured on a 3 × 3 grid (row by row, from the back left), µmol/m²/s; null = not measured. */

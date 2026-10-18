@@ -22,6 +22,7 @@ import { UpcomingCard } from "./calendar-parts"
 import { cn } from "@/lib/utils"
 import type { EmojiName } from "@/assets/emoji"
 import type { Entry } from "@/model/types"
+import { drybackMethodOf } from "@/model/entry"
 import { BackupReminder } from "./backup-reminder"
 import { StartCard } from "./tools/start"
 import type { MessageKey } from "@/i18n/types"
@@ -84,6 +85,8 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
   const start = Math.max(0, Math.min(nextI < 0 ? program.length : nextI - 1, program.length - 5))
   const rows = allRows ? program : program.slice(start, start + 5)
   const spark = room.filter((e) => e.dryback != null).slice(0, 7).reverse()
+  // Sensor spaces: the gauge shows the sensor dryback, on its own scale (no Athena target).
+  const bySensor = ["acinfinity", "sensor"].includes(drybackMethodOf(space))
 
   const pill = (v: number | undefined, r?: Pick<Target, "lo" | "hi">): Status | undefined => (v != null && r ? status(v, r) : undefined)
   const when = last ? (last.date === today ? (last.time ? t("today.whenToday", { time: last.time }) : t("today.whenTodayNoTime")) : t("today.whenDay", { date: dm(last.date) })) : ""
@@ -140,7 +143,11 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
 
       <div className="grid grid-cols-2 gap-2.5">
         <Reveal i={1}>
-          <GaugeCard emoji="droplet" label={t("today.dryback")} value={last?.dryback} target={lastTg?.dryback} max={70} unit="%" decimals={0} />
+          {bySensor ? (
+            <GaugeCard emoji="droplet" label={t("today.drybackSensor")} value={last?.drybackSensor} max={70} unit="%" decimals={0} note={t("today.sensorScale")} />
+          ) : (
+            <GaugeCard emoji="droplet" label={t("today.dryback")} value={last?.dryback} target={lastTg?.dryback} max={70} unit="%" decimals={0} />
+          )}
         </Reveal>
         <Reveal i={2}>
           <GaugeCard emoji="testTube" label={t("today.ecRunoff")} value={last?.ecRunoff} target={lastTg?.ecRunoff} max={12} decimals={1} />
@@ -243,19 +250,21 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
   )
 }
 
-function GaugeCard({ emoji, label, value, target, max, unit, decimals }: { emoji: EmojiName; label: string; value?: number; target?: Pick<Target, "lo" | "hi">; max: number; unit?: string; decimals: number }) {
+function GaugeCard({ emoji, label, value, target, max, unit, decimals, note }: { emoji: EmojiName; label: string; value?: number; target?: Pick<Target, "lo" | "hi">; max: number; unit?: string; decimals: number; /** Shown instead of a target (no colour judgment). */ note?: string }) {
   const { t, range, locale } = useSettings()
   return (
     <Card className="h-full items-center px-2.5 pt-3.5 pb-3 text-center">
       <Label emoji={emoji}>{label}</Label>
       {value != null ? (
-        <ArcGauge value={value} lo={target?.lo ?? 0} hi={target?.hi ?? 0} max={Math.max(max, value)} decimals={decimals} unit={unit} locale={locale} tone={target ? status(value, target) : "ok"} />
+        <ArcGauge value={value} lo={target?.lo ?? 0} hi={target?.hi ?? 0} max={Math.max(max, value)} decimals={decimals} unit={unit} locale={locale} tone={target ? status(value, target) : note ? "neutral" : "ok"} />
       ) : (
         <div className="my-1.5 flex size-[92px] items-center justify-center rounded-full border-[9px] border-track text-[22px] font-semibold text-fg-3">—</div>
       )}
       <div className="flex items-center gap-1.5 text-[11.5px] text-fg-3">
         {value != null && target && <Dot status={status(value, target)} />}
-        {target ? (
+        {note && !target ? (
+          note
+        ) : target ? (
           <>
             {t("today.target")} <span className="tabular-nums">{`${range(target.lo, target.hi, decimals)}${unit ? ` ${unit}` : ""}`}</span>
           </>

@@ -1,11 +1,11 @@
 // Entry helpers: ids, computed fields, prefill from the previous entry.
 import { dli, dryback, round, runoffPct, vpd } from "@/calc/formulas"
-import { SCHEMA, type Cycle, type Entry, type IsoDate, type PlantId } from "./types"
+import { SCHEMA, type Cycle, type DrybackMethod, type Entry, type IsoDate, type PlantId } from "./types"
 
 /** entries/{YYYY-MM-DD}_{spaceId}[_{target}] (spec §12). */
 export const entryId = (date: IsoDate, spaceId: string, plantId?: PlantId) => (plantId ? `${date}_${spaceId}_${plantId}` : `${date}_${spaceId}`)
 
-/** Fill the computed fields (VPD, dryback, runoff %, DLI) from the measured ones. */
+/** Fill the computed fields (VPD, dryback by weighing or by sensor, runoff %, DLI) from the measured ones. */
 export function derive(e: Entry, leafOffsetDefault = -2): Entry {
   const out = { ...e }
   const off = e.leafOffsetC ?? leafOffsetDefault
@@ -14,12 +14,13 @@ export function derive(e: Entry, leafOffsetDefault = -2): Entry {
     e.weightPeakKg != null && e.weightMorningKg != null && e.weightPeakKg > 0
       ? round(dryback(e.weightPeakKg, e.weightMorningKg), 1)
       : undefined
-  out.runoffPct =
-    e.volumePerPotMl && e.runoffMl != null
-      ? round(runoffPct(e.volumePerPotMl, e.runoffMl), 1)
-      : e.sensorPct != null
-        ? e.sensorPct
-        : undefined
+  // Same formula as the weighing (Athena: (peak − trough) ÷ peak), kept apart: a sensor has its own scale.
+  out.drybackSensor =
+    e.sensorPeakPct != null && e.sensorMorningPct != null && e.sensorPeakPct > 0
+      ? round(dryback(e.sensorPeakPct, e.sensorMorningPct), 1)
+      : undefined
+  // Runoff only from the runoff itself: a substrate moisture reading is not a runoff percentage.
+  out.runoffPct = e.volumePerPotMl && e.runoffMl != null ? round(runoffPct(e.volumePerPotMl, e.runoffMl), 1) : undefined
   out.dli = e.ppfd != null && e.photoperiodH != null ? round(dli(e.ppfd, e.photoperiodH), 1) : undefined
   return out
 }
@@ -27,7 +28,7 @@ export function derive(e: Entry, leafOffsetDefault = -2): Entry {
 /** Settings that usually stay the same from one day to the next: copied as values. */
 export const CARRIED = ["volumePerPotMl", "shots", "ecIn", "phIn", "mixId", "lightPct", "lightHeightCm", "ppfd", "photoperiodH", "leafOffsetC", "sownCount"] as const
 /** Daily measurements: yesterday's value is shown as a hint (placeholder), never saved unless typed. */
-export const HINTED = ["tempDay", "tempNight", "rh", "weightMorningKg", "weightPeakKg", "runoffMl", "sensorPct", "ecRunoff", "phRunoff", "heightCm", "germinatedCount", "reservoirL"] as const
+export const HINTED = ["tempDay", "tempNight", "rh", "weightMorningKg", "weightPeakKg", "runoffMl", "sensorPct", "sensorPeakPct", "sensorMorningPct", "ecRunoff", "phRunoff", "heightCm", "germinatedCount", "reservoirL"] as const
 
 /** New entry for a space (and its running cycle, if any), prefilled from the previous one of the same scope. */
 export function blankEntry(date: IsoDate, ctx: { spaceId: string; cycle?: Cycle | null }, prev: Entry | undefined, plantId?: PlantId): Entry {
@@ -62,4 +63,9 @@ export function filterEntries(list: Entry[], f: EntryFilter): Entry[] {
     if (f.stage !== "all" && e.targets?.stage !== f.stage) return false
     return true
   })
+}
+
+/** Dryback method of a space (absent = weighing, as before the setting existed). */
+export function drybackMethodOf(space?: { irrigation?: { drybackMethod?: DrybackMethod } } | null): DrybackMethod {
+  return space?.irrigation?.drybackMethod ?? "weight"
 }

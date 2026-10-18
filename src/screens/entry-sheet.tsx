@@ -8,7 +8,7 @@ import { ConfirmDelete } from "@/components/hydro/confirm"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
-import { blankEntry, CARRIED, derive, entryId, HINTED, previousEntry } from "@/model/entry"
+import { blankEntry, CARRIED, derive, drybackMethodOf, entryId, HINTED, previousEntry } from "@/model/entry"
 import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, type ActionTag, type Entry, type ObsTag, type PlantId, type Severity } from "@/model/types"
 import { equipmentAt } from "@/equipment/calc"
 import { SpaceDot } from "@/components/hydro/space-pill"
@@ -31,6 +31,10 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const space = spaces.find((x) => x.id === spaceId) ?? curSpace ?? null
   const cycle = space ? cycleIn(space.id) : null
   const on = (m: keyof NonNullable<typeof space>["modules"]) => !!space?.modules[m]
+  // Dryback method of the space (setting): only its fields are shown.
+  const method = drybackMethodOf(space)
+  const bySensor = method === "acinfinity" || method === "sensor"
+  const sensorLabel = method === "acinfinity" ? "AC Infinity" : space?.irrigation?.sensorName?.trim() || t("entry.sensorOther")
   const entries = useMemo(() => all.entries.filter((e) => e.spaceId === space?.id), [all.entries, space?.id])
   const mixes = useMemo(() => all.mixes.filter((m) => !m.spaceIds || (space && m.spaceIds.includes(space.id)) || (cycle && m.cycleId === cycle.id)), [all.mixes, space, cycle])
   const hasReservoir = useMemo(
@@ -89,6 +93,11 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     const e: Entry = { ...base, id: entryId(date, space!.id, plantId), date, plantId, time: time || undefined }
     e.domeOn = on("propagation") ? domeOn : base.domeOn
     for (const k of NUMS) (e as Record<string, unknown>)[k] = parseNum(f[k])
+    // Values of another method typed on an earlier day stay as they were; the method of the day is recorded.
+    if (on("irrigation") && method !== "none") {
+      e.drybackMethod = method
+      e.sensorName = method === "sensor" ? space!.irrigation?.sensorName?.trim() || undefined : undefined
+    }
     e.mixId = mixId || undefined
     e.observations = obs.length ? obs : undefined
     e.actions = acts.length ? acts : undefined
@@ -158,7 +167,9 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const plantIds = PLANT_IDS.slice(0, Math.max(1, Math.min(PLANT_IDS.length, cycle?.potCount ?? 4)))
   const computed = [
     on("climate") && <Computed key="v" label={t("entry.vpd")} value={fmt(live?.vpd, 2)} status={st("vpd")} />,
-    on("irrigation") && <Computed key="d" label={t("entry.dryback")} value={fmt(live?.dryback, 0, " %")} status={st("dryback")} />,
+    on("irrigation") && method === "weight" && <Computed key="d" label={t("entry.dryback")} value={fmt(live?.dryback, 0, " %")} status={st("dryback")} />,
+    // Sensor scale: no status against Athena's weighing targets.
+    on("irrigation") && bySensor && <Computed key="ds" label={t("entry.drybackSensor")} value={fmt(live?.drybackSensor, 0, " %")} />,
     on("irrigation") && <Computed key="r" label={t("entry.runoffPct")} value={fmt(live?.runoffPct, 0, " %")} status={st("runoffPct")} />,
     on("light") && <Computed key="l" label={t("entry.dli")} value={fmt(live?.dli, 1)} status={st("dli")} />,
   ].filter(Boolean)
@@ -253,13 +264,31 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       )}
       {on("irrigation") && (
         <>
-          <Group title={t("entry.irrigation")} aside={tg?.dryback && <span className="text-[11px] text-fg-3">{t("today.dryback")} {range(tg.dryback.lo, tg.dryback.hi)} %</span>}>
+          <Group
+            title={t("entry.irrigation")}
+            aside={
+              method === "weight" && tg?.dryback ? (
+                <span className="text-[11px] text-fg-3">
+                  {t("today.dryback")} {range(tg.dryback.lo, tg.dryback.hi)} %
+                </span>
+              ) : bySensor ? (
+                <span className="text-[11px] text-fg-3">{sensorLabel}</span>
+              ) : undefined
+            }
+          >
             <Grid>
-              {nf("weightMorningKg", "entry.weightMorning")}
-              {nf("weightPeakKg", "entry.weightPeak")}
+              {method === "weight" && nf("weightMorningKg", "entry.weightMorning")}
+              {method === "weight" && nf("weightPeakKg", "entry.weightPeak")}
+              {bySensor && nf("sensorMorningPct", "entry.sensorMorning")}
+              {bySensor && nf("sensorPeakPct", "entry.sensorPeak")}
               {nf("runoffMl", "entry.runoffMl", { integer: true })}
-              {nf("sensorPct", "entry.sensorPct")}
+              {f.sensorPct ? nf("sensorPct", "entry.sensorPct") : null}
             </Grid>
+            {bySensor && (
+              <p className="mt-1.5 text-[11.5px] leading-snug text-fg-3" id="e-sensor-scale">
+                {t("entry.sensorScale")}
+              </p>
+            )}
           </Group>
           <Group title={t("entry.runoffSection")} aside={tg?.phRunoff && <span className="text-[11px] text-fg-3">pH {range(tg.phRunoff.lo, tg.phRunoff.hi, 1)}</span>}>
             <Grid>

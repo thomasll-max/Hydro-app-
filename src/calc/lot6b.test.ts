@@ -84,7 +84,7 @@ describe("lot 6 — Demander à Claude", () => {
     const c = askContext(data, TODAY)
     expect(c).toContain("Athena Pro Line")
     expect(c).toContain("ecRunoff 4–5 (Athena p. 41)")
-    expect(c).toContain("dryback% 42, EC runoff 4.4")
+    expect(c).toContain("dryback% (pesée) 42, EC runoff 4.4")
     expect(c).not.toContain("99")
     expect(c).toContain("Données manquantes (non mesurées) : débit de la pompe, débit de l'extracteur")
     expect(c).toContain("Pas de cycle en cours")

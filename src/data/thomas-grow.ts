@@ -1,6 +1,6 @@
 // Thomas's grow, prefilled in the Claude version (spec §1). Only what the spec states; unknown specs stay empty
 // and show "donnée manquante". The EVO4 efficacy (2.8 µmol/J) is an explicit, editable hypothesis.
-import type { Equipment, EquipmentAssignment, Grow, Space } from "@/model/grow"
+import type { CustomProduct, Equipment, EquipmentAssignment, Grow, Space } from "@/model/grow"
 import { GROW_SCHEMA } from "@/model/grow"
 import { newGrow, newSpace } from "@/model/grow-ops"
 import { SCHEMA, type Cycle } from "@/model/types"
@@ -8,7 +8,7 @@ import { SCHEMA, type Cycle } from "@/model/types"
 export const FLOWER_ID = "floraison"
 export const COLUMN_ID = "colonne"
 
-type Seed = { grow: Grow; spaces: Space[]; equipment: Equipment[]; assignments: EquipmentAssignment[]; cycles: Cycle[] }
+type Seed = { grow: Grow; spaces: Space[]; equipment: Equipment[]; assignments: EquipmentAssignment[]; cycles: Cycle[]; customProducts: CustomProduct[] }
 
 export function thomasGrow(now: string, today: string): Seed {
   const grow = newGrow("Grow de Thomas", now, { line: "athena-pro", addons: ["fade", "cleanse", "balance"], dosing: "conc226" })
@@ -103,7 +103,34 @@ export function thomasGrow(now: string, today: string): Seed {
     createdAt: now,
     updatedAt: now,
   }
-  return { grow, spaces: [flower, column], equipment, assignments, cycles: [cycle] }
+  // Thomas's own products outside the Handbook: doses stay empty until typed from the label.
+  const customProducts: CustomProduct[] = [
+    {
+      schemaVersion: GROW_SCHEMA.customProduct,
+      id: "proper",
+      name: "Proper",
+      brand: "Athena",
+      kind: "terpene booster, humiques / fulviques",
+      unit: "mL",
+      application: "tank",
+      verified: false,
+      source: "label",
+      createdAt: now,
+    },
+    {
+      schemaVersion: GROW_SCHEMA.customProduct,
+      id: "great-white",
+      name: "Great White",
+      kind: "mycorhizes, saupoudrées sur les racines",
+      unit: "g",
+      application: "roots",
+      onEvent: "transfer",
+      verified: false,
+      source: "label",
+      createdAt: now,
+    },
+  ]
+  return { grow, spaces: [flower, column], equipment, assignments, cycles: [cycle], customProducts }
 }
 
 /** Seed as [path, doc] pairs, in write order (grow/main last: its presence means "seeded"). */
@@ -113,6 +140,7 @@ export function seedDocs(s: Seed): [string, Record<string, unknown>][] {
     ...s.equipment.map((x) => [`equipment/${x.id}`, x] as [string, Record<string, unknown>]),
     ...s.assignments.map((x) => [`equipmentAssignments/${x.id}`, x] as [string, Record<string, unknown>]),
     ...s.cycles.map((x) => [`cycles/${x.id}`, x] as [string, Record<string, unknown>]),
+    ...s.customProducts.map((x) => [`customProducts/${x.id}`, x] as [string, Record<string, unknown>]),
     ["grow/main", s.grow],
   ]
 }

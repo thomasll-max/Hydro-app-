@@ -83,6 +83,16 @@ describe("modular grow", () => {
       expect(COLLECTIONS).toContain(path.split("/")[0])
     }
     expect(seedDocs(s).at(-1)![0]).toBe("grow/main")
+    // Add-ons: Fade, Cleanse, Balance on; IPW off (not bought yet); no CaMg / PK (Pro Line).
+    expect(s.grow.nutrition.addons).toEqual(["fade", "cleanse", "balance"])
+    // Own products: Proper in the tank, Great White once on the roots at the transfer; no dose until typed from the label.
+    const proper = s.customProducts.find((p) => p.id === "proper")!
+    const gw = s.customProducts.find((p) => p.id === "great-white")!
+    expect([proper.application, gw.application, gw.onEvent]).toEqual(["tank", "roots", "transfer"])
+    for (const p of s.customProducts) {
+      expect(p.dosePer10L ?? p.dosePerPlant).toBeUndefined()
+      expect([p.source, p.verified]).toEqual(["label", false])
+    }
   })
   it("a friend's grow: 3 rooms + 2 greenhouses", () => {
     const sites = [newSite("r1", "Room 1", 0), newSite("r2", "Room 2", 1), newSite("r3", "Room 3", 2), newSite("g", "Serres", 3)]

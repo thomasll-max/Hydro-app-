@@ -200,10 +200,20 @@ export type CustomProduct = {
   id: string
   name: string
   brand?: string
+  /** What it is, as the user describes it (e.g. "terpene booster, humiques/fulviques"). */
+  kind?: string
   unit: "mL" | "g"
+  /** Where it goes: in the tank (dose per 10 L) or once on the roots at a transplant / transfer. */
+  application: "tank" | "roots"
+  /** Dose per 10 L (tank) or per plant (roots). Empty until typed from the label: never guessed. */
   dosePer10L?: Range
-  stages?: string[]
-  /** Shown as "hors Athena, non vérifié". */
+  dosePerPlant?: Range
+  /** Weeks of use as written on the label, free text until typed. */
+  weeks?: string
+  /** Event that triggers a one-off use (roots): a reminder is offered when it happens. */
+  onEvent?: "transplant" | "transfer"
+  /** Shown as "hors Athena, non vérifié"; the figures come from the product label. */
   verified: false
+  source: "label"
   createdAt: string
 }

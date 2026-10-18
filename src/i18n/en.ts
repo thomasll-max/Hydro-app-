@@ -101,6 +101,7 @@ export const en: Messages = {
     grow: "Grow",
     name: "Grow name",
     digest: "“Good morning” summary time",
+    version: "Version {v}",
     digestHintLocal: "the daily digest is the “Good morning” card on Today",
     digestHint: "the morning task sends you the digest around this time; to move it, ask Claude",
     nutrition: "Nutrition",
@@ -1179,6 +1180,10 @@ export const en: Messages = {
       cyclePots: "Enter the cycle's pot volume and pot count.",
       time: "Time as 07:00.",
     },
+  },
+  update: {
+    available: "New version available",
+    now: "Update",
   },
   install: {
     title: "Install Hydro on your phone",

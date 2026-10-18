@@ -18,6 +18,8 @@ type Editors = {
   openReminder: (init?: ReminderInit) => void
   /** Settings of a space, scrolled to a section (lot 9: one settings page per space). */
   openSpace: (spaceId: string, section?: SpaceSection) => void
+  /** A form is open (entry, cycle…): no update reload is offered meanwhile (lot 8e). */
+  editing: boolean
 }
 const Ctx = React.createContext<Editors | null>(null)
 
@@ -51,8 +53,9 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
       openQuick: () => open({ kind: "quick" }),
       openReminder: (init = {}) => open({ kind: "reminder", init }),
       openSpace: (spaceId, section) => open({ kind: "space", spaceId, section }),
+      editing: state != null,
     }),
-    [],
+    [state],
   )
   const is = (k: NonNullable<State>["kind"]) => state?.kind === k
   return (

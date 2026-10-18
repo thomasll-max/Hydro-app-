@@ -1,5 +1,11 @@
 # Changelog
 
+## Lot 8e — Numéro de version et bannière de mise à jour (18/10/2026)
+- **Version affichée** en bas de Réglages, dans les deux versions : commit court + date et heure du build (`lib/version.ts`, injectés par `vite.config.ts` via `__HYDRO_BUILD__`). Sur Netlify le commit vient de `COMMIT_REF` ; un build fait avec des changements pas encore commités affiche « + » après le commit.
+- **Nouvelle version disponible** (version locale) : le build écrit `version.json` à côté de la page ; l'app le relit au retour au premier plan (`visibilitychange`) et toutes les 30 min (pas hors ligne). Si le build en ligne est plus récent, bannière « Nouvelle version disponible — Mettre à jour » qui recharge l'app (après avoir demandé le nouveau service worker). **Jamais de rechargement automatique**, et la bannière se cache tant qu'un formulaire est ouvert (saisie, cycle…).
+- `version.json` n'est jamais mis en cache : ignoré par le service worker (cache `hydro-v2`) et `Cache-Control: no-cache, no-store` dans `netlify.toml`. Un `version.json` identique, plus ancien ou abîmé ne propose rien.
+- 221 tests (5 nouveaux) ; parcours `scripts/e2e-8e.py` (déploiement simulé : même build, plus ancien, plus récent, formulaire ouvert, mise à jour) ; 8a et 8b repassés.
+
 ## Lot 8d — Dryback : méthode de mesure par espace, correctif runoff (18/10/2026)
 - **Correctif** : `derive` (`model/entry.ts`) recopiait l'humidité du capteur de sol (`sensorPct`) dans le % de runoff quand aucun runoff n'était saisi. Le repli est supprimé : le % de runoff ne vient que du runoff mesuré. L'ancien test qui validait ce comportement est remplacé.
 - **Méthode de mesure du dryback, par espace** (Réglages de l'espace → Arrosage, mémorisée dans `space.irrigation`) : **Pesée** (par défaut, comme avant), **Capteur AC Infinity**, **Autre capteur** (avec son nom), **Aucune**. La saisie du jour n'affiche que les champs de la méthode : poids matin et pic, ou humidité du capteur matin et pic (%).

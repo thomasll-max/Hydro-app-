@@ -24,9 +24,10 @@ import { SwitchRow } from "./equipment-shared"
 import { ResetCard } from "./reset-card"
 import { InstallTip } from "@/screens/install-tip"
 import { TARGET } from "@/store"
+import { CURRENT_BUILD, formatVersion } from "@/lib/version"
 
 export function SettingsTool() {
-  const { t, dm, saveState, setActiveCycle } = useSettings()
+  const { t, dm, saveState, setActiveCycle, locale } = useSettings()
   const g = useGrow()
   const ed = useEditors()
   const [spaceSheet, setSpaceSheet] = useState<{ open: boolean; space?: Space }>({ open: false })
@@ -213,6 +214,9 @@ export function SettingsTool() {
         </Reveal>
       )}
       <ResetCard i={9} />
+      <p className="mt-4 text-center text-[11px] text-fg-3 tabular-nums" id="app-version">
+        {t("growSet.version", { v: formatVersion(CURRENT_BUILD, locale) })}
+      </p>
       <SpaceSheet open={spaceSheet.open} onOpenChange={(o) => setSpaceSheet((s) => ({ ...s, open: o }))} space={spaceSheet.space} />
       <SiteSheet open={siteSheet.open} onOpenChange={(o) => setSiteSheet((s) => ({ ...s, open: o }))} site={siteSheet.site} />
       <TransferSheet open={transfer.open} onOpenChange={(o) => setTransfer((s) => ({ ...s, open: o }))} cycle={transfer.cycle} />

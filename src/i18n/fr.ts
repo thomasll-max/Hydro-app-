@@ -101,6 +101,7 @@ export const fr = {
     grow: "Grow",
     name: "Nom du grow",
     digest: "Heure du résumé « Bonjour »",
+    version: "Version {v}",
     digestHintLocal: "le résumé du jour est la carte « Bonjour » d'Aujourd'hui",
     digestHint: "la tâche du matin t'envoie le résumé vers cette heure-là ; pour la déplacer, demande-le à Claude",
     nutrition: "Nutrition",
@@ -1179,6 +1180,10 @@ export const fr = {
       cyclePots: "Indique le volume et le nombre de pots du cycle.",
       time: "Heure au format 07:00.",
     },
+  },
+  update: {
+    available: "Nouvelle version disponible",
+    now: "Mettre à jour",
   },
   install: {
     title: "Installer Hydro sur ton téléphone",

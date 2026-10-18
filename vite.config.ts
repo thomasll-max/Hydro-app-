@@ -4,8 +4,25 @@ import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import { viteSingleFile } from "vite-plugin-singlefile"
 import path from "node:path"
+import { execSync } from "node:child_process"
 
 const local = process.env.VITE_TARGET === "local"
+
+/** Version shown in Réglages and written to version.json (lot 8e). Netlify gives the commit in COMMIT_REF. */
+function buildInfo() {
+  const sh = (cmd: string) => {
+    try {
+      return execSync(cmd, { stdio: ["ignore", "pipe", "ignore"] }).toString().trim()
+    } catch {
+      return ""
+    }
+  }
+  const commit = (process.env.COMMIT_REF ?? "").slice(0, 7) || sh("git rev-parse --short=7 HEAD") || "dev"
+  // Uncommitted changes (the build's own generated files aside) → "+" after the commit.
+  const dirty = !process.env.COMMIT_REF && sh("git status --porcelain -- . ':!src/assets/emoji.ts' ':!release'") !== ""
+  return { commit, builtAt: new Date().toISOString(), ...(dirty ? { dirty: true } : {}) }
+}
+const build = buildInfo()
 
 /** Local (friends') build: fonts embedded instead of Google Fonts, installable (manifest, icons, service worker). */
 function localTarget(): Plugin {
@@ -29,6 +46,10 @@ function localTarget(): Plugin {
     <meta name="apple-mobile-web-app-title" content="Hydro" />`,
           ),
     },
+    // Read by the app to offer an update (never cached: see pwa/sw.js and netlify.toml).
+    generateBundle() {
+      this.emitFile({ type: "asset", fileName: "version.json", source: JSON.stringify(build) })
+    },
   }
 }
 
@@ -36,6 +57,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), viteSingleFile(), ...(local ? [localTarget()] : [])],
   // Manifest, icons and service worker only in the local build.
   publicDir: local ? "pwa" : false,
+  define: { __HYDRO_BUILD__: JSON.stringify(build) },
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
   // Minified since lot 9 (stable code, page about 3 times lighter to load on the phone). For readable stack traces while
   // debugging, build with HYDRO_DEBUG=1.

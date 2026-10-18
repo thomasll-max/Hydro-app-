@@ -6,9 +6,9 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 = lot 8e)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1 à 6b, 9 et 8a à 8d poussés le 18/10/2026. Dernier commit de lot : « Lot 8d : méthode de mesure du dryback, correctif runoff ».
+  - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
@@ -29,6 +29,7 @@
 - [x] Lot 8b : assistant de premier lancement, guides (205 tests)
 - [x] Lot 8c : guide de démarrage « Premiers pas » (211 tests)
 - [x] Lot 8d : méthode de mesure du dryback par espace, correctif runoff (216 tests)
+- [x] Lot 8e : numéro de version, bannière « Nouvelle version disponible » (221 tests)
 
 ## Règles de relais
 1. **Une seule session à la fois** sur le code. Si deux tournent quand même : avant chaque commit **et** chaque republication, `git fetch`, se remettre sur `main`, relancer tous les tests et publier un build qui contient le travail de l'autre.
@@ -88,7 +89,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 216 au lot 8d
+npm test                          # tests (Vitest), 221 au lot 8e
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -270,4 +271,19 @@ PYTHONPATH=scripts python3 scripts/e2e-8d.py dist-preview/index.html <dossier>
 ```
 
 ### Prochain lot
-Version affichée et bannière de mise à jour (demande de Thomas), puis **Lot 7 — Nutrition multi-marques** après sa validation.
+Voir « Lot 8e — notes ».
+
+## Lot 8e — notes
+- `lib/version.ts` : `CURRENT_BUILD` (`{ commit, builtAt, dirty? }`, défini au build), `parseBuildInfo`, `isNewerBuild` (seulement si `builtAt` en ligne > le sien), `formatVersion`. `app/update.tsx` : `useNewBuild` (fetch `version.json?t=…`, `cache: "no-store"`, au chargement, à chaque `visibilitychange` visible, toutes les 30 min, rien hors ligne) et `UpdateBanner` (dans `Shell`, pas dans l'assistant).
+- « Saisie en cours » = un formulaire ouvert par `EditorsProvider` (`editing`) : saisie, cycle, plante, événement, bidon, rappel, réglages d'un espace. Les fiches ouvertes directement depuis Réglages (espace, room, transfert) ne sont pas suivies ; de toute façon rien ne recharge sans un appui sur « Mettre à jour ».
+- **Version affichée et commit** : le build publié sur l'artefact est fait avant son commit, il montre donc le commit précédent suivi de « + » (et la date du build). Sur Netlify, le build part du commit poussé : la version affichée est exactement ce commit.
+- `version.json` n'existe que dans la version locale ; la version Claude affiche son numéro mais ne vérifie rien (l'artefact est republié par la session).
+
+### Commandes (lot 8e)
+```bash
+npm run build:local && npm run preview:build
+PYTHONPATH=scripts python3 scripts/e2e-8e.py dist-local dist-preview/index.html <dossier>
+```
+
+### Prochain lot
+**Lot 7 — Nutrition multi-marques**, après la validation de Thomas (lots 9 et 8).

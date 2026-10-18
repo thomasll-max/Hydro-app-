@@ -15,6 +15,7 @@ import { ChartsScreen } from "@/screens/charts"
 import { ToolsScreen } from "@/screens/tools"
 import { CalendarScreen } from "@/screens/calendar"
 import { Onboarding } from "@/screens/onboarding"
+import { UpdateBanner } from "@/app/update"
 
 const SCREENS: Record<TabId, () => React.ReactElement> = {
   today: TodayScreen,
@@ -68,6 +69,7 @@ function Shell() {
     <div className="relative min-h-full">
       <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 h-[360px] bg-[radial-gradient(closest-side,var(--glow),transparent)] [inset-inline:-30%]" />
       <TopBar />
+      <UpdateBanner />
       {TARGET === "artifact" && storeKind === "local" && (
         <div className="relative mx-auto max-w-[480px] px-4">
           <p className="rounded-md border border-warn/30 bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn">{t("app.localOnly")}</p>

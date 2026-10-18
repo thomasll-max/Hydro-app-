@@ -1,0 +1,57 @@
+// Entry helpers: ids, computed fields, prefill from the previous entry.
+import { dli, dryback, round, runoffPct, vpd } from "@/calc/formulas"
+import { SCHEMA, type Cycle, type Entry, type IsoDate, type PlantId } from "./types"
+
+export const entryId = (date: IsoDate, plantId?: PlantId) => (plantId ? `${date}_${plantId}` : date)
+
+/** Fill the computed fields (VPD, dryback, runoff %, DLI) from the measured ones. */
+export function derive(e: Entry, leafOffsetDefault = -2): Entry {
+  const out = { ...e }
+  const off = e.leafOffsetC ?? leafOffsetDefault
+  out.vpd = e.tempDay != null && e.rh != null ? round(vpd(e.tempDay, e.rh, off), 2) : undefined
+  out.dryback =
+    e.weightPeakKg != null && e.weightMorningKg != null && e.weightPeakKg > 0
+      ? round(dryback(e.weightPeakKg, e.weightMorningKg), 1)
+      : undefined
+  out.runoffPct =
+    e.volumePerPotMl && e.runoffMl != null
+      ? round(runoffPct(e.volumePerPotMl, e.runoffMl), 1)
+      : e.sensorPct != null
+        ? e.sensorPct
+        : undefined
+  out.dli = e.ppfd != null && e.photoperiodH != null ? round(dli(e.ppfd, e.photoperiodH), 1) : undefined
+  return out
+}
+
+/** Settings that usually stay the same from one day to the next: copied as values. */
+export const CARRIED = ["volumePerPotMl", "shots", "ecIn", "phIn", "mixId", "lightPct", "lightHeightCm", "ppfd", "photoperiodH", "leafOffsetC"] as const
+/** Daily measurements: yesterday's value is shown as a hint (placeholder), never saved unless typed. */
+export const HINTED = ["tempDay", "tempNight", "rh", "weightMorningKg", "weightPeakKg", "runoffMl", "sensorPct", "ecRunoff", "phRunoff", "heightCm"] as const
+
+export function blankEntry(date: IsoDate, cycle: Cycle, prev: Entry | undefined, plantId?: PlantId): Entry {
+  const now = new Date().toISOString()
+  const e: Entry = { schemaVersion: SCHEMA.entry, id: entryId(date, plantId), date, plantId, createdAt: now, updatedAt: now }
+  if (prev) for (const k of CARRIED) if (prev[k] != null) (e as Record<string, unknown>)[k] = prev[k]
+  e.leafOffsetC ??= cycle.leafOffsetC
+  e.shots ??= cycle.waterMode === "auto" ? cycle.p1Shots + (cycle.p2Shots ?? 0) : 1
+  return e
+}
+
+/** Most recent entry strictly before `date` for the same scope (room or one plant). */
+export function previousEntry(entries: Entry[], date: IsoDate, plantId?: PlantId): Entry | undefined {
+  return entries
+    .filter((e) => e.date < date && e.plantId === plantId)
+    .sort((a, b) => (a.date < b.date ? 1 : -1))[0]
+}
+
+export type EntryFilter = { plant: "all" | "room" | PlantId; tag: string; stage: string }
+/** History filter: by plant (or whole room), tag (observation or action) and stage (from the stored snapshot). */
+export function filterEntries(list: Entry[], f: EntryFilter): Entry[] {
+  return list.filter((e) => {
+    if (f.plant === "room" && e.plantId) return false
+    if (f.plant !== "all" && f.plant !== "room" && e.plantId !== f.plant) return false
+    if (f.tag !== "all" && !e.observations?.some((o) => o.tag === f.tag) && !e.actions?.includes(f.tag as never)) return false
+    if (f.stage !== "all" && e.targets?.stage !== f.stage) return false
+    return true
+  })
+}

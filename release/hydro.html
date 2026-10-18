@@ -24280,6 +24280,10 @@ var dictionaries = {
 				other: "Autre"
 			},
 			f: {
+				lampL: "Longueur de la lampe (cm)",
+				lampW: "Largeur de la lampe (cm)",
+				lampH: "Épaisseur de la lampe (cm)",
+				potH: "Hauteur du pot (cm)",
 				lampType: "Type (LED…)",
 				watts: "Puissance réelle (W)",
 				efficacy: "Efficacité (µmol/J)",
@@ -25032,6 +25036,76 @@ var dictionaries = {
 			none: "Aucune pulvérisation enregistrée dans cet espace.",
 			sources: "Source : Athena Handbook (IPW, p. 80 du PDF). Jours de la semaine : 2 ou 3 jours espacés (à adapter)."
 		},
+		lgt: {
+			noSpace: "Choisis un espace en haut de l'écran.",
+			now: "Lumière de l'espace",
+			measured: "mesuré",
+			ppfd: "PPFD moyen",
+			dli: "DLI sur {h} h",
+			noLamp: "Aucune lampe dans cet espace (Équipement).",
+			targets: "Repère du stade : PPFD {ppfd}, DLI {dli} ({src}).",
+			srcCommon: "repère courant, hors Handbook",
+			dimUnknown: "Réglage de la lampe non saisi : PPFD calculé à 100 %.",
+			settings: "Lampes et photopériode",
+			hours: "Photopériode (h)",
+			dimmer: "{name} (%)",
+			dimLevels: "gradation : {n}",
+			dimSave: "Enregistrer le réglage dans l'équipement",
+			dimSaved: "Réglage enregistré",
+			wm2: "Puissance par m²",
+			wm2Sub: "watts réels à 100 % ÷ surface",
+			ppf: "PPF au réglage actuel",
+			ppfSub: "PPF publié, sinon W × µmol/J",
+			free: "Hauteur libre",
+			freeSub: "espace − pot − lampe − distance minimale",
+			inverse: "Calcul inverse",
+			dliTarget: "DLI visé (mol/m²/j)",
+			dliHint: "repère du stade : {r}",
+			needPpfd: "PPFD nécessaire sur {h} h",
+			needDim: "≈ {p} % de gradation (estimation)",
+			schema: "Schéma de l'espace",
+			noDims: "Dimensions de l'espace manquantes (Réglages → Espaces).",
+			lampNoDims: "Dimensions manquantes, non dessiné : {list}.",
+			schemaNote: "Vue de dessus à l'échelle ; position des lampes schématique. Grille 3 × 3 : PPFD mesuré au téléphone ou au Photone, à hauteur de canopée.",
+			cell: "Case {n}",
+			stats: "Moyenne {mean} · min {min} · max {max} · uniformité {u} ({n}/9 cases)",
+			mapSave: "Enregistrer la carte",
+			mapSaved: "Carte enregistrée",
+			mapDate: "Carte du {date}",
+			sources: "Sources : équipement saisi (PPF, µmol/J, W) · estimation PPF × pertes ÷ surface · DLI = PPFD × heures × 0,0036 · repères courants (hors Handbook)"
+		},
+		clim: {
+			vpd: "VPD feuille",
+			fromEntry: "saisie du {date}",
+			temp: "T° air (°C)",
+			rh: "HR (%)",
+			offset: "Écart feuille (°C)",
+			vpdLeaf: "VPD",
+			leaf: "feuille {c} °C",
+			target: "Cible du stade",
+			targetSrc: "{stage} · repère courant",
+			noCycle: "pas de cycle dans cet espace",
+			ok: "Dans la cible.",
+			low: "VPD trop bas : air trop humide pour cette température.",
+			high: "VPD trop haut : air trop sec pour cette température.",
+			rhAim: "À {t} °C, vise {rh} % d'humidité.",
+			formula: "VPD = pression de vapeur saturante à la T° de la feuille − pression de vapeur de l'air (formule de Tetens).",
+			air: "Renouvellement d'air",
+			noExtractor: "Aucun extracteur dans cet espace (Équipement).",
+			speed: "{name} : vitesse (%)",
+			speedHint: "réglage enregistré : {v} %",
+			speedUnknown: "non saisie : calcul à 100 %",
+			speedSave: "Enregistrer la vitesse dans l'équipement",
+			speedSaved: "Vitesse enregistrée",
+			flow: "Débit de l'extracteur",
+			renewal: "Volume de l'espace renouvelé",
+			renewalRef: "repère courant : toutes les {a} à {b} min",
+			every: "toutes les {d}",
+			perHour: "Renouvellements par heure",
+			slow: "Plus lent que le repère courant.",
+			fast: "Plus rapide que le repère courant.",
+			sources: "Sources : formule de Tetens · cibles VPD et renouvellement : repères courants (hors Handbook) · débit de l'extracteur saisi dans l'équipement"
+		},
 		nut: {
 			title: "Nutrition",
 			line: "Gamme",
@@ -25517,6 +25591,10 @@ var dictionaries = {
 				other: "Other"
 			},
 			f: {
+				lampL: "Lamp length (cm)",
+				lampW: "Lamp width (cm)",
+				lampH: "Lamp thickness (cm)",
+				potH: "Pot height (cm)",
 				lampType: "Type (LED…)",
 				watts: "Actual power (W)",
 				efficacy: "Efficacy (µmol/J)",
@@ -26268,6 +26346,76 @@ var dictionaries = {
 			next: "Next: {date}",
 			none: "No spray saved in this space.",
 			sources: "Source: Athena Handbook (IPW, PDF p. 80). Days of the week: 2 or 3 days apart (adjust as needed)."
+		},
+		lgt: {
+			noSpace: "Pick a space at the top of the screen.",
+			now: "Light in the space",
+			measured: "measured",
+			ppfd: "Mean PPFD",
+			dli: "DLI over {h} h",
+			noLamp: "No lamp in this space (Equipment).",
+			targets: "Stage benchmark: PPFD {ppfd}, DLI {dli} ({src}).",
+			srcCommon: "common benchmark, not from the Handbook",
+			dimUnknown: "Lamp setting not entered: PPFD computed at 100 %.",
+			settings: "Lamps and photoperiod",
+			hours: "Photoperiod (h)",
+			dimmer: "{name} (%)",
+			dimLevels: "dimming: {n}",
+			dimSave: "Save the setting to the equipment",
+			dimSaved: "Setting saved",
+			wm2: "Power per m²",
+			wm2Sub: "real watts at 100 % ÷ area",
+			ppf: "PPF at the current setting",
+			ppfSub: "published PPF, else W × µmol/J",
+			free: "Free height",
+			freeSub: "space − pot − lamp − minimum distance",
+			inverse: "Reverse calculation",
+			dliTarget: "Target DLI (mol/m²/d)",
+			dliHint: "stage benchmark: {r}",
+			needPpfd: "PPFD needed over {h} h",
+			needDim: "≈ {p} % dimming (estimate)",
+			schema: "Space layout",
+			noDims: "Space dimensions missing (Settings → Spaces).",
+			lampNoDims: "Dimensions missing, not drawn: {list}.",
+			schemaNote: "Top view to scale; lamp positions are schematic. 3 × 3 grid: PPFD measured with a phone or Photone, at canopy height.",
+			cell: "Cell {n}",
+			stats: "Mean {mean} · min {min} · max {max} · uniformity {u} ({n}/9 cells)",
+			mapSave: "Save the map",
+			mapSaved: "Map saved",
+			mapDate: "Map of {date}",
+			sources: "Sources: equipment entered (PPF, µmol/J, W) · estimate PPF × losses ÷ area · DLI = PPFD × hours × 0.0036 · common benchmarks (not from the Handbook)"
+		},
+		clim: {
+			vpd: "Leaf VPD",
+			fromEntry: "entry of {date}",
+			temp: "Air T° (°C)",
+			rh: "RH (%)",
+			offset: "Leaf offset (°C)",
+			vpdLeaf: "VPD",
+			leaf: "leaf {c} °C",
+			target: "Stage target",
+			targetSrc: "{stage} · common benchmark",
+			noCycle: "no cycle in this space",
+			ok: "On target.",
+			low: "VPD too low: air too humid for this temperature.",
+			high: "VPD too high: air too dry for this temperature.",
+			rhAim: "At {t} °C, aim for {rh} % humidity.",
+			formula: "VPD = saturation vapour pressure at leaf temperature − air vapour pressure (Tetens formula).",
+			air: "Air renewal",
+			noExtractor: "No extractor in this space (Equipment).",
+			speed: "{name}: speed (%)",
+			speedHint: "saved setting: {v} %",
+			speedUnknown: "not entered: computed at 100 %",
+			speedSave: "Save the speed to the equipment",
+			speedSaved: "Speed saved",
+			flow: "Extractor flow",
+			renewal: "Space volume renewed",
+			renewalRef: "common benchmark: every {a} to {b} min",
+			every: "every {d}",
+			perHour: "Renewals per hour",
+			slow: "Slower than the common benchmark.",
+			fast: "Faster than the common benchmark.",
+			sources: "Sources: Tetens formula · VPD and renewal targets: common benchmarks (not from the Handbook) · extractor flow entered in the equipment"
 		},
 		nut: {
 			title: "Nutrition",
@@ -27077,6 +27225,20 @@ function wattsPerM2(watts, dims) {
 	};
 	return ok$1(watts / a.value);
 }
+/** Room left for the plant: space height − pot height − lamp thickness − minimum lamp-to-canopy distance. */
+function freeHeightCm(input) {
+	const m = need({
+		spaceH: input.spaceH,
+		potH: input.potH,
+		lampH: input.lampH,
+		minDistanceCm: input.minDistanceCm
+	});
+	if (m.length) return {
+		ok: false,
+		missing: m
+	};
+	return ok$1(input.spaceH - input.potH - input.lampH - input.minDistanceCm);
+}
 /** Shot duration (s) = volume (mL) / flow (mL/min) × 60. Volume from % of pot when given. */
 function shotSeconds$1(input) {
 	const vol = isNum(input.volumeMl) ? input.volumeMl : isNum(input.potL) && isNum(input.pct) ? input.potL * 10 * input.pct : void 0;
@@ -27106,6 +27268,10 @@ function airRenewalSeconds(dims, m3h, speedPct = 100) {
 		missing: m
 	};
 	return ok$1(v.value / (m3h * (speedPct / 100)) * 3600);
+}
+function airChangesPerHour(dims, m3h, speedPct = 100) {
+	const s = airRenewalSeconds(dims, m3h, speedPct);
+	return s.ok ? ok$1(3600 / s.value) : s;
 }
 /** Items in a space at a given date (from ≤ date < to). Past configurations are never rewritten. */
 function equipmentAt(spaceId, date, assignments) {
@@ -27251,6 +27417,10 @@ function shotSeconds(volumeMl, flowMlPerMin) {
 /** DLI, mol/m²/day = PPFD × hours × 0.0036. */
 function dli(ppfd, hours) {
 	return ppfd * hours * .0036;
+}
+/** PPFD needed for a DLI target. */
+function ppfdForDli(dliTarget, hours) {
+	return dliTarget / (hours * .0036);
 }
 function round$1(v, decimals = 1) {
 	const f = 10 ** decimals;
@@ -28319,7 +28489,7 @@ function concMlPer10L(cat, ec, gPerL) {
 		estimate: true
 	};
 }
-var r1$1 = (x) => Math.round(x * 10) / 10;
+var r1$2 = (x) => Math.round(x * 10) / 10;
 var lohi = (p) => typeof p === "number" ? [p, p] : p;
 /** Is a personal product used at this phase (at this flowering week when known, else anywhere in the phase)? */
 function customApplies(p, phase, week) {
@@ -28381,7 +28551,7 @@ function mixRecipe(lineId, input) {
 					qty: Math.round(c[dose.fromEcTable] * k),
 					unit: "mL",
 					concentrate: conc,
-					grams: r1$1(g * k),
+					grams: r1$2(g * k),
 					estimate: c.estimate,
 					src: cat.ecTable.src,
 					note
@@ -28390,7 +28560,7 @@ function mixRecipe(lineId, input) {
 				id: p.id,
 				name: p.name,
 				kind: "product",
-				qty: r1$1(g * k),
+				qty: r1$2(g * k),
 				unit: "g",
 				src: cat.ecTable.src,
 				note
@@ -28405,7 +28575,7 @@ function mixRecipe(lineId, input) {
 			id: p.id,
 			name: p.name,
 			kind: "product",
-			qty: r1$1(lo * f * k),
+			qty: r1$2(lo * f * k),
 			unit: "mL",
 			estimate: est || void 0,
 			src: dose.src,
@@ -28417,8 +28587,8 @@ function mixRecipe(lineId, input) {
 				id: p.id,
 				name: p.name,
 				kind: "product",
-				qty: chosen != null ? r1$1(chosen * f * k) : null,
-				range: [r1$1(lo * f * k), r1$1(hi * f * k)],
+				qty: chosen != null ? r1$2(chosen * f * k) : null,
+				range: [r1$2(lo * f * k), r1$2(hi * f * k)],
 				unit: "mL",
 				estimate: est || void 0,
 				src: dose.src,
@@ -28433,7 +28603,7 @@ function mixRecipe(lineId, input) {
 			id: b.id,
 			name: b.name,
 			kind: "product",
-			qty: known != null ? r1$1(known * k) : null,
+			qty: known != null ? r1$2(known * k) : null,
 			unit: "mL",
 			src: ADDONS.balance.src,
 			note: known != null ? "balanceFirst" : "balanceSteps",
@@ -28452,7 +28622,7 @@ function mixRecipe(lineId, input) {
 			id: p.id,
 			name: p.name,
 			kind: "custom",
-			qty: r1$1(d.lo * k),
+			qty: r1$2(d.lo * k),
 			unit: p.unit,
 			src: { kind: "label" }
 		});
@@ -28462,8 +28632,8 @@ function mixRecipe(lineId, input) {
 				id: p.id,
 				name: p.name,
 				kind: "custom",
-				qty: chosen != null ? r1$1(chosen * k) : null,
-				range: [r1$1(d.lo * k), r1$1(d.hi * k)],
+				qty: chosen != null ? r1$2(chosen * k) : null,
+				range: [r1$2(d.lo * k), r1$2(d.hi * k)],
 				unit: p.unit,
 				src: { kind: "label" },
 				note: "labelRange"
@@ -39868,13 +40038,13 @@ function CalcRow({ label, sub, children }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "flex items-start justify-between gap-3 border-t border-line py-2 first:border-t-0",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-			className: "min-w-0 text-[13px] text-fg-2",
+			className: "min-w-0 flex-1 text-[13px] text-fg-2",
 			children: [label, sub && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 				className: "block text-[10.5px] leading-snug text-fg-3",
 				children: sub
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-			className: "shrink-0 text-right text-[13.5px]",
+			className: "max-w-[55%] text-right text-[13.5px]",
 			children
 		})]
 	});
@@ -71798,6 +71968,21 @@ var FIELDS = {
 			kind: "int"
 		},
 		{
+			k: "dimensionsCm.l",
+			label: "equip.f.lampL",
+			kind: "int"
+		},
+		{
+			k: "dimensionsCm.w",
+			label: "equip.f.lampW",
+			kind: "int"
+		},
+		{
+			k: "dimensionsCm.h",
+			label: "equip.f.lampH",
+			kind: "int"
+		},
+		{
 			k: "efficacyIsHypothesis",
 			label: "equip.f.efficacyHyp",
 			kind: "bool"
@@ -71877,6 +72062,11 @@ var FIELDS = {
 			k: "substrate",
 			label: "equip.f.substrate",
 			kind: "text"
+		},
+		{
+			k: "heightCm",
+			label: "equip.f.potH",
+			kind: "int"
 		}
 	],
 	extractor: [
@@ -73982,7 +74172,7 @@ function balanceHistory(mixes, line) {
 		}];
 	}).sort((a, b) => b.date.localeCompare(a.date));
 }
-var r1 = (x) => Math.round(x * 10) / 10;
+var r1$1 = (x) => Math.round(x * 10) / 10;
 /**
 * Learned from at least 2 tanks. With the pH before of this tank and of the past tanks, the rate is per pH unit raised
 * (aiming at the middle of the target); otherwise per 10 L. Null when there is not enough history.
@@ -74000,25 +74190,25 @@ function predictBalance(history, volumeL, now, n = 4) {
 			predictedMl: 0,
 			startMl: 0,
 			basis: "perPh",
-			rate: r1(rate),
+			rate: r1$1(rate),
 			tanks: withPh.length
 		};
-		const predictedMl = r1(rate * rise * k);
+		const predictedMl = r1$1(rate * rise * k);
 		return {
 			predictedMl,
-			startMl: r1(predictedMl * START_FRACTION),
+			startMl: r1$1(predictedMl * START_FRACTION),
 			basis: "perPh",
-			rate: r1(rate),
+			rate: r1$1(rate),
 			tanks: withPh.length
 		};
 	}
 	const rate = recent.reduce((s, h) => s + h.totalMl / (h.volumeL / 10), 0) / recent.length;
-	const predictedMl = r1(rate * k);
+	const predictedMl = r1$1(rate * k);
 	return {
 		predictedMl,
-		startMl: r1(predictedMl * START_FRACTION),
+		startMl: r1$1(predictedMl * START_FRACTION),
 		basis: "per10L",
-		rate: r1(rate * 100) / 100,
+		rate: r1$1(rate * 100) / 100,
 		tanks: recent.length
 	};
 }
@@ -74027,7 +74217,7 @@ function titrationTotal(t) {
 	const stepMl = balanceStepMl(t.volumeL);
 	return {
 		stepMl,
-		totalMl: r1(t.startMl + t.steps * stepMl)
+		totalMl: r1$1(t.startMl + t.steps * stepMl)
 	};
 }
 /** Where a reading stands against the target: go on, done, or over (no dose suggested to come back down). */
@@ -74585,6 +74775,776 @@ function IpwTool() {
 	});
 }
 //#endregion
+//#region src/calc/light.ts
+var r1 = (x) => Math.round(x * 10) / 10;
+/** DLI (mol/m²/day) from a PPFD and a photoperiod. */
+var dliOf = (ppfd, hours) => r1(dli(ppfd, hours));
+/** PPFD needed for a DLI target over a photoperiod. */
+var ppfdFor = (dliTarget, hours) => Math.round(ppfdForDli(dliTarget, hours));
+/**
+* Dimmer setting for a target PPFD, from the estimated PPFD at 100 %. Capped at 100; an estimate like the PPFD itself.
+* Lamps rarely dim linearly: the user corrects it with a measurement.
+*/
+function dimmerFor(targetPpfd, ppfdAtFull) {
+	if (!(ppfdAtFull > 0)) return null;
+	return Math.min(100, Math.round(targetPpfd / ppfdAtFull * 100));
+}
+/** Light of a space with every lamp at the dimmer typed in the tool (or its stored setting). */
+function spaceLightAt(space, date, equipment, assignments, dimmers = {}) {
+	const eq = equipment.map((e) => e.type === "lamp" && dimmers[e.id] != null ? {
+		...e,
+		lamp: {
+			...e.lamp,
+			dimmerPct: dimmers[e.id]
+		}
+	} : e);
+	const full = equipment.map((e) => e.type === "lamp" ? {
+		...e,
+		lamp: {
+			...e.lamp,
+			dimmerPct: 100
+		}
+	} : e);
+	return {
+		now: spaceLight(space, date, eq, assignments),
+		full: spaceLight(space, date, full, assignments)
+	};
+}
+/** Room above the canopy: space height − pot height − lamp thickness − lamp's minimum distance (all from equipment). */
+function spaceFreeHeight(space, date, equipment, assignments) {
+	const here = equipmentAt(space.id, date, assignments).map((a) => equipment.find((e) => e.id === a.equipmentId));
+	const lamp = here.find((e) => e?.type === "lamp");
+	const pots = here.find((e) => e?.type === "container");
+	return freeHeightCm({
+		spaceH: space.dimensionsCm?.h,
+		potH: pots?.container?.heightCm,
+		lampH: lamp?.lamp?.dimensionsCm?.h,
+		minDistanceCm: lamp?.lamp?.minHeightCm
+	});
+}
+/**
+* Top view at scale: the space (length along x, width along y), a 3 × 3 grid, each lamp's body centred and spread
+* along the length (positions are schematic; sizes are to scale). A lamp without dimensions is listed, not drawn.
+*/
+function spaceSchema(dims, lamps, size = 300) {
+	const L = dims?.l;
+	const W = dims?.w;
+	if (!L || !W || L <= 0 || W <= 0) return null;
+	const scale = size / Math.max(L, W);
+	const width = L * scale;
+	const height = W * scale;
+	const cells = [];
+	for (let row = 0; row < 3; row++) for (let col = 0; col < 3; col++) cells.push({
+		x: col * width / 3,
+		y: row * height / 3,
+		w: width / 3,
+		h: height / 3
+	});
+	const drawn = lamps.flatMap((l) => Array.from({ length: Math.max(1, l.count ?? 1) }, (_, i) => ({
+		...l,
+		key: `${l.id}#${i}`
+	})));
+	const n = drawn.length;
+	return {
+		width,
+		height,
+		scale,
+		space: {
+			x: 0,
+			y: 0,
+			w: width,
+			h: height
+		},
+		cells,
+		lamps: drawn.map((l, i) => {
+			if (!l.l || !l.w) return {
+				id: l.key,
+				name: l.name,
+				rect: null
+			};
+			const w = Math.min(width, l.l * scale);
+			const h = Math.min(height, l.w * scale);
+			const cx = width * (i + .5) / n;
+			return {
+				id: l.key,
+				name: l.name,
+				rect: {
+					x: Math.max(0, Math.min(width - w, cx - w / 2)),
+					y: (height - h) / 2,
+					w,
+					h
+				}
+			};
+		})
+	};
+}
+/** Mean, min, max and uniformity (min ÷ mean) of the measured cells. Null with fewer than 1 cell. */
+function mapStats(cells) {
+	const v = cells.filter((x) => typeof x === "number" && Number.isFinite(x) && x >= 0);
+	if (!v.length) return null;
+	const mean = v.reduce((s, x) => s + x, 0) / v.length;
+	const min = Math.min(...v);
+	const max = Math.max(...v);
+	return {
+		mean: Math.round(mean),
+		min,
+		max,
+		uniformity: mean > 0 ? Math.round(min / mean * 100) / 100 : 0,
+		measured: v.length
+	};
+}
+/** Where a cell stands against the PPFD target. */
+function cellLevel(v, target) {
+	if (v == null) return "none";
+	if (!target) return "ok";
+	return v < target.lo ? "low" : v > target.hi ? "high" : "ok";
+}
+//#endregion
+//#region src/screens/tools/light.tsx
+function LightTool() {
+	const { t, num, range, settings } = useSettings();
+	const { cycle, space, equipment, assignments, targetsFor, saveSpace, saveEquipment } = useGrow();
+	const today = todayIso();
+	const show = (v) => v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v);
+	const lamps = space ? equipmentAt(space.id, today, assignments).map((a) => ({
+		a,
+		e: equipment.find((e) => e.id === a.equipmentId)
+	})).filter((x) => x.e?.type === "lamp") : [];
+	const stage = cycle ? stageOn(cycle, today) : null;
+	const tg = cycle ? targetsFor(today, cycle) : null;
+	const defaultHours = !stage || stage.key === "seedling" || stage.key === "veg" || stage.key === "notStarted" ? 18 : 12;
+	const [dim, setDim] = (0, import_react.useState)({});
+	const [hours, setHours] = (0, import_react.useState)("");
+	const [dliTarget, setDliTarget] = (0, import_react.useState)("");
+	const [cells, setCells] = (0, import_react.useState)(Array(9).fill(""));
+	(0, import_react.useEffect)(() => {
+		setDim(Object.fromEntries(lamps.map(({ e }) => [e.id, show(e.lamp?.dimmerPct)])));
+		setHours(show(defaultHours));
+		setDliTarget("");
+		setCells(Array.from({ length: 9 }, (_, i) => show(space?.lightMap?.cells[i] ?? void 0)));
+	}, [
+		space?.id,
+		cycle?.id,
+		settings.lang,
+		lamps.length
+	]);
+	const schema = (0, import_react.useMemo)(() => spaceSchema(space?.dimensionsCm, lamps.map(({ a, e }) => ({
+		id: e.id,
+		name: e.name,
+		l: e.lamp?.dimensionsCm?.l,
+		w: e.lamp?.dimensionsCm?.w,
+		count: a.quantity ?? e.quantity
+	}))), [
+		space?.id,
+		space?.dimensionsCm,
+		lamps.length,
+		equipment
+	]);
+	if (!space) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+		className: "text-[13px] text-fg-3",
+		children: t("lgt.noSpace")
+	});
+	const dimmers = Object.fromEntries(Object.entries(dim).map(([k, v]) => [k, parseNum(v)]));
+	const unknownDimmer = lamps.some(({ e }) => dimmers[e.id] == null);
+	const { now, full } = spaceLightAt(space, today, equipment, assignments, dimmers);
+	const h = parseNum(hours) ?? defaultHours;
+	const stats = mapStats(cells.map((c) => parseNum(c) ?? null));
+	const ppfdEst = now?.ppfd;
+	const ppfdUsed = stats ? {
+		v: stats.mean,
+		src: "measured"
+	} : ppfdEst?.ok ? {
+		v: ppfdEst.value,
+		src: "estimate"
+	} : null;
+	const dliNow = ppfdUsed ? dliOf(ppfdUsed.v, h) : null;
+	const target = parseNum(dliTarget);
+	const needPpfd = target ? ppfdFor(target, h) : null;
+	const needDim = needPpfd != null && full?.ppfd.ok ? dimmerFor(needPpfd, full.ppfd.value) : null;
+	const freeH = spaceFreeHeight(space, today, equipment, assignments);
+	const ppfdTarget = tg?.ppfd;
+	const srcLabel = (s) => s === "common" ? t("lgt.srcCommon") : s === "athena" ? t("nut.srcAthena") : s ? t("nut.srcEstimate") : "";
+	const saveDimmers = async () => {
+		try {
+			for (const { e } of lamps) if (dimmers[e.id] != null && dimmers[e.id] !== e.lamp?.dimmerPct) await saveEquipment({
+				...e,
+				lamp: {
+					...e.lamp,
+					dimmerPct: dimmers[e.id]
+				}
+			});
+			toast.success(t("lgt.dimSaved"));
+		} catch (err) {
+			toast.error(t("common.saveError", { reason: err.message }));
+		}
+	};
+	const saveMap = async () => {
+		try {
+			await saveSpace({
+				...space,
+				lightMap: {
+					date: today,
+					cells: cells.map((c) => parseNum(c) ?? null)
+				}
+			});
+			toast.success(t("lgt.mapSaved"));
+		} catch (err) {
+			toast.error(t("common.saveError", { reason: err.message }));
+		}
+	};
+	const dimDirty = lamps.some(({ e }) => dimmers[e.id] != null && dimmers[e.id] !== e.lamp?.dimmerPct);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "flex flex-col gap-3",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 0,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-2.5",
+					id: "lgt-ppfd",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex items-center justify-between gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+								emoji: "bulb",
+								children: t("lgt.now")
+							}), ppfdUsed && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chip, {
+								tone: ppfdUsed.src === "measured" ? "primary" : "neutral",
+								children: ppfdUsed.src === "measured" ? t("lgt.measured") : t("nut.estimate")
+							})]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "grid grid-cols-2 gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Big, {
+								k: t("lgt.ppfd"),
+								v: ppfdUsed ? num(ppfdUsed.v) : "—",
+								unit: "µmol/m²/s"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Big, {
+								k: t("lgt.dli", { h: num(h) }),
+								v: dliNow != null ? num(dliNow, 1) : "—",
+								unit: "mol/m²/j"
+							})]
+						}),
+						!ppfdUsed && ppfdEst && !ppfdEst.ok && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "flex justify-end",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcValue, {
+								c: ppfdEst,
+								fmt: (v) => num(v)
+							})
+						}),
+						!lamps.length && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12px] text-warn",
+							children: t("lgt.noLamp")
+						}),
+						ppfdTarget && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12px] text-fg-2",
+							children: t("lgt.targets", {
+								ppfd: range(ppfdTarget.lo, ppfdTarget.hi),
+								dli: tg?.dli ? range(tg.dli.lo, tg.dli.hi) : "—",
+								src: srcLabel(ppfdTarget.src)
+							})
+						}),
+						unknownDimmer && lamps.length > 0 && !stats && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[11.5px] text-fg-3",
+							children: t("lgt.dimUnknown")
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 1,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-3",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							emoji: "gear",
+							children: t("lgt.settings")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+							id: "l-h",
+							label: t("lgt.hours"),
+							value: hours,
+							onChange: setHours
+						}), lamps.map(({ e }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+							id: `l-dim-${e.id}`,
+							integer: true,
+							label: t("lgt.dimmer", { name: e.name }),
+							hint: e.lamp?.dimmable ? t("lgt.dimLevels", { n: e.lamp.dimmable }) : void 0,
+							value: dim[e.id] ?? "",
+							onChange: (v) => setDim((x) => ({
+								...x,
+								[e.id]: v
+							}))
+						}, e.id))] }),
+						dimDirty && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							variant: "outline",
+							className: "h-10 self-start rounded-full",
+							onClick: saveDimmers,
+							children: t("lgt.dimSave")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+							now && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcRow, {
+								label: t("lgt.wm2"),
+								sub: t("lgt.wm2Sub"),
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcValue, {
+									c: now.wPerM2,
+									fmt: (v) => `${num(v)} W/m²`
+								})
+							}),
+							now && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcRow, {
+								label: t("lgt.ppf"),
+								sub: t("lgt.ppfSub"),
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcValue, {
+									c: now.ppf,
+									fmt: (v) => `${num(v)} µmol/s`
+								})
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcRow, {
+								label: t("lgt.free"),
+								sub: t("lgt.freeSub"),
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcValue, {
+									c: freeH,
+									fmt: (v) => `${num(v)} cm`
+								})
+							})
+						] })
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 2,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-3",
+					id: "lgt-inverse",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+						emoji: "sun",
+						children: t("lgt.inverse")
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+						id: "l-dli",
+						label: t("lgt.dliTarget"),
+						hint: tg?.dli ? t("lgt.dliHint", { r: range(tg.dli.lo, tg.dli.hi) }) : void 0,
+						value: dliTarget,
+						onChange: setDliTarget
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "rounded-md border border-line bg-surface-2 px-3 py-2",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "text-[11px] text-fg-3",
+								children: t("lgt.needPpfd", { h: num(h) })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "text-[22px] font-semibold tabular",
+								id: "lgt-need",
+								children: needPpfd != null ? num(needPpfd) : "—"
+							}),
+							needDim != null && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "text-[11px] text-primary",
+								children: t("lgt.needDim", { p: needDim })
+							})
+						]
+					})] })]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 3,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-3",
+					id: "lgt-schema",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex items-center justify-between gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+								emoji: "compass",
+								children: t("lgt.schema")
+							}), space.dimensionsCm?.l && space.dimensionsCm?.w && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chip, { children: `${num(space.dimensionsCm.l)} × ${num(space.dimensionsCm.w)} cm` })]
+						}),
+						schema ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+							viewBox: `-4 -4 ${schema.width + 8} ${schema.height + 8}`,
+							className: "mx-auto block max-h-[300px] w-full",
+							role: "img",
+							"aria-label": t("lgt.schema"),
+							"data-ratio": (schema.width / schema.height).toFixed(3),
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+									x: 0,
+									y: 0,
+									width: schema.width,
+									height: schema.height,
+									rx: 6,
+									className: "fill-surface-2 stroke-line-strong",
+									strokeWidth: 1.5
+								}),
+								schema.cells.map((c, i) => {
+									const v = parseNum(cells[i]);
+									const lvl = cellLevel(v, ppfdTarget);
+									return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+										x: c.x + 2,
+										y: c.y + 2,
+										width: c.w - 4,
+										height: c.h - 4,
+										rx: 4,
+										className: cn(lvl === "none" && "fill-transparent", lvl === "low" && "fill-info/25", lvl === "ok" && "fill-primary/30", lvl === "high" && "fill-warn/30"),
+										strokeDasharray: "3 3",
+										stroke: "currentColor",
+										strokeOpacity: .18
+									}), v != null && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", {
+										x: c.x + c.w / 2,
+										y: c.y + c.h / 2 + 5,
+										textAnchor: "middle",
+										className: "fill-fg text-[14px] font-semibold tabular-nums",
+										children: num(v)
+									})] }, i);
+								}),
+								schema.lamps.map((l) => l.rect ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", {
+									x: l.rect.x,
+									y: l.rect.y,
+									width: l.rect.w,
+									height: l.rect.h,
+									rx: 3,
+									className: "fill-warn/15 stroke-warn",
+									strokeWidth: 1.5
+								}, l.id) : null)
+							]
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12px] text-warn",
+							children: t("lgt.noDims")
+						}),
+						schema && schema.lamps.some((l) => !l.rect) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[11.5px] text-fg-3",
+							children: t("lgt.lampNoDims", { list: [...new Set(schema.lamps.filter((l) => !l.rect).map((l) => l.name))].join(", ") })
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[11.5px] text-fg-3",
+							children: t("lgt.schemaNote")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "grid grid-cols-3 gap-2",
+							id: "lgt-map",
+							children: cells.map((c, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+								id: `l-cell-${i}`,
+								integer: true,
+								label: t("lgt.cell", { n: i + 1 }),
+								value: c,
+								onChange: (v) => setCells((x) => x.map((y, j) => j === i ? v : y))
+							}, i))
+						}),
+						stats && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12px] text-fg-2",
+							id: "lgt-stats",
+							children: t("lgt.stats", {
+								mean: num(stats.mean),
+								min: num(stats.min),
+								max: num(stats.max),
+								u: num(stats.uniformity, 2),
+								n: stats.measured
+							})
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							variant: "outline",
+							className: "h-10 self-start rounded-full",
+							onClick: saveMap,
+							disabled: !stats,
+							children: t("lgt.mapSave")
+						}),
+						space.lightMap && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[11px] text-fg-3",
+							children: t("lgt.mapDate", { date: space.lightMap.date.slice(8, 10) + "/" + space.lightMap.date.slice(5, 7) })
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourceNote, { children: t("lgt.sources") })
+		]
+	});
+}
+function Big({ k, v, unit }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "rounded-md border border-line bg-surface-2 px-3 py-2.5",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "text-[11px] text-fg-3",
+				children: k
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "text-[28px] leading-tight font-semibold tabular",
+				children: v
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "text-[10.5px] text-fg-3",
+				children: unit
+			})
+		]
+	});
+}
+//#endregion
+//#region src/calc/climate.ts
+var r2 = (x) => Math.round(x * 100) / 100;
+/** Leaf VPD (kPa) and leaf temperature. */
+function leafVpd(airC, rh, leafOffsetC = -2) {
+	return {
+		vpd: r2(vpd(airC, rh, leafOffsetC)),
+		leafC: Math.round((airC + leafOffsetC) * 10) / 10
+	};
+}
+/** Relative humidity (%) giving a leaf VPD at a given air temperature: (svp(leaf) − VPD) ÷ svp(air). Null if impossible. */
+function rhForVpd(targetVpd, airC, leafOffsetC = -2) {
+	const rh = (svp(airC + leafOffsetC) - targetVpd) / svp(airC) * 100;
+	return rh > 0 && rh <= 100 ? Math.round(rh) : null;
+}
+/** Humidity range for a VPD range (higher VPD → lower humidity). */
+function rhRangeForVpd(target, airC, leafOffsetC = -2) {
+	const hi = rhForVpd(target.lo, airC, leafOffsetC);
+	const lo = rhForVpd(target.hi, airC, leafOffsetC);
+	return hi != null && lo != null ? {
+		lo,
+		hi
+	} : null;
+}
+function vpdStatus(v, target) {
+	if (!target) return "none";
+	return v < target.lo ? "low" : v > target.hi ? "high" : "ok";
+}
+/** Common benchmark for air renewal: one full renewal every 1 to 3 minutes (not from the Handbook). */
+var AIR_REF_SECONDS = [60, 180];
+/** Extractor of a space and its renewal at a speed (from the equipment; missing flow → "donnée manquante"). */
+function spaceAir(space, date, equipment, assignments, speedPct) {
+	const ext = equipmentAt(space.id, date, assignments).map((a) => equipment.find((e) => e.id === a.equipmentId)).find((e) => e?.type === "extractor");
+	if (!ext) return null;
+	const m3h = extractorM3h(ext.extractor);
+	const speed = speedPct ?? ext.extractor?.speedPct ?? 100;
+	const seconds = airRenewalSeconds(space.dimensionsCm, m3h, speed);
+	return {
+		ext,
+		m3h,
+		speed,
+		seconds,
+		perHour: airChangesPerHour(space.dimensionsCm, m3h, speed),
+		status: seconds.ok ? seconds.value <= AIR_REF_SECONDS[1] ? seconds.value >= AIR_REF_SECONDS[0] ? "ok" : "fast" : "slow" : null,
+		carbonFilter: !!ext.extractor?.carbonFilter
+	};
+}
+//#endregion
+//#region src/screens/tools/climate.tsx
+function ClimateTool() {
+	const { t, num, range, settings } = useSettings();
+	const { cycle, space, all, equipment, assignments, targetsFor, saveEquipment } = useGrow();
+	const today = todayIso();
+	const show = (v) => v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v);
+	const last = space ? all.entries.find((e) => e.spaceId === space.id && !e.plantId && e.tempDay != null) : void 0;
+	const tg = cycle ? targetsFor(today, cycle) : null;
+	const [f, setF] = (0, import_react.useState)({});
+	(0, import_react.useEffect)(() => {
+		setF({
+			temp: show(last?.tempDay),
+			rh: show(last?.rh),
+			offset: show(last?.leafOffsetC ?? cycle?.leafOffsetC ?? -2),
+			speed: ""
+		});
+	}, [
+		space?.id,
+		last?.id,
+		settings.lang
+	]);
+	const set = (k) => (v) => setF((s) => ({
+		...s,
+		[k]: v
+	}));
+	if (!space) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+		className: "text-[13px] text-fg-3",
+		children: t("lgt.noSpace")
+	});
+	const T = parseNum(f.temp);
+	const RH = parseNum(f.rh);
+	const off = parseNum(f.offset) ?? -2;
+	const res = T != null && RH != null ? leafVpd(T, RH, off) : null;
+	const status = res ? vpdStatus(res.vpd, tg?.vpd) : "none";
+	const rhAim = tg?.vpd && T != null ? rhRangeForVpd(tg.vpd, T, off) : null;
+	const air = spaceAir(space, today, equipment, assignments, parseNum(f.speed));
+	const dur = (s) => s >= 60 ? `${Math.floor(s / 60)} min ${String(Math.round(s % 60)).padStart(2, "0")} s` : `${Math.round(s)} s`;
+	const saveSpeed = async () => {
+		const sp = parseNum(f.speed);
+		if (!air || sp == null) return;
+		try {
+			await saveEquipment({
+				...air.ext,
+				extractor: {
+					...air.ext.extractor,
+					speedPct: sp
+				}
+			});
+			toast.success(t("clim.speedSaved"));
+		} catch (e) {
+			toast.error(t("common.saveError", { reason: e.message }));
+		}
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "flex flex-col gap-3",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 0,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-3",
+					id: "clim-vpd",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex items-center justify-between gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+								emoji: "thermometer",
+								children: t("clim.vpd")
+							}), last && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chip, { children: t("clim.fromEntry", { date: last.date.slice(8, 10) + "/" + last.date.slice(5, 7) }) })]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, {
+							cols: 3,
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+									id: "c-t",
+									label: t("clim.temp"),
+									value: f.temp ?? "",
+									onChange: set("temp")
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+									id: "c-rh",
+									label: t("clim.rh"),
+									value: f.rh ?? "",
+									onChange: set("rh")
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+									id: "c-off",
+									label: t("clim.offset"),
+									value: f.offset ?? "",
+									onChange: set("offset")
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "grid grid-cols-2 gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "rounded-md border border-line bg-surface-2 px-3 py-2.5",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										className: "text-[11px] text-fg-3",
+										children: t("clim.vpdLeaf")
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										className: cn("text-[30px] leading-tight font-semibold tabular", status === "ok" && "text-primary", (status === "low" || status === "high") && "text-warn"),
+										id: "clim-vpd-v",
+										children: res ? num(res.vpd, 2) : "—"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "text-[10.5px] text-fg-3",
+										children: ["kPa", res ? ` · ${t("clim.leaf", { c: num(res.leafC, 1) })}` : ""]
+									})
+								]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "rounded-md border border-line bg-surface-2 px-3 py-2.5",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										className: "text-[11px] text-fg-3",
+										children: t("clim.target")
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										className: "text-[22px] leading-tight font-semibold tabular",
+										children: tg?.vpd ? range(tg.vpd.lo, tg.vpd.hi, 1) : "—"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										className: "text-[10.5px] text-fg-3",
+										children: tg?.vpd ? t("clim.targetSrc", { stage: t(`stage.${tg.stage}`) }) : t("clim.noCycle")
+									})
+								]
+							})]
+						}),
+						res && status !== "none" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: cn("rounded-md px-3 py-2 text-[12.5px] font-medium", status === "ok" ? "bg-primary/10 text-primary" : "bg-warn/10 text-warn"),
+							id: "clim-status",
+							children: status === "ok" ? t("clim.ok") : status === "low" ? t("clim.low") : t("clim.high")
+						}),
+						rhAim && T != null && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12.5px] text-fg-2",
+							id: "clim-rh-aim",
+							children: t("clim.rhAim", {
+								t: num(T, 1),
+								rh: range(rhAim.lo, rhAim.hi)
+							})
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[11.5px] text-fg-3",
+							children: t("clim.formula")
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 1,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-2.5",
+					id: "clim-air",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+						emoji: "cyclone",
+						children: t("clim.air")
+					}), !air ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "text-[12.5px] text-warn",
+						children: t("clim.noExtractor")
+					}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+							id: "c-speed",
+							integer: true,
+							label: t("clim.speed", { name: air.ext.name }),
+							hint: air.ext.extractor?.speedPct != null ? t("clim.speedHint", { v: num(air.ext.extractor.speedPct) }) : t("clim.speedUnknown"),
+							value: f.speed ?? "",
+							onChange: set("speed")
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "rounded-md border border-line bg-surface-2 px-3 py-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "text-[11px] text-fg-3",
+								children: t("clim.flow")
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "text-[18px] font-semibold tabular",
+								children: air.m3h != null ? `${num(air.m3h)} m³/h` : t("equip.missing")
+							})]
+						})] }),
+						parseNum(f.speed) != null && parseNum(f.speed) !== air.ext.extractor?.speedPct && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							variant: "outline",
+							className: "h-10 self-start rounded-full",
+							onClick: saveSpeed,
+							children: t("clim.speedSave")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcRow, {
+							label: t("clim.renewal"),
+							sub: t("clim.renewalRef", {
+								a: AIR_REF_SECONDS[0] / 60,
+								b: AIR_REF_SECONDS[1] / 60
+							}),
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcValue, {
+								c: air.seconds,
+								fmt: (v) => t("clim.every", { d: dur(v) })
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcRow, {
+							label: t("clim.perHour"),
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalcValue, {
+								c: air.perHour,
+								fmt: (v) => num(v, 0)
+							})
+						})] }),
+						air.status && air.status !== "ok" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12px] text-warn",
+							children: air.status === "slow" ? t("clim.slow") : t("clim.fast")
+						}),
+						air.carbonFilter && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[11.5px] text-fg-3",
+							children: t("equip.c.carbonWarn")
+						}),
+						air.m3h == null && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
+							href: "#equipment",
+							className: "text-[12.5px] font-semibold text-primary",
+							children: t("irr.openEquipment")
+						})
+					] })]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourceNote, { children: t("clim.sources") })
+		]
+	});
+}
+//#endregion
 //#region src/screens/tools.tsx
 var TOOLS = [
 	{
@@ -74621,17 +75581,15 @@ var TOOLS = [
 		emoji: "bulb",
 		title: "tools.light",
 		desc: "tools.lightD",
-		lot: 5,
-		soon: "soon.light"
+		perSpace: true
 	},
 	{
 		id: "climate",
 		emoji: "cyclone",
 		title: "tools.climate",
 		desc: "tools.climateD",
-		lot: 5,
-		soon: "soon.climate",
-		wide: true
+		wide: true,
+		perSpace: true
 	},
 	{
 		id: "equipment",
@@ -74704,7 +75662,7 @@ function ToolsScreen() {
 				title: t(tool.title),
 				body: t(tool.soon),
 				foot: t("soon.keep")
-			}) : open === "irrigation" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IrrigationTool, {}) : open === "nutrition" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NutritionTool, {}) : open === "ph" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhBalanceTool, {}) : open === "ipw" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IpwTool, {}) : open === "equipment" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EquipmentTool, {}) : open === "settings" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsTool, {}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GuideScreen, { embedded: true })
+			}) : open === "irrigation" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IrrigationTool, {}) : open === "nutrition" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NutritionTool, {}) : open === "ph" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhBalanceTool, {}) : open === "ipw" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IpwTool, {}) : open === "light" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LightTool, {}) : open === "climate" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClimateTool, {}) : open === "equipment" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EquipmentTool, {}) : open === "settings" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsTool, {}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GuideScreen, { embedded: true })
 		] });
 	}
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScreenHero, {
@@ -76951,6 +77909,10 @@ var Boundary = class extends import_react.Component {
     max-height: 94dvh !important;
   }
 
+  .max-h-\[300px\] {
+    max-height: 300px;
+  }
+
   .min-h-0 {
     min-height: 0;
   }
@@ -77041,6 +78003,10 @@ var Boundary = class extends import_react.Component {
 
   .max-w-\[40\%\] {
     max-width: 40%;
+  }
+
+  .max-w-\[55\%\] {
+    max-width: 55%;
   }
 
   .max-w-\[340px\] {
@@ -78076,6 +79042,66 @@ var Boundary = class extends import_react.Component {
   .mask-repeat {
     -webkit-mask-repeat: repeat;
     mask-repeat: repeat;
+  }
+
+  .fill-fg {
+    fill: var(--fg);
+  }
+
+  .fill-info\/25 {
+    fill: var(--info);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .fill-info\/25 {
+      fill: color-mix(in oklab, var(--info) 25%, transparent);
+    }
+  }
+
+  .fill-primary\/30 {
+    fill: var(--primary);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .fill-primary\/30 {
+      fill: color-mix(in oklab, var(--primary) 30%, transparent);
+    }
+  }
+
+  .fill-surface-2 {
+    fill: var(--surface-2);
+  }
+
+  .fill-transparent {
+    fill: #0000;
+  }
+
+  .fill-warn\/15 {
+    fill: var(--warn);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .fill-warn\/15 {
+      fill: color-mix(in oklab, var(--warn) 15%, transparent);
+    }
+  }
+
+  .fill-warn\/30 {
+    fill: var(--warn);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .fill-warn\/30 {
+      fill: color-mix(in oklab, var(--warn) 30%, transparent);
+    }
+  }
+
+  .stroke-line-strong {
+    stroke: var(--line-strong);
+  }
+
+  .stroke-warn {
+    stroke: var(--warn);
   }
 
   .object-cover {

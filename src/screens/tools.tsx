@@ -15,6 +15,8 @@ import { SettingsTool } from "./tools/settings"
 import { GuideScreen } from "./guide"
 import { PhBalanceTool } from "./tools/ph-balance"
 import { IpwTool } from "./tools/ipw"
+import { LightTool } from "./tools/light"
+import { ClimateTool } from "./tools/climate"
 
 type ToolId = "irrigation" | "nutrition" | "ph" | "ipw" | "light" | "climate" | "equipment" | "reperes" | "settings"
 type Tool = { id: ToolId; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; soon?: MessageKey; wide?: boolean; perSpace?: boolean }
@@ -23,8 +25,8 @@ const TOOLS: Tool[] = [
   { id: "nutrition", emoji: "testTube", title: "tools.nutrition", desc: "tools.nutritionD", perSpace: true },
   { id: "ph", emoji: "scales", title: "tools.ph", desc: "tools.phD", perSpace: true },
   { id: "ipw", emoji: "sweat", title: "tools.ipw", desc: "tools.ipwD", perSpace: true },
-  { id: "light", emoji: "bulb", title: "tools.light", desc: "tools.lightD", lot: 5, soon: "soon.light" },
-  { id: "climate", emoji: "cyclone", title: "tools.climate", desc: "tools.climateD", lot: 5, soon: "soon.climate", wide: true },
+  { id: "light", emoji: "bulb", title: "tools.light", desc: "tools.lightD", perSpace: true },
+  { id: "climate", emoji: "cyclone", title: "tools.climate", desc: "tools.climateD", wide: true, perSpace: true },
   { id: "equipment", emoji: "plug", title: "tools.equipment", desc: "tools.equipmentD", wide: true },
   { id: "reperes", emoji: "compass", title: "tools.reperes", desc: "tools.reperesD" },
   { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD" },
@@ -75,6 +77,10 @@ export function ToolsScreen() {
           <PhBalanceTool />
         ) : open === "ipw" ? (
           <IpwTool />
+        ) : open === "light" ? (
+          <LightTool />
+        ) : open === "climate" ? (
+          <ClimateTool />
         ) : open === "equipment" ? (
           <EquipmentTool />
         ) : open === "settings" ? (

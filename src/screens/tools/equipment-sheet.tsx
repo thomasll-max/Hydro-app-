@@ -46,6 +46,9 @@ const FIELDS: Record<SpecKey, Field[]> = {
     { k: "dimmerPct", label: "equip.f.dimmer", kind: "int" },
     { k: "spectrum", label: "equip.f.spectrum", kind: "text" },
     { k: "minHeightCm", label: "equip.f.minHeight", kind: "int" },
+    { k: "dimensionsCm.l", label: "equip.f.lampL", kind: "int" },
+    { k: "dimensionsCm.w", label: "equip.f.lampW", kind: "int" },
+    { k: "dimensionsCm.h", label: "equip.f.lampH", kind: "int" },
     { k: "efficacyIsHypothesis", label: "equip.f.efficacyHyp", kind: "bool" },
   ],
   reservoir: [
@@ -67,6 +70,7 @@ const FIELDS: Record<SpecKey, Field[]> = {
     { k: "count", label: "equip.f.count", kind: "int" },
     { k: "kind", label: "equip.f.kind", kind: "text" },
     { k: "substrate", label: "equip.f.substrate", kind: "text" },
+    { k: "heightCm", label: "equip.f.potH", kind: "int" },
   ],
   extractor: [
     { k: "m3h", label: "equip.f.m3h", kind: "num" },

@@ -45,11 +45,11 @@ export function CalcValue({ c, fmt, className }: { c: Calc; fmt: (v: number) => 
 export function CalcRow({ label, sub, children }: { label: string; sub?: string; children: ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-3 border-t border-line py-2 first:border-t-0">
-      <span className="min-w-0 text-[13px] text-fg-2">
+      <span className="min-w-0 flex-1 text-[13px] text-fg-2">
         {label}
         {sub && <span className="block text-[10.5px] leading-snug text-fg-3">{sub}</span>}
       </span>
-      <span className="shrink-0 text-right text-[13.5px]">{children}</span>
+      <span className="max-w-[55%] text-right text-[13.5px]">{children}</span>
     </div>
   )
 }

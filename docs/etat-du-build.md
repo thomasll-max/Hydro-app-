@@ -6,9 +6,9 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1 à 4b et 5a poussés le 18/10/2026. Dernier commit de lot : « Lot 5a : pH / Balance et IPW… ».
+  - Lots 1 à 5b poussés le 18/10/2026. Dernier commit de lot : « Lot 5b : lumière et climat… ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
@@ -20,7 +20,7 @@
 - [x] Lot 4a : nutrition à catalogue (141 tests)
 - [x] Lot 4b : arrosage depuis l'équipement, arrosage manuel par gamme (151 tests)
 - [x] Lot 5a : pH / Balance, IPW (161 tests)
-- [ ] Lot 5b : lumière, climat
+- [x] Lot 5b : lumière, climat (171 tests)
 - [ ] Lot 6 : graphiques et données
 - [ ] Lot 9 : tâche du matin + passe de finition (avant la validation de Thomas)
 - [ ] Lot 7 : nutrition multi-marques (après validation)
@@ -84,7 +84,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 161 au lot 5a
+npm test                          # tests (Vitest), 171 au lot 5b
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -144,4 +144,20 @@ PYTHONPATH=scripts python3 scripts/e2e-5a.py dist-preview/index.html <dossier>
 ```
 
 ### Prochain lot
-**Lot 5b — Lumière et Climat** : DLI et calcul inverse, PPFD depuis les lampes, W/m², hauteur libre, schéma proportionnel de l'espace avec grille 3×3 (carte de chaleur), cibles sourcées ; VPD et cibles, renouvellement d'air. Test : schéma proportionnel.
+Voir « Lot 5b — notes ».
+
+## Lot 5b — notes
+- `calc/light.ts` : `dliOf`, `ppfdFor`, `dimmerFor` (linéaire, estimation), `spaceLightAt` (gradation tapée, et à 100 %), `spaceFreeHeight`, `spaceSchema` (côté le plus long = 300 unités, grille 3 × 3, lampes réparties sur la longueur : position schématique, taille à l'échelle), `mapStats`, `cellLevel`.
+- `calc/climate.ts` : `leafVpd`, `rhForVpd`, `rhRangeForVpd`, `vpdStatus`, `spaceAir` (repère courant `AIR_REF_SECONDS` 60–180 s).
+- Modèle : `Space.lightMap` (9 cases, de l'arrière gauche, ligne par ligne), `ContainerSpec.heightCm` ; champs `lamp.dimensionsCm` exposés dans la fiche équipement.
+- Données manquantes chez Thomas : dimensions et distance minimale des lampes, hauteur des pots, débit du Cloudline S6, débit de la pompe. Rien n'est supposé : l'app affiche « donnée manquante ».
+- Cibles PPFD / DLI / VPD : toujours les repères courants de `targets.ts` (source « repère courant ») ; à remplacer si Thomas fournit des valeurs sourcées.
+
+### Commandes (lot 5b)
+```bash
+PYTHONPATH=scripts python3 scripts/shots.py dist-preview/index.html <dossier> docs/maquette-aujourdhui.html light climate ph ipw tools today
+PYTHONPATH=scripts python3 scripts/e2e-5b.py dist-preview/index.html <dossier>
+```
+
+### Prochain lot
+**Lot 6 — Graphiques, exports et import, « Demander à Claude »** (cahier des charges §5 et tests du lot 6 : export puis import JSON → données identiques ; 20 espaces sur 2 ans restent fluides).

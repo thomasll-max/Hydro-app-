@@ -91,6 +91,8 @@ export type Space = {
   dimensionsCm?: Partial<DimensionsCm>
   /** Module switches. Turning one off hides its data, never deletes it. */
   modules: Record<ModuleId, boolean>
+  /** Last PPFD map measured on a 3 × 3 grid (row by row, from the back left), µmol/m²/s; null = not measured. */
+  lightMap?: { date: IsoDate; cells: (number | null)[]; heightCm?: number }
   /** Overrides of the grow's nutrition settings for this space. */
   nutrition?: Partial<NutritionSettings>
   archived?: boolean
@@ -127,7 +129,7 @@ export type LampSpec = {
 }
 export type ReservoirSpec = { usableL?: number; totalL?: number; kind?: string; mode?: "dtw" | "recirc"; heater?: boolean; chiller?: boolean; airstone?: boolean; lid?: boolean }
 export type PumpSpec = { flowMlPerMin?: number; flowMeasuredAt?: IsoDate; outlets?: number; control?: string }
-export type ContainerSpec = { kind?: string; volumeL?: number; count?: number; substrate?: string }
+export type ContainerSpec = { kind?: string; volumeL?: number; count?: number; substrate?: string; heightCm?: number }
 export type ExtractorSpec = { m3h?: number; cfm?: number; diameterMm?: number; carbonFilter?: boolean; speedPct?: number }
 export type CapacitySpec = { capacity?: string }
 

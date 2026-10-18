@@ -1,58 +1,137 @@
-# Hydro
+<div align="center">
 
-Application de suivi de culture en intérieur : journal, espaces modulables, équipement, crop steering, nutrition (Athena Pro Line / Blended), calendrier et graphiques.
+# 🌱 Hydro
 
-- **Version Claude** : artefact publié sur claude.ai.
-- **Version locale** : PWA hors ligne pour les amis (lot 8).
+**Le carnet de bord de culture en intérieur, pensé pour le téléphone, dans la tente.**
 
-## État
-Lots 1 et 2a livrés (voir `CHANGELOG.md`). Le cahier des charges et la fiche Athena sont dans le projet claude.ai « Hydro » (`claude/prompt-app-hydro.md`, `claude/athena-pro-line-fiche.md`).
+Journal en une minute · Crop steering · Nutrition · Calendrier · Graphiques · Hors ligne
 
-- `docs/maquette-aujourdhui.html` : maquette validée de l'onglet Aujourd'hui (référence visuelle).
+[![Version locale](https://img.shields.io/badge/version%20locale-hydrotom.netlify.app-3ecf8e?style=flat-square)](https://hydrotom.netlify.app/)
+![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8?style=flat-square&logo=tailwindcss&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-Vitest-6e9f18?style=flat-square&logo=vitest&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-hors%20ligne-5a0fc8?style=flat-square)
 
-## Technique
+<br>
 
-Application de pilotage de culture, pensée pour le téléphone. Un seul code, deux cibles :
-- **Claude** (`VITE_TARGET=claude`, par défaut) : un fichier HTML unique publié comme artefact (base `db`, photos `assets`).
-- **Locale** (`VITE_TARGET=local`) : données sur l'appareil (IndexedDB). Le portage Netlify/PWA est prévu au lot 8.
+<img src="docs/screenshots/apercu.png" alt="Aperçu : Aujourd'hui, Journal, Calendrier, Graphiques, Outils" width="100%">
 
-### Installation
+</div>
+
+---
+
+## Ce que fait Hydro
+
+| | |
+|---|---|
+| ☀️ **Aujourd'hui** | Une carte « Bonjour » chaque matin (climat, arrosages prévus, rappels, ce qui est à surveiller), l'état de chaque espace et **une seule correction à faire** quand quelque chose sort de la cible. |
+| 📓 **Journal** | Une saisie en moins d'une minute, préremplie depuis la veille. Dryback, % de runoff, VPD et DLI calculés automatiquement. Saisie rapide de tous les espaces d'un coup. |
+| 🏠 **Espaces modulables** | Tentes, rooms, serres de germination, séchoir… en nombre illimité. Chaque espace n'active que ses modules (climat, lumière, arrosage, nutrition, propagation, séchage). Plusieurs cycles en parallèle, transferts même partiels. |
+| 🔌 **Équipement** | Lampes, réservoirs, pompes, extracteurs, contenants. Ils alimentent les calculs : PPFD estimé, W/m², hauteur libre, durée des doses, autonomie du réservoir, renouvellement d'air, g/W. |
+| 💧 **Arrosage et crop steering** | Programme P0 → P3 ou méthode manuelle, durée de pompe à partir du débit mesuré, mode capteur. Dryback mesuré par **pesée** ou par **capteur** (échelles séparées). |
+| 🧪 **Nutrition** | Catalogue de gammes (Athena Pro Line, Blended…), poudre ou **concentré** (113 / 226 / 282 g/L), add-ons, produits perso, ordre de mélange, stocks de concentré, bidons partagés entre espaces. |
+| ⚖️ **pH / Balance** | pH cible selon le stade, titrage guidé, et une prédiction qui apprend de tes bidons précédents. |
+| 📅 **Calendrier** | Rappels récurrents, échéances automatiques (12/12, Fade, rinçage, récolte, bidon à refaire…) et export vers le calendrier du téléphone (.ics). |
+| 📈 **Graphiques** | Courbes avec les zones cibles en fond, événements sur la frise, comparaison de jusqu'à 4 espaces. |
+| 🌍 **Partout** | Français / anglais, thème clair / sombre, conçu pour une main et un écran de téléphone. |
+
+<div align="center">
+<img src="docs/screenshots/today-clair.png" width="31%" alt="Aujourd'hui, thème clair">&nbsp;
+<img src="docs/screenshots/calendar-clair.png" width="31%" alt="Calendrier, thème clair">&nbsp;
+<img src="docs/screenshots/tools-clair.png" width="31%" alt="Outils, thème clair">
+</div>
+
+---
+
+## Deux versions, un seul code
+
+| | Version **Claude** | Version **locale** |
+|---|---|---|
+| Pour qui | Thomas | Les amis |
+| Où | Artefact privé sur claude.ai | [hydrotom.netlify.app](https://hydrotom.netlify.app/), installable comme une app |
+| Données | Base de l'artefact (privée, propriétaire uniquement) | Sur le téléphone (IndexedDB), **sans compte ni serveur** |
+| Hors ligne | — | ✅ |
+| Extras | Photos, « Demander à Claude », résumé du matin à 9 h | Sauvegarde / restauration en un fichier, export .ics |
+| Build | `npm run build` → `dist/hydro.html` | `npm run build:local` → `dist-local/` |
+
+La cible se choisit avec `VITE_TARGET=claude|local`. Les écrans et les calculs sont communs ; seule la couche de stockage change (`src/store/`).
+
+**Mises à jour automatiques :** un push sur `main` reconstruit la version locale sur Netlify (`netlify.toml`). La version Claude est republiée sur l'artefact à la fin de chaque lot.
+
+---
+
+## Démarrer
+
 ```bash
 npm ci
+npm test                          # tous les tests (Vitest)
+npm run dev                       # serveur de développement
+npm run build                     # version Claude → dist/hydro.html
+npm run build:local               # version locale → dist-local/
+npm run preview:build             # aperçu local avec images intégrées → dist-preview/
 ```
 
-### Tests
-```bash
-npm test            # Vitest : calculs, calendrier et .ics (relu par ical.js), i18n (clés FR/EN identiques), stockage, nutrition
-PYTHONPATH=scripts python3 scripts/e2e-3.py dist-preview/index.html <dossier>   # parcours calendrier (après npm run preview:build)
+Node 22 recommandé.
+
+---
+
+## Structure
+
+```
+src/
+├── calc/          calculs purs et testés : formules, stades, cibles, arrosage, conseils, résumé du matin
+├── calendar/      récurrences, échéances automatiques, agenda, export .ics
+├── equipment/     calculs tirés de l'équipement (PPF, PPFD, W/m², air, doses, autonomie, g/W)
+├── data/          gammes d'engrais (chaque valeur avec sa source), grow pré-rempli
+├── model/         types et documents (schemaVersion sur chacun), opérations pures
+├── store/         stockage : artefact Claude, IndexedDB local, mémoire pour les tests
+├── i18n/          fr.ts / en.ts (clés identiques, vérifiées par un test)
+├── screens/       écrans (Aujourd'hui, Journal, Calendrier, Graphiques, Outils…)
+└── components/    composants UI (shadcn/ui, Magic UI)
+docs/              cahier des charges, état du build, fiche Athena, guides, maquette
+scripts/           images 3D, conversion artefact, captures et parcours Playwright
+pwa/               manifeste, icônes et service worker de la version locale
 ```
 
-### Build
-```bash
-npm run build           # dist/hydro.html (format artefact, images 3D depuis le stockage d'assets)
-npm run preview:build   # dist-preview/ (images intégrées, pour un aperçu local)
-VITE_TARGET=local npm run build   # version locale, sans runtime Claude
-```
+---
 
-### Structure
-- `src/calc/` : calculs purs testés (formules, stade, cibles, programme d'arrosage, conseils, rappels, nutrition, repères)
-- `src/calendar/` : calendrier pur et testé — récurrences (`rrule.ts`), échéances automatiques (`deadlines.ts`), liste unifiée (`agenda.ts`), export .ics (`ics.ts`), libellés (`labels.ts`)
-- `src/equipment/calc.ts` : calculs tirés de l'équipement (PPF, PPFD, W/m², air, doses, autonomie, g/W)
-- `src/model/` : types et documents (`schemaVersion` sur chacun) ; `grow.ts` = grow, espaces, modules, équipement ; `grow-ops.ts` = opérations pures
-- `src/data/thomas-grow.ts` : grow pré-rempli de la version Claude
-- `src/store/` : couche de stockage (artefact, local IndexedDB, mémoire pour les tests)
-- `src/i18n/` : `fr.ts` / `en.ts` + formats `Intl`
-- `src/data/reference.ts` : valeurs vérifiées (Athena Handbook FR V8), chacune avec sa source
-- `src/screens/`, `src/components/` : écrans ; composants shadcn/ui et Magic UI copiés depuis leurs dépôts GitHub
-- `scripts/` : génération des images 3D, conversion au format artefact, captures et parcours de test (Playwright)
+## Les règles qui comptent
 
-### Ajouter une gamme d'engrais
-Créer un objet `NutrientLine` (produits, tableau de dosage selon l'EC, tableaux de concentrés, règles par stade, source) dans `src/calc/nutrition.ts`, puis l'ajouter à `NUTRIENT_LINES`. Le sélecteur de gamme apparaît dès qu'il y en a deux.
+- **Aucune valeur inventée.** Chaque dose, cible ou caractéristique affiche sa source (page du Handbook, fiche fabricant, étiquette, repère courant ou estimation). Pas de source → champ vide ou « donnée manquante ».
+- **Pas de mélange entre gammes.** Un test vérifie que Pro Line et Blended ne se croisent jamais.
+- **Calculs hors des écrans.** Toute la logique est dans des modules purs, couverts par les tests.
+- **Une saisie, moins d'une minute.** Sinon personne ne tient un journal tout un cycle.
 
-### Ajouter un module
-Ajouter son id à `MODULES` (`src/model/grow.ts`), l'inclure dans les `TEMPLATE_MODULES` voulus, déclarer ses champs de saisie dans `MODULE_FIELDS` (`src/model/grow-ops.ts`) et ses libellés `module.<id>` dans `fr.ts` / `en.ts` (le test i18n vérifie la parité).
+---
 
-## Règles de travail
-- Un commit par lot (ou sous-lot), avec un CHANGELOG à jour.
-- Une seule conversation à la fois sur le code.
-- Tous les tests doivent passer avant chaque push.
+## Documentation
+
+| Document | Contenu |
+|---|---|
+| [`docs/etat-du-build.md`](docs/etat-du-build.md) | Lots faits, décisions, pièges connus, commandes, **prochain lot** |
+| [`docs/cahier-des-charges.md`](docs/cahier-des-charges.md) | Le plan complet de l'app |
+| [`docs/athena-fiche.md`](docs/athena-fiche.md) | Valeurs de nutrition Athena, avec leurs pages sources |
+| [`docs/guide-amis.md`](docs/guide-amis.md) | Installer et utiliser la version locale |
+| [`docs/guide-netlify.md`](docs/guide-netlify.md) | Déploiement Netlify |
+| [`CHANGELOG.md`](CHANGELOG.md) | Ce qui a changé, lot par lot |
+| [`CLAUDE.md`](CLAUDE.md) | Règles pour les sessions de développement avec Claude |
+
+---
+
+## Comment l'app est construite
+
+Hydro est développée par lots, avec [Claude](https://claude.ai) : une session à la fois, tests verts avant chaque push, un commit par lot, et `docs/etat-du-build.md` mis à jour pour passer le relais à la session suivante.
+
+<details>
+<summary><b>Ajouter une gamme d'engrais ou un module</b></summary>
+
+- **Gamme d'engrais** : décrire la gamme dans `src/data/nutrients/` (produits, unités, formes, programme par stade, guide par EC, ordre de mélange, règles, sources), puis l'enregistrer dans le catalogue. Le sélecteur de gamme apparaît dès qu'il y en a plusieurs.
+- **Module** : ajouter son id à `MODULES` (`src/model/grow.ts`), l'inclure dans les modèles d'espace voulus, déclarer ses champs dans `MODULE_FIELDS` (`src/model/grow-ops.ts`) et ses libellés dans `fr.ts` / `en.ts`. Le test i18n vérifie la parité des clés.
+
+</details>
+
+---
+
+<sub>Projet personnel, non affilié à Athena, AC Infinity ou Alien Hydroponics : les noms de marques appartiennent à leurs propriétaires. Les valeurs proviennent des documents publiés par les fabricants et sont citées avec leur source. Renseigne-toi sur la législation de ton pays concernant la culture.</sub>

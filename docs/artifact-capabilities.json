@@ -1,0 +1,30 @@
+{
+  "_note": "Déclaration des capacités de l'artefact Hydro (https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC). À republier telle quelle si une capacité doit être ajoutée : une déclaration non vide remplace tout. Sinon, ne pas passer `capabilities` (elles sont conservées).",
+  "capabilities": {
+    "assets": {},
+    "db": {
+      "rules": [
+        { "path": "grow", "read": "owner", "write": "owner" },
+        { "path": "sites", "read": "owner", "write": "owner" },
+        { "path": "spaces", "read": "owner", "write": "owner" },
+        { "path": "cycles", "read": "owner", "write": "owner" },
+        { "path": "groups", "read": "owner", "write": "owner" },
+        { "path": "plants", "read": "owner", "write": "owner" },
+        { "path": "entries", "read": "owner", "write": "owner" },
+        { "path": "events", "read": "owner", "write": "owner" },
+        { "path": "mixes", "read": "owner", "write": "owner" },
+        { "path": "reminders", "read": "owner", "write": "owner" },
+        { "path": "concentrateStocks", "read": "owner", "write": "owner" },
+        { "path": "sprays", "read": "owner", "write": "owner" },
+        { "path": "customProducts", "read": "owner", "write": "owner" },
+        { "path": "equipment", "read": "owner", "write": "owner" },
+        { "path": "equipmentAssignments", "read": "owner", "write": "owner" },
+        { "path": "settings", "read": "owner", "write": "owner" },
+        { "path": "digest", "read": "owner", "write": "owner" }
+      ]
+    },
+    "downloads": {},
+    "user": {},
+    "sample": {}
+  }
+}

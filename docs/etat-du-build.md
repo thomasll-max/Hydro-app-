@@ -6,9 +6,9 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1 à 6a poussés le 18/10/2026. Dernier commit de lot : « Lot 6a : graphiques… ».
+  - Lots 1 à 6b poussés le 18/10/2026. Dernier commit de lot : « Lot 6b : sauvegarde, import et « Demander à Claude »… ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
@@ -22,7 +22,7 @@
 - [x] Lot 5a : pH / Balance, IPW (161 tests)
 - [x] Lot 5b : lumière, climat (171 tests)
 - [x] Lot 6a : graphiques (179 tests)
-- [ ] Lot 6b : export / import JSON, « Demander à Claude »
+- [x] Lot 6b : export / import JSON, « Demander à Claude » (186 tests)
 - [ ] Lot 9 : tâche du matin + passe de finition (avant la validation de Thomas)
 - [ ] Lot 7 : nutrition multi-marques (après validation)
 - [ ] Lot 8 : version locale (Netlify relié au dépôt, après validation)
@@ -85,7 +85,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 179 au lot 6a
+npm test                          # tests (Vitest), 186 au lot 6b
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -175,4 +175,18 @@ PYTHONPATH=scripts python3 scripts/e2e-6a.py dist-preview/index.html <dossier>
 ```
 
 ### Prochain lot
-**Lot 6b — Export / import JSON et « Demander à Claude »** (test : export puis import JSON → données identiques).
+Voir « Lot 6b — notes ».
+
+## Lot 6b — notes
+- `lib/backup.ts` : `exportBackup`, `parseBackup`, `importBackup` (merge / replace, `grow/main` écrit en dernier), `entriesCsv`. Format `{ format: "hydro-backup", version: 1, exportedAt, source, collections }`.
+- `downloads` accepte `.json` et `.csv` (pas `.ics`, d'où le zip du lot 3).
+- « Demander à Claude » utilise la capacité **`sample`**, ajoutée en version 18 avec l'accord de Thomas (vérifié après publication : 17 règles conservées, un lecteur « view » ne lit rien). L'ajouter oblige à republier la déclaration complète (une déclaration non vide remplace tout) : elle est dans `docs/artifact-capabilities.json` (assets, db avec les 17 règles propriétaire, downloads, user, + sample). Sans `sample`, l'outil reste caché (rien ne casse).
+- Chaque appel est sans mémoire : le prompt porte les règles, le contexte de l'espace et les derniers échanges (`MAX_TURNS = 6`). `cache: false`. Le premier appel demande l'accord du lecteur ; un refus cache la fonction pour la visite.
+
+### Commandes (lot 6b)
+```bash
+PYTHONPATH=scripts python3 scripts/e2e-6b.py dist-preview/index.html <dossier>
+```
+
+### Prochain lot
+**Lot 9 — tâche du matin + passe de finition** (avant la validation de Thomas).

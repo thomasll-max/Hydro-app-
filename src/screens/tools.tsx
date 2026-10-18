@@ -17,9 +17,12 @@ import { PhBalanceTool } from "./tools/ph-balance"
 import { IpwTool } from "./tools/ipw"
 import { LightTool } from "./tools/light"
 import { ClimateTool } from "./tools/climate"
+import { AskTool } from "./tools/ask"
+import { DataTool } from "./tools/data"
+import { useSample } from "@/lib/sample"
 
-type ToolId = "irrigation" | "nutrition" | "ph" | "ipw" | "light" | "climate" | "equipment" | "reperes" | "settings"
-type Tool = { id: ToolId; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; soon?: MessageKey; wide?: boolean; perSpace?: boolean }
+type ToolId = "irrigation" | "nutrition" | "ph" | "ipw" | "light" | "climate" | "ask" | "equipment" | "data" | "reperes" | "settings"
+type Tool = { id: ToolId; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; soon?: MessageKey; wide?: boolean; perSpace?: boolean; needsSample?: boolean }
 const TOOLS: Tool[] = [
   { id: "irrigation", emoji: "droplet", title: "tools.irrigation", desc: "tools.irrigationD", wide: true, perSpace: true },
   { id: "nutrition", emoji: "testTube", title: "tools.nutrition", desc: "tools.nutritionD", perSpace: true },
@@ -27,9 +30,11 @@ const TOOLS: Tool[] = [
   { id: "ipw", emoji: "sweat", title: "tools.ipw", desc: "tools.ipwD", perSpace: true },
   { id: "light", emoji: "bulb", title: "tools.light", desc: "tools.lightD", perSpace: true },
   { id: "climate", emoji: "cyclone", title: "tools.climate", desc: "tools.climateD", wide: true, perSpace: true },
+  { id: "ask", emoji: "book", title: "tools.ask", desc: "tools.askD", wide: true, perSpace: true, needsSample: true },
   { id: "equipment", emoji: "plug", title: "tools.equipment", desc: "tools.equipmentD", wide: true },
+  { id: "data", emoji: "notebook", title: "tools.data", desc: "tools.dataD" },
   { id: "reperes", emoji: "compass", title: "tools.reperes", desc: "tools.reperesD" },
-  { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD" },
+  { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD", wide: true },
 ]
 const IDS = TOOLS.map((x) => x.id) as string[]
 
@@ -37,6 +42,7 @@ const IDS = TOOLS.map((x) => x.id) as string[]
 export function ToolsScreen() {
   const { t } = useSettings()
   const { space } = useGrow()
+  const sample = useSample()
   const initial = location.hash.replace("#", "")
   const [open, setOpen] = useState<ToolId | null>(IDS.includes(initial) ? (initial as ToolId) : initial === "guide" ? "reperes" : null)
   useEffect(() => {
@@ -81,6 +87,10 @@ export function ToolsScreen() {
           <LightTool />
         ) : open === "climate" ? (
           <ClimateTool />
+        ) : open === "ask" ? (
+          <AskTool />
+        ) : open === "data" ? (
+          <DataTool />
         ) : open === "equipment" ? (
           <EquipmentTool />
         ) : open === "settings" ? (
@@ -98,7 +108,7 @@ export function ToolsScreen() {
         <p className="mt-1 text-[13px] leading-snug text-fg-2">{t("tools.subtitle")}</p>
       </ScreenHero>
       <div className="grid grid-cols-2 gap-2.5">
-        {TOOLS.map((tool, i) => {
+        {TOOLS.filter((tool) => !tool.needsSample || sample).map((tool, i) => {
           const ready = !tool.lot
           return (
             <Reveal key={tool.id} i={i} className={tool.wide ? "col-span-2" : undefined}>

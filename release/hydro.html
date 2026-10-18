@@ -710,10 +710,10 @@ var runtime = () => {
 };
 /** Build target "local" (offline, for friends) never touches the artifact runtime. */
 var TARGET = "artifact";
-var picked = null;
+var picked$1 = null;
 function getStores() {
-	if (picked) return picked;
-	picked = (async () => {
+	if (picked$1) return picked$1;
+	picked$1 = (async () => {
 		const rt = runtime();
 		if (rt) {
 			const [db, assets, user] = await Promise.all([
@@ -736,7 +736,7 @@ function getStores() {
 			userId: null
 		};
 	})();
-	return picked;
+	return picked$1;
 }
 //#endregion
 //#region node_modules/scheduler/cjs/scheduler.production.js
@@ -24842,6 +24842,10 @@ var dictionaries = {
 			}
 		},
 		tools: {
+			ask: "Demander à Claude",
+			askD: "Une question sur l'espace, avec tes données",
+			data: "Sauvegarde",
+			dataD: "Export JSON, import, CSV",
 			title: "Outils",
 			subtitle: "Calculs testés, sources affichées sous chaque résultat.",
 			irrigation: "Arrosage",
@@ -25127,6 +25131,73 @@ var dictionaries = {
 			slow: "Plus lent que le repère courant.",
 			fast: "Plus rapide que le repère courant.",
 			sources: "Sources : formule de Tetens · cibles VPD et renouvellement : repères courants (hors Handbook) · débit de l'extracteur saisi dans l'équipement"
+		},
+		data: {
+			col: {
+				grow: "Grow",
+				sites: "Rooms",
+				spaces: "Espaces",
+				cycles: "Cycles",
+				groups: "Groupes",
+				plants: "Plantes",
+				entries: "Saisies",
+				events: "Événements",
+				mixes: "Bidons",
+				reminders: "Rappels",
+				concentrateStocks: "Concentrés",
+				sprays: "Pulvérisations",
+				customProducts: "Produits perso",
+				equipment: "Équipement",
+				equipmentAssignments: "Affectations",
+				settings: "Réglages",
+				digest: "Résumé"
+			},
+			export: "Sauvegarder",
+			exportD: "Tout le grow dans un fichier JSON : espaces, cycles, journal, bidons, équipement, rappels, réglages. Même format dans les deux versions de l'app.",
+			exportBtn: "Exporter la sauvegarde (.json)",
+			csvBtn: "Journal en CSV ({n} saisies)",
+			photos: "Les photos ne sont pas dans le fichier : seules leurs références y sont.",
+			saved: "Fichier proposé au téléchargement",
+			declined: "Téléchargement annulé",
+			unavailable: "Téléchargement indisponible ici",
+			import: "Restaurer",
+			importD: "Choisis un fichier de sauvegarde Hydro. Un résumé s'affiche avant toute écriture.",
+			chooseFile: "Choisir un fichier .json",
+			fileSummary: "{name} · {n} documents · exporté le {date}",
+			mode: "Mode",
+			merge: "Fusionner",
+			replace: "Remplacer",
+			mergeD: "Les documents du fichier remplacent ceux qui ont le même identifiant ; le reste est gardé.",
+			replaceD: "Tout ce qui n'est pas dans le fichier sera supprimé. À faire seulement pour revenir exactement à la sauvegarde.",
+			cancel: "Annuler",
+			confirm: "Importer",
+			imported: "Import terminé : {w} écrits, {d} supprimés",
+			err: {
+				json: "Ce fichier n'est pas du JSON lisible.",
+				format: "Ce n'est pas une sauvegarde Hydro.",
+				version: "Sauvegarde d'une version plus récente de l'app : mets l'app à jour d'abord."
+			},
+			note: "Sauvegarde : rien ne quitte ton appareil ou ton compte sans que tu télécharges le fichier."
+		},
+		ask: {
+			title: "Demander à Claude · {space}",
+			desc: "La question part avec ce que l'app sait de cet espace : stade, cibles et leur source, 7 dernières saisies, dernier bidon, données manquantes. Utilise ton propre compte Claude.",
+			s1: "Qu'est-ce que je devrais corriger en priorité aujourd'hui ?",
+			s2: "Mon EC du runoff est-elle cohérente avec le stade ?",
+			s3: "Comment se présente le dryback cette semaine ?",
+			question: "Ta question",
+			followUp: "Une autre question",
+			placeholder: "Ex. : feuilles qui jaunissent par le bas, que vérifier ?",
+			send: "Demander",
+			new: "Nouvelle conversation",
+			stop: "Arrêter",
+			thinking: "Claude réfléchit…",
+			unavailable: "« Demander à Claude » n'est disponible que dans l'app Claude.",
+			notGranted: "Accès refusé : « Demander à Claude » reste désactivé pour cette visite.",
+			rateLimited: "Trop de questions d'affilée : réessaie dans un moment.",
+			stopped: "Réponse arrêtée.",
+			error: "Pas de réponse cette fois.",
+			note: "Claude ne voit que les données envoyées avec la question et ne garde rien d'une question à l'autre. Une dose absente du Handbook n'est jamais inventée."
 		},
 		nut: {
 			title: "Nutrition",
@@ -26175,6 +26246,10 @@ var dictionaries = {
 			}
 		},
 		tools: {
+			ask: "Ask Claude",
+			askD: "A question about the space, with your data",
+			data: "Backup",
+			dataD: "JSON export, import, CSV",
 			title: "Tools",
 			subtitle: "Tested calculations, with the source under every result.",
 			irrigation: "Irrigation",
@@ -26460,6 +26535,73 @@ var dictionaries = {
 			slow: "Slower than the common benchmark.",
 			fast: "Faster than the common benchmark.",
 			sources: "Sources: Tetens formula · VPD and renewal targets: common benchmarks (not from the Handbook) · extractor flow entered in the equipment"
+		},
+		data: {
+			col: {
+				grow: "Grow",
+				sites: "Rooms",
+				spaces: "Spaces",
+				cycles: "Cycles",
+				groups: "Groups",
+				plants: "Plants",
+				entries: "Entries",
+				events: "Events",
+				mixes: "Tanks",
+				reminders: "Reminders",
+				concentrateStocks: "Concentrates",
+				sprays: "Sprays",
+				customProducts: "Personal products",
+				equipment: "Equipment",
+				equipmentAssignments: "Placements",
+				settings: "Settings",
+				digest: "Digest"
+			},
+			export: "Back up",
+			exportD: "The whole grow in one JSON file: spaces, cycles, journal, tanks, equipment, reminders, settings. Same format in both versions of the app.",
+			exportBtn: "Export the backup (.json)",
+			csvBtn: "Journal as CSV ({n} entries)",
+			photos: "Photos are not in the file: only their references are.",
+			saved: "File offered for download",
+			declined: "Download cancelled",
+			unavailable: "Download unavailable here",
+			import: "Restore",
+			importD: "Pick a Hydro backup file. A summary is shown before anything is written.",
+			chooseFile: "Choose a .json file",
+			fileSummary: "{name} · {n} documents · exported on {date}",
+			mode: "Mode",
+			merge: "Merge",
+			replace: "Replace",
+			mergeD: "Documents from the file replace those with the same id; everything else is kept.",
+			replaceD: "Everything not in the file will be deleted. Only to go back exactly to the backup.",
+			cancel: "Cancel",
+			confirm: "Import",
+			imported: "Import done: {w} written, {d} deleted",
+			err: {
+				json: "This file is not readable JSON.",
+				format: "This is not a Hydro backup.",
+				version: "Backup from a newer version of the app: update the app first."
+			},
+			note: "Backup: nothing leaves your device or account unless you download the file."
+		},
+		ask: {
+			title: "Ask Claude · {space}",
+			desc: "The question goes with what the app knows about this space: stage, targets and their source, last 7 entries, last tank, missing data. Uses your own Claude account.",
+			s1: "What should I fix first today?",
+			s2: "Is my runoff EC consistent with the stage?",
+			s3: "How does the dryback look this week?",
+			question: "Your question",
+			followUp: "Another question",
+			placeholder: "E.g.: lower leaves turning yellow, what should I check?",
+			send: "Ask",
+			new: "New conversation",
+			stop: "Stop",
+			thinking: "Claude is thinking…",
+			unavailable: "“Ask Claude” is only available in the Claude app.",
+			notGranted: "Access declined: “Ask Claude” stays off for this visit.",
+			rateLimited: "Too many questions in a row: try again in a moment.",
+			stopped: "Answer stopped.",
+			error: "No answer this time.",
+			note: "Claude only sees the data sent with the question and keeps nothing between questions. A dose missing from the Handbook is never invented."
 		},
 		nut: {
 			title: "Nutrition",
@@ -27009,6 +27151,25 @@ var GROW_SCHEMA = {
 	spray: 2,
 	customProduct: 2
 };
+var COLLECTIONS = [
+	"grow",
+	"sites",
+	"spaces",
+	"cycles",
+	"groups",
+	"plants",
+	"entries",
+	"events",
+	"mixes",
+	"reminders",
+	"concentrateStocks",
+	"sprays",
+	"customProducts",
+	"equipment",
+	"equipmentAssignments",
+	"settings",
+	"digest"
+];
 var MODULES = [
 	"climate",
 	"light",
@@ -28720,7 +28881,7 @@ function nextBalancePer10L(m) {
 }
 //#endregion
 //#region src/calc/targets.ts
-var r$1 = (lo, hi, src, page) => page ? {
+var r$2 = (lo, hi, src, page) => page ? {
 	lo,
 	hi,
 	src,
@@ -28732,36 +28893,36 @@ var r$1 = (lo, hi, src, page) => page ? {
 };
 /** pH of solution and runoff (same ranges, Athena). */
 function phTarget(stage, substrate) {
-	if (stage === "seedling") return r$1(5.6, 5.6, "athena");
-	if (stage === "finish" || stage === "flush") return r$1(6, 6.4, "athena");
-	if (substrate === "soil") return r$1(6, 6.4, "spec");
-	if (substrate === "mix7030") return r$1(5.9, 6.3, "estimate");
-	return r$1(5.8, 6.2, "athena");
+	if (stage === "seedling") return r$2(5.6, 5.6, "athena");
+	if (stage === "finish" || stage === "flush") return r$2(6, 6.4, "athena");
+	if (substrate === "soil") return r$2(6, 6.4, "spec");
+	if (substrate === "mix7030") return r$2(5.9, 6.3, "estimate");
+	return r$2(5.8, 6.2, "athena");
 }
 /** Precision (auto, P0–P3) table — dryback and substrate EC (runoff as proxy) by stage. */
 var AUTO = {
 	veg: {
-		dryback: r$1(25, 50, "athena"),
-		ecRunoff: r$1(3, 5, "athena"),
-		runoffPct: r$1(8, 16, "athena"),
+		dryback: r$2(25, 50, "athena"),
+		ecRunoff: r$2(3, 5, "athena"),
+		runoffPct: r$2(8, 16, "athena"),
 		steer: "vegetative"
 	},
 	stretch: {
-		dryback: r$1(40, 50, "athena"),
-		ecRunoff: r$1(4, 10, "athena"),
-		runoffPct: r$1(1, 7, "athena"),
+		dryback: r$2(40, 50, "athena"),
+		ecRunoff: r$2(4, 10, "athena"),
+		runoffPct: r$2(1, 7, "athena"),
 		steer: "generative"
 	},
 	bulk: {
-		dryback: r$1(30, 40, "athena"),
-		ecRunoff: r$1(3.5, 6, "athena"),
-		runoffPct: r$1(8, 16, "athena"),
+		dryback: r$2(30, 40, "athena"),
+		ecRunoff: r$2(3.5, 6, "athena"),
+		runoffPct: r$2(8, 16, "athena"),
 		steer: "vegetative"
 	},
 	finish: {
-		dryback: r$1(40, 50, "athena"),
-		ecRunoff: r$1(3, 4, "athena"),
-		runoffPct: r$1(8, 16, "athena"),
+		dryback: r$2(40, 50, "athena"),
+		ecRunoff: r$2(3, 4, "athena"),
+		runoffPct: r$2(8, 16, "athena"),
 		steer: "mixed"
 	}
 };
@@ -28776,49 +28937,49 @@ function manualRow(cat, stage, flowerWeek) {
 }
 /** Manual method (1 watering at lights-on, 10–25 % runoff): dryback, runoff EC and pH by week, from the line's catalog. */
 function manual(stage, flowerWeek, line, substrate) {
-	const run = r$1(10, 25, "athena");
+	const run = r$2(10, 25, "athena");
 	const row = manualRow(getCatalog(line), stage, flowerWeek);
 	if (!row) return { runoffPct: run };
 	const page = row.src.kind === "athena" ? row.src.page : void 0;
 	const out = {
-		dryback: r$1(row.dryback[0], row.dryback[1], "athena", page),
-		ecRunoff: r$1(row.ecRunoff[0], row.ecRunoff[1], "athena", page),
+		dryback: r$2(row.dryback[0], row.dryback[1], "athena", page),
+		ecRunoff: r$2(row.ecRunoff[0], row.ecRunoff[1], "athena", page),
 		runoffPct: run
 	};
-	if (substrate === "coco" && stage !== "veg" && stage !== "finish") out.phIn = out.phRunoff = r$1(row.ph[0], row.ph[1], "athena", page);
+	if (substrate === "coco" && stage !== "veg" && stage !== "finish") out.phIn = out.phRunoff = r$2(row.ph[0], row.ph[1], "athena", page);
 	return out;
 }
 /** Common benchmarks (no CO2 added). Replaced by Handbook values in batch 4 if provided. */
 var LIGHT = {
 	seedling: {
-		ppfd: r$1(200, 400, "common"),
-		dli: r$1(12, 25, "common"),
-		vpd: r$1(.4, .8, "common")
+		ppfd: r$2(200, 400, "common"),
+		dli: r$2(12, 25, "common"),
+		vpd: r$2(.4, .8, "common")
 	},
 	veg: {
-		ppfd: r$1(400, 600, "common"),
-		dli: r$1(25, 40, "common"),
-		vpd: r$1(.8, 1.2, "common")
+		ppfd: r$2(400, 600, "common"),
+		dli: r$2(25, 40, "common"),
+		vpd: r$2(.8, 1.2, "common")
 	},
 	stretch: {
-		ppfd: r$1(600, 900, "common"),
-		dli: r$1(30, 40, "common"),
-		vpd: r$1(1, 1.5, "common")
+		ppfd: r$2(600, 900, "common"),
+		dli: r$2(30, 40, "common"),
+		vpd: r$2(1, 1.5, "common")
 	},
 	bulk: {
-		ppfd: r$1(600, 900, "common"),
-		dli: r$1(30, 40, "common"),
-		vpd: r$1(1, 1.5, "common")
+		ppfd: r$2(600, 900, "common"),
+		dli: r$2(30, 40, "common"),
+		vpd: r$2(1, 1.5, "common")
 	},
 	finish: {
-		ppfd: r$1(600, 900, "common"),
-		dli: r$1(30, 40, "common"),
-		vpd: r$1(1.2, 1.6, "common")
+		ppfd: r$2(600, 900, "common"),
+		dli: r$2(30, 40, "common"),
+		vpd: r$2(1.2, 1.6, "common")
 	},
 	flush: {
-		ppfd: r$1(600, 900, "common"),
-		dli: r$1(30, 40, "common"),
-		vpd: r$1(1.2, 1.6, "common")
+		ppfd: r$2(600, 900, "common"),
+		dli: r$2(30, 40, "common"),
+		vpd: r$2(1.2, 1.6, "common")
 	}
 };
 function dayTargets(stage, opts) {
@@ -28831,15 +28992,15 @@ function dayTargets(stage, opts) {
 		...LIGHT[stage]
 	};
 	const cat = getCatalog(opts.line);
-	if (stage === "seedling") t.ecIn = r$1(2, 2, "athena");
-	else if (stage === "flush") t.ecIn = r$1(0, .1, "athena");
+	if (stage === "seedling") t.ecIn = r$2(2, 2, "athena");
+	else if (stage === "flush") t.ecIn = r$2(0, .1, "athena");
 	else if (!cat.ecTable) {
 		const ph = phaseAt(cat, stage === "veg" ? { stage: "veg" } : {
 			stage: "flower",
 			week: opts.flowerWeek ?? (stage === "finish" ? 8 : stage === "bulk" ? 5 : 1)
 		});
-		if (ph) t.ecIn = r$1(ph.ec, ph.ec, "athena", ph.src.kind === "athena" ? ph.src.page : void 0);
-	} else t.ecIn = (opts.cycleNumber ?? 1) <= 1 ? r$1(2, 2.4, "spec") : r$1(3, 3, "athena");
+		if (ph) t.ecIn = r$2(ph.ec, ph.ec, "athena", ph.src.kind === "athena" ? ph.src.page : void 0);
+	} else t.ecIn = (opts.cycleNumber ?? 1) <= 1 ? r$2(2, 2.4, "spec") : r$2(3, 3, "athena");
 	if (stage === "seedling" || stage === "flush") return t;
 	if (opts.mode === "auto") {
 		const a = AUTO[stage];
@@ -30660,17 +30821,17 @@ __iconData.node;
 var X = createLucideIcon(__iconData);
 //#endregion
 //#region node_modules/clsx/dist/clsx.mjs
-function r(e) {
+function r$1(e) {
 	var t, f, n = "";
 	if ("string" == typeof e || "number" == typeof e) n += e;
 	else if ("object" == typeof e) if (Array.isArray(e)) {
 		var o = e.length;
-		for (t = 0; t < o; t++) e[t] && (f = r(e[t])) && (n && (n += " "), n += f);
+		for (t = 0; t < o; t++) e[t] && (f = r$1(e[t])) && (n && (n += " "), n += f);
 	} else for (f in e) e[f] && (n && (n += " "), n += f);
 	return n;
 }
 function clsx() {
-	for (var e, t, f = 0, n = "", o = arguments.length; f < o; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
+	for (var e, t, f = 0, n = "", o = arguments.length; f < o; f++) (e = arguments[f]) && (t = r$1(e)) && (n && (n += " "), n += t);
 	return n;
 }
 //#endregion
@@ -77697,6 +77858,652 @@ function ClimateTool() {
 	});
 }
 //#endregion
+//#region src/calc/ask.ts
+var r = (lo, hi) => lo === hi ? `${lo}` : `${lo}–${hi}`;
+var ENTRY_FIELDS = [
+	["tempDay", "T°C"],
+	["rh", "HR%"],
+	["vpd", "VPD"],
+	["dryback", "dryback%"],
+	["volumePerPotMl", "mL/pot"],
+	["runoffPct", "runoff%"],
+	["ecIn", "EC in"],
+	["phIn", "pH in"],
+	["ecRunoff", "EC runoff"],
+	["phRunoff", "pH runoff"],
+	["ppfd", "PPFD"],
+	["heightCm", "hauteur cm"],
+	["reservoirL", "réservoir L"]
+];
+/** What the app knows about one space today, as plain text. */
+function askContext(d, today) {
+	const lines = [];
+	const nut = spaceNutrition(d.grow, d.space);
+	const cat = getCatalog(nut.line);
+	lines.push(`Grow : ${d.grow?.name ?? "—"} · espace « ${d.space.name} » (${d.space.template}${d.space.dimensionsCm?.l && d.space.dimensionsCm?.w ? `, ${d.space.dimensionsCm.l}×${d.space.dimensionsCm.w}×${d.space.dimensionsCm.h ?? "?"} cm` : ""}).`);
+	lines.push(`Nutrition : ${cat.name}, add-ons ${nut.addons.join(", ") || "aucun"}, dosage ${nut.dosing}. Ne jamais mélanger avec une autre gamme.`);
+	if (d.cycle) {
+		const s = stageOn(d.cycle, today);
+		lines.push(`Cycle « ${d.cycle.name} » (${d.cycle.cultivars.join(", ") || "variété ?"}) : stade ${s.key}${s.flowerWeek ? `, floraison S${s.flowerWeek} J${s.flowerDay}` : s.day ? `, jour ${s.day}` : ""}; substrat ${d.cycle.substrate}, arrosage ${d.cycle.waterMode}, ${d.cycle.potCount} pots de ${d.cycle.potVolumeL} L.`);
+	} else lines.push("Pas de cycle en cours dans cet espace.");
+	if (d.targets) {
+		const t = d.targets;
+		const parts = [
+			"ecIn",
+			"ecRunoff",
+			"phIn",
+			"dryback",
+			"runoffPct",
+			"vpd",
+			"ppfd",
+			"dli"
+		].filter((k) => t[k]).map((k) => `${k} ${r(t[k].lo, t[k].hi)} (${t[k].src === "athena" ? `Athena${t[k].page ? ` p. ${t[k].page}` : ""}` : t[k].src === "common" ? "repère courant" : t[k].src})`);
+		lines.push(`Cibles du jour : ${parts.join(" ; ")}.`);
+	}
+	const recent = d.entries.filter((e) => e.spaceId === d.space.id && !e.plantId).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
+	if (recent.length) {
+		lines.push("Dernières saisies (la plus récente d'abord) :");
+		for (const e of recent) {
+			const vals = ENTRY_FIELDS.filter(([k]) => e[k] != null).map(([k, l]) => `${l} ${e[k]}`);
+			lines.push(`- ${e.date} : ${vals.join(", ") || "rien de mesuré"}${e.note ? ` · note : ${e.note.slice(0, 200)}` : ""}`);
+		}
+	} else lines.push("Aucune saisie dans le journal pour cet espace.");
+	const mix = d.mixes.filter((m) => m.spaceIds?.includes(d.space.id)).sort((a, b) => b.date.localeCompare(a.date))[0];
+	if (mix) lines.push(`Dernier bidon : ${mix.date}, ${mix.volumeL} L${mix.ecTarget != null ? `, EC visée ${mix.ecTarget}` : ""}${mix.ph != null ? `, pH ${mix.ph}` : ""}${mix.recipe ? ` (${mix.recipe})` : ""}.`);
+	const here = equipmentAt(d.space.id, today, d.assignments).map((a) => d.equipment.find((e) => e.id === a.equipmentId)).filter((e) => !!e);
+	if (here.length) lines.push(`Équipement : ${here.map((e) => e.name).join(", ")}.`);
+	const missing = [];
+	const pump = here.find((e) => e.type === "pump");
+	if (pump && pump.pump?.flowMlPerMin == null) missing.push("débit de la pompe");
+	const ext = here.find((e) => e.type === "extractor");
+	if (ext && ext.extractor?.m3h == null && ext.extractor?.cfm == null) missing.push("débit de l'extracteur");
+	if (missing.length) lines.push(`Données manquantes (non mesurées) : ${missing.join(", ")}.`);
+	return lines.join("\n");
+}
+/** Prompt for one question, with the conversation so far (memoryless calls). */
+function askPrompt(context, question, history, lang) {
+	const rules = [
+		lang === "fr" ? "Réponds en français." : "Answer in English.",
+		"Tu aides un cultivateur dans sa tente, au téléphone : réponse courte (moins de 150 mots), concrète, une seule correction prioritaire si quelque chose cloche.",
+		"Appuie-toi sur les données ci-dessous. Si une dose ou une valeur n'y figure pas et n'est pas dans l'Athena Handbook, dis-le au lieu de l'inventer.",
+		"Ne mélange jamais deux gammes de nutriments. Cite la source quand tu donnes un chiffre (Athena p. X, repère courant, mesure)."
+	].join(" ");
+	const first = `${rules}\n\nDONNÉES DE L'APP (${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)})\n${context}\n\nQUESTION\n${question}`;
+	const past = history.slice(-6);
+	if (!past.length) return [{
+		role: "user",
+		content: first
+	}];
+	const [h0, ...rest] = past[0].role === "user" ? past : past.slice(1);
+	if (!h0) return [{
+		role: "user",
+		content: first
+	}];
+	return [
+		{
+			role: "user",
+			content: `${rules}\n\nDONNÉES DE L'APP\n${context}\n\nQUESTION\n${h0.content}`
+		},
+		...rest,
+		{
+			role: "user",
+			content: question
+		}
+	];
+}
+/** Suggested questions (keys of the dictionary). */
+var ASK_SUGGESTIONS = [
+	"ask.s1",
+	"ask.s2",
+	"ask.s3"
+];
+//#endregion
+//#region src/lib/sample.ts
+var picked = null;
+function getSample() {
+	if (picked) return picked;
+	const rt = globalThis.claude;
+	picked = rt && typeof rt.use === "function" ? rt.use("sample").catch(() => null) : Promise.resolve(null);
+	return picked;
+}
+/** The sample function once the runtime answers; null while unknown or unavailable. */
+function useSample() {
+	const [fn, setFn] = (0, import_react.useState)(null);
+	(0, import_react.useEffect)(() => {
+		let live = true;
+		getSample().then((f) => live && setFn(() => f));
+		return () => {
+			live = false;
+		};
+	}, []);
+	return fn;
+}
+//#endregion
+//#region src/screens/tools/ask.tsx
+function AskTool() {
+	const { t, settings } = useSettings();
+	const { grow, space, cycle, targetsFor, all, equipment, assignments } = useGrow();
+	const sample = useSample();
+	const [q, setQ] = (0, import_react.useState)("");
+	const [turns, setTurns] = (0, import_react.useState)([]);
+	const [live, setLive] = (0, import_react.useState)(null);
+	const [err, setErr] = (0, import_react.useState)(null);
+	const [blocked, setBlocked] = (0, import_react.useState)(false);
+	const stop = (0, import_react.useRef)(null);
+	if (!sample) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+		className: "text-[13px] leading-[1.45] text-fg-3",
+		children: t("ask.unavailable")
+	});
+	if (!space) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+		className: "text-[13px] text-fg-3",
+		children: t("lgt.noSpace")
+	});
+	const ask = async (question) => {
+		const text = question.trim();
+		if (!text || live != null || blocked) return;
+		const today = todayIso();
+		const input = askPrompt(askContext({
+			grow,
+			space,
+			cycle,
+			targets: cycle ? targetsFor(today, cycle) : null,
+			entries: all.entries,
+			mixes: all.mixes,
+			equipment,
+			assignments
+		}, today), text, turns, settings.lang);
+		setErr(null);
+		setQ("");
+		setLive("");
+		const ac = new AbortController();
+		stop.current = ac;
+		try {
+			const res = await sample(input, {
+				onText: ({ text: whole }) => setLive(whole),
+				signal: ac.signal,
+				cache: false
+			});
+			setTurns((h) => [
+				...h,
+				{
+					role: "user",
+					content: text
+				},
+				{
+					role: "assistant",
+					content: res.text
+				}
+			].slice(-12));
+		} catch (e) {
+			const x = e;
+			if (x.code === "not_granted") setBlocked(true);
+			setErr(x.code === "not_granted" ? t("ask.notGranted") : x.code === "rate_limited" ? t("ask.rateLimited") : x.code === "aborted" ? t("ask.stopped") : t("ask.error"));
+			if (x.text) setTurns((h) => [
+				...h,
+				{
+					role: "user",
+					content: text
+				},
+				{
+					role: "assistant",
+					content: x.text
+				}
+			]);
+		} finally {
+			setLive(null);
+			stop.current = null;
+		}
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "flex flex-col gap-3",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 0,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-2.5",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							emoji: "book",
+							children: t("ask.title", { space: space.name })
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12.5px] leading-[1.45] text-fg-2",
+							children: t("ask.desc")
+						}),
+						turns.length === 0 && live == null && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "flex flex-wrap gap-1.5",
+							children: ASK_SUGGESTIONS.map((k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+								type: "button",
+								onClick: () => ask(t(k)),
+								disabled: blocked,
+								className: "rounded-full border border-line bg-surface-2 px-3 py-2 text-left text-[12.5px] font-medium text-fg-2",
+								children: t(k)
+							}, k))
+						})
+					]
+				})
+			}),
+			(turns.length > 0 || live != null) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 1,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-3",
+					id: "ask-thread",
+					children: [
+						turns.map((m, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bubble, {
+							me: m.role === "user",
+							text: m.content
+						}, i)),
+						live != null && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bubble, {
+							me: false,
+							text: live || t("ask.thinking"),
+							pending: true
+						}),
+						live != null && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							variant: "outline",
+							className: "h-9 self-start rounded-full",
+							onClick: () => stop.current?.abort(),
+							children: t("ask.stop")
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 2,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-2.5",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AreaField, {
+							id: "ask-q",
+							label: turns.length ? t("ask.followUp") : t("ask.question"),
+							value: q,
+							onChange: setQ,
+							placeholder: t("ask.placeholder")
+						}),
+						err && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12.5px] font-medium text-warn",
+							children: err
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex gap-2",
+							children: [turns.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+								variant: "outline",
+								className: "h-12 rounded-full",
+								onClick: () => setTurns([]),
+								disabled: live != null,
+								children: t("ask.new")
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+								className: "h-12 flex-1 rounded-full text-[15px] font-bold",
+								onClick: () => ask(q),
+								disabled: !q.trim() || live != null || blocked,
+								children: t("ask.send")
+							})]
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourceNote, { children: t("ask.note") })
+		]
+	});
+}
+function Bubble({ me, text, pending }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: cn("max-w-[92%] rounded-[16px] px-3.5 py-2.5 text-[13.5px] leading-[1.5] whitespace-pre-wrap", me ? "self-end bg-primary/14 text-fg" : "self-start border border-line bg-surface-2 text-fg", pending && "opacity-90"),
+		children: text
+	});
+}
+//#endregion
+//#region src/lib/backup.ts
+var BACKUP_FORMAT = "hydro-backup";
+/** Collections saved. The morning digest is rebuilt every day: not worth keeping. */
+var BACKUP_COLLECTIONS = COLLECTIONS.filter((c) => c !== "digest");
+async function exportBackup(store, source, now = /* @__PURE__ */ new Date()) {
+	const collections = {};
+	for (const c of BACKUP_COLLECTIONS) {
+		const docs = await store.list(c);
+		if (Object.keys(docs).length) collections[c] = docs;
+	}
+	return {
+		format: BACKUP_FORMAT,
+		version: 1,
+		exportedAt: now.toISOString(),
+		source,
+		collections
+	};
+}
+function backupJson(b) {
+	return JSON.stringify(b, null, 1);
+}
+/** Reads a backup file. Unknown collections are ignored; documents must be objects. */
+function parseBackup(text) {
+	let o;
+	try {
+		o = JSON.parse(text);
+	} catch {
+		return {
+			ok: false,
+			error: "json"
+		};
+	}
+	const b = o;
+	if (!b || typeof b !== "object" || b.format !== "hydro-backup" || typeof b.collections !== "object" || !b.collections) return {
+		ok: false,
+		error: "format"
+	};
+	if (typeof b.version !== "number" || b.version > 1) return {
+		ok: false,
+		error: "version"
+	};
+	const collections = {};
+	const counts = {};
+	let total = 0;
+	for (const c of BACKUP_COLLECTIONS) {
+		const docs = b.collections[c];
+		if (!docs || typeof docs !== "object") continue;
+		const ok = Object.fromEntries(Object.entries(docs).filter(([id, d]) => id && !id.includes("/") && d && typeof d === "object" && !Array.isArray(d)));
+		if (!Object.keys(ok).length) continue;
+		collections[c] = ok;
+		counts[c] = Object.keys(ok).length;
+		total += counts[c];
+	}
+	return {
+		ok: true,
+		backup: {
+			format: BACKUP_FORMAT,
+			version: b.version,
+			exportedAt: String(b.exportedAt ?? ""),
+			source: String(b.source ?? ""),
+			collections
+		},
+		counts,
+		total
+	};
+}
+/** Writes a backup into a store. "replace" first removes the documents the file does not have. Returns what changed. */
+async function importBackup(store, backup, mode, onProgress) {
+	const writes = BACKUP_COLLECTIONS.flatMap((c) => Object.entries(backup.collections[c] ?? {}).map(([id, d]) => [`${c}/${id}`, d]));
+	const deletes = [];
+	if (mode === "replace") for (const c of BACKUP_COLLECTIONS) {
+		const keep = backup.collections[c] ?? {};
+		for (const id of Object.keys(await store.list(c))) if (!(id in keep)) deletes.push(`${c}/${id}`);
+	}
+	const total = writes.length + deletes.length;
+	let done = 0;
+	for (const p of deletes) {
+		await store.delete(p);
+		onProgress?.(++done, total);
+	}
+	const ordered = [...writes.filter(([p]) => p !== "grow/main"), ...writes.filter(([p]) => p === "grow/main")];
+	for (const [p, d] of ordered) {
+		await store.set(p, d);
+		onProgress?.(++done, total);
+	}
+	return {
+		written: writes.length,
+		deleted: deletes.length
+	};
+}
+/** File name with the date: hydro-2026-10-18.json */
+var backupName = (date, ext = "json") => `hydro-${date}.${ext}`;
+var CSV_FIELDS = [
+	"date",
+	"spaceId",
+	"plantId",
+	"tempDay",
+	"tempNight",
+	"rh",
+	"vpd",
+	"weightMorningKg",
+	"weightPeakKg",
+	"dryback",
+	"volumePerPotMl",
+	"shots",
+	"runoffMl",
+	"runoffPct",
+	"ecIn",
+	"phIn",
+	"ecRunoff",
+	"phRunoff",
+	"lightPct",
+	"lightHeightCm",
+	"ppfd",
+	"photoperiodH",
+	"dli",
+	"heightCm",
+	"reservoirL",
+	"note"
+];
+var cell = (v) => {
+	if (v == null) return "";
+	const s = String(v);
+	return /[";\n]/.test(s) ? `"${s.replace(/"/g, "\"\"")}"` : s;
+};
+/** Journal entries as CSV (";" separator, works with French spreadsheets). Space names replace ids. */
+function entriesCsv(entries, spaceName) {
+	const rows = [...entries].sort((a, b) => a.date.localeCompare(b.date) || a.spaceId.localeCompare(b.spaceId));
+	return [CSV_FIELDS.join(";"), ...rows.map((e) => CSV_FIELDS.map((f) => cell(f === "spaceId" ? spaceName(e.spaceId) : e[f])).join(";"))].join("\n");
+}
+//#endregion
+//#region src/lib/download.ts
+async function saveFile(filename, data) {
+	const rt = globalThis.claude;
+	if (rt && typeof rt.use === "function") {
+		const dl = await rt.use("downloads").catch(() => null);
+		if (!dl) return "unavailable";
+		try {
+			await dl.save({
+				filename,
+				data
+			});
+			return "saved";
+		} catch (e) {
+			return e?.code === "declined" ? "declined" : "unavailable";
+		}
+	}
+	try {
+		const url = URL.createObjectURL(data);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		setTimeout(() => URL.revokeObjectURL(url), 1e4);
+		return "saved";
+	} catch {
+		return "unavailable";
+	}
+}
+//#endregion
+//#region src/screens/tools/data.tsx
+function DataTool() {
+	const { t, num } = useSettings();
+	const { all, allSpaces } = useGrow();
+	const [busy, setBusy] = (0, import_react.useState)(false);
+	const [pending, setPending] = (0, import_react.useState)(null);
+	const [mode, setMode] = (0, import_react.useState)("merge");
+	const [progress, setProgress] = (0, import_react.useState)(null);
+	const file = (0, import_react.useRef)(null);
+	const outcome = (res) => {
+		if (res === "saved") toast.success(t("data.saved"));
+		else if (res === "declined") toast(t("data.declined"));
+		else toast.error(t("data.unavailable"));
+	};
+	const exportJson = async () => {
+		setBusy(true);
+		try {
+			const { docs } = await getStores();
+			const b = await exportBackup(docs, TARGET);
+			outcome(await saveFile(backupName(todayIso()), new Blob([backupJson(b)], { type: "application/json" })));
+		} catch (e) {
+			toast.error(t("common.saveError", { reason: e.message }));
+		} finally {
+			setBusy(false);
+		}
+	};
+	const exportCsv = async () => {
+		const name = (id) => allSpaces.find((s) => s.id === id)?.name ?? id;
+		outcome(await saveFile(backupName(todayIso(), "csv"), new Blob(["﻿" + entriesCsv(all.entries, name)], { type: "text/csv" })));
+	};
+	const pick = async (f) => {
+		if (!f) return;
+		const res = parseBackup(await f.text());
+		if (!res.ok) return toast.error(t(`data.err.${res.error}`));
+		setPending({
+			backup: res.backup,
+			counts: res.counts,
+			total: res.total,
+			name: f.name
+		});
+		setMode("merge");
+	};
+	const runImport = async () => {
+		if (!pending) return;
+		setBusy(true);
+		try {
+			const { docs } = await getStores();
+			const r = await importBackup(docs, pending.backup, mode, (d, n) => setProgress(`${d} / ${n}`));
+			toast.success(t("data.imported", {
+				w: r.written,
+				d: r.deleted
+			}));
+			setPending(null);
+		} catch (e) {
+			toast.error(t("common.saveError", { reason: e.message }));
+		} finally {
+			setBusy(false);
+			setProgress(null);
+			if (file.current) file.current.value = "";
+		}
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "flex flex-col gap-3",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 0,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-2.5",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							emoji: "bucket",
+							children: t("data.export")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12.5px] leading-[1.45] text-fg-2",
+							children: t("data.exportD")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							onClick: exportJson,
+							disabled: busy,
+							className: "h-12 rounded-full text-[15px] font-bold",
+							id: "data-export",
+							children: t("data.exportBtn")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							variant: "outline",
+							onClick: exportCsv,
+							disabled: busy || !all.entries.length,
+							className: "h-11 rounded-full",
+							children: t("data.csvBtn", { n: num(all.entries.length) })
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[11.5px] text-fg-3",
+							children: t("data.photos")
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 1,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-2.5",
+					id: "data-import",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							emoji: "notebook",
+							children: t("data.import")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12.5px] leading-[1.45] text-fg-2",
+							children: t("data.importD")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+							ref: file,
+							type: "file",
+							accept: ".json,application/json",
+							className: "hidden",
+							id: "data-file",
+							onChange: (e) => pick(e.target.files?.[0])
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							variant: "outline",
+							onClick: () => file.current?.click(),
+							disabled: busy,
+							className: "h-11 rounded-full",
+							children: t("data.chooseFile")
+						}),
+						pending && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex flex-col gap-2.5 rounded-md border border-line bg-surface-2 px-3 py-3",
+							id: "data-summary",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", {
+									className: "text-[13.5px]",
+									children: t("data.fileSummary", {
+										name: pending.name,
+										n: pending.total,
+										date: pending.backup.exportedAt.slice(0, 10)
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+									className: "grid grid-cols-2 gap-x-3 gap-y-0.5 text-[12px] text-fg-2",
+									children: Object.entries(pending.counts).map(([c, n]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+										className: "flex justify-between gap-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: t(`data.col.${c}`) }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											className: "tabular-nums",
+											children: n
+										})]
+									}, c))
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Seg, {
+									label: t("data.mode"),
+									value: mode,
+									onChange: setMode,
+									options: [{
+										value: "merge",
+										label: t("data.merge")
+									}, {
+										value: "replace",
+										label: t("data.replace")
+									}]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: mode === "replace" ? "text-[12px] font-medium text-bad" : "text-[12px] text-fg-3",
+									children: mode === "replace" ? t("data.replaceD") : t("data.mergeD")
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "flex gap-2",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+										variant: "outline",
+										className: "h-11 flex-1 rounded-full",
+										onClick: () => setPending(null),
+										disabled: busy,
+										children: t("data.cancel")
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+										className: mode === "replace" ? "h-11 flex-1 rounded-full bg-bad font-bold text-white hover:bg-bad/90" : "h-11 flex-1 rounded-full font-bold",
+										onClick: runImport,
+										disabled: busy,
+										children: progress ?? t("data.confirm")
+									})]
+								})
+							]
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourceNote, { children: t("data.note") })
+		]
+	});
+}
+//#endregion
 //#region src/screens/tools.tsx
 var TOOLS = [
 	{
@@ -77744,11 +78551,26 @@ var TOOLS = [
 		perSpace: true
 	},
 	{
+		id: "ask",
+		emoji: "book",
+		title: "tools.ask",
+		desc: "tools.askD",
+		wide: true,
+		perSpace: true,
+		needsSample: true
+	},
+	{
 		id: "equipment",
 		emoji: "plug",
 		title: "tools.equipment",
 		desc: "tools.equipmentD",
 		wide: true
+	},
+	{
+		id: "data",
+		emoji: "notebook",
+		title: "tools.data",
+		desc: "tools.dataD"
 	},
 	{
 		id: "reperes",
@@ -77760,7 +78582,8 @@ var TOOLS = [
 		id: "settings",
 		emoji: "gear",
 		title: "tools.settings",
-		desc: "tools.settingsD"
+		desc: "tools.settingsD",
+		wide: true
 	}
 ];
 var IDS = TOOLS.map((x) => x.id);
@@ -77768,6 +78591,7 @@ var IDS = TOOLS.map((x) => x.id);
 function ToolsScreen() {
 	const { t } = useSettings();
 	const { space } = useGrow();
+	const sample = useSample();
 	const initial = location.hash.replace("#", "");
 	const [open, setOpen] = (0, import_react.useState)(IDS.includes(initial) ? initial : initial === "guide" ? "reperes" : null);
 	(0, import_react.useEffect)(() => {
@@ -77814,7 +78638,7 @@ function ToolsScreen() {
 				title: t(tool.title),
 				body: t(tool.soon),
 				foot: t("soon.keep")
-			}) : open === "irrigation" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IrrigationTool, {}) : open === "nutrition" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NutritionTool, {}) : open === "ph" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhBalanceTool, {}) : open === "ipw" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IpwTool, {}) : open === "light" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LightTool, {}) : open === "climate" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClimateTool, {}) : open === "equipment" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EquipmentTool, {}) : open === "settings" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsTool, {}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GuideScreen, { embedded: true })
+			}) : open === "irrigation" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IrrigationTool, {}) : open === "nutrition" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NutritionTool, {}) : open === "ph" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhBalanceTool, {}) : open === "ipw" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IpwTool, {}) : open === "light" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LightTool, {}) : open === "climate" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClimateTool, {}) : open === "ask" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AskTool, {}) : open === "data" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DataTool, {}) : open === "equipment" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EquipmentTool, {}) : open === "settings" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsTool, {}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GuideScreen, { embedded: true })
 		] });
 	}
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScreenHero, {
@@ -77826,7 +78650,7 @@ function ToolsScreen() {
 		})
 	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "grid grid-cols-2 gap-2.5",
-		children: TOOLS.map((tool, i) => {
+		children: TOOLS.filter((tool) => !tool.needsSample || sample).map((tool, i) => {
 			const ready = !tool.lot;
 			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
 				i,
@@ -78079,37 +78903,6 @@ function zipStore(files, date = /* @__PURE__ */ new Date()) {
 		p += a.length;
 	}
 	return out;
-}
-//#endregion
-//#region src/lib/download.ts
-async function saveFile(filename, data) {
-	const rt = globalThis.claude;
-	if (rt && typeof rt.use === "function") {
-		const dl = await rt.use("downloads").catch(() => null);
-		if (!dl) return "unavailable";
-		try {
-			await dl.save({
-				filename,
-				data
-			});
-			return "saved";
-		} catch (e) {
-			return e?.code === "declined" ? "declined" : "unavailable";
-		}
-	}
-	try {
-		const url = URL.createObjectURL(data);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = filename;
-		document.body.appendChild(a);
-		a.click();
-		a.remove();
-		setTimeout(() => URL.revokeObjectURL(url), 1e4);
-		return "saved";
-	} catch {
-		return "unavailable";
-	}
 }
 //#endregion
 //#region src/screens/calendar.tsx
@@ -78781,7 +79574,9 @@ var TOOL_HASHES = [
 	"ipw",
 	"light",
 	"climate",
+	"ask",
 	"equipment",
+	"data",
 	"reperes",
 	"settings"
 ];
@@ -80169,6 +80964,10 @@ var Boundary = class extends import_react.Component {
     max-width: 55%;
   }
 
+  .max-w-\[92\%\] {
+    max-width: 92%;
+  }
+
   .max-w-\[340px\] {
     max-width: 340px;
   }
@@ -80485,6 +81284,14 @@ var Boundary = class extends import_react.Component {
     --tw-space-x-reverse: 1;
   }
 
+  .gap-y-0 {
+    row-gap: 0;
+  }
+
+  .gap-y-0\.5 {
+    row-gap: calc(var(--spacing) * .5);
+  }
+
   .gap-y-1 {
     row-gap: var(--spacing);
   }
@@ -80510,6 +81317,10 @@ var Boundary = class extends import_react.Component {
 
   :where(.divide-y-reverse > :not(:last-child)) {
     --tw-divide-y-reverse: 1;
+  }
+
+  .self-end {
+    align-self: flex-end;
   }
 
   .self-start {
@@ -80560,6 +81371,10 @@ var Boundary = class extends import_react.Component {
 
   .rounded-\[6px\] {
     border-radius: 6px;
+  }
+
+  .rounded-\[16px\] {
+    border-radius: 16px;
   }
 
   .rounded-\[18px\] {
@@ -81083,16 +81898,6 @@ var Boundary = class extends import_react.Component {
   @supports (color: color-mix(in lab, red, red)) {
     .bg-primary\/14 {
       background-color: color-mix(in oklab, var(--primary) 14%, transparent);
-    }
-  }
-
-  .bg-primary\/70 {
-    background-color: var(--primary);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .bg-primary\/70 {
-      background-color: color-mix(in oklab, var(--primary) 70%, transparent);
     }
   }
 
@@ -81741,6 +82546,10 @@ var Boundary = class extends import_react.Component {
     white-space: nowrap;
   }
 
+  .whitespace-pre-wrap {
+    white-space: pre-wrap;
+  }
+
   .text-bad {
     color: var(--bad);
   }
@@ -81933,6 +82742,10 @@ var Boundary = class extends import_react.Component {
 
   .opacity-85 {
     opacity: .85;
+  }
+
+  .opacity-90 {
+    opacity: .9;
   }
 
   .shadow {
@@ -82992,11 +83805,6 @@ var Boundary = class extends import_react.Component {
   :is(.\*\:\[svg\:not\(\[class\*\=\'size-\'\]\)\]\:size-8 > *):is(svg:not([class*="size-"])) {
     width: calc(var(--spacing) * 8);
     height: calc(var(--spacing) * 8);
-  }
-
-  .\[\&\:nth-child\(-n\+2\)\]\:border-t-0:nth-child(-n+2) {
-    border-top-style: var(--tw-border-style);
-    border-top-width: 0;
   }
 
   .\[\&\>svg\]\:h-2\.5 > svg {

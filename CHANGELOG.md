@@ -1,5 +1,11 @@
 # Changelog
 
+## Lot 6b — Sauvegarde, import et « Demander à Claude » (18/10/2026)
+- Outil **Sauvegarde** (`lib/backup.ts`, `screens/tools/data.tsx`) : export JSON de tout le grow (16 collections, documents tels que stockés ; le résumé du matin n'est pas gardé, il est reconstruit chaque jour), **même format dans les deux versions**. Import avec résumé avant écriture et deux modes : **fusionner** (même identifiant remplacé, le reste gardé) ou **remplacer** (ce qui n'est pas dans le fichier est supprimé, bouton rouge). Fichiers refusés : pas du JSON, pas une sauvegarde Hydro, version plus récente. Journal en **CSV** (séparateur « ; », noms d'espaces). Les photos restent référencées par leur id.
+- Outil **Demander à Claude** (`calc/ask.ts`, `lib/sample.ts`, `screens/tools/ask.tsx`, version Claude seulement) : question sur l'espace envoyée avec ce que l'app sait (gamme, stade, cibles et leur source, 7 dernières saisies, dernier bidon, équipement, données manquantes), réponse en direct, questions suggérées, suite de conversation (6 derniers échanges), arrêt. Consigne : ne jamais inventer une dose absente du Handbook, ne jamais mélanger les gammes, citer la source. Caché dans la version locale et tant que la capacité `sample` n'est pas accordée.
+- Liens profonds `#ask` et `#data`. La déclaration complète des capacités est notée dans `docs/artifact-capabilities.json`.
+- 186 tests (7 nouveaux, dont **export puis import JSON → données identiques**) ; parcours `scripts/e2e-6b.py` (téléchargement réel, restauration « Remplacer », « Demander à Claude » avec une capacité simulée, aucun appel réel).
+
 ## Lot 6a — Graphiques (18/10/2026)
 - Onglet **Graphiques** (`calc/series.ts`, `screens/charts.tsx`, Recharts 3 via le composant Chart de shadcn) : 17 courbes au choix (dryback, EC entrée et runoff, pH entrée et runoff, Balance des bidons, volume par pot, % de runoff, température, humidité, VPD, PPFD, DLI, hauteur, levée, consommation, réservoir).
 - **Un graphique par courbe** (zone cible enregistrée avec chaque saisie, donc juste même si la cible a changé ; événements en repères verticaux) ou **courbes superposées** (chaque courbe à l'échelle de sa propre plage, légende avec la plage, vraies valeurs dans l'infobulle).

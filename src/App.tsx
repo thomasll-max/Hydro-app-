@@ -25,7 +25,7 @@ const SCREENS: Record<TabId, () => React.ReactElement> = {
 }
 
 /** Tab from the artifact link (#journal, #tools…) — bare tokens only. Tool ids open the Tools tab. */
-export const TOOL_HASHES = ["irrigation", "nutrition", "ph", "ipw", "light", "climate", "ask", "equipment", "data", "reperes", "settings"]
+export const TOOL_HASHES = ["start", "irrigation", "nutrition", "ph", "ipw", "light", "climate", "ask", "equipment", "data", "reperes", "settings"]
 function initialTab(): TabId {
   const h = location.hash.replace("#", "")
   if (TOOL_HASHES.includes(h) || h === "guide") return "tools"

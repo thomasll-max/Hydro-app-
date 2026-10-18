@@ -1,5 +1,12 @@
 # Changelog
 
+## Lot 8c — Premiers pas (18/10/2026)
+- **Guide de démarrage « Premiers pas »** (demande de Thomas ; `calc/getting-started.ts`, `screens/tools/start.tsx`, deux versions) : **ce qu'il faut rentrer**, coché d'après les données (lampe : PPF, ou watts réels et efficacité, comme l'estimation du PPFD ; pots de chaque espace arrosé ; cycle avec date de germination ou de 12/12 ; débit de la pompe si arrosage automatique ; premier bidon ; première saisie ; première sauvegarde dans la version locale). Une ligne n'apparaît que si elle s'applique ; chaque ligne ouvre le bon endroit (Équipement, fiche de l'espace à l'Arrosage, cycle, Nutrition, saisie, Sauvegarde). Puis **comment ça marche** en 9 rubriques (journée type, bidon, arrosage, cycle, calendrier, graphiques, réglages, origine des chiffres, sauvegarde).
+- Carte **« Premiers pas · n / total »** sur Aujourd'hui avec la prochaine chose à rentrer, masquable (et à remettre depuis le guide). L'assistant de la version locale se termine sur le guide.
+- Version locale : un nouveau cycle ne reprend plus les valeurs du grow de Thomas (Cherry Limeade, 4 pots de 15 L, lampes) ; les pots viennent de l'équipement de l'espace, sinon ils sont à saisir.
+- Libellés de semis génériques (« Semis » au lieu de « Semis · colonne »).
+- 211 tests (6 nouveaux) ; parcours `scripts/e2e-8c.py` (version locale et version Claude) ; 8a, 8b, 2b et 3 repassés.
+
 ## Lot 8b — Assistant de premier lancement et guides (18/10/2026)
 - **Assistant de premier lancement** (version locale ; `lib/onboarding.ts`, `screens/onboarding.tsx`) : accueil (langue, « Commencer », « Passer l'assistant »), puis 7 étapes dans l'ordre du cahier des charges : nom du grow → espaces (modèle, dimensions L × l × H facultatives, **dupliquer avec l'équipement**, ajouter, retirer) → équipement rapide et facultatif (lampe, pots, réservoir, extracteur : un champ vide ne crée rien, rien n'est supposé) → modules → gamme, add-ons et méthode (Pro Line ou Blended, jamais mélangées ; aucun add-on coché au départ) → premier cycle facultatif (pots repris de l'équipement, obligatoires pour créer le cycle) → heure du résumé, récapitulatif, conseil d'installation. Tout est écrit à la fin, le grow en dernier ; le brouillon survit à un rechargement.
 - **Importer une sauvegarde dès l'accueil** de l'assistant (fichier ou texte collé) : tout est repris, l'assistant se ferme.

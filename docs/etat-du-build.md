@@ -6,9 +6,9 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1 à 6b, 9, 8a et 8b poussés le 18/10/2026. Dernier commit de lot : « Lot 8b : assistant de premier lancement, guides ».
+  - Lots 1 à 6b, 9 et 8a à 8c poussés le 18/10/2026. Dernier commit de lot : « Lot 8c : guide de démarrage Premiers pas ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
@@ -27,6 +27,7 @@
 - [ ] Lot 7 : nutrition multi-marques (après validation)
 - [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)
 - [x] Lot 8b : assistant de premier lancement, guides (205 tests)
+- [x] Lot 8c : guide de démarrage « Premiers pas » (211 tests)
 
 ## Règles de relais
 1. **Une seule session à la fois** sur le code. Si deux tournent quand même : avant chaque commit **et** chaque republication, `git fetch`, se remettre sur `main`, relancer tous les tests et publier un build qui contient le travail de l'autre.
@@ -86,7 +87,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 205 au lot 8b
+npm test                          # tests (Vitest), 211 au lot 8c
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -235,6 +236,20 @@ Voir « Lot 8b — notes ».
 npm run build:local
 PYTHONPATH=scripts python3 scripts/e2e-8b.py dist-local <dossier>
 PYTHONPATH=scripts python3 scripts/e2e-8a.py dist-local <dossier>
+```
+
+### Prochain lot
+Voir « Lot 8c — notes ».
+
+## Lot 8c — notes
+- Demande de Thomas : un guide de démarrage qui dit quoi rentrer, puis le fonctionnement. Outil `start` (`#start`), en tête des Outils, dans les deux versions ; carte sur Aujourd'hui (`StartCard`) tant qu'une ligne reste à faire, masquable (`localStorage["hydro.startHidden"]`, confort par appareil).
+- `startChecklist` (pur, testé) : la ligne de la lampe utilise `ppf()` de `equipment/calc.ts` (PPF publié, sinon W × µmol/J). Chez Thomas il reste : les pots de la Colonne, les dates du cycle 1, le débit de la pompe (tous déjà « donnée manquante »).
+- Le formulaire de cycle de la version locale ne pré-remplit plus le cycle de Thomas ; les pots sont exigés (comme dans l'assistant).
+
+### Commandes (lot 8c)
+```bash
+npm run build:local && npm run preview:build
+PYTHONPATH=scripts python3 scripts/e2e-8c.py dist-local dist-preview/index.html <dossier>
 ```
 
 ### Prochain lot

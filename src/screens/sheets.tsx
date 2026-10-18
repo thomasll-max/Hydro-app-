@@ -9,6 +9,8 @@ import { newId, useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { RootProductsField, useRootProducts } from "./root-products"
+import { TARGET } from "@/store"
+import { spaceIrrigation } from "@/equipment/calc"
 import { EVENT_TYPES, SCHEMA, type Cycle, type EventType, type GrowEvent, type Mix, type Plant, type PlantId, type Substrate, type WaterMode } from "@/model/types"
 
 /** Defaults for cycle 1 — each one from the setup or the fiche (Athena / RAIN). Flow is left empty: it must be measured. */
@@ -97,7 +99,7 @@ export function CycleSheet({
   spaceId?: string
 }) {
   const { t } = useSettings()
-  const { cycle: active, cycles, spaces, space: curSpace, saveCycle } = useGrow()
+  const { cycle: active, cycles, spaces, space: curSpace, saveCycle, equipment, assignments } = useGrow()
   const cycle = cycleId === "new" ? null : ((cycleId ? cycles.find((c) => c.id === cycleId) : active) ?? null)
   const show = useShow()
   const [c, setC] = useState<Cycle>(defaultCycle)
@@ -111,14 +113,23 @@ export function CycleSheet({
     if (!open) return
     const fresh = (): Cycle => {
       const d = defaultCycle()
-      if (!cycles.length) return { ...d, spaceId: spaceId ?? curSpace?.id }
-      return { ...d, id: newId("cy"), name: `Cycle ${cycles.length + 1}`, cultivars: [], spaceId: spaceId ?? curSpace?.id }
+      const sid = spaceId ?? curSpace?.id
+      // Thomas's first cycle is prefilled in the Claude version only; friends start blank, pots from the space's equipment.
+      if (!cycles.length && TARGET === "artifact") return { ...d, spaceId: sid }
+      const base = { ...d, id: cycles.length ? newId("cy") : d.id, name: `Cycle ${cycles.length + 1}`, cultivars: [], spaceId: sid }
+      return TARGET === "artifact" ? base : { ...base, lights: "" }
     }
     const base = cycle ?? fresh()
     setC(base)
     const st: Record<string, string> = { cultivars: base.cultivars.join(", ") }
     for (const k of NUM_FIELDS) st[k] = show(base[k] as number | undefined)
     for (const k of H_FIELDS) st[`h_${k}`] = show(base.harvest?.[k])
+    if (!cycle && TARGET === "local") {
+      // Pots of a new cycle come from the space's equipment, else stay empty to be typed.
+      const irr = base.spaceId ? spaceIrrigation(base.spaceId, todayIso(), equipment, assignments) : null
+      st.potVolumeL = show(irr?.potL.ok ? irr.potL.value : undefined)
+      st.potCount = show(irr?.potCount)
+    }
     setS(st)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
@@ -129,6 +140,8 @@ export function CycleSheet({
   const save = () =>
     run(async () => {
       const next: Cycle = { ...c, cultivars: (s.cultivars ?? "").split(",").map((x) => x.trim()).filter(Boolean) }
+      // Local version: no default pots for a new cycle (nothing is guessed).
+      if (TARGET === "local" && !cycle && (!parseNum(s.potVolumeL) || !parseNum(s.potCount))) throw new Error(t("onb.issue.cyclePots"))
       for (const k of NUM_FIELDS) {
         const v = parseNum(s[k])
         ;(next as Record<string, unknown>)[k] = v ?? (k === "flowMlPerMin" ? undefined : (defaultCycle()[k] as number))

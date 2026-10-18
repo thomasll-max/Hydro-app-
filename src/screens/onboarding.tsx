@@ -90,6 +90,8 @@ export function Onboarding() {
       })
       saveDraft(null)
       toast.success(t("onb.ready", { name: draft.name.trim() }))
+      // Next: the getting-started guide (what to enter, then how the app works).
+      location.hash = "start"
     } catch (e) {
       toast.error(t("common.saveError", { reason: (e as Error).message }))
       setBusy(false)

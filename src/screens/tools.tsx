@@ -19,11 +19,13 @@ import { LightTool } from "./tools/light"
 import { ClimateTool } from "./tools/climate"
 import { AskTool } from "./tools/ask"
 import { DataTool } from "./tools/data"
+import { StartTool } from "./tools/start"
 import { useSample } from "@/lib/sample"
 
-type ToolId = "irrigation" | "nutrition" | "ph" | "ipw" | "light" | "climate" | "ask" | "equipment" | "data" | "reperes" | "settings"
+type ToolId = "start" | "irrigation" | "nutrition" | "ph" | "ipw" | "light" | "climate" | "ask" | "equipment" | "data" | "reperes" | "settings"
 type Tool = { id: ToolId; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; soon?: MessageKey; wide?: boolean; perSpace?: boolean; needsSample?: boolean }
 const TOOLS: Tool[] = [
+  { id: "start", emoji: "sprout", title: "tools.start", desc: "tools.startD", wide: true },
   { id: "irrigation", emoji: "droplet", title: "tools.irrigation", desc: "tools.irrigationD", wide: true, perSpace: true },
   { id: "nutrition", emoji: "testTube", title: "tools.nutrition", desc: "tools.nutritionD", perSpace: true },
   { id: "ph", emoji: "scales", title: "tools.ph", desc: "tools.phD", perSpace: true },
@@ -75,6 +77,8 @@ export function ToolsScreen() {
         </ScreenHero>
         {tool.lot ? (
           <ComingSoon emoji={tool.emoji} lot={t("soon.title", { n: tool.lot })} title={t(tool.title)} body={t(tool.soon!)} foot={t("soon.keep")} />
+        ) : open === "start" ? (
+          <StartTool />
         ) : open === "irrigation" ? (
           <IrrigationTool />
         ) : open === "nutrition" ? (

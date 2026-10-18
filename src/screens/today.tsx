@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils"
 import type { EmojiName } from "@/assets/emoji"
 import type { Entry } from "@/model/types"
 import { BackupReminder } from "./backup-reminder"
+import { StartCard } from "./tools/start"
 import type { MessageKey } from "@/i18n/types"
 
 function useNowMinutes() {
@@ -286,6 +287,7 @@ export function TodayScreen() {
   if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
   return (
     <>
+      <StartCard />
       <BackupReminder />
       {selection.kind === "space" ? <SpaceToday space={selection.space} Culture={CultureToday} /> : <AllToday />}
     </>

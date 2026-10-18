@@ -36,12 +36,12 @@ export function defaultCycle(): Cycle {
   }
 }
 
-const useShow = () => {
+export const useShow = () => {
   const { settings } = useSettings()
   return (v: number | undefined) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
 }
 
-function SaveBar({ busy, onSave, onDelete }: { busy: boolean; onSave: () => void; onDelete?: () => Promise<void> }) {
+export function SaveBar({ busy, onSave, onDelete }: { busy: boolean; onSave: () => void; onDelete?: () => Promise<void> }) {
   const { t } = useSettings()
   return (
     <div className="flex gap-2">
@@ -63,7 +63,7 @@ function SaveBar({ busy, onSave, onDelete }: { busy: boolean; onSave: () => void
   )
 }
 
-function useSaver(onDone: () => void) {
+export function useSaver(onDone: () => void) {
   const { t } = useSettings()
   const [busy, setBusy] = useState(false)
   const run = async (fn: () => Promise<unknown>) => {
@@ -81,9 +81,23 @@ function useSaver(onDone: () => void) {
   return { busy, run }
 }
 
-export function CycleSheet({ open, onOpenChange, harvestOnly }: { open: boolean; onOpenChange: (o: boolean) => void; harvestOnly?: boolean }) {
+export function CycleSheet({
+  open,
+  onOpenChange,
+  harvestOnly,
+  cycleId,
+  spaceId,
+}: {
+  open: boolean
+  onOpenChange: (o: boolean) => void
+  harvestOnly?: boolean
+  /** "new" creates another cycle; an id edits that cycle; absent edits the active one. */
+  cycleId?: string
+  spaceId?: string
+}) {
   const { t } = useSettings()
-  const { cycle, saveCycle } = useGrow()
+  const { cycle: active, cycles, spaces, space: curSpace, saveCycle } = useGrow()
+  const cycle = cycleId === "new" ? null : ((cycleId ? cycles.find((c) => c.id === cycleId) : active) ?? null)
   const show = useShow()
   const [c, setC] = useState<Cycle>(defaultCycle)
   const [s, setS] = useState<Record<string, string>>({})
@@ -94,7 +108,12 @@ export function CycleSheet({ open, onOpenChange, harvestOnly }: { open: boolean;
 
   useEffect(() => {
     if (!open) return
-    const base = cycle ?? defaultCycle()
+    const fresh = (): Cycle => {
+      const d = defaultCycle()
+      if (!cycles.length) return { ...d, spaceId: spaceId ?? curSpace?.id }
+      return { ...d, id: newId("cy"), name: `Cycle ${cycles.length + 1}`, cultivars: [], spaceId: spaceId ?? curSpace?.id }
+    }
+    const base = cycle ?? fresh()
     setC(base)
     const st: Record<string, string> = { cultivars: base.cultivars.join(", ") }
     for (const k of NUM_FIELDS) st[k] = show(base[k] as number | undefined)
@@ -127,6 +146,14 @@ export function CycleSheet({ open, onOpenChange, harvestOnly }: { open: boolean;
             <div className="flex flex-col gap-2.5">
               <TextField id="c-name" label={t("cycleForm.name")} value={c.name} onChange={(v) => setC((x) => ({ ...x, name: v }))} />
               <TextField id="c-cult" label={t("cycleForm.cultivars")} hint={t("cycleForm.cultivarsHint")} value={s.cultivars ?? ""} onChange={sv("cultivars")} />
+              {spaces.length > 0 && !cycle && (
+                <Seg<string>
+                  label={t("cycleForm.space")}
+                  value={c.spaceId}
+                  onChange={(v) => setC((x) => ({ ...x, spaceId: v }))}
+                  options={spaces.map((x) => ({ value: x.id, label: x.name }))}
+                />
+              )}
             </div>
           </Group>
           <Group title={t("cycleForm.dates")}>
@@ -201,11 +228,13 @@ export function CycleSheet({ open, onOpenChange, harvestOnly }: { open: boolean;
 export function PlantSheet({ open, onOpenChange, plantId }: { open: boolean; onOpenChange: (o: boolean) => void; plantId: PlantId }) {
   const { t } = useSettings()
   const { plants, cycle, savePlant } = useGrow()
-  const [p, setP] = useState<Plant>({ schemaVersion: SCHEMA.plant, id: plantId, cultivar: "", updatedAt: "" })
+  const blank = (): Plant => ({ schemaVersion: SCHEMA.plant, id: `${cycle?.id ?? "cycle"}_${plantId}`, label: plantId, cycleId: cycle?.id ?? "", cultivar: cycle?.cultivars[0] ?? "", updatedAt: "" })
+  const [p, setP] = useState<Plant>(blank)
   const { busy, run } = useSaver(() => onOpenChange(false))
   useEffect(() => {
     if (!open) return
-    setP(plants.find((x) => x.id === plantId) ?? { schemaVersion: SCHEMA.plant, id: plantId, cultivar: cycle?.cultivars[0] ?? "", updatedAt: "" })
+    setP(plants.find((x) => x.label === plantId) ?? blank())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, plantId, plants, cycle])
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title={t("plantForm.title", { id: plantId })} footer={<SaveBar busy={busy} onSave={() => run(() => savePlant(p))} />}>

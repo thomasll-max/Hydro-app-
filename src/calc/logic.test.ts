@@ -39,7 +39,10 @@ describe("cibles du jour", () => {
     expect(t.phIn).toMatchObject({ lo: 5.8, hi: 6.2 })
     expect(t.ecIn).toMatchObject({ lo: 2.0, hi: 2.4 })
   })
-  it("manuel : runoff 10–25 %, S1–S3 dryback 50–60", () => {
+  it("manuel : dryback S1 30–40 % (correction p. 41)", () => {
+    expect(dayTargets("stretch", { mode: "manual", substrate: "coco", flowerWeek: 1 })!.dryback).toMatchObject({ lo: 30, hi: 40 })
+  })
+  it("manuel : runoff 10–25 %, S2–S3 dryback 50–60", () => {
     const t = dayTargets("stretch", { mode: "manual", substrate: "coco", flowerWeek: 2 })!
     expect(t.runoffPct).toMatchObject({ lo: 10, hi: 25 })
     expect(t.dryback).toMatchObject({ lo: 50, hi: 60 })
@@ -54,7 +57,7 @@ describe("cibles du jour", () => {
 
 describe("une seule correction", () => {
   const t = dayTargets("stretch", { mode: "auto", substrate: "coco", flowerWeek: 3 })!
-  const base: Entry = { schemaVersion: 1, id: "x", date: "2026-10-18", createdAt: "", updatedAt: "" }
+  const base: Entry = { schemaVersion: 1, id: "x", date: "2026-10-18", spaceId: "s", createdAt: "", updatedAt: "" }
   it("pH du runoff haut → viser le bas de la fourchette", () => {
     const a = oneCorrection({ ...base, phRunoff: 6.6, dryback: 44 }, t, "auto")!
     expect(a).toMatchObject({ metric: "phRunoff", dir: "high", key: "advice.phRunoff.high" })
@@ -76,7 +79,7 @@ describe("une seule correction", () => {
 
 describe("rappels", () => {
   const mix: Mix = { schemaVersion: 1, id: "m1", date: "2026-10-15", volumeL: 100, createdAt: "" }
-  const e = (date: string, ml: number): Entry => ({ schemaVersion: 1, id: date, date, volumePerPotMl: ml, createdAt: "", updatedAt: "" })
+  const e = (date: string, ml: number): Entry => ({ schemaVersion: 1, id: date, date, spaceId: "s", volumePerPotMl: ml, createdAt: "", updatedAt: "" })
   it("bidon : estimé d'après la consommation réelle", () => {
     const f = tankForecast([mix], [e("2026-10-15", 2700), e("2026-10-16", 2700), e("2026-10-17", 2700)], 4)!
     expect(f.perDayL).toBeCloseTo(10.8)

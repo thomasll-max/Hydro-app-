@@ -98,7 +98,7 @@ export function JournalScreen() {
           <Label emoji="pottedPlant">{t("journal.plants")}</Label>
           <div className="mt-2.5 grid grid-cols-4 gap-2">
             {PLANT_IDS.map((id) => {
-              const p = plants.find((x) => x.id === id)
+              const p = plants.find((x) => x.label === id)
               return (
                 <button
                   key={id}

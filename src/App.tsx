@@ -13,19 +13,21 @@ import { TodayScreen } from "@/screens/today"
 import { JournalScreen } from "@/screens/journal"
 import { ChartsScreen } from "@/screens/charts"
 import { ToolsScreen } from "@/screens/tools"
-import { GuideScreen } from "@/screens/guide"
+import { CalendarScreen } from "@/screens/calendar"
 
 const SCREENS: Record<TabId, () => React.ReactElement> = {
   today: TodayScreen,
   journal: JournalScreen,
+  calendar: CalendarScreen,
   charts: ChartsScreen,
   tools: ToolsScreen,
-  guide: GuideScreen,
 }
 
-/** Tab from the artifact link (#journal, #tools…) — bare tokens only. */
+/** Tab from the artifact link (#journal, #tools…) — bare tokens only. Tool ids open the Tools tab. */
+export const TOOL_HASHES = ["irrigation", "nutrition", "ph", "ipw", "light", "climate", "equipment", "reperes", "settings"]
 function initialTab(): TabId {
   const h = location.hash.replace("#", "")
+  if (TOOL_HASHES.includes(h) || h === "guide") return "tools"
   return TABS.some((t) => t.id === h) ? (h as TabId) : "today"
 }
 
@@ -44,7 +46,9 @@ function Shell() {
 
   useEffect(() => {
     try {
-      history.replaceState(null, "", tab === "today" ? location.pathname + location.search : `#${tab}`)
+      // A tool deep link (#equipment…) stays as is: the Tools screen mounts after the tab transition.
+      const keep = tab === "tools" && TOOL_HASHES.includes(location.hash.replace("#", ""))
+      if (!keep) history.replaceState(null, "", tab === "today" ? location.pathname + location.search : `#${tab}`)
     } catch {
       /* sandboxed history: ignore */
     }

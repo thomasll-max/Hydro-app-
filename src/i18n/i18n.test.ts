@@ -76,7 +76,7 @@ describe("toutes les corrections ont un texte", () => {
     for (const mode of ["auto", "manual"] as const)
       for (const m of metrics)
         for (const v of [-100, 1000]) {
-          const a = oneCorrection({ schemaVersion: 1, id: "x", date: "2026-10-18", createdAt: "", updatedAt: "", [m]: v }, t, mode)!
+          const a = oneCorrection({ schemaVersion: 1, id: "x", date: "2026-10-18", spaceId: "s", createdAt: "", updatedAt: "", [m]: v }, t, mode)!
           for (const lang of [fr, en]) {
             expect(lookup(lang, `${a.key}.title` as never), a.key).not.toBe(`${a.key}.title`)
             expect(lookup(lang, a.bodyKey as never), a.bodyKey).not.toBe(a.bodyKey)

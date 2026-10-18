@@ -12,6 +12,8 @@ export type Settings = {
   theme: ThemePref
   lang: Lang
   activeCycleId?: string
+  /** Space selector at the top: "all", "site:{id}" or a space id. Remembered. */
+  space?: string
   /** Pro Line dosing: 0 = weighed powder (g), else concentrate strength in g/L (Athena: 113, 226 recommended, 282). */
   concentrate?: number
   updatedAt: string
@@ -34,6 +36,7 @@ export function parseSettings(raw: unknown): Settings {
     theme: THEMES.includes(o.theme as ThemePref) ? (o.theme as ThemePref) : DEFAULT_SETTINGS.theme,
     lang: o.lang === "en" || o.lang === "fr" ? o.lang : DEFAULT_SETTINGS.lang,
     activeCycleId: typeof o.activeCycleId === "string" ? o.activeCycleId : undefined,
+    space: typeof o.space === "string" && o.space ? o.space : undefined,
     concentrate: [0, 113, 226, 282].includes(o.concentrate as number) ? (o.concentrate as number) : undefined,
     updatedAt: typeof o.updatedAt === "string" ? o.updatedAt : DEFAULT_SETTINGS.updatedAt,
   }

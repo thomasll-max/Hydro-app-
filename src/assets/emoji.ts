@@ -23,5 +23,13 @@ export const EMOJI = {
   bulb: "/_blob/d243f91f050c80600b00e4a97b8d8a01",
   moon: "/_blob/538d2458b20f0dec9cbd61f2c8072fbc",
   warning: "/_blob/0ace19e5bce349bbbdd6d6e0efd8c42a",
+  blossom: "/_blob/5d88ae31556df4af6b204cf1a6736b75",
+  leaf: "/_blob/fb9209bba887a2a6a36f3499077ec472",
+  calendar: "/_blob/d39c622992d088d1ef809535f0f19544",
+  alarm: "/_blob/71d221af058cb4795b60bca4773e65b4",
+  sweat: "/_blob/3cd9d5beb3a096face5a4d97791975fe",
+  bucket: "/_blob/d5c930cd8cba1e3ee3b52d853d2a5130",
+  cyclone: "/_blob/882ba6e237fdf7e1a11bc2fff394c3a5",
+  plug: "/_blob/c7ccf55b8a55b28637282cc4d01bef7f",
 } as const
 export type EmojiName = keyof typeof EMOJI

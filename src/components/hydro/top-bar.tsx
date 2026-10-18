@@ -4,6 +4,7 @@ import { useSettings } from "@/app/settings-context"
 import type { ThemePref } from "@/lib/settings"
 import type { Lang } from "@/i18n/types"
 import { Emoji } from "./emoji"
+import { SpacePill } from "./space-pill"
 
 const pill = "rounded-full border border-line bg-surface-2 p-[3px] gap-0"
 const pillItem =
@@ -67,6 +68,7 @@ export function TopBar() {
           <ThemeSwitch />
         </div>
       </div>
+      <SpacePill />
     </header>
   )
 }

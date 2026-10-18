@@ -33,6 +33,8 @@ function manual(stage: StageKey, flowerWeek?: number) {
   const run = r(10, 25, "athena")
   if (stage === "veg") return { dryback: r(30, 40, "athena"), ecRunoff: r(4, 5, "athena"), runoffPct: run }
   const w = flowerWeek ?? 1
+  // Handbook p. 41: flowering S1 dryback 30–40 %, only S2–S3 at 50–60 %.
+  if (w === 1) return { dryback: r(30, 40, "athena"), ecRunoff: r(6, 7, "athena"), runoffPct: run }
   if (w <= 3) return { dryback: r(50, 60, "athena"), ecRunoff: r(6, 7, "athena"), runoffPct: run }
   if (w <= 6) return { dryback: r(30, 40, "athena"), ecRunoff: r(5, 6, "athena"), runoffPct: run }
   if (w === 7) return { dryback: r(30, 40, "athena"), ecRunoff: r(4, 5, "athena"), runoffPct: run }

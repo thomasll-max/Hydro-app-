@@ -49,7 +49,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const prev = useMemo(() => previousEntry(entries, date, plantId), [entries, date, plantId])
   useEffect(() => {
     if (!open || !cycle || !date) return
-    const found = entries.find((e) => e.id === entryId(date, plantId)) ?? null
+    const found = entries.find((e) => e.id === entryId(date, cycle.spaceId ?? "", plantId)) ?? null
     setExisting(found)
     const src = found ?? blankEntry(date, cycle, prev, plantId)
     const nf: Partial<Record<NumKey, string>> = {}
@@ -67,7 +67,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
 
   const build = (): Entry => {
     const base: Entry = existing ?? blankEntry(date, cycle!, undefined, plantId)
-    const e: Entry = { ...base, id: entryId(date, plantId), date, plantId, time: time || undefined }
+    const e: Entry = { ...base, id: entryId(date, cycle!.spaceId ?? "", plantId), date, plantId, time: time || undefined }
     for (const k of NUMS) (e as Record<string, unknown>)[k] = parseNum(f[k])
     e.mixId = mixId || undefined
     e.observations = obs.length ? obs : undefined

@@ -2,26 +2,47 @@ import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Emoji } from "@/components/hydro/emoji"
-import { Chip, Reveal, ScreenHero } from "@/components/hydro/primitives"
+import { Chip, ComingSoon, Reveal, ScreenHero } from "@/components/hydro/primitives"
+import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
+import { useGrow } from "@/app/grow-context"
 import type { EmojiName } from "@/assets/emoji"
 import type { MessageKey } from "@/i18n/types"
 import { IrrigationTool } from "./tools/irrigation"
 import { NutritionTool } from "./tools/nutrition"
+import { EquipmentTool } from "./tools/equipment"
+import { SettingsTool } from "./tools/settings"
+import { GuideScreen } from "./guide"
 
-type ToolId = "irrigation" | "nutrition" | "light" | "climate"
-const TOOLS: { id: ToolId; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; wide?: boolean }[] = [
-  { id: "irrigation", emoji: "droplet", title: "tools.irrigation", desc: "tools.irrigationD", wide: true },
-  { id: "nutrition", emoji: "testTube", title: "tools.nutrition", desc: "tools.nutritionD" },
-  { id: "light", emoji: "bulb", title: "tools.light", desc: "tools.lightD", lot: 4 },
-  { id: "climate", emoji: "wind", title: "tools.climate", desc: "tools.climateD", lot: 4, wide: true },
+type ToolId = "irrigation" | "nutrition" | "ph" | "ipw" | "light" | "climate" | "equipment" | "reperes" | "settings"
+type Tool = { id: ToolId; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; soon?: MessageKey; wide?: boolean; perSpace?: boolean }
+const TOOLS: Tool[] = [
+  { id: "irrigation", emoji: "droplet", title: "tools.irrigation", desc: "tools.irrigationD", wide: true, perSpace: true },
+  { id: "nutrition", emoji: "testTube", title: "tools.nutrition", desc: "tools.nutritionD", perSpace: true },
+  { id: "ph", emoji: "scales", title: "tools.ph", desc: "tools.phD", lot: 5, soon: "soon.ph" },
+  { id: "ipw", emoji: "sweat", title: "tools.ipw", desc: "tools.ipwD", lot: 5, soon: "soon.ipw" },
+  { id: "light", emoji: "bulb", title: "tools.light", desc: "tools.lightD", lot: 5, soon: "soon.light" },
+  { id: "climate", emoji: "cyclone", title: "tools.climate", desc: "tools.climateD", lot: 5, soon: "soon.climate", wide: true },
+  { id: "equipment", emoji: "plug", title: "tools.equipment", desc: "tools.equipmentD", wide: true },
+  { id: "reperes", emoji: "compass", title: "tools.reperes", desc: "tools.reperesD" },
+  { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD" },
 ]
+const IDS = TOOLS.map((x) => x.id) as string[]
 
-/** Bento grid of tools; a tool opens in place with a back link. Deep link: #irrigation, #nutrition. */
+/** Bento grid of tools; a tool opens in place with a back link. Deep link: #irrigation, #equipment… */
 export function ToolsScreen() {
   const { t } = useSettings()
-  const initial = location.hash.replace("#", "") as ToolId
-  const [open, setOpen] = useState<ToolId | null>(initial === "irrigation" || initial === "nutrition" ? initial : null)
+  const { space } = useGrow()
+  const initial = location.hash.replace("#", "")
+  const [open, setOpen] = useState<ToolId | null>(IDS.includes(initial) ? (initial as ToolId) : initial === "guide" ? "reperes" : null)
+  useEffect(() => {
+    const onHash = () => {
+      const h = location.hash.replace("#", "")
+      if (IDS.includes(h)) setOpen(h as ToolId)
+    }
+    window.addEventListener("hashchange", onHash)
+    return () => window.removeEventListener("hashchange", onHash)
+  }, [])
   useEffect(() => {
     // Block body on purpose: inside the Claude app, scrollTo returns a value React would take for a cleanup function.
     window.scrollTo({ top: 0 })
@@ -36,8 +57,25 @@ export function ToolsScreen() {
         </button>
         <ScreenHero emoji={tool.emoji} title={t(tool.title)}>
           <p className="mt-1 text-[13px] leading-snug text-fg-2">{t(tool.desc)}</p>
+          {tool.perSpace && space && (
+            <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-fg-2">
+              <SpaceDot color={space.color} /> {t("tools.forSpace", { name: space.name })}
+            </p>
+          )}
         </ScreenHero>
-        {open === "irrigation" ? <IrrigationTool /> : <NutritionTool />}
+        {tool.lot ? (
+          <ComingSoon emoji={tool.emoji} lot={t("soon.title", { n: tool.lot })} title={t(tool.title)} body={t(tool.soon!)} foot={t("soon.keep")} />
+        ) : open === "irrigation" ? (
+          <IrrigationTool />
+        ) : open === "nutrition" ? (
+          <NutritionTool />
+        ) : open === "equipment" ? (
+          <EquipmentTool />
+        ) : open === "settings" ? (
+          <SettingsTool />
+        ) : (
+          <GuideScreen embedded />
+        )}
       </>
     )
   }
@@ -52,13 +90,13 @@ export function ToolsScreen() {
           const ready = !tool.lot
           return (
             <Reveal key={tool.id} i={i} className={tool.wide ? "col-span-2" : undefined}>
-              <button disabled={!ready} onClick={() => setOpen(tool.id)} className="block h-full w-full text-left disabled:cursor-default">
+              <button onClick={() => setOpen(tool.id)} className="block h-full w-full text-left">
                 <Card className={tool.wide ? "h-full flex-row items-center gap-3.5 px-4 py-4" : "h-full gap-2 px-3.5 py-3.5"}>
-                  <Emoji name={tool.emoji} size={tool.wide ? 52 : 40} />
+                  <Emoji name={tool.emoji} size={tool.wide ? 52 : 40} className={ready ? undefined : "opacity-80 grayscale-[35%]"} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <b className="text-[15px] font-semibold">{t(tool.title)}</b>
-                      {ready ? tool.wide && <ChevronRight className="size-5 text-fg-3" /> : tool.wide && <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>}
+                      {tool.wide && (ready ? <ChevronRight className="size-5 text-fg-3" /> : <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>)}
                     </div>
                     <p className="mt-0.5 text-[12.5px] leading-snug text-fg-3">{t(tool.desc)}</p>
                     {!tool.wide && <div className="mt-2">{ready ? <ChevronRight className="size-5 text-fg-3" /> : <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>}</div>}

@@ -82,3 +82,19 @@ export function Reveal({ i = 0, className, children }: { i?: number; className?:
 export function SourceNote({ children }: { children: ReactNode }) {
   return <p className="mt-3 text-center text-[10.5px] leading-[1.5] text-fg-3">{children}</p>
 }
+
+/** Polished empty state for a tab or tool that arrives in a later batch ("Arrive au lot X"). Never a broken page. */
+export function ComingSoon({ emoji, title, lot, body, foot }: { emoji: EmojiName; title: string; lot: string; body: string; foot?: string }) {
+  return (
+    <div className="relative overflow-hidden rounded-[var(--r-xl)] border border-line bg-surface px-5 py-6 text-center shadow-card">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -top-16 h-40 bg-[radial-gradient(closest-side,var(--glow),transparent)]" />
+      <Emoji name={emoji} size={84} className="float-y relative mx-auto drop-shadow-[0_10px_18px_rgba(0,0,0,0.3)]" />
+      <div className="relative mt-3 inline-flex">
+        <Chip tone="primary">{lot}</Chip>
+      </div>
+      <h2 className="relative mt-2.5 text-[19px] leading-tight font-semibold tracking-[-0.3px]">{title}</h2>
+      <p className="relative mx-auto mt-1.5 max-w-[34ch] text-[13px] leading-[1.5] text-fg-2">{body}</p>
+      {foot && <p className="relative mx-auto mt-3 max-w-[36ch] text-[11.5px] leading-[1.45] text-fg-3">{foot}</p>}
+    </div>
+  )
+}

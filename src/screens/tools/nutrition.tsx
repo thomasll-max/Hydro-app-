@@ -15,6 +15,14 @@ import { Seg } from "@/components/hydro/form"
 import { SCHEMA, type StageKey } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
+import { concToDosing, dosingToConc } from "./nutrition-settings"
+import { equipmentAt } from "@/equipment/calc"
+import type { Equipment, EquipmentAssignment } from "@/model/grow"
+
+function reservoirOf(spaceId: string, equipment: Equipment[], assignments: EquipmentAssignment[]): number | undefined {
+  const here = equipmentAt(spaceId, todayIso(), assignments).map((a) => equipment.find((e) => e.id === a.equipmentId))
+  return here.find((e) => e?.type === "reservoir" && e.reservoir?.kind !== "runoff")?.reservoir?.usableL
+}
 
 const KINDS: { v: RecipeKind; k: MessageKey; stage: StageKey }[] = [
   { v: "seedling", k: "nut.kSeedling", stage: "seedling" },
@@ -25,21 +33,28 @@ const KINDS: { v: RecipeKind; k: MessageKey; stage: StageKey }[] = [
 ]
 
 export function NutritionTool() {
-  const { t, num, range, settings, setConcentrate } = useSettings()
-  const { cycle, mixes, entries, saveMix, saveCycle } = useGrow()
+  const { t, num, range, settings } = useSettings()
+  const { cycle, mixes, entries, saveMix, saveCycle, nutrition, space, grow, saveGrow, saveSpace, equipment, assignments } = useGrow()
+  // Tank volume defaults to the usable volume of the space's reservoir (equipment).
+  const reservoirL = space ? reservoirOf(space.id, equipment, assignments) : undefined
+  const setConcentrate = (c: number) => {
+    const dosing = concToDosing(c)
+    if (space?.nutrition && Object.keys(space.nutrition).length) void saveSpace({ ...space, nutrition: { ...space.nutrition, dosing } })
+    else void saveGrow({ nutrition: { ...(grow?.nutrition ?? nutrition), dosing } })
+  }
   const show = (v?: number) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
   const line = getLine(cycle?.nutrientLine)
   const cycleKind = cycle ? recipeForStage(stageOn(cycle, todayIso()).key) : "veg"
   const last = mixes[0]
   const forecast = cycle ? tankForecast(mixes, entries, cycle.potCount) : null
-  const suggested = forecast ? suggestedVolume(forecast.perDayL) : null
+  const suggested = forecast ? suggestedVolume(forecast.perDayL, reservoirL ?? 120) : null
 
   const [kind, setKind] = useState<RecipeKind>(cycleKind)
   const [f, setF] = useState<Record<string, string>>({})
   useEffect(() => {
     setKind(cycleKind)
     setF({
-      volume: show(suggested ?? last?.volumeL ?? 30),
+      volume: show(suggested ?? last?.volumeL ?? reservoirL ?? 30),
       ec: show(last?.ecTarget ?? 2.2),
       tap: show(cycle?.tapEc ?? 0.05),
       cleanse: show(line.cleanseMlPer10L[cycleKind]),
@@ -53,7 +68,7 @@ export function NutritionTool() {
 
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }))
   // Pro Line dosing: concentrate at 226 g/L by default (setup), or weighed powder (0).
-  const conc = settings.concentrate ?? line.recommendedConcentrate ?? 0
+  const conc = dosingToConc(nutrition.dosing)
   const concOptions = [0, ...Object.keys(line.concentrates ?? {}).map(Number).sort((x, y) => x - y)]
   const volumeL = parseNum(f.volume) ?? 0
   const ec = kind === "flush" ? 0 : (parseNum(f.ec) ?? 2.2)

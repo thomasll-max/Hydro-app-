@@ -1,58 +1,62 @@
 import type { ReactNode } from "react"
-import { Check, CloudOff } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Emoji } from "@/components/hydro/emoji"
-import { Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
-import { LangSwitch, ThemeSwitch } from "@/components/hydro/top-bar"
+import { Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
-import { ATHENA_DOSING, PH_TARGETS, STEERING, type Source } from "@/data/reference"
+import { PH_TARGETS, STEERING, type Source } from "@/data/reference"
+import { manualRows, proReferenceRows } from "@/calc/reperes"
+import { useGrow } from "@/app/grow-context"
+import { dosingToConc } from "@/screens/tools/nutrition-settings"
 import type { EmojiName } from "@/assets/emoji"
 import { cn } from "@/lib/utils"
 import { getLine } from "@/calc/nutrition"
 
-export function GuideScreen() {
-  const { t, num, range, saveState, settings } = useSettings()
+/** Outils → Repères. Embedded in the Tools screen (hero hidden there). */
+export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
+  const { t, num, range, settings } = useSettings()
+  const { nutrition } = useGrow()
+  const conc = dosingToConc(nutrition.dosing) || 226
+  const pro = proReferenceRows(conc)
   const srcTag = (s: Source) =>
     s === "estimate" ? t("guide.tagEstimate") : s === "athena" ? t("guide.tagAthena") : null
 
   return (
     <>
-      <ScreenHero emoji="compass" title={t("guide.title")}>
-        <p className="mt-1 text-[13px] leading-snug text-fg-2">{t("guide.subtitle")}</p>
-      </ScreenHero>
-
-      <Reveal i={0} className="mb-3">
-        <Card className="gap-3">
-          <div className="flex items-center justify-between">
-            <Label emoji="gear">{t("guide.settings")}</Label>
-            {saveState !== "idle" && (
-              <span className={cn("flex items-center gap-1 text-[11.5px] font-semibold", saveState === "saved" ? "text-primary" : "text-fg-3")}>
-                {saveState === "saved" ? <Check className="size-3.5" /> : <CloudOff className="size-3.5" />}
-                {saveState === "saved" ? t("guide.saved") : t("guide.saveFailed")}
-              </span>
-            )}
-          </div>
-          <Row label={t("controls.theme")}>
-            <ThemeSwitch />
-          </Row>
-          <Row label={t("controls.language")}>
-            <LangSwitch />
-          </Row>
-          <p className="text-[11.5px] text-fg-3">{t("guide.settingsD")}</p>
-        </Card>
-      </Reveal>
+      {!embedded && (
+        <ScreenHero emoji="compass" title={t("guide.title")}>
+          <p className="mt-1 text-[13px] leading-snug text-fg-2">{t("guide.subtitle")}</p>
+        </ScreenHero>
+      )}
 
       <Reveal i={1}>
         <Card className="px-3.5 py-1">
           <Accordion type="single" collapsible defaultValue="dosing" key={settings.lang}>
             <Section value="dosing" emoji="testTube" title={t("guide.dosing")} desc={t("guide.dosingD", { line: getLine().name })}>
               <Table
-                head={[t("guide.ecTarget"), t("guide.growBloom"), t("guide.core")]}
-                rows={ATHENA_DOSING.map((r) => [num(r.ec, 1), `${num(r.base, 1)} g`, `${num(r.core, 1)} g`])}
-                highlight={(i) => ATHENA_DOSING[i].ec >= 2 && ATHENA_DOSING[i].ec <= 2.5}
+                head={[
+                  t("guide.ecTarget"),
+                  <span key="g" className="normal-case">{t("guide.gCol")}</span>,
+                  <span key="c" className="normal-case">{t("guide.concCol", { c: String(conc) })}</span>,
+                ]}
+                rows={pro.map((r) => [
+                  num(r.ec, 1),
+                  <span key="g">
+                    {num(r.baseG, 1)} <span className="text-fg-3">/</span> {num(r.coreG, 1)}
+                  </span>,
+                  r.baseMl != null ? (
+                    <span key="m" className="font-semibold">
+                      {num(r.baseMl)} <span className="font-normal text-fg-3">/</span> {num(r.coreMl!)}
+                    </span>
+                  ) : (
+                    <span key="m" className="text-fg-3">—</span>
+                  ),
+                ])}
+                highlight={(i) => pro[i].ec >= 2 && pro[i].ec <= 2.5}
               />
-              <Src>{t("guide.srcAthena")}</Src>
+              <Src>
+                {t("guide.dosingNote")} {t("guide.srcAthena")}
+              </Src>
             </Section>
 
             <Section value="ph" emoji="thermometer" title={t("guide.ph")} desc={t("guide.phD")}>
@@ -84,6 +88,21 @@ export function GuideScreen() {
               <Src>{t("guide.srcAthena")}</Src>
             </Section>
 
+            <Section value="manual" emoji="droplet" title={t("guide.manual")} desc={t("guide.manualD")}>
+              <Table
+                head={[t("guide.stage"), t("today.dryback"), t("guide.ecRunoff")]}
+                rows={manualRows().map((r) => [
+                  r.label.kind === "veg" ? t("guide.weekVeg") : r.label.kind === "week" ? t("guide.weekFlower", { w: r.label.w }) : t("guide.weekFlowerRange", { a: r.label.a, b: r.label.b }),
+                  `${range(r.dryback.lo, r.dryback.hi)} %`,
+                  range(r.ecRunoff.lo, r.ecRunoff.hi, 1),
+                ])}
+                highlight={(i) => i === 1}
+              />
+              <Src>
+                {t("guide.s1Note")} {t("guide.srcAthena")}
+              </Src>
+            </Section>
+
             <Section value="notes" emoji="bulb" title={t("guide.notes")}>
               <ul className="flex flex-col gap-2 text-[13px] leading-[1.45] text-fg-2">
                 {(["note1", "note2", "note3", "note4"] as const).map((n) => (
@@ -105,17 +124,9 @@ export function GuideScreen() {
           </Accordion>
         </Card>
       </Reveal>
-      <p className="mt-3 text-center text-[10.5px] text-fg-3">{t("guide.version", { v: "0.2" })}</p>
+      <p className="mt-3 text-center text-[10.5px] text-fg-3">{t("guide.blendedSoon")}</p>
+      <p className="mt-1 text-center text-[10.5px] text-fg-3">{t("guide.version", { v: "0.3" })}</p>
     </>
-  )
-}
-
-function Row({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-[14px] font-medium">{label}</span>
-      {children}
-    </div>
   )
 }
 

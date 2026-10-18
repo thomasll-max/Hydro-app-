@@ -53,7 +53,7 @@ export function ChartsScreen() {
         <Card className="overflow-hidden px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <b className="text-[15px] leading-snug font-semibold">{t("charts.emptyTitle")}</b>
-            <Chip>{t("app.comingLot", { n: 5 })}</Chip>
+            <Chip>{t("app.comingLot", { n: 6 })}</Chip>
           </div>
           <p className="mt-1.5 text-[13px] leading-[1.45] text-fg-2">{t("charts.emptyBody")}</p>
           {/* Ghost of the chart to come: target band + grid, no data */}

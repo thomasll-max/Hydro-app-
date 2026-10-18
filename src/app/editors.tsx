@@ -6,7 +6,7 @@ import type { GrowEvent, Mix, PlantId } from "@/model/types"
 
 type Editors = {
   openEntry: (init?: EntryInit) => void
-  openCycle: (opts?: { harvestOnly?: boolean }) => void
+  openCycle: (opts?: { harvestOnly?: boolean; cycleId?: string; spaceId?: string }) => void
   openPlant: (id: PlantId) => void
   openEvent: (e?: GrowEvent) => void
   openMix: (m?: Mix) => void
@@ -15,7 +15,7 @@ const Ctx = React.createContext<Editors | null>(null)
 
 type State =
   | { kind: "entry"; init: EntryInit }
-  | { kind: "cycle"; harvestOnly?: boolean }
+  | { kind: "cycle"; harvestOnly?: boolean; cycleId?: string; spaceId?: string }
   | { kind: "plant"; id: PlantId }
   | { kind: "event"; event?: GrowEvent }
   | { kind: "mix"; mix?: Mix }
@@ -33,7 +33,7 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
   const api = React.useMemo<Editors>(
     () => ({
       openEntry: (init = {}) => open({ kind: "entry", init }),
-      openCycle: (o) => open({ kind: "cycle", harvestOnly: o?.harvestOnly }),
+      openCycle: (o) => open({ kind: "cycle", harvestOnly: o?.harvestOnly, cycleId: o?.cycleId, spaceId: o?.spaceId }),
       openPlant: (id) => open({ kind: "plant", id }),
       openEvent: (event) => open({ kind: "event", event }),
       openMix: (mix) => open({ kind: "mix", mix }),
@@ -45,7 +45,13 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
     <Ctx.Provider value={api}>
       {children}
       <EntrySheet open={is("entry")} onOpenChange={close} init={last.kind === "entry" ? last.init : {}} />
-      <CycleSheet open={is("cycle")} onOpenChange={close} harvestOnly={last.kind === "cycle" ? last.harvestOnly : false} />
+      <CycleSheet
+        open={is("cycle")}
+        onOpenChange={close}
+        harvestOnly={last.kind === "cycle" ? last.harvestOnly : false}
+        cycleId={last.kind === "cycle" ? last.cycleId : undefined}
+        spaceId={last.kind === "cycle" ? last.spaceId : undefined}
+      />
       <PlantSheet open={is("plant")} onOpenChange={close} plantId={last.kind === "plant" ? last.id : "P1"} />
       <EventSheet open={is("event")} onOpenChange={close} event={last.kind === "event" ? last.event : undefined} />
       <MixSheet open={is("mix")} onOpenChange={close} mix={last.kind === "mix" ? last.mix : undefined} />

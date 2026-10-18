@@ -2,7 +2,8 @@
 import { dli, dryback, round, runoffPct, vpd } from "@/calc/formulas"
 import { SCHEMA, type Cycle, type Entry, type IsoDate, type PlantId } from "./types"
 
-export const entryId = (date: IsoDate, plantId?: PlantId) => (plantId ? `${date}_${plantId}` : date)
+/** entries/{YYYY-MM-DD}_{spaceId}[_{target}] (spec §12). */
+export const entryId = (date: IsoDate, spaceId: string, plantId?: PlantId) => (plantId ? `${date}_${spaceId}_${plantId}` : `${date}_${spaceId}`)
 
 /** Fill the computed fields (VPD, dryback, runoff %, DLI) from the measured ones. */
 export function derive(e: Entry, leafOffsetDefault = -2): Entry {
@@ -30,7 +31,8 @@ export const HINTED = ["tempDay", "tempNight", "rh", "weightMorningKg", "weightP
 
 export function blankEntry(date: IsoDate, cycle: Cycle, prev: Entry | undefined, plantId?: PlantId): Entry {
   const now = new Date().toISOString()
-  const e: Entry = { schemaVersion: SCHEMA.entry, id: entryId(date, plantId), date, plantId, createdAt: now, updatedAt: now }
+  const spaceId = cycle.spaceId ?? ""
+  const e: Entry = { schemaVersion: SCHEMA.entry, id: entryId(date, spaceId, plantId), date, spaceId, cycleId: cycle.id, plantId, createdAt: now, updatedAt: now }
   if (prev) for (const k of CARRIED) if (prev[k] != null) (e as Record<string, unknown>)[k] = prev[k]
   e.leafOffsetC ??= cycle.leafOffsetC
   e.shots ??= cycle.waterMode === "auto" ? cycle.p1Shots + (cycle.p2Shots ?? 0) : 1

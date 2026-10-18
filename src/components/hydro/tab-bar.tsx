@@ -1,17 +1,17 @@
 import { motion } from "motion/react"
-import { BookOpen, Clock3, FlaskConical, House, LineChart } from "lucide-react"
+import { BookOpen, CalendarDays, FlaskConical, House, LineChart } from "lucide-react"
 import { useSettings } from "@/app/settings-context"
 import { cn } from "@/lib/utils"
 import type { MessageKey } from "@/i18n/types"
 
-export type TabId = "today" | "journal" | "charts" | "tools" | "guide"
+export type TabId = "today" | "journal" | "calendar" | "charts" | "tools"
 
 export const TABS: { id: TabId; label: MessageKey; Icon: typeof House }[] = [
   { id: "today", label: "nav.today", Icon: House },
   { id: "journal", label: "nav.journal", Icon: BookOpen },
+  { id: "calendar", label: "nav.calendar", Icon: CalendarDays },
   { id: "charts", label: "nav.charts", Icon: LineChart },
   { id: "tools", label: "nav.tools", Icon: FlaskConical },
-  { id: "guide", label: "nav.guide", Icon: Clock3 },
 ]
 
 /** Frosted-glass bottom bar; the active pill slides between tabs (Motion layoutId). */

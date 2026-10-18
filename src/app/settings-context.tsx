@@ -21,6 +21,7 @@ type Ctx = {
   setTheme: (t: ThemePref) => void
   setLang: (l: Lang) => void
   setActiveCycle: (id: string) => void
+  setSpace: (sel: string) => void
   setConcentrate: (c: number) => void
   saveState: SaveState
   t: (key: MessageKey, vars?: Vars) => string
@@ -108,7 +109,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const update = React.useCallback((patch: Partial<Pick<Settings, "theme" | "lang" | "activeCycleId" | "concentrate">>) => {
+  const update = React.useCallback((patch: Partial<Pick<Settings, "theme" | "lang" | "activeCycleId" | "concentrate" | "space">>) => {
     setSettings((prev) => {
       const next: Settings = { ...prev, ...patch, updatedAt: new Date().toISOString() }
       writeLocal(next)
@@ -132,6 +133,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setTheme: (theme) => update({ theme }),
       setLang: (l) => update({ lang: l }),
       setActiveCycle: (id) => update({ activeCycleId: id }),
+      setSpace: (sel) => update({ space: sel }),
       setConcentrate: (c) => update({ concentrate: c }),
       saveState,
       t: (key, vars) => translate(lang, key, vars),

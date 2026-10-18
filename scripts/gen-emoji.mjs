@@ -31,6 +31,14 @@ export const EMOJI = {
   bulb: "1f4a1", // 💡
   moon: "1f319", // 🌙
   warning: "26a0-fe0f", // ⚠️
+  blossom: "1f338", // 🌸
+  leaf: "1f342", // 🍂
+  calendar: "1f4c5", // 📅
+  alarm: "23f0", // ⏰
+  sweat: "1f4a6", // 💦
+  bucket: "1faa3", // 🪣
+  cyclone: "1f300", // 🌀
+  plug: "1f50c", // 🔌
 }
 
 const args = process.argv.slice(2)

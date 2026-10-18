@@ -1,9 +1,9 @@
 // Data model. Every stored document carries schemaVersion.
-// Paths (spec §11): cycles/{cycleId}, cycles/{cycleId}/plants/{plantId},
-// cycles/{cycleId}/entries/{YYYY-MM-DD} or {YYYY-MM-DD}_{plantId},
-// cycles/{cycleId}/events/{id}, cycles/{cycleId}/mixes/{id}, settings/main.
+// Flat paths (spec §12): cycles/{id}, plants/{id}, entries/{YYYY-MM-DD}_{spaceId}[_{target}], events/{id}, mixes/{id}…
+// The grow, sites, spaces and equipment live in ./grow.ts.
+import type { Transfer } from "./grow"
 
-export const SCHEMA = { cycle: 2, plant: 1, entry: 1, event: 1, mix: 2 } as const
+export const SCHEMA = { cycle: 3, plant: 2, entry: 2, event: 2, mix: 3 } as const
 
 export type IsoDate = string // "2026-10-18"
 export type Substrate = "coco" | "soil" | "mix7030"
@@ -15,9 +15,13 @@ export type Cycle = {
   schemaVersion: number
   id: string
   name: string
+  /** Space the cycle is in now (one at a time). Transfers keep the history. */
+  spaceId?: string
+  transfers?: Transfer[]
+  archived?: boolean
   cultivars: string[]
   germinationDate?: IsoDate
-  transferDate?: IsoDate // into the RAIN
+  transferDate?: IsoDate // into the flowering space
   flipDate?: IsoDate // 12/12 — flowering is counted from here
   plannedFlipDate?: IsoDate // reminder only
   flowerWeeks: number // planned flowering length (Athena program: 9)
@@ -58,7 +62,10 @@ export type Harvest = {
 
 export type Plant = {
   schemaVersion: number
-  id: PlantId
+  id: string // "{cycleId}_P1"
+  label: PlantId
+  cycleId: string
+  groupId?: string
   cultivar: string
   phenotype?: string
   notes?: string
@@ -88,9 +95,13 @@ export type TargetsSnapshot = {
 
 export type Entry = {
   schemaVersion: number
-  id: string // "2026-10-18" or "2026-10-18_P2"
+  id: string // "2026-10-18_{spaceId}" or "2026-10-18_{spaceId}_P2"
   date: IsoDate
-  plantId?: PlantId // absent = whole room
+  spaceId: string
+  cycleId?: string
+  groupId?: string
+  plantId?: PlantId // absent = whole space
+  reservoirL?: number // litres left in the reservoir (optional)
   time?: string // "07:42"
   // climate
   tempDay?: number
@@ -130,13 +141,16 @@ export type Entry = {
   updatedAt: string
 }
 
-export const EVENT_TYPES = ["flip", "transplant", "fade", "flush", "harvest", "other"] as const
+export const EVENT_TYPES = ["flip", "transplant", "fade", "flush", "harvest", "transfer", "equipment", "other"] as const
 export type EventType = (typeof EVENT_TYPES)[number]
 export type GrowEvent = {
   schemaVersion: number
   id: string
   date: IsoDate
   type: EventType
+  cycleId?: string
+  spaceId?: string
+  equipmentId?: string
   note?: string
   createdAt: string
 }
@@ -145,6 +159,9 @@ export type Mix = {
   schemaVersion: number
   id: string
   date: IsoDate
+  cycleId?: string
+  /** One tank can feed several spaces. */
+  spaceIds?: string[]
   volumeL: number
   ec?: number
   ph?: number

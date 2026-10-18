@@ -10,9 +10,12 @@ import { TARGET } from "@/store"
 
 export function BackupReminder() {
   const { t } = useSettings()
-  const { spaces, all } = useGrow()
+  const { spaces, all, grow } = useGrow()
   if (TARGET !== "local") return null
-  const d = backupDue(lastBackup(), todayIso(), spaces.length > 0 || all.entries.length > 0)
+  const today = todayIso()
+  // Not on the day the grow is set up (nothing to lose yet), unless something is already logged.
+  const hasData = all.entries.length > 0 || (spaces.length > 0 && (grow?.createdAt ?? "").slice(0, 10) < today)
+  const d = backupDue(lastBackup(), today, hasData)
   if (!d.due) return null
   return (
     <Card className="mb-3 flex-row items-center gap-3 border-warn/35 px-4 py-3" id="backup-reminder">

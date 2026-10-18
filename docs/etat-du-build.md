@@ -6,9 +6,9 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1 à 6b et 9 poussés le 18/10/2026. Dernier commit de lot : « Lot 9 : tâche du matin, réglages par espace, finition ».
+  - Lots 1 à 6b, 9, 8a et 8b poussés le 18/10/2026. Dernier commit de lot : « Lot 8b : assistant de premier lancement, guides ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
@@ -26,7 +26,7 @@
 - [x] Lot 9 : tâche du matin + passe de finition (189 tests) — **en attente de la validation de Thomas**
 - [ ] Lot 7 : nutrition multi-marques (après validation)
 - [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)
-- [ ] Lot 8b : assistant de premier lancement, guide
+- [x] Lot 8b : assistant de premier lancement, guides (205 tests)
 
 ## Règles de relais
 1. **Une seule session à la fois** sur le code. Si deux tournent quand même : avant chaque commit **et** chaque republication, `git fetch`, se remettre sur `main`, relancer tous les tests et publier un build qui contient le travail de l'autre.
@@ -86,7 +86,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 193 au lot 8a
+npm test                          # tests (Vitest), 205 au lot 8b
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -221,4 +221,21 @@ PYTHONPATH=scripts python3 scripts/e2e-8a.py dist-local <dossier>
 ```
 
 ### Prochain lot
-**Lot 8b — Assistant de premier lancement (version locale) et guide** : nom du grow → espaces (modèles, dimensions) → équipement (rapide, facultatif) → modules → gamme, add-ons et méthode → premier cycle → heure du résumé ; « Importer une sauvegarde » dès le départ ; guide pour les amis et pour relier Netlify.
+Voir « Lot 8b — notes ».
+
+## Lot 8b — notes
+- `lib/onboarding.ts` (pur, testé) : `Draft` (nom, espaces avec `gear`, nutrition, cycle facultatif, heure du résumé), `stepIssues`, `duplicateDraftSpace`, `startCycle`, `draftDocs` (espaces → équipement → placements → `cycles/cycle-1` → `grow/main` en dernier). Brouillon dans `localStorage["hydro.onboarding"]` (effacé par la réinitialisation).
+- `grow-context` : `needsSetup` (version locale, pas de `grow/main`) affiche `screens/onboarding.tsx` à la place de l'app ; `withSetup` bloque la « réparation » (grow recréé si des espaces existent sans grow) pendant que l'assistant ou l'import écrivent.
+- Décisions sans source, signalées : aucun add-on coché au départ pour les amis ; concentré 226 g/L par défaut (recommandé Athena p. 37) ; programme d'arrosage du premier cycle = celui du formulaire de cycle (3 %, 15–30 min → 20 min, P0 1–2 h → 90 min : repères Athena ; 5 doses P1 : valeur de départ de l'app, à ajuster jusqu'au runoff) ; 9 semaines de floraison (programme Athena) ; pots obligatoires pour créer le cycle (jamais 15 L par défaut).
+- Dans la version locale, l'heure du résumé est seulement gardée (pas de tâche du matin) : le texte le dit.
+- **Netlify** : toujours à relier par Thomas, voir `docs/guide-netlify.md`. Guide des amis : `docs/guide-amis.md`.
+
+### Commandes (lot 8b)
+```bash
+npm run build:local
+PYTHONPATH=scripts python3 scripts/e2e-8b.py dist-local <dossier>
+PYTHONPATH=scripts python3 scripts/e2e-8a.py dist-local <dossier>
+```
+
+### Prochain lot
+**Lot 7 — Nutrition multi-marques**, après la validation de Thomas (lots 9 et 8).

@@ -1,5 +1,14 @@
 # Changelog
 
+## Lot 8b — Assistant de premier lancement et guides (18/10/2026)
+- **Assistant de premier lancement** (version locale ; `lib/onboarding.ts`, `screens/onboarding.tsx`) : accueil (langue, « Commencer », « Passer l'assistant »), puis 7 étapes dans l'ordre du cahier des charges : nom du grow → espaces (modèle, dimensions L × l × H facultatives, **dupliquer avec l'équipement**, ajouter, retirer) → équipement rapide et facultatif (lampe, pots, réservoir, extracteur : un champ vide ne crée rien, rien n'est supposé) → modules → gamme, add-ons et méthode (Pro Line ou Blended, jamais mélangées ; aucun add-on coché au départ) → premier cycle facultatif (pots repris de l'équipement, obligatoires pour créer le cycle) → heure du résumé, récapitulatif, conseil d'installation. Tout est écrit à la fin, le grow en dernier ; le brouillon survit à un rechargement.
+- **Importer une sauvegarde dès l'accueil** de l'assistant (fichier ou texte collé) : tout est repris, l'assistant se ferme.
+- La version locale ne crée plus un « Mon grow » vide au premier lancement : l'assistant s'affiche (aussi après « Réinitialiser l'app »). La version Claude est inchangée (grow de départ de Thomas).
+- **Installer Hydro** (iPhone / Android) : carte dans l'assistant et dans Réglages (version locale), cachée quand l'app est déjà installée.
+- Rappel de sauvegarde : pas le jour même de la création du grow (sauf saisie déjà faite). Note de gamme juste quand les deux gammes sont proposées. `netlify.toml` : pas de cache aussi pour `/` et le manifeste.
+- Guides : `docs/guide-amis.md` (installer, assistant, sauvegarde, changer de téléphone, réinitialiser) et `docs/guide-netlify.md` (relier Netlify à GitHub, pour Thomas).
+- 205 tests (12 nouveaux) ; parcours `scripts/e2e-8b.py` (assistant complet en sombre et en clair, rechargement en cours de route, réinitialiser → coller une sauvegarde, passer l'assistant) ; `e2e-8a.py` adapté (le collage après réinitialisation passe par l'assistant) ; 2b, 3, 4b et 6b repassés sur la version Claude.
+
 ## Lot 8a — Version locale, réinitialiser, transfert entre apps (18/10/2026)
 - **Version locale (amis)** : `npm run build:local` → `dist-local/` (Netlify : `netlify.toml`). Polices embarquées (plus de Google Fonts), icônes 3D incluses dans la page, **installable** (manifeste, icônes générées depuis 🪴, `apple-touch-icon`) et **hors ligne** (service worker « réseau d'abord, cache sinon » : les mises à jour arrivent dès qu'on est connecté). Stockage IndexedDB marqué persistant (`navigator.storage.persist()`). La version Claude est inchangée.
 - **Réinitialiser l'app** (demande de Thomas) : Réglages → « Réinitialiser… », confirmation avec lien « Exporter une sauvegarde d'abord ». Efface toutes les collections (le grow en dernier) et les photos locales ; langue et thème gardés. Version Claude : l'app repart avec le grow de départ de Thomas ; version locale : de zéro.

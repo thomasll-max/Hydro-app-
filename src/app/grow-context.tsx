@@ -20,6 +20,10 @@ export type Selection = { kind: "all" } | { kind: "site"; site: Site } | { kind:
 
 type GrowCtx = {
   ready: boolean
+  /** Local version, nothing yet: the first-launch assistant is shown instead of the app. */
+  needsSetup: boolean
+  /** Assistant writes (its draft, or an imported backup): no repair seed while they run. */
+  withSetup: <T,>(fn: (docs: Stores["docs"]) => Promise<T>) => Promise<T>
   storeKind: Stores["docs"]["kind"] | null
   // whole grow
   grow: Grow | null
@@ -121,23 +125,29 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
     return () => uns.forEach((u) => u())
   }, [stores])
 
-  // First run: Thomas's copy is prefilled (Claude version); the local version starts with an empty grow.
+  // First run: Thomas's copy is prefilled (Claude version); the local version opens the first-launch assistant
+  // (lot 8b), which writes grow/main last. Spaces without a grow (an interrupted reset) only get a grow back.
+  const hasSpaces = !!Object.keys(raw.spaces ?? {}).length
+  // Also true while the assistant writes (spaces land before grow/main), so it stays on screen until the end.
+  const needsSetup = TARGET === "local" && !!stores && growLoaded && !grow && raw.spaces !== undefined
   const seeding = React.useRef(false)
+  const setupBusy = React.useRef(false)
   React.useEffect(() => {
     if (!stores || !growLoaded || grow || seeding.current) return
     if (raw.spaces === undefined) return
+    if (TARGET === "local" && (!hasSpaces || setupBusy.current)) return
     seeding.current = true
     const now = new Date().toISOString()
     ;(async () => {
       try {
-        if (TARGET === "artifact" && !Object.keys(raw.spaces ?? {}).length) {
+        if (TARGET === "artifact" && !hasSpaces) {
           for (const [p, doc] of seedDocs(thomasGrow(now, todayIso()))) await stores.docs.set(p, doc)
         } else await stores.docs.set("grow/main", newGrow("Mon grow", now))
       } catch {
         seeding.current = false
       }
     })()
-  }, [stores, growLoaded, grow, raw.spaces])
+  }, [stores, growLoaded, grow, raw.spaces, hasSpaces])
 
   const list = <T,>(c: ColName) => Object.values(raw[c] ?? {}) as T[]
   const sites = React.useMemo(() => list<Site>("sites").sort(byOrder), [raw.sites]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -229,6 +239,15 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
     const stamp = () => new Date().toISOString()
     return {
       ready: growLoaded && !!stores && raw.cycles !== undefined && raw.spaces !== undefined,
+      needsSetup,
+      withSetup: async (fn) => {
+        setupBusy.current = true
+        try {
+          return await fn(need())
+        } finally {
+          setupBusy.current = false
+        }
+      },
       storeKind: docs?.kind ?? null,
       grow,
       sites,
@@ -356,7 +375,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       },
       photoUrl: async (id) => (stores ? stores.photos.url(id) : ""),
     }
-  }, [stores, growLoaded, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, customProducts, concentrateStocks, sprays, reminders, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, all, cycleIn, settings.activeCycleId, setActiveCycle])
+  }, [stores, growLoaded, needsSetup, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, customProducts, concentrateStocks, sprays, reminders, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, all, cycleIn, settings.activeCycleId, setActiveCycle])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

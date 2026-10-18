@@ -25,8 +25,8 @@ with sync_playwright() as p:
     checks["manifest"] = pg.evaluate("fetch('manifest.webmanifest').then(r => r.json()).then(m => m.name)")
     checks["googleFonts"] = pg.evaluate("[...document.querySelectorAll('link')].some(l => l.href.includes('googleapis'))")
     checks["fontLoaded"] = pg.evaluate("document.fonts.ready.then(() => document.fonts.check('600 16px Figtree'))")
-    # A space so there is something to lose: the reminder appears (never backed up).
-    pg.evaluate("""() => new Promise((res) => { const r = indexedDB.open('hydro', 1); r.onsuccess = () => { const tx = r.result.transaction('docs', 'readwrite'); tx.objectStore('docs').put({schemaVersion:1,id:'tente',name:'Tente',template:'flower',color:'emerald',order:0,modules:{climate:true,light:true,irrigation:true,nutrition:true,propagation:false,drying:false,plants:true},createdAt:'x',updatedAt:'x'}, 'spaces/tente'); tx.oncomplete = () => res(true) } })""")
+    # A grow set up earlier with a space, so there is something to lose: the reminder appears (never backed up).
+    pg.evaluate("""() => new Promise((res) => { const r = indexedDB.open('hydro', 1); r.onsuccess = () => { const tx = r.result.transaction('docs', 'readwrite'); tx.objectStore('docs').put({schemaVersion:1,id:'main',name:'Test',digestTime:'07:00',nutrition:{line:'athena-pro',addons:[],dosing:'conc226'},createdAt:'2026-10-01T08:00:00.000Z',updatedAt:'2026-10-01T08:00:00.000Z'}, 'grow/main'); tx.objectStore('docs').put({schemaVersion:1,id:'tente',name:'Tente',template:'flower',color:'emerald',order:0,modules:{climate:true,light:true,irrigation:true,nutrition:true,propagation:false,drying:false,plants:true},createdAt:'x',updatedAt:'x'}, 'spaces/tente'); tx.oncomplete = () => res(true) } })""")
     pg.reload(); pg.wait_for_timeout(2500)
     checks["reminder"] = pg.locator("#backup-reminder").count() == 1
     pg.screenshot(path=str(out / "01-today-reminder.png"))
@@ -51,12 +51,11 @@ with sync_playwright() as p:
     pg.screenshot(path=str(out / "03-reset-confirm.png"))
     pg.click("#reset-confirm"); pg.wait_for_timeout(3500)
     checks["afterReset"] = pg.evaluate("""() => new Promise((res) => { const r = indexedDB.open('hydro', 1); r.onsuccess = () => { const q = r.result.transaction('docs').objectStore('docs').getAllKeys(); q.onsuccess = () => res(q.result) } })""")
-    pg.goto(url + "#data"); pg.wait_for_timeout(2000)
-    pg.get_by_role("button", name="Coller une sauvegarde").click()
-    pg.fill("#data-paste", copied)
-    pg.get_by_role("button", name="Lire").click(); pg.wait_for_timeout(400)
-    checks["pasteSummary"] = pg.inner_text("#data-summary").split("\n")[0]
-    pg.get_by_role("button", name="Importer").click(); pg.wait_for_selector("text=Import terminé", timeout=15000)
+    # Lot 8b: after a reset the first-launch assistant opens; the backup is pasted on its welcome screen.
+    pg.goto(url); pg.wait_for_selector("#onb-welcome", timeout=10000)
+    pg.click("#onb-paste-open"); pg.fill("#onb-paste", copied); pg.click("#onb-paste-read"); pg.wait_for_timeout(300)
+    checks["pasteSummary"] = pg.inner_text("#onb-import-summary")
+    pg.click("#onb-import-run"); pg.wait_for_selector("#onboarding", state="detached", timeout=15000)
     pg.goto(url); pg.wait_for_timeout(2000)
     checks["restored"] = pg.locator("text=Tente").count() > 0
     b.close()

@@ -14,6 +14,7 @@ import { JournalScreen } from "@/screens/journal"
 import { ChartsScreen } from "@/screens/charts"
 import { ToolsScreen } from "@/screens/tools"
 import { CalendarScreen } from "@/screens/calendar"
+import { Onboarding } from "@/screens/onboarding"
 
 const SCREENS: Record<TabId, () => React.ReactElement> = {
   today: TodayScreen,
@@ -32,8 +33,8 @@ function initialTab(): TabId {
 }
 
 function Shell() {
-  const { t, resolvedTheme } = useSettings()
-  const { cycle, storeKind, spaces, selection } = useGrow()
+  const { t } = useSettings()
+  const { cycle, storeKind, spaces, selection, needsSetup } = useGrow()
   const ed = useEditors()
   const [tab, setTab] = useState<TabId>(initialTab)
   const Screen = SCREENS[tab]
@@ -54,6 +55,14 @@ function Shell() {
     }
     window.scrollTo({ top: 0 })
   }, [tab])
+
+  if (needsSetup)
+    return (
+      <>
+        <Onboarding />
+        <AppToaster />
+      </>
+    )
 
   return (
     <div className="relative min-h-full">
@@ -86,21 +95,28 @@ function Shell() {
         }}
       />
       <TabBar active={tab} onChange={setTab} />
-      <Toaster
-        theme={resolvedTheme}
-        position="top-center"
-        offset={{ top: "calc(env(safe-area-inset-top, 0px) + 60px)" }}
-        toastOptions={{
-          style: {
-            background: "var(--surface)",
-            color: "var(--fg)",
-            border: "1px solid var(--line-strong)",
-            borderRadius: "var(--r-lg)",
-            fontFamily: "var(--font-sans)",
-          },
-        }}
-      />
+      <AppToaster />
     </div>
+  )
+}
+
+function AppToaster() {
+  const { resolvedTheme } = useSettings()
+  return (
+    <Toaster
+      theme={resolvedTheme}
+      position="top-center"
+      offset={{ top: "calc(env(safe-area-inset-top, 0px) + 60px)" }}
+      toastOptions={{
+        style: {
+          background: "var(--surface)",
+          color: "var(--fg)",
+          border: "1px solid var(--line-strong)",
+          borderRadius: "var(--r-lg)",
+          fontFamily: "var(--font-sans)",
+        },
+      }}
+    />
   )
 }
 

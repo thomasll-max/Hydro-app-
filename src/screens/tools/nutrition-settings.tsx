@@ -34,7 +34,7 @@ export function NutritionFields({ value, onChange, idPrefix }: { value: Nutritio
         ) : (
           <div className="flex h-11 items-center rounded-md border border-line bg-surface px-3 text-[14px] font-semibold">{line.name}</div>
         )}
-        <p className="mt-1 text-[11px] text-fg-3">{t("growSet.lineOnly")}</p>
+        <p className="mt-1 text-[11px] text-fg-3">{lines.length > 1 ? t("growSet.lineBoth") : t("growSet.lineOnly")}</p>
       </div>
       <div>
         <div className="mb-1 text-[12px] font-medium text-fg-2">{t("growSet.addons")}</div>

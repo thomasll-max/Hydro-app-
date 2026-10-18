@@ -22,6 +22,8 @@ import { RootProductsField, useRootProducts } from "@/screens/root-products"
 import { SpaceSheet } from "./space-sheet"
 import { SwitchRow } from "./equipment-shared"
 import { ResetCard } from "./reset-card"
+import { InstallTip } from "@/screens/install-tip"
+import { TARGET } from "@/store"
 
 export function SettingsTool() {
   const { t, dm, saveState, setActiveCycle } = useSettings()
@@ -76,7 +78,7 @@ export function SettingsTool() {
             <TextField id="g-name" label={t("growSet.name")} value={name} onChange={setName} />
           </div>
           <div onBlur={() => digest && digest !== g.grow?.digestTime && saveGrow({ digestTime: digest })}>
-            <TextField id="g-digest" type="time" label={t("growSet.digest")} hint={t("growSet.digestHint")} value={digest} onChange={setDigest} />
+            <TextField id="g-digest" type="time" label={t("growSet.digest")} hint={TARGET === "local" ? t("growSet.digestHintLocal") : t("growSet.digestHint")} value={digest} onChange={setDigest} />
           </div>
         </Card>
       </Reveal>
@@ -205,6 +207,11 @@ export function SettingsTool() {
         </Card>
       </Reveal>
 
+      {TARGET === "local" && (
+        <Reveal i={8} className="mb-3">
+          <InstallTip />
+        </Reveal>
+      )}
       <ResetCard i={9} />
       <SpaceSheet open={spaceSheet.open} onOpenChange={(o) => setSpaceSheet((s) => ({ ...s, open: o }))} space={spaceSheet.space} />
       <SiteSheet open={siteSheet.open} onOpenChange={(o) => setSiteSheet((s) => ({ ...s, open: o }))} site={siteSheet.site} />

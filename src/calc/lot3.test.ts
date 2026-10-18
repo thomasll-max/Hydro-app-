@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest"
-import { ATHENA_PRO, bagLitres, dosePer10L, expectedEc, recipe, suggestedVolume } from "./nutrition"
+import { expectedEc, gramsPer10L, mixRecipe, suggestedVolume, type MixInput } from "./nutrients"
+import { bagLitres } from "./concentrate"
+import { ATHENA_PRO } from "@/data/nutrients"
+
+// Lot 2a/3 API kept for these tests: kind → Pro phase, items with their role.
+type Kind = "seedling" | "veg" | "flower" | "finish" | "flush"
+const PHASE: Record<Kind, string> = { seedling: "clone", veg: "veg", flower: "flower", finish: "finish", flush: "flush" }
+const ROLE: Record<string, string> = { proGrow: "base", proBloom: "base", proCore: "core" }
+function recipe(_line: unknown, r: { kind: Kind; volumeL: number; ec: number; concentrate?: number; balanceMlPer10L?: number }) {
+  const input: MixInput = { phaseId: PHASE[r.kind], volumeL: r.volumeL, ec: r.ec, concentrate: r.concentrate, balanceMlPer10L: r.balanceMlPer10L }
+  return mixRecipe("athena-pro", input).items.map((i) => ({ ...i, role: ROLE[i.id] ?? i.id, estimate: !!i.estimate }))
+}
+const dosePer10L = (_line: unknown, ec: number) => gramsPer10L(ATHENA_PRO, ec)
 import { buildProgram, isPrecision, programTotals, sensorPlan, steerStage } from "./program"
 import type { Cycle } from "@/model/types"
 

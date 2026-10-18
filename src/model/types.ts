@@ -3,7 +3,7 @@
 // The grow, sites, spaces and equipment live in ./grow.ts.
 import type { Transfer } from "./grow"
 
-export const SCHEMA = { cycle: 3, plant: 2, entry: 2, event: 2, mix: 3 } as const
+export const SCHEMA = { cycle: 3, plant: 2, entry: 2, event: 2, mix: 4 } as const
 
 export type IsoDate = string // "2026-10-18"
 export type Substrate = "coco" | "soil" | "mix7030"
@@ -173,16 +173,24 @@ export type Mix = {
   /** One tank can feed several spaces. */
   spaceIds?: string[]
   volumeL: number
-  ec?: number
+  ec?: number // measured
+  /** pH measured after adjusting (pH « après »). */
   ph?: number
+  /** pH measured before any Balance. */
+  phBefore?: number
+  /** Balance poured while titrating this tank (mL, on top of the known amount poured first). */
+  balanceAddedMl?: number
   recipe?: string // free text (v1)
   line?: string // nutrient line id
+  /** Program phase of the line (catalog id: "veg", "finish", "fl5"…). */
+  phase?: string
   kind?: "seedling" | "veg" | "flower" | "finish" | "flush"
   ecTarget?: number // fertiliser EC aimed for
   ecExpected?: number // with tap water
   phTarget?: Range
   balanceMlPer10L?: number
-  items?: { id: string; name?: string; qty: number | null; unit: string }[]
+  /** concentrate = strength (g/L) when dosed from a concentrate jerrycan (stock tracking). */
+  items?: { id: string; name?: string; qty: number | null; unit: string; concentrate?: number; range?: [number, number] }[]
   note?: string
   createdAt: string
 }

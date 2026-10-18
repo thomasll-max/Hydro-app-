@@ -10,6 +10,7 @@ export function deadlineTitle(lang: Lang, d: Deadline): string {
     if (v.litres === "" || v.litres == null) return translate(lang, "cal.dl.tankNoL", v)
     v.litres = formatNumber(lang, Number(v.litres))
   }
+  if (d.kind === "concentrateLow") v.litres = formatNumber(lang, Number(v.litres), 1)
   return translate(lang, `cal.dl.${d.kind}`, v)
 }
 

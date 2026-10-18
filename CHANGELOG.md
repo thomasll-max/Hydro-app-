@@ -1,5 +1,15 @@
 # Changelog
 
+## Lot 4a — Nutrition à catalogue (18/10/2026)
+- Catalogues sourcés `src/data/nutrients/` : `athena-pro.ts` (programme p. 31, dosage par EC en poudre et en concentrés 113/226/282 g/L p. 37, arrosage manuel p. 41), `athena-blended.ts` (programme p. 58 semaine par semaine, B avant A, arrosage manuel p. 60), `addons.ts` (Fade, Cleanse et rinçage, Balance par paliers de 1 mL pour 4 L, IPW, CaMg et PK réservés au Blended). Chaque dose porte sa page.
+- Moteur générique `src/calc/nutrients.ts` (remplace `calc/nutrition.ts`) : phase du programme d'après le cycle, recette dans l'ordre de mélange avec la source de chaque ligne, plages publiées affichées telles quelles tant que la dose n'est pas choisie, mise à l'échelle Blended marquée « estimation ». **Fade en S8–S9 à la place du Core** (Core conservé si le Fade est désactivé), pH 6,0–6,4.
+- Produits perso : écran « Saisir depuis l'étiquette » (dose min/max pour un volume, converti pour 10 L ; semaines en végé et/ou floraison de S… à S… ; texte de l'étiquette ; désactivation). **Proper reste vide tant que Thomas ne l'a pas saisi**, source « étiquette ». Great White reste sur les racines, jamais dans le bidon.
+- Assistant concentré (sac entier ÷ concentration, 80 % d'eau, 15–45 min, compléter, Core à part) et stocks `concentrateStocks` : le stock baisse à chaque bidon enregistré ; un nouveau bidon de concentré clôt l'ancien.
+- « Enregistrer ce bidon » : un bidon pour plusieurs espaces de la même gamme (jamais Pro + Blended), pH avant, Balance ajouté (mL), pH après, EC mesurée ; le Balance total revient en premier au bidon suivant. Fiche Bidon du Journal : pH avant et Balance ajouté, la recette est conservée à la modification.
+- Échéance **concentré presque vide** (`deadlines.ts`, kind `concentrateLow`) : moins de 2 bidons comme le dernier (estimation), datée du bidon qui a fait passer sous le seuil.
+- Blended : moteur et tests, menu caché dans la version de Thomas (visible en `VITE_TARGET=local`).
+- 141 tests (24 nouveaux) ; parcours Playwright `scripts/e2e-4a.py`.
+
 ## Lot 3 — Calendrier (18/10/2026)
 - Rappels perso (`reminders/{id}`) : intitulé, espace ou tout le grow, date et heure dans le fuseau du grow (Europe/Oslo pour Thomas), répétition (tous les N jours, jours de la semaine, chaque mois ; fin jamais / après N fois / jusqu'au), alerte, note. « Fait » et « Reporter à demain » agissent sur une seule occurrence. Les heures restent fixes au changement d'heure.
 - Échéances automatiques (`src/calendar/deadlines.ts`) : 12/12 prévu, début du Fade (S8, si l'add-on est activé), rinçage (3 derniers jours), récolte prévue, bidon à refaire (autonomie du réservoir), fin de propagation et **Great White sur les racines au transfert** (nouveau champ « Transfert prévu » du cycle), fin de séchage (nouveau champ « Séchage prévu »), **mesurer le débit** de la pompe (jamais mesuré, ou plus de 60 jours). Chaque échéance cite sa source ; leur état (fait, reporté) est stocké dans `reminders/auto_{clé}`.

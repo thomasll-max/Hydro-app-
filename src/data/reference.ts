@@ -1,20 +1,12 @@
 // Verified reference values. Every figure carries its source.
-// Source: claude/athena-pro-line-fiche.md (Athena Handbook FR métrique V8 + notice Alien RAIN)
+import { PRO_CONCENTRATES, PRO_GRAMS } from "./nutrients/athena-pro"
+// Source: docs/athena-fiche.md (Athena Handbook FR métrique V8 + notice Alien RAIN)
 // and the validated values of the specification (section 9).
 
 export type Source = "athena" | "bonorum" | "maker" | "estimate" | "spec"
 
-/** Dosing by target EC — g per 10 L: Grow or Bloom / Core. Source: Athena. */
-export const ATHENA_DOSING: { ec: number; base: number; core: number }[] = [
-  { ec: 0.5, base: 2.8, core: 1.7 },
-  { ec: 1.0, base: 6.1, core: 3.6 },
-  { ec: 1.5, base: 9.4, core: 5.7 },
-  { ec: 2.0, base: 12.9, core: 7.7 },
-  { ec: 2.5, base: 16.5, core: 9.9 },
-  { ec: 3.0, base: 20.3, core: 12.2 },
-  { ec: 3.5, base: 24.1, core: 14.5 },
-  { ec: 4.0, base: 28.1, core: 16.9 },
-]
+/** Dosing by target EC — g per 10 L: Grow or Bloom / Core. Source: Athena p. 37 (catalog data/nutrients/athena-pro.ts). */
+export const ATHENA_DOSING = PRO_GRAMS
 export const ATHENA_DOSING_SOURCE: Source = "athena"
 
 export type PhRow = { key: "phClone" | "phCoco" | "phFade" | "phSoil" | "phMix"; lo: number; hi: number; source: Source }
@@ -44,30 +36,4 @@ export const STEERING: SteerRow[] = [
 ]
 
 /** mL of concentrate per 10 L, by target EC (Grow-or-Bloom / Core). Source: Athena Handbook FR V8, p. 37. */
-export const ATHENA_CONC_ML: Record<number, { ec: number; base: number; core: number }[]> = {
-  226: [
-    { ec: 1.0, base: 27, core: 16 },
-    { ec: 1.5, base: 42, core: 25 },
-    { ec: 2.0, base: 57, core: 34 },
-    { ec: 2.5, base: 73, core: 44 },
-    { ec: 3.0, base: 90, core: 54 },
-    { ec: 3.5, base: 107, core: 64 },
-    { ec: 4.0, base: 124, core: 75 },
-  ],
-  113: [
-    { ec: 1.0, base: 54, core: 32 },
-    { ec: 1.5, base: 83, core: 50 },
-    { ec: 2.0, base: 114, core: 69 },
-    { ec: 2.5, base: 146, core: 88 },
-    { ec: 3.0, base: 179, core: 108 },
-    { ec: 3.5, base: 214, core: 128 },
-    { ec: 4.0, base: 249, core: 149 },
-  ],
-  282: [
-    { ec: 1.0, base: 21, core: 13 },
-    { ec: 1.5, base: 33, core: 20 },
-    { ec: 2.0, base: 46, core: 27 },
-    { ec: 2.5, base: 59, core: 35 },
-    { ec: 3.0, base: 72, core: 43 },
-  ],
-}
+export const ATHENA_CONC_ML = PRO_CONCENTRATES

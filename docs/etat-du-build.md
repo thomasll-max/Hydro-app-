@@ -8,7 +8,8 @@
 - Maquette validée : `docs/maquette-aujourdhui.html`
 - **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 12 = lot 3)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1, 2a, 2b et 3 poussés le 18/10/2026. Dernier commit de lot : `9c179a8 Lot 3 : calendrier, rappels, échéances automatiques, export .ics`.
+  - Lots 1, 2a, 2b, 3 et 4a poussés le 18/10/2026. Dernier commit de lot : « Lot 4a : nutrition à catalogue… ».
+  - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
 ## Lots
@@ -16,7 +17,8 @@
 - [x] Lot 2a : données + équipement (artefact v10)
 - [x] Lot 2b : journal + Aujourd'hui (artefact v11, 102 tests)
 - [x] Lot 3 : calendrier (artefact v12, 117 tests)
-- [ ] Lot 4 : arrosage + nutrition
+- [x] Lot 4a : nutrition à catalogue (141 tests)
+- [ ] Lot 4b : arrosage depuis l'équipement, arrosage manuel par gamme
 - [ ] Lot 5 : pH/Balance, IPW, lumière, climat
 - [ ] Lot 6 : graphiques et données
 - [ ] Lot 9 : tâche du matin + passe de finition (avant la validation de Thomas)
@@ -81,7 +83,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # 117 tests (Vitest)
+npm test                          # tests (Vitest), 141 au lot 4a
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -91,9 +93,26 @@ PYTHONPATH=scripts python3 scripts/e2e-3.py dist-preview/index.html <dossier>
 ```
 
 ### Prochain lot
-**Lot 4 — Arrosage et Nutrition** (cahier des charges §6 et décisions add-ons ci-dessus) :
-- arrosage et crop steering à partir de l'équipement de l'espace (le débit de la pompe est encore « donnée manquante ») ; reprend `src/screens/tools/irrigation.tsx` ;
-- nutrition à catalogue `data/nutrients/` (`athena-pro.ts`, `athena-blended.ts`, `addons.ts`, chaque valeur sourcée), poudre ou concentré (113/226/282 g/L), assistant concentré et stocks, produits perso (Proper), bidon pour plusieurs espaces, pH cible, pH avant/après et « Balance ajouté (mL) » ;
-- Blended : moteur et tests, mais menu caché pour Thomas (décision lot 8) ;
-- échéance **concentré presque vide** dans `deadlines.ts` ;
-- tests du cahier des charges pour le lot 4.
+Voir « Lot 4a — notes » ci-dessous.
+
+## Lot 4a — notes
+- Lot 4 coupé en deux (demande de Thomas) : **4a** nutrition, **4b** arrosage.
+- `src/data/nutrients/` : `types.ts`, `athena-pro.ts`, `athena-blended.ts`, `addons.ts`, `index.ts` (`CATALOGS`, `getCatalog`, `visibleCatalogs(TARGET)`). `data/reference.ts` réexporte les tableaux Pro (`ATHENA_DOSING`, `ATHENA_CONC_ML`) pour les Repères.
+- `src/calc/nutrients.ts` : `positionOf(stage)` → `phaseAt(catalog, position)` → `mixRecipe(lineId, input)`. `src/calc/concentrate.ts` : `bagLitres`, `stockStatus`, `LOW_TANKS = 2`.
+- Modèle : `Mix` v4 (`phase`, `phBefore`, `balanceAddedMl`, `ph` = pH après, `items[].concentrate`), `ConcentrateStock` v2 (`finishedOn`), `CustomProduct` v2 (`labelDose`, `use`, `inactive`). `AddonId` gagne `camg` et `pk` (Blended uniquement).
+- Plages publiées (Cleanse 5–13, CaMg 8–13) : aucune dose par défaut, la plage s'affiche ; la dose choisie est reprise du dernier bidon.
+- EC par défaut : celle du programme ; Pro au cycle 1 : 2,2 (cahier des charges §9, 2,0–2,4), comme avant.
+- Écrans : `screens/tools/nutrition.tsx` (recette, bidon), `nutrition-parts.tsx` (concentrés, produits perso), `nutrition-settings.tsx` (gammes visibles, add-ons de la gamme).
+
+### Pièges
+- Python Playwright : installer `playwright==1.56.0` (Chromium 1194 de `/opt/pw-browsers`) ; une version plus récente réclame `playwright install`.
+- Publication : refusée comme au lot 3. Vérification faite : version en ligne = build de `main` au lot 3, hors `<style>`, hors squelette de l'hôte et hors chemins `//#region` (qui changent selon l'emplacement de `node_modules`).
+
+### Commandes (lot 4a)
+```bash
+PYTHONPATH=scripts python3 scripts/shots.py dist-preview/index.html <dossier> docs/maquette-aujourdhui.html nutrition today calendar journal tools
+PYTHONPATH=scripts python3 scripts/e2e-4a.py dist-preview/index.html <dossier>
+```
+
+### Prochain lot
+**Lot 4b — Arrosage** : volume des pots et débit tirés de l'équipement de l'espace (« donnée manquante » si absent), arrosage manuel par gamme (Pro p. 41, Blended p. 60 dans les catalogues). Test : arrosage manuel Blended en végé → EC du runoff 3,5–4,5.

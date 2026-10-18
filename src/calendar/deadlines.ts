@@ -1,16 +1,18 @@
 // Automatic deadlines (spec §4ter). Each one appears when the tool that computes it is delivered:
 // lot 3 has the cycle dates (12/12, Fade, rinçage, récolte), the reservoir autonomy (bidon à refaire),
 // propagation and drying ends, Great White at the transfer, and the pump flow check (> 60 days).
-// Concentrate (lot 4) and IPW (lot 5) are added by those lots.
-import type { CustomProduct, Equipment, Reminder } from "@/model/grow"
+// Lot 4 adds the concentrate running low (jerrycan stocks); IPW comes with lot 5.
+import type { ConcentrateStock, CustomProduct, Equipment, Reminder } from "@/model/grow"
 import type { IsoDate } from "@/model/types"
 import { equipmentAt } from "@/equipment/calc"
 import { spaceNutrition } from "@/model/grow-ops"
 import { addDays, fadeStart, flushStart, plannedHarvest } from "@/calc/stage"
 import { spaceContext } from "@/calc/space-context"
 import type { DigestData } from "@/calc/digest"
+import { openStocks, stockStatus } from "@/calc/concentrate"
+import { getCatalog } from "@/data/nutrients"
 
-export const DEADLINE_KINDS = ["flip", "fade", "flush", "harvest", "tank", "propagationEnd", "greatWhite", "dryingEnd", "flowCheck"] as const
+export const DEADLINE_KINDS = ["flip", "fade", "flush", "harvest", "tank", "propagationEnd", "greatWhite", "dryingEnd", "flowCheck", "concentrateLow"] as const
 export type DeadlineKind = (typeof DEADLINE_KINDS)[number]
 export type DeadlineSource = "athena" | "user" | "estimate" | "label" | "spec"
 
@@ -30,7 +32,7 @@ export type Deadline = {
   source: DeadlineSource
 }
 
-export type CalendarData = DigestData & { reminders?: Reminder[]; customProducts?: CustomProduct[] }
+export type CalendarData = DigestData & { reminders?: Reminder[]; customProducts?: CustomProduct[]; concentrateStocks?: ConcentrateStock[] }
 
 export function deadlines(data: CalendarData, today: IsoDate): Deadline[] {
   const out: Deadline[] = []
@@ -102,6 +104,14 @@ export function deadlines(data: CalendarData, today: IsoDate): Deadline[] {
         })
       }
     }
+  }
+  // Concentrate jerrycan running low: fewer than 2 tanks like the last one left (estimate), dated at that tank.
+  const stocks = data.concentrateStocks ?? []
+  for (const st of openStocks(stocks)) {
+    const s = stockStatus(st, stocks, data.mixes)
+    if (!s.low || !s.lowSince) continue
+    const name = getCatalog(st.line).products.find((p) => p.id === st.productId)?.name ?? st.productId
+    out.push({ key: `concentrateLow_${st.id}`, kind: "concentrateLow", date: s.lowSince, productId: st.productId, vars: { product: name, litres: s.leftL }, source: "estimate" })
   }
   // A pump shared by two spaces gives one deadline.
   const seen = new Set<string>()

@@ -1,12 +1,12 @@
 // Line, add-ons and dosing method — used at grow level (Réglages) and per space (override).
 import { Seg } from "@/components/hydro/form"
 import { useSettings } from "@/app/settings-context"
-import { getLine, NUTRIENT_LINES } from "@/calc/nutrition"
-import type { AddonId, DosingMethod, NutritionSettings } from "@/model/grow"
+import { TARGET } from "@/store"
+import { ADDONS as ADDON_DEFS, getCatalog, visibleCatalogs, type AddonId } from "@/data/nutrients"
+import type { DosingMethod, NutritionSettings } from "@/model/grow"
 import { cn } from "@/lib/utils"
 
-export const ADDONS: AddonId[] = ["fade", "cleanse", "balance", "ipw"]
-export const ADDON_NAMES: Record<AddonId, string> = { fade: "Fade", cleanse: "Cleanse", balance: "Balance", ipw: "IPW" }
+export const ADDON_NAMES: Record<AddonId, string> = Object.fromEntries(Object.values(ADDON_DEFS).map((a) => [a.id, a.name])) as Record<AddonId, string>
 
 export function dosingToConc(d: DosingMethod): number {
   return d === "powder" ? 0 : Number(d.slice(4))
@@ -17,15 +17,20 @@ export function concToDosing(c: number): DosingMethod {
 
 export function NutritionFields({ value, onChange, idPrefix }: { value: NutritionSettings; onChange: (n: NutritionSettings) => void; idPrefix: string }) {
   const { t } = useSettings()
-  const line = getLine(value.line)
-  const lines = Object.values(NUTRIENT_LINES)
-  const concs = Object.keys(line.concentrates ?? {}).map(Number).sort((a, b) => a - b)
+  const line = getCatalog(value.line)
+  const lines = visibleCatalogs(TARGET)
+  const concs = Object.keys(line.ecTable?.concentrates ?? {}).map(Number).sort((a, b) => a - b)
+  // Switching line keeps only the add-ons the new line allows (CaMg / PK never with the Pro Line).
+  const pickLine = (id: string) => {
+    const next = getCatalog(id)
+    onChange({ ...value, line: id, addons: value.addons.filter((a) => next.addons.includes(a)) })
+  }
   return (
     <div className="flex flex-col gap-3" id={`${idPrefix}-nut`}>
       <div>
         <div className="mb-1 text-[12px] font-medium text-fg-2">{t("growSet.line")}</div>
         {lines.length > 1 ? (
-          <Seg<string> label={t("growSet.line")} value={value.line} onChange={(v) => onChange({ ...value, line: v })} options={lines.map((l) => ({ value: l.id, label: l.name }))} />
+          <Seg<string> label={t("growSet.line")} value={value.line} onChange={pickLine} options={lines.map((l) => ({ value: l.id, label: l.name }))} />
         ) : (
           <div className="flex h-11 items-center rounded-md border border-line bg-surface px-3 text-[14px] font-semibold">{line.name}</div>
         )}
@@ -34,7 +39,7 @@ export function NutritionFields({ value, onChange, idPrefix }: { value: Nutritio
       <div>
         <div className="mb-1 text-[12px] font-medium text-fg-2">{t("growSet.addons")}</div>
         <div className="flex flex-wrap gap-1.5">
-          {ADDONS.map((a) => {
+          {line.addons.map((a) => {
             const on = value.addons.includes(a)
             return (
               <button
@@ -51,16 +56,18 @@ export function NutritionFields({ value, onChange, idPrefix }: { value: Nutritio
         </div>
         {value.addons.includes("ipw") && <p className="mt-1 text-[11px] text-fg-3">{t("growSet.ipwNote")}</p>}
       </div>
-      <div>
-        <div className="mb-1 text-[12px] font-medium text-fg-2">{t("growSet.dosing")}</div>
-        <Seg<DosingMethod>
-          label={t("growSet.dosing")}
-          value={value.dosing}
-          onChange={(v) => onChange({ ...value, dosing: v })}
-          options={[{ value: "powder" as DosingMethod, label: t("growSet.powder") }, ...concs.map((c) => ({ value: concToDosing(c), label: t("growSet.conc", { c: String(c) }) }))]}
-        />
-        <p className="mt-1 text-[11px] text-fg-3">{t("growSet.dosingHint")}</p>
-      </div>
+      {concs.length > 0 && (
+        <div>
+          <div className="mb-1 text-[12px] font-medium text-fg-2">{t("growSet.dosing")}</div>
+          <Seg<DosingMethod>
+            label={t("growSet.dosing")}
+            value={value.dosing}
+            onChange={(v) => onChange({ ...value, dosing: v })}
+            options={[{ value: "powder" as DosingMethod, label: t("growSet.powder") }, ...concs.map((c) => ({ value: concToDosing(c), label: t("growSet.conc", { c: String(c) }) }))]}
+          />
+          <p className="mt-1 text-[11px] text-fg-3">{t("growSet.dosingHint")}</p>
+        </div>
+      )}
     </div>
   )
 }

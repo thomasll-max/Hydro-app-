@@ -3,7 +3,7 @@ import * as React from "react"
 import { getStores, TARGET, type Stores } from "@/store"
 import { useSettings } from "./settings-context"
 import { SCHEMA, type Cycle, type Entry, type GrowEvent, type Mix, type Plant } from "@/model/types"
-import { GROW_SCHEMA, type CustomProduct, type Equipment, type Reminder, type EquipmentAssignment, type Grow, type Group, type NutritionSettings, type Site, type Space } from "@/model/grow"
+import { GROW_SCHEMA, type ConcentrateStock, type CustomProduct, type Equipment, type Reminder, type EquipmentAssignment, type Grow, type Group, type NutritionSettings, type Site, type Space } from "@/model/grow"
 import { DEFAULT_NUTRITION, newGrow, spaceNutrition } from "@/model/grow-ops"
 import { moveEquipment } from "@/equipment/calc"
 import { derive } from "@/model/entry"
@@ -31,6 +31,8 @@ type GrowCtx = {
   assignments: EquipmentAssignment[]
   groups: Group[]
   customProducts: CustomProduct[]
+  /** Concentrate jerrycans (lot 4). */
+  concentrateStocks: ConcentrateStock[]
   /** Personal reminders and the state of automatic deadlines (lot 3). */
   reminders: Reminder[]
   selection: Selection
@@ -67,6 +69,10 @@ type GrowCtx = {
   /** Remove one placement (for items shared by several spaces). */
   unassign: (assignmentId: string, date?: string) => Promise<void>
   addAssignment: (a: EquipmentAssignment) => Promise<void>
+  saveCustomProduct: (p: CustomProduct) => Promise<void>
+  deleteCustomProduct: (id: string) => Promise<void>
+  saveConcentrateStock: (s: ConcentrateStock) => Promise<void>
+  deleteConcentrateStock: (id: string) => Promise<void>
   saveReminder: (r: Reminder) => Promise<void>
   deleteReminder: (id: string) => Promise<void>
   /** Claude version: the morning task reads digest/latest. */
@@ -82,7 +88,7 @@ export function newId(prefix: string) {
 }
 
 type Raw = Record<string, Record<string, unknown>>
-const COLS = ["sites", "spaces", "cycles", "plants", "groups", "entries", "events", "mixes", "equipment", "equipmentAssignments", "customProducts", "reminders"] as const
+const COLS = ["sites", "spaces", "cycles", "plants", "groups", "entries", "events", "mixes", "equipment", "equipmentAssignments", "customProducts", "reminders", "concentrateStocks"] as const
 type ColName = (typeof COLS)[number]
 
 export function GrowProvider({ children }: { children: React.ReactNode }) {
@@ -137,6 +143,8 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
   const groups = React.useMemo(() => list<Group>("groups"), [raw.groups]) // eslint-disable-line react-hooks/exhaustive-deps
   const reminders = React.useMemo(() => list<Reminder>("reminders"), [raw.reminders]) // eslint-disable-line react-hooks/exhaustive-deps
   const customProducts = React.useMemo(() => list<CustomProduct>("customProducts").sort((a, b) => a.name.localeCompare(b.name)), [raw.customProducts]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const concentrateStocks = React.useMemo(() => list<ConcentrateStock>("concentrateStocks").sort((a, b) => b.madeOn.localeCompare(a.madeOn)), [raw.concentrateStocks]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const sel = settings.space ?? "all"
   const selection: Selection = React.useMemo(() => {
@@ -221,6 +229,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       assignments,
       groups,
       customProducts,
+      concentrateStocks,
       reminders,
       selection,
       space,
@@ -315,6 +324,10 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
         else await need().set(`equipmentAssignments/${id}`, { ...a, to: date })
       },
       addAssignment: async (a) => need().set(`equipmentAssignments/${a.id}`, { ...a, schemaVersion: GROW_SCHEMA.assignment }),
+      saveCustomProduct: async (p) => need().set(`customProducts/${p.id}`, { ...p, schemaVersion: GROW_SCHEMA.customProduct }),
+      deleteCustomProduct: async (id) => need().delete(`customProducts/${id}`),
+      saveConcentrateStock: async (x) => need().set(`concentrateStocks/${x.id}`, { ...x, schemaVersion: GROW_SCHEMA.concentrateStock }),
+      deleteConcentrateStock: async (id) => need().delete(`concentrateStocks/${id}`),
       saveReminder: async (r) => need().set(`reminders/${r.id}`, { ...r, schemaVersion: GROW_SCHEMA.reminder, updatedAt: stamp() }),
       deleteReminder: async (id) => need().delete(`reminders/${id}`),
       saveDigest: async (d) => need().set("digest/latest", { ...d, updatedAt: stamp() }),
@@ -324,7 +337,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       },
       photoUrl: async (id) => (stores ? stores.photos.url(id) : ""),
     }
-  }, [stores, growLoaded, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, customProducts, reminders, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, all, cycleIn, settings.activeCycleId, setActiveCycle])
+  }, [stores, growLoaded, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, customProducts, concentrateStocks, reminders, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, all, cycleIn, settings.activeCycleId, setActiveCycle])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

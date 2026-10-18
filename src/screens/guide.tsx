@@ -10,7 +10,7 @@ import { useGrow } from "@/app/grow-context"
 import { dosingToConc } from "@/screens/tools/nutrition-settings"
 import type { EmojiName } from "@/assets/emoji"
 import { cn } from "@/lib/utils"
-import { getLine } from "@/calc/nutrition"
+import { getCatalog } from "@/data/nutrients"
 
 /** Outils → Repères. Embedded in the Tools screen (hero hidden there). */
 export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
@@ -32,7 +32,7 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
       <Reveal i={1}>
         <Card className="px-3.5 py-1">
           <Accordion type="single" collapsible defaultValue="dosing" key={settings.lang}>
-            <Section value="dosing" emoji="testTube" title={t("guide.dosing")} desc={t("guide.dosingD", { line: getLine().name })}>
+            <Section value="dosing" emoji="testTube" title={t("guide.dosing")} desc={t("guide.dosingD", { line: getCatalog().name })}>
               <Table
                 head={[
                   t("guide.ecTarget"),

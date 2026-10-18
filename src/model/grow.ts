@@ -3,6 +3,7 @@
 // entries/{YYYY-MM-DD}_{spaceId}[_{target}], events/{id}, mixes/{id}, reminders/{id}, concentrateStocks/{id},
 // sprays/{id}, customProducts/{id}, equipment/{id}, equipmentAssignments/{id}, settings/main (+ digest/latest, Claude).
 import type { IsoDate, Range } from "./types"
+import type { AddonId } from "@/data/nutrients/types"
 
 export const GROW_SCHEMA = {
   grow: 1,
@@ -12,9 +13,9 @@ export const GROW_SCHEMA = {
   equipment: 1,
   assignment: 1,
   reminder: 2,
-  concentrateStock: 1,
+  concentrateStock: 2,
   spray: 1,
-  customProduct: 1,
+  customProduct: 2,
 } as const
 
 export const COLLECTIONS = [
@@ -40,7 +41,7 @@ export type CollectionName = (typeof COLLECTIONS)[number]
 
 // ---------- Grow ----------
 export type DosingMethod = "powder" | "conc113" | "conc226" | "conc282"
-export type AddonId = "fade" | "cleanse" | "balance" | "ipw"
+export type { AddonId }
 export type NutritionSettings = { line: string; addons: AddonId[]; dosing: DosingMethod }
 
 export type Grow = {
@@ -189,6 +190,7 @@ export type Reminder = {
   createdAt: string
   updatedAt?: string
 }
+/** A jerrycan of concentrate made from a whole bag (one per product, never mixed). */
 export type ConcentrateStock = {
   schemaVersion: number
   id: string
@@ -198,6 +200,10 @@ export type ConcentrateStock = {
   litresMade: number
   madeOn: IsoDate
   bagKg?: number
+  /** Marked empty (or replaced): no more usage counted, no more deadline. */
+  finishedOn?: IsoDate
+  note?: string
+  createdAt?: string
 }
 export type Spray = {
   schemaVersion: number
@@ -222,8 +228,14 @@ export type CustomProduct = {
   /** Dose per 10 L (tank) or per plant (roots). Empty until typed from the label: never guessed. */
   dosePer10L?: Range
   dosePerPlant?: Range
+  /** Label dose as written (amount for a volume), kept for display; dosePer10L is derived from it. */
+  labelDose?: { lo: number; hi: number; perL: number }
   /** Weeks of use as written on the label, free text until typed. */
   weeks?: string
+  /** Weeks of use in the tank, typed from the label: in veg, and/or flowering weeks from–to. Empty = not typed. */
+  use?: { veg?: boolean; flowerFrom?: number; flowerTo?: number }
+  /** Switched off: kept, but no longer offered in the tank. */
+  inactive?: boolean
   /** Event that triggers a one-off use (roots): a reminder is offered when it happens. */
   onEvent?: "transplant" | "transfer"
   /** Shown as "hors Athena, non vérifié"; the figures come from the product label. */

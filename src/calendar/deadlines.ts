@@ -1,8 +1,8 @@
 // Automatic deadlines (spec §4ter). Each one appears when the tool that computes it is delivered:
 // lot 3 has the cycle dates (12/12, Fade, rinçage, récolte), the reservoir autonomy (bidon à refaire),
 // propagation and drying ends, Great White at the transfer, and the pump flow check (> 60 days).
-// Lot 4 adds the concentrate running low (jerrycan stocks); IPW comes with lot 5.
-import type { ConcentrateStock, CustomProduct, Equipment, Reminder } from "@/model/grow"
+// Lot 4 adds the concentrate running low (jerrycan stocks); lot 5 the next IPW spray of a running protocol.
+import type { ConcentrateStock, CustomProduct, Equipment, Reminder, Spray } from "@/model/grow"
 import type { IsoDate } from "@/model/types"
 import { equipmentAt } from "@/equipment/calc"
 import { spaceNutrition } from "@/model/grow-ops"
@@ -11,8 +11,9 @@ import { spaceContext } from "@/calc/space-context"
 import type { DigestData } from "@/calc/digest"
 import { openStocks, stockStatus } from "@/calc/concentrate"
 import { getCatalog } from "@/data/nutrients"
+import { ipwLastDay, nextIpw } from "@/calc/ipw"
 
-export const DEADLINE_KINDS = ["flip", "fade", "flush", "harvest", "tank", "propagationEnd", "greatWhite", "dryingEnd", "flowCheck", "concentrateLow"] as const
+export const DEADLINE_KINDS = ["flip", "fade", "flush", "harvest", "tank", "propagationEnd", "greatWhite", "dryingEnd", "flowCheck", "concentrateLow", "ipw"] as const
 export type DeadlineKind = (typeof DEADLINE_KINDS)[number]
 export type DeadlineSource = "athena" | "user" | "estimate" | "label" | "spec"
 
@@ -32,7 +33,7 @@ export type Deadline = {
   source: DeadlineSource
 }
 
-export type CalendarData = DigestData & { reminders?: Reminder[]; customProducts?: CustomProduct[]; concentrateStocks?: ConcentrateStock[] }
+export type CalendarData = DigestData & { reminders?: Reminder[]; customProducts?: CustomProduct[]; concentrateStocks?: ConcentrateStock[]; sprays?: Spray[] }
 
 export function deadlines(data: CalendarData, today: IsoDate): Deadline[] {
   const out: Deadline[] = []
@@ -50,6 +51,11 @@ export function deadlines(data: CalendarData, today: IsoDate): Deadline[] {
       const nut = spaceNutrition(data.grow?.nutrition ? { nutrition: data.grow.nutrition } : null, space)
       const fade = fadeStart(c)
       if (fade && nut.addons.includes("fade")) out.push({ key: `fade_${c.id}`, kind: "fade", date: fade, ...base, vars: { ...vars, week: 8 }, source: "athena" })
+      // Next IPW spray of the running protocol, only while allowed (until flowering S3) and if IPW is switched on.
+      if (nut.addons.includes("ipw")) {
+        const next = nextIpw(data.sprays ?? [], space.id, ipwLastDay(c.flipDate))
+        if (next) out.push({ key: `ipw_${space.id}_${next.date}`, kind: "ipw", date: next.date, ...base, vars: { ...vars, space: space.name }, source: "athena" })
+      }
       const flush = flushStart(c)
       if (flush) out.push({ key: `flush_${c.id}`, kind: "flush", date: flush, ...base, vars, source: "athena" })
       const harvest = plannedHarvest(c)

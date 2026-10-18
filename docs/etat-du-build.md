@@ -6,9 +6,9 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; version 14 = lot 4b)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1, 2a, 2b, 3, 4a et 4b poussés le 18/10/2026. Dernier commit de lot : « Lot 4b : arrosage… ».
+  - Lots 1 à 4b et 5a poussés le 18/10/2026. Dernier commit de lot : « Lot 5a : pH / Balance et IPW… ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
@@ -19,7 +19,8 @@
 - [x] Lot 3 : calendrier (artefact v12, 117 tests)
 - [x] Lot 4a : nutrition à catalogue (141 tests)
 - [x] Lot 4b : arrosage depuis l'équipement, arrosage manuel par gamme (151 tests)
-- [ ] Lot 5 : pH/Balance, IPW, lumière, climat
+- [x] Lot 5a : pH / Balance, IPW (161 tests)
+- [ ] Lot 5b : lumière, climat
 - [ ] Lot 6 : graphiques et données
 - [ ] Lot 9 : tâche du matin + passe de finition (avant la validation de Thomas)
 - [ ] Lot 7 : nutrition multi-marques (après validation)
@@ -83,7 +84,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 151 au lot 4b
+npm test                          # tests (Vitest), 161 au lot 5a
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -128,4 +129,19 @@ PYTHONPATH=scripts python3 scripts/e2e-4b.py dist-preview/index.html <dossier>
 ```
 
 ### Prochain lot
-**Lot 5 — pH/Balance, IPW, Lumière, Climat** (cahier des charges §6 et tests du lot 5). Le palier Balance (`balanceStepMl`), `nextBalancePer10L` et les protocoles IPW (`data/nutrients/addons.ts`) existent déjà.
+Voir « Lot 5a — notes ».
+
+## Lot 5a — notes
+- Lot 5 coupé en deux : **5a** pH / Balance et IPW, **5b** Lumière et Climat.
+- `calc/balance.ts` : `balanceTotalMl`, `balanceHistory`, `predictBalance` (≥ 2 bidons, `START_FRACTION = 0.8`, par point de pH si pH avant/après connus, sinon par 10 L ; jamais de dose négative), `titrationTotal`, `phStatus`.
+- `calc/ipw.ts` : `ipwDoseMl`, `ipwAllowed` (végé, floraison ≤ S3), `ipwLastDay` (fin de S3), `ipwSchedule` (prévention +0/+3 par semaine, pression +0/+2/+4, restauration 2 + 1 sur 9 jours : l'espacement des jours est un choix de l'app, signalé dans la source), `nextIpw`, `IPW_CHECKLIST`.
+- Modèle : `Spray` v2 (`protocolStart`, `checked`, `cycleId`, `note`). `sprays` lu par le contexte et le calendrier.
+- Le compteur de titrage n'utilise pas `NumberTicker` (le ressort montrait 22 au lieu de 24 mL pendant 1,5 s) : valeur exacte, petite animation d'entrée.
+
+### Commandes (lot 5a)
+```bash
+PYTHONPATH=scripts python3 scripts/e2e-5a.py dist-preview/index.html <dossier>
+```
+
+### Prochain lot
+**Lot 5b — Lumière et Climat** : DLI et calcul inverse, PPFD depuis les lampes, W/m², hauteur libre, schéma proportionnel de l'espace avec grille 3×3 (carte de chaleur), cibles sourcées ; VPD et cibles, renouvellement d'air. Test : schéma proportionnel.

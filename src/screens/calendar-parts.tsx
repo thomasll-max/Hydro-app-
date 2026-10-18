@@ -21,11 +21,11 @@ import type { Space } from "@/model/grow"
 import { cn } from "@/lib/utils"
 
 export function useCalendarData(): CalendarData & { tz: string } {
-  const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks } = useGrow()
+  const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks, sprays } = useGrow()
   return useMemo(() => {
-    const d: CalendarData = { grow, spaces, sites, cycles, entries: all.entries, mixes: all.mixes, equipment, assignments, reminders, customProducts, concentrateStocks }
+    const d: CalendarData = { grow, spaces, sites, cycles, entries: all.entries, mixes: all.mixes, equipment, assignments, reminders, customProducts, concentrateStocks, sprays }
     return { ...d, tz: growTimeZone(d) }
-  }, [grow, spaces, sites, cycles, all.entries, all.mixes, equipment, assignments, reminders, customProducts, concentrateStocks])
+  }, [grow, spaces, sites, cycles, all.entries, all.mixes, equipment, assignments, reminders, customProducts, concentrateStocks, sprays])
 }
 
 /** Spaces covered by the top selector (null = all). */
@@ -79,6 +79,7 @@ const DEADLINE_EMOJI: Record<DeadlineKind, EmojiName> = {
   dryingEnd: "leaf",
   flowCheck: "sweat",
   concentrateLow: "bucket",
+  ipw: "sweat",
 }
 
 export function itemEmoji(i: CalItem): EmojiName {

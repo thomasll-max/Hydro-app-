@@ -1,5 +1,11 @@
 # Changelog
 
+## Lot 5a — pH / Balance et IPW (18/10/2026)
+- Outil **pH / Balance** (`calc/balance.ts`, `screens/tools/ph-balance.tsx`) : pH visé du stade avec sa source (page du Handbook), titrage guidé par paliers de 1 mL pour 4 L (100 L → 25 mL), très gros compteur à valeur exacte, relevés de pH après chaque ajout. Prédiction apprise à partir de 2 bidons enregistrés avec leur Balance (par 10 L, ou par point de pH quand le pH avant/après est connu), **départ à 80 %**, puis paliers. Au-dessus de la cible : aucune dose proposée. Enregistrement sur le dernier bidon de l'espace (pH avant, pH après, Balance ajouté).
+- Outil **Pulvérisation IPW** (`calc/ipw.ts`, `screens/tools/ipw.tsx`) : prévention 24 mL/L 2 fois par semaine, pression 32 mL/L 3 fois par semaine, restauration 32 mL/L sur 9 jours (2 jours + 1 de pause) ; dose du pulvérisateur (2 L × 24 → 48 mL) ; fenêtre végé et floraison S1–S3, **bloqué dès S4 (donc en S5)**, au rinçage et en semis ; checklist avant pulvérisation ; historique (`sprays`). IPW reste désactivé chez Thomas (pas encore acheté), un bouton permet de l'activer.
+- Échéance **IPW** (`deadlines.ts`, kind `ipw`) : prochaine pulvérisation du protocole en cours, jamais après la fin de S3, seulement si IPW est activé.
+- 161 tests (10 nouveaux) ; parcours `scripts/e2e-5a.py`.
+
 ## Lot 4b — Arrosage (18/10/2026)
 - Outil Arrosage : volume des pots, nombre de pots et débit **tirés de l'équipement de l'espace** (`spaceIrrigation` dans `equipment/calc.ts`). Absent → « donnée manquante » (doses en mL et durées masquées, lien vers l'équipement), rien d'inventé. Débit de la pompe de Thomas : toujours à mesurer.
 - **Volume du pot modifiable** (demande de Thomas, pas seulement 15 L) : volume et nombre de pots se changent dans l'outil Arrosage et sont enregistrés sur le contenant de l'espace (`withPots` ; « Pots 15 L » devient « Pots 11 L »), ou créent un contenant s'il n'y en a pas. Le programme suit immédiatement.

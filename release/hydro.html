@@ -24947,6 +24947,91 @@ var dictionaries = {
 			sNote4: "Placement : 5–7 cm de profondeur, à un tiers du bord, jamais sous un goutteur, toujours la même plante.",
 			sources: "Sources : Athena Handbook (méthodes de précision et manuelle) · guide Bonorum (capteur) · débit mesuré"
 		},
+		phb: {
+			target: "pH visé",
+			targetFrom: "Solution et runoff, stade du cycle : {stage}.",
+			targetNoCycle: "Pas de cycle dans cet espace : plage coco de la gamme.",
+			balanceOff: "Balance est désactivé dans les réglages de la gamme.",
+			titration: "Titrage guidé",
+			volume: "Volume du bidon (L)",
+			volumeHint: "dernier bidon : {v} L",
+			before: "pH avant Balance",
+			predPer10: "Appris sur {n} bidons : {rate} mL pour 10 L en moyenne",
+			predPerPh: "Appris sur {n} bidons : {rate} mL pour 10 L par point de pH",
+			predLine: "≈ {pred} mL prévus · départ à {pct} % : {start} mL",
+			noPred: "Prédiction à partir de 2 bidons enregistrés avec leur Balance ({n} pour l'instant). En attendant : paliers seulement.",
+			total: "Balance versé",
+			detail: "départ {start} mL + {steps} palier(s) de {step} mL",
+			undo: "Retirer le dernier ajout",
+			reset: "Recommencer",
+			pourStart: "Verser le départ : {v} mL",
+			step: "1 palier · {v} mL",
+			reading: "pH mesuré",
+			readingHint: "après avoir bien mélangé",
+			note: "Noter",
+			after: "après {ml} mL",
+			ok: "pH dans la cible : arrête-toi là et enregistre.",
+			low: "Encore en dessous : ajoute 1 palier ({step} mL), mélange, mesure.",
+			over: "pH au-dessus de la cible. L'app ne propose aucune dose pour redescendre : note le pH obtenu ; au prochain bidon, la prédiction en tiendra compte.",
+			save: "Enregistrer sur le bidon de {litres} L du {date}",
+			noTank: "Enregistre d'abord un bidon (Nutrition)",
+			saved: "pH et Balance enregistrés sur le bidon",
+			how: "Méthode",
+			how1: "Balance monte le pH. Pas de dose fixe : 1 mL pour 4 L à la fois, mesure après chaque palier.",
+			how2: "Note le total : au bidon suivant, il est versé en premier (Nutrition).",
+			how3: "Pas de Balance avec un NetaFlex : prendre le Pro Balance en poudre (concentré à 282 g/L).",
+			sources: "Sources : Athena Handbook (Balance, pH par stade) · tes bidons enregistrés (prédiction)"
+		},
+		ipw: {
+			off: "IPW est désactivé dans les réglages (pas encore acheté). Les calculs restent visibles ; les rappels du calendrier arrivent une fois activé.",
+			enable: "Activer IPW",
+			enabled: "IPW activé",
+			window: "Fenêtre d'utilisation",
+			allowed: "autorisé",
+			blocked: "bloqué",
+			until: "Autorisé jusqu'à la fin de la floraison S3 : {date}.",
+			okVeg: "Végé : autorisé (jusqu'à la floraison S3).",
+			windowRule: "Végé S1–S4 et floraison S1–S3 uniquement (Athena).",
+			why: {
+				seedling: "Semis / clones : hors de la fenêtre d'Athena (végé et floraison S1–S3).",
+				flowerLate: "Floraison S4 et après : plus d'IPW (Athena : jusqu'en S3).",
+				flush: "Rinçage : plus d'IPW.",
+				harvested: "Cycle récolté.",
+				notStarted: "Pas de cycle en cours dans cet espace."
+			},
+			protocol: "Protocole",
+			p: {
+				prevention: "Prévention",
+				pressure: "Pression",
+				restoration: "Restauration"
+			},
+			pd: {
+				prevention: "24 mL/L, 2 fois par semaine.",
+				pressure: "Pression ou remédiation : 32 mL/L, 3 fois par semaine.",
+				restoration: "32 mL/L sur 9 jours : 2 jours de pulvérisation, 1 jour de pause."
+			},
+			litres: "Pulvérisateur (L)",
+			litresHint: "eau osmosée",
+			dose: "IPW à {r} mL/L",
+			planRunning: "Prochaines pulvérisations (protocole en cours)",
+			planNew: "Calendrier si tu commences aujourd'hui",
+			checklist: "Avant de pulvériser",
+			c: {
+				roWater: "Eau osmosée, jamais dans le bac",
+				saturated: "Substrat saturé avant de pulvériser",
+				climate: "≈ 22 °C et 55–65 % d'humidité",
+				lightsOff: "Lampes de culture éteintes",
+				order: "Substrat et tiges d'abord, puis le feuillage",
+				dry: "3 à 4 h de séchage avant de rallumer"
+			},
+			save: "Enregistrer la pulvérisation",
+			saveUnchecked: "Enregistrer ({n}/{total} cochés)",
+			saved: "Pulvérisation enregistrée",
+			history: "Pulvérisations",
+			next: "Prochaine : {date}",
+			none: "Aucune pulvérisation enregistrée dans cet espace.",
+			sources: "Source : Athena Handbook (IPW, p. 80 du PDF). Jours de la semaine : 2 ou 3 jours espacés (à adapter)."
+		},
 		nut: {
 			title: "Nutrition",
 			line: "Gamme",
@@ -25215,6 +25300,7 @@ var dictionaries = {
 				greatWhite: "{product} sur les racines au transfert · {cycle}",
 				dryingEnd: "Fin du séchage prévue · {cycle}",
 				concentrateLow: "Concentré presque vide : {product} (≈ {litres} L)",
+				ipw: "Pulvérisation IPW · {space}",
 				flowCheck: "Mesurer le débit · {pump}"
 			}
 		},
@@ -26098,6 +26184,91 @@ var dictionaries = {
 			sNote4: "Placement: 5–7 cm deep, a third from the edge, never under a dripper, always the same plant.",
 			sources: "Sources: Athena Handbook (precision and manual methods) · Bonorum guide (sensor) · measured flow"
 		},
+		phb: {
+			target: "Target pH",
+			targetFrom: "Solution and runoff, cycle stage: {stage}.",
+			targetNoCycle: "No cycle in this space: the line's coco range.",
+			balanceOff: "Balance is switched off in the line settings.",
+			titration: "Guided titration",
+			volume: "Tank volume (L)",
+			volumeHint: "last tank: {v} L",
+			before: "pH before Balance",
+			predPer10: "Learned from {n} tanks: {rate} mL per 10 L on average",
+			predPerPh: "Learned from {n} tanks: {rate} mL per 10 L per pH point",
+			predLine: "≈ {pred} mL expected · start at {pct} %: {start} mL",
+			noPred: "Prediction from 2 tanks saved with their Balance ({n} so far). Until then: steps only.",
+			total: "Balance poured",
+			detail: "start {start} mL + {steps} step(s) of {step} mL",
+			undo: "Remove the last addition",
+			reset: "Start again",
+			pourStart: "Pour the start: {v} mL",
+			step: "1 step · {v} mL",
+			reading: "Measured pH",
+			readingHint: "after mixing well",
+			note: "Note",
+			after: "after {ml} mL",
+			ok: "pH on target: stop here and save.",
+			low: "Still below: add 1 step ({step} mL), mix, measure.",
+			over: "pH above the target. The app suggests no dose to bring it down: note the pH reached; the next prediction will take it into account.",
+			save: "Save on the {litres} L tank of {date}",
+			noTank: "Save a tank first (Nutrition)",
+			saved: "pH and Balance saved on the tank",
+			how: "Method",
+			how1: "Balance raises the pH. No fixed dose: 1 mL per 4 L at a time, measure after each step.",
+			how2: "Note the total: in the next tank it goes in first (Nutrition).",
+			how3: "No Balance with a NetaFlex: use Pro Balance powder (concentrate at 282 g/L).",
+			sources: "Sources: Athena Handbook (Balance, pH by stage) · your saved tanks (prediction)"
+		},
+		ipw: {
+			off: "IPW is switched off in settings (not bought yet). Calculations stay visible; calendar reminders come once it is on.",
+			enable: "Switch IPW on",
+			enabled: "IPW switched on",
+			window: "Use window",
+			allowed: "allowed",
+			blocked: "blocked",
+			until: "Allowed until the end of flowering W3: {date}.",
+			okVeg: "Veg: allowed (until flowering W3).",
+			windowRule: "Veg W1–W4 and flowering W1–W3 only (Athena).",
+			why: {
+				seedling: "Seedlings / clones: outside Athena's window (veg and flowering W1–W3).",
+				flowerLate: "Flowering W4 and later: no more IPW (Athena: until W3).",
+				flush: "Flush: no more IPW.",
+				harvested: "Cycle harvested.",
+				notStarted: "No running cycle in this space."
+			},
+			protocol: "Protocol",
+			p: {
+				prevention: "Prevention",
+				pressure: "Pressure",
+				restoration: "Restoration"
+			},
+			pd: {
+				prevention: "24 mL/L, twice a week.",
+				pressure: "Pressure or remediation: 32 mL/L, three times a week.",
+				restoration: "32 mL/L over 9 days: 2 days of spraying, 1 day off."
+			},
+			litres: "Sprayer (L)",
+			litresHint: "RO water",
+			dose: "IPW at {r} mL/L",
+			planRunning: "Next sprays (running protocol)",
+			planNew: "Schedule if you start today",
+			checklist: "Before spraying",
+			c: {
+				roWater: "RO water, never in the tank",
+				saturated: "Substrate saturated before spraying",
+				climate: "≈ 22 °C and 55–65 % humidity",
+				lightsOff: "Grow lights off",
+				order: "Substrate and stems first, then the foliage",
+				dry: "3 to 4 h of drying before lights on"
+			},
+			save: "Save the spray",
+			saveUnchecked: "Save ({n}/{total} ticked)",
+			saved: "Spray saved",
+			history: "Sprays",
+			next: "Next: {date}",
+			none: "No spray saved in this space.",
+			sources: "Source: Athena Handbook (IPW, PDF p. 80). Days of the week: 2 or 3 days apart (adjust as needed)."
+		},
 		nut: {
 			title: "Nutrition",
 			line: "Nutrient line",
@@ -26366,6 +26537,7 @@ var dictionaries = {
 				greatWhite: "{product} on the roots at the transfer · {cycle}",
 				dryingEnd: "Planned end of drying · {cycle}",
 				concentrateLow: "Concentrate almost empty: {product} (≈ {litres} L)",
+				ipw: "IPW spray · {space}",
 				flowCheck: "Measure the flow · {pump}"
 			}
 		},
@@ -26642,7 +26814,7 @@ var GROW_SCHEMA = {
 	assignment: 1,
 	reminder: 2,
 	concentrateStock: 2,
-	spray: 1,
+	spray: 2,
 	customProduct: 2
 };
 var MODULES = [
@@ -28009,6 +28181,29 @@ var BALANCE_STEP = {
 function balanceStepMl(volumeL) {
 	return Math.round(volumeL / BALANCE_STEP.perL * BALANCE_STEP.ml * 10) / 10;
 }
+/** IPW (foliar, RO water): veg S1–S4 and flowering S1–S3 only (lot 5 tool). */
+var IPW = {
+	protocols: {
+		prevention: {
+			mlPerL: 24,
+			perWeek: 2
+		},
+		pressure: {
+			mlPerL: 32,
+			perWeek: 3
+		},
+		restoration: {
+			mlPerL: 32,
+			days: 9,
+			pattern: "2 on / 1 off"
+		}
+	},
+	lastFlowerWeek: 3,
+	src: {
+		kind: "athena",
+		page: 80
+	}
+};
 //#endregion
 //#region src/data/nutrients/index.ts
 var CATALOGS = {
@@ -28124,7 +28319,7 @@ function concMlPer10L(cat, ec, gPerL) {
 		estimate: true
 	};
 }
-var r1 = (x) => Math.round(x * 10) / 10;
+var r1$1 = (x) => Math.round(x * 10) / 10;
 var lohi = (p) => typeof p === "number" ? [p, p] : p;
 /** Is a personal product used at this phase (at this flowering week when known, else anywhere in the phase)? */
 function customApplies(p, phase, week) {
@@ -28186,7 +28381,7 @@ function mixRecipe(lineId, input) {
 					qty: Math.round(c[dose.fromEcTable] * k),
 					unit: "mL",
 					concentrate: conc,
-					grams: r1(g * k),
+					grams: r1$1(g * k),
 					estimate: c.estimate,
 					src: cat.ecTable.src,
 					note
@@ -28195,7 +28390,7 @@ function mixRecipe(lineId, input) {
 				id: p.id,
 				name: p.name,
 				kind: "product",
-				qty: r1(g * k),
+				qty: r1$1(g * k),
 				unit: "g",
 				src: cat.ecTable.src,
 				note
@@ -28210,7 +28405,7 @@ function mixRecipe(lineId, input) {
 			id: p.id,
 			name: p.name,
 			kind: "product",
-			qty: r1(lo * f * k),
+			qty: r1$1(lo * f * k),
 			unit: "mL",
 			estimate: est || void 0,
 			src: dose.src,
@@ -28222,8 +28417,8 @@ function mixRecipe(lineId, input) {
 				id: p.id,
 				name: p.name,
 				kind: "product",
-				qty: chosen != null ? r1(chosen * f * k) : null,
-				range: [r1(lo * f * k), r1(hi * f * k)],
+				qty: chosen != null ? r1$1(chosen * f * k) : null,
+				range: [r1$1(lo * f * k), r1$1(hi * f * k)],
 				unit: "mL",
 				estimate: est || void 0,
 				src: dose.src,
@@ -28238,7 +28433,7 @@ function mixRecipe(lineId, input) {
 			id: b.id,
 			name: b.name,
 			kind: "product",
-			qty: known != null ? r1(known * k) : null,
+			qty: known != null ? r1$1(known * k) : null,
 			unit: "mL",
 			src: ADDONS.balance.src,
 			note: known != null ? "balanceFirst" : "balanceSteps",
@@ -28257,7 +28452,7 @@ function mixRecipe(lineId, input) {
 			id: p.id,
 			name: p.name,
 			kind: "custom",
-			qty: r1(d.lo * k),
+			qty: r1$1(d.lo * k),
 			unit: p.unit,
 			src: { kind: "label" }
 		});
@@ -28267,8 +28462,8 @@ function mixRecipe(lineId, input) {
 				id: p.id,
 				name: p.name,
 				kind: "custom",
-				qty: chosen != null ? r1(chosen * k) : null,
-				range: [r1(d.lo * k), r1(d.hi * k)],
+				qty: chosen != null ? r1$1(chosen * k) : null,
+				range: [r1$1(d.lo * k), r1$1(d.hi * k)],
 				unit: p.unit,
 				src: { kind: "label" },
 				note: "labelRange"
@@ -28727,7 +28922,8 @@ var COLS = [
 	"equipmentAssignments",
 	"customProducts",
 	"reminders",
-	"concentrateStocks"
+	"concentrateStocks",
+	"sprays"
 ];
 function GrowProvider({ children }) {
 	const { settings, setActiveCycle } = useSettings();
@@ -28781,6 +28977,7 @@ function GrowProvider({ children }) {
 	const reminders = import_react.useMemo(() => list("reminders"), [raw.reminders]);
 	const customProducts = import_react.useMemo(() => list("customProducts").sort((a, b) => a.name.localeCompare(b.name)), [raw.customProducts]);
 	const concentrateStocks = import_react.useMemo(() => list("concentrateStocks").sort((a, b) => b.madeOn.localeCompare(a.madeOn)), [raw.concentrateStocks]);
+	const sprays = import_react.useMemo(() => list("sprays").sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)), [raw.sprays]);
 	const sel = settings.space ?? "all";
 	const selection = import_react.useMemo(() => {
 		if (sel.startsWith("site:")) {
@@ -28896,6 +29093,7 @@ function GrowProvider({ children }) {
 			groups,
 			customProducts,
 			concentrateStocks,
+			sprays,
 			reminders,
 			selection,
 			space,
@@ -29052,6 +29250,11 @@ function GrowProvider({ children }) {
 				...x,
 				schemaVersion: GROW_SCHEMA.concentrateStock
 			}),
+			saveSpray: async (x) => need().set(`sprays/${x.id}`, {
+				...x,
+				schemaVersion: GROW_SCHEMA.spray
+			}),
+			deleteSpray: async (id) => need().delete(`sprays/${id}`),
 			deleteConcentrateStock: async (id) => need().delete(`concentrateStocks/${id}`),
 			saveReminder: async (r) => need().set(`reminders/${r.id}`, {
 				...r,
@@ -29084,6 +29287,7 @@ function GrowProvider({ children }) {
 		groups,
 		customProducts,
 		concentrateStocks,
+		sprays,
 		reminders,
 		selection,
 		space,
@@ -29355,7 +29559,7 @@ function createLucideIcon(iconDataOrName, iconNode = [], aliases = []) {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$29 = {
+var __iconData$30 = {
 	name: "alarm-clock-plus",
 	size: 24,
 	node: [
@@ -29392,8 +29596,8 @@ var __iconData$29 = {
 	],
 	aliases: ["alarm-plus"]
 };
-__iconData$29.node;
-var AlarmClockPlus = createLucideIcon(__iconData$29);
+__iconData$30.node;
+var AlarmClockPlus = createLucideIcon(__iconData$30);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/archive-restore.mjs
 /**
@@ -29402,7 +29606,7 @@ var AlarmClockPlus = createLucideIcon(__iconData$29);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$28 = {
+var __iconData$29 = {
 	name: "archive-restore",
 	size: 24,
 	node: [
@@ -29432,8 +29636,8 @@ var __iconData$28 = {
 		}]
 	]
 };
-__iconData$28.node;
-var ArchiveRestore = createLucideIcon(__iconData$28);
+__iconData$29.node;
+var ArchiveRestore = createLucideIcon(__iconData$29);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/archive.mjs
 /**
@@ -29442,7 +29646,7 @@ var ArchiveRestore = createLucideIcon(__iconData$28);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$27 = {
+var __iconData$28 = {
 	name: "archive",
 	size: 24,
 	node: [
@@ -29464,8 +29668,8 @@ var __iconData$27 = {
 		}]
 	]
 };
-__iconData$27.node;
-var Archive = createLucideIcon(__iconData$27);
+__iconData$28.node;
+var Archive = createLucideIcon(__iconData$28);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/arrow-right-left.mjs
 /**
@@ -29474,7 +29678,7 @@ var Archive = createLucideIcon(__iconData$27);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$26 = {
+var __iconData$27 = {
 	name: "arrow-right-left",
 	size: 24,
 	node: [
@@ -29496,8 +29700,8 @@ var __iconData$26 = {
 		}]
 	]
 };
-__iconData$26.node;
-var ArrowRightLeft = createLucideIcon(__iconData$26);
+__iconData$27.node;
+var ArrowRightLeft = createLucideIcon(__iconData$27);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/book-open.mjs
 /**
@@ -29506,7 +29710,7 @@ var ArrowRightLeft = createLucideIcon(__iconData$26);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$25 = {
+var __iconData$26 = {
 	name: "book-open",
 	size: 24,
 	node: [["path", {
@@ -29517,8 +29721,8 @@ var __iconData$25 = {
 		key: "1fyvmf"
 	}]]
 };
-__iconData$25.node;
-var BookOpen = createLucideIcon(__iconData$25);
+__iconData$26.node;
+var BookOpen = createLucideIcon(__iconData$26);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/calendar-days.mjs
 /**
@@ -29527,7 +29731,7 @@ var BookOpen = createLucideIcon(__iconData$25);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$24 = {
+var __iconData$25 = {
 	name: "calendar-days",
 	size: 24,
 	node: [
@@ -29577,8 +29781,8 @@ var __iconData$24 = {
 		}]
 	]
 };
-__iconData$24.node;
-var CalendarDays = createLucideIcon(__iconData$24);
+__iconData$25.node;
+var CalendarDays = createLucideIcon(__iconData$25);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/calendar-plus.mjs
 /**
@@ -29587,7 +29791,7 @@ var CalendarDays = createLucideIcon(__iconData$24);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$23 = {
+var __iconData$24 = {
 	name: "calendar-plus",
 	size: 24,
 	node: [
@@ -29617,8 +29821,8 @@ var __iconData$23 = {
 		}]
 	]
 };
-__iconData$23.node;
-var CalendarPlus = createLucideIcon(__iconData$23);
+__iconData$24.node;
+var CalendarPlus = createLucideIcon(__iconData$24);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/camera.mjs
 /**
@@ -29627,7 +29831,7 @@ var CalendarPlus = createLucideIcon(__iconData$23);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$22 = {
+var __iconData$23 = {
 	name: "camera",
 	size: 24,
 	node: [["path", {
@@ -29640,8 +29844,8 @@ var __iconData$22 = {
 		key: "1vg3eu"
 	}]]
 };
-__iconData$22.node;
-var Camera = createLucideIcon(__iconData$22);
+__iconData$23.node;
+var Camera = createLucideIcon(__iconData$23);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/chart-line.mjs
 /**
@@ -29650,7 +29854,7 @@ var Camera = createLucideIcon(__iconData$22);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$21 = {
+var __iconData$22 = {
 	name: "chart-line",
 	size: 24,
 	node: [["path", {
@@ -29662,8 +29866,8 @@ var __iconData$21 = {
 	}]],
 	aliases: ["line-chart"]
 };
-__iconData$21.node;
-var ChartLine = createLucideIcon(__iconData$21);
+__iconData$22.node;
+var ChartLine = createLucideIcon(__iconData$22);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/check.mjs
 /**
@@ -29672,7 +29876,7 @@ var ChartLine = createLucideIcon(__iconData$21);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$20 = {
+var __iconData$21 = {
 	name: "check",
 	size: 24,
 	node: [["path", {
@@ -29680,8 +29884,8 @@ var __iconData$20 = {
 		key: "1gmf2c"
 	}]]
 };
-__iconData$20.node;
-var Check = createLucideIcon(__iconData$20);
+__iconData$21.node;
+var Check = createLucideIcon(__iconData$21);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
 /**
@@ -29690,7 +29894,7 @@ var Check = createLucideIcon(__iconData$20);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$19 = {
+var __iconData$20 = {
 	name: "chevron-down",
 	size: 24,
 	node: [["path", {
@@ -29698,8 +29902,8 @@ var __iconData$19 = {
 		key: "qrunsl"
 	}]]
 };
-__iconData$19.node;
-var ChevronDown = createLucideIcon(__iconData$19);
+__iconData$20.node;
+var ChevronDown = createLucideIcon(__iconData$20);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/chevron-left.mjs
 /**
@@ -29708,7 +29912,7 @@ var ChevronDown = createLucideIcon(__iconData$19);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$18 = {
+var __iconData$19 = {
 	name: "chevron-left",
 	size: 24,
 	node: [["path", {
@@ -29716,8 +29920,8 @@ var __iconData$18 = {
 		key: "1wnfg3"
 	}]]
 };
-__iconData$18.node;
-var ChevronLeft = createLucideIcon(__iconData$18);
+__iconData$19.node;
+var ChevronLeft = createLucideIcon(__iconData$19);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/chevron-right.mjs
 /**
@@ -29726,7 +29930,7 @@ var ChevronLeft = createLucideIcon(__iconData$18);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$17 = {
+var __iconData$18 = {
 	name: "chevron-right",
 	size: 24,
 	node: [["path", {
@@ -29734,8 +29938,8 @@ var __iconData$17 = {
 		key: "mthhwq"
 	}]]
 };
-__iconData$17.node;
-var ChevronRight = createLucideIcon(__iconData$17);
+__iconData$18.node;
+var ChevronRight = createLucideIcon(__iconData$18);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/clock-3.mjs
 /**
@@ -29744,7 +29948,7 @@ var ChevronRight = createLucideIcon(__iconData$17);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$16 = {
+var __iconData$17 = {
 	name: "clock-3",
 	size: 24,
 	node: [["circle", {
@@ -29757,8 +29961,8 @@ var __iconData$16 = {
 		key: "135r8i"
 	}]]
 };
-__iconData$16.node;
-var Clock3 = createLucideIcon(__iconData$16);
+__iconData$17.node;
+var Clock3 = createLucideIcon(__iconData$17);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/cloud-off.mjs
 /**
@@ -29767,7 +29971,7 @@ var Clock3 = createLucideIcon(__iconData$16);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$15 = {
+var __iconData$16 = {
 	name: "cloud-off",
 	size: 24,
 	node: [
@@ -29785,8 +29989,8 @@ var __iconData$15 = {
 		}]
 	]
 };
-__iconData$15.node;
-var CloudOff = createLucideIcon(__iconData$15);
+__iconData$16.node;
+var CloudOff = createLucideIcon(__iconData$16);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/copy.mjs
 /**
@@ -29795,7 +29999,7 @@ var CloudOff = createLucideIcon(__iconData$15);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$14 = {
+var __iconData$15 = {
 	name: "copy",
 	size: 24,
 	node: [["rect", {
@@ -29811,8 +30015,8 @@ var __iconData$14 = {
 		key: "zix9uf"
 	}]]
 };
-__iconData$14.node;
-var Copy = createLucideIcon(__iconData$14);
+__iconData$15.node;
+var Copy = createLucideIcon(__iconData$15);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/download.mjs
 /**
@@ -29821,7 +30025,7 @@ var Copy = createLucideIcon(__iconData$14);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$13 = {
+var __iconData$14 = {
 	name: "download",
 	size: 24,
 	node: [
@@ -29839,8 +30043,8 @@ var __iconData$13 = {
 		}]
 	]
 };
-__iconData$13.node;
-var Download = createLucideIcon(__iconData$13);
+__iconData$14.node;
+var Download = createLucideIcon(__iconData$14);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/flask-conical.mjs
 /**
@@ -29849,7 +30053,7 @@ var Download = createLucideIcon(__iconData$13);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$12 = {
+var __iconData$13 = {
 	name: "flask-conical",
 	size: 24,
 	node: [
@@ -29867,8 +30071,8 @@ var __iconData$12 = {
 		}]
 	]
 };
-__iconData$12.node;
-var FlaskConical = createLucideIcon(__iconData$12);
+__iconData$13.node;
+var FlaskConical = createLucideIcon(__iconData$13);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/grip-vertical.mjs
 /**
@@ -29877,7 +30081,7 @@ var FlaskConical = createLucideIcon(__iconData$12);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$11 = {
+var __iconData$12 = {
 	name: "grip-vertical",
 	size: 24,
 	node: [
@@ -29919,8 +30123,8 @@ var __iconData$11 = {
 		}]
 	]
 };
-__iconData$11.node;
-var GripVertical = createLucideIcon(__iconData$11);
+__iconData$12.node;
+var GripVertical = createLucideIcon(__iconData$12);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/house.mjs
 /**
@@ -29929,7 +30133,7 @@ var GripVertical = createLucideIcon(__iconData$11);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$10 = {
+var __iconData$11 = {
 	name: "house",
 	size: 24,
 	node: [["path", {
@@ -29941,8 +30145,8 @@ var __iconData$10 = {
 	}]],
 	aliases: ["home"]
 };
-__iconData$10.node;
-var House = createLucideIcon(__iconData$10);
+__iconData$11.node;
+var House = createLucideIcon(__iconData$11);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/layers.mjs
 /**
@@ -29951,7 +30155,7 @@ var House = createLucideIcon(__iconData$10);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$9 = {
+var __iconData$10 = {
 	name: "layers",
 	size: 24,
 	node: [
@@ -29970,8 +30174,8 @@ var __iconData$9 = {
 	],
 	aliases: ["layers-3"]
 };
-__iconData$9.node;
-var Layers = createLucideIcon(__iconData$9);
+__iconData$10.node;
+var Layers = createLucideIcon(__iconData$10);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/loader-circle.mjs
 /**
@@ -29980,7 +30184,7 @@ var Layers = createLucideIcon(__iconData$9);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$8 = {
+var __iconData$9 = {
 	name: "loader-circle",
 	size: 24,
 	node: [["path", {
@@ -29989,8 +30193,26 @@ var __iconData$8 = {
 	}]],
 	aliases: ["loader-2"]
 };
+__iconData$9.node;
+var LoaderCircle = createLucideIcon(__iconData$9);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/minus.mjs
+/**
+* @license lucide-react v1.59.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var __iconData$8 = {
+	name: "minus",
+	size: 24,
+	node: [["path", {
+		d: "M5 12h14",
+		key: "1ays0h"
+	}]]
+};
 __iconData$8.node;
-var LoaderCircle = createLucideIcon(__iconData$8);
+var Minus = createLucideIcon(__iconData$8);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/monitor.mjs
 /**
@@ -42067,6 +42289,86 @@ function stockStatus(stock, stocks, mixes) {
 function openStocks(stocks, line) {
 	return stocks.filter((s) => !s.finishedOn && (!line || s.line === line)).sort((a, b) => b.madeOn.localeCompare(a.madeOn));
 }
+//#endregion
+//#region src/calc/ipw.ts
+var IPW_PROTOCOLS = [
+	"prevention",
+	"pressure",
+	"restoration"
+];
+var ipwMlPerL = (p) => IPW.protocols[p].mlPerL;
+/** mL of IPW for a sprayer of `litres` (2 L × 24 mL/L = 48 mL). */
+function ipwDoseMl(litres, p) {
+	return Math.round(litres * ipwMlPerL(p) * 10) / 10;
+}
+/** Veg, or flowering weeks 1–3. Blocked from flowering week 4 (S5 included), during the flush and before veg. */
+function ipwAllowed(s) {
+	if (s.key === "veg") return { ok: true };
+	if (s.key === "notStarted" || s.key === "harvested" || s.key === "flush" || s.key === "seedling") return {
+		ok: false,
+		reason: s.key
+	};
+	return (s.flowerWeek ?? 1) <= IPW.lastFlowerWeek ? { ok: true } : {
+		ok: false,
+		reason: "flowerLate"
+	};
+}
+/** Last day IPW may be sprayed: end of flowering week 3 (12/12 day = day 1). */
+function ipwLastDay(flipDate) {
+	return flipDate ? addDays(flipDate, IPW.lastFlowerWeek * 7 - 1) : void 0;
+}
+/** Day offsets of a protocol within a 7-day week (restoration: one 9-day run). */
+var PATTERN = {
+	prevention: {
+		offsets: [0, 3],
+		repeatDays: 7
+	},
+	pressure: {
+		offsets: [
+			0,
+			2,
+			4
+		],
+		repeatDays: 7
+	},
+	restoration: { offsets: [
+		0,
+		1,
+		3,
+		4,
+		6,
+		7
+	] }
+};
+/** Spray days of a protocol from its first day, up to `until` (inclusive) or `weeks` weeks. */
+function ipwSchedule(p, start, until, weeks = 4) {
+	const pat = PATTERN[p];
+	const days = [];
+	const reps = pat.repeatDays ? weeks : 1;
+	for (let w = 0; w < reps; w++) for (const o of pat.offsets) days.push(addDays(start, o + w * (pat.repeatDays ?? 0)));
+	return until ? days.filter((d) => d <= until) : days;
+}
+/** Next spray of the running protocol of a space: the first scheduled day after the last spray, still allowed. */
+function nextIpw(sprays, spaceId, until) {
+	const last = sprays.filter((s) => s.product === "ipw" && s.spaceIds.includes(spaceId) && s.protocol).sort((a, b) => b.date.localeCompare(a.date))[0];
+	if (!last?.protocol) return null;
+	const start = last.protocolStart ?? last.date;
+	const next = ipwSchedule(last.protocol, start, until, 52).find((d) => d > last.date);
+	return next ? {
+		date: next,
+		protocol: last.protocol,
+		start
+	} : null;
+}
+/** Checklist before spraying (fiche « ADD-ONS »). */
+var IPW_CHECKLIST = [
+	"roWater",
+	"saturated",
+	"climate",
+	"lightsOff",
+	"order",
+	"dry"
+];
 function deadlines(data, today) {
 	const out = [];
 	const live = data.spaces.filter((s) => !s.archived);
@@ -42102,6 +42404,20 @@ function deadlines(data, today) {
 				},
 				source: "athena"
 			});
+			if (nut.addons.includes("ipw")) {
+				const next = nextIpw(data.sprays ?? [], space.id, ipwLastDay(c.flipDate));
+				if (next) out.push({
+					key: `ipw_${space.id}_${next.date}`,
+					kind: "ipw",
+					date: next.date,
+					...base,
+					vars: {
+						...vars,
+						space: space.name
+					},
+					source: "athena"
+				});
+			}
 			const flush = flushStart(c);
 			if (flush) out.push({
 				key: `flush_${c.id}`,
@@ -43462,7 +43778,7 @@ function buildDailyDigest(data, date, locale) {
 //#endregion
 //#region src/screens/calendar-parts.tsx
 function useCalendarData() {
-	const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks } = useGrow();
+	const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks, sprays } = useGrow();
 	return (0, import_react.useMemo)(() => {
 		const d = {
 			grow,
@@ -43475,7 +43791,8 @@ function useCalendarData() {
 			assignments,
 			reminders,
 			customProducts,
-			concentrateStocks
+			concentrateStocks,
+			sprays
 		};
 		return {
 			...d,
@@ -43492,7 +43809,8 @@ function useCalendarData() {
 		assignments,
 		reminders,
 		customProducts,
-		concentrateStocks
+		concentrateStocks,
+		sprays
 	]);
 }
 /** Spaces covered by the top selector (null = all). */
@@ -43552,7 +43870,8 @@ var DEADLINE_EMOJI = {
 	greatWhite: "pottedPlant",
 	dryingEnd: "leaf",
 	flowCheck: "sweat",
-	concentrateLow: "bucket"
+	concentrateLow: "bucket",
+	ipw: "sweat"
 };
 function itemEmoji(i) {
 	return i.type === "reminder" ? "alarm" : DEADLINE_EMOJI[i.deadline.kind];
@@ -43657,7 +43976,7 @@ function UpcomingCard({ spaceIds, max = 4 }) {
 //#endregion
 //#region src/screens/today-spaces.tsx
 function useDigestData() {
-	const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks } = useGrow();
+	const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks, sprays } = useGrow();
 	return (0, import_react.useMemo)(() => ({
 		grow,
 		spaces,
@@ -43669,7 +43988,8 @@ function useDigestData() {
 		assignments,
 		reminders,
 		customProducts,
-		concentrateStocks
+		concentrateStocks,
+		sprays
 	}), [
 		grow,
 		spaces,
@@ -43681,7 +44001,8 @@ function useDigestData() {
 		assignments,
 		reminders,
 		customProducts,
-		concentrateStocks
+		concentrateStocks,
+		sprays
 	]);
 }
 /** Keeps digest/latest current for the morning task (Claude version only). */
@@ -73640,6 +73961,630 @@ function Src({ children }) {
 	});
 }
 //#endregion
+//#region src/calc/balance.ts
+/** Share of the predicted amount poured at once, before going on by steps. */
+var START_FRACTION = .8;
+/** Balance a saved tank took: the known amount poured first + what was added while titrating. */
+function balanceTotalMl(m) {
+	if (m.balanceMlPer10L == null && m.balanceAddedMl == null) return void 0;
+	return Math.round(((m.balanceMlPer10L ?? 0) * (m.volumeL / 10) + (m.balanceAddedMl ?? 0)) * 10) / 10;
+}
+/** Tanks of a line with a known Balance total, newest first. */
+function balanceHistory(mixes, line) {
+	return mixes.filter((m) => (!line || !m.line || m.line === line) && m.volumeL > 0 && m.kind !== "flush").flatMap((m) => {
+		const totalMl = balanceTotalMl(m);
+		return totalMl == null ? [] : [{
+			date: m.date,
+			volumeL: m.volumeL,
+			totalMl,
+			phBefore: m.phBefore,
+			phAfter: m.ph
+		}];
+	}).sort((a, b) => b.date.localeCompare(a.date));
+}
+var r1 = (x) => Math.round(x * 10) / 10;
+/**
+* Learned from at least 2 tanks. With the pH before of this tank and of the past tanks, the rate is per pH unit raised
+* (aiming at the middle of the target); otherwise per 10 L. Null when there is not enough history.
+*/
+function predictBalance(history, volumeL, now, n = 4) {
+	if (volumeL <= 0) return null;
+	const recent = history.slice(0, n);
+	if (recent.length < 2) return null;
+	const k = volumeL / 10;
+	const withPh = recent.filter((h) => h.phBefore != null && h.phAfter != null && h.phAfter > h.phBefore);
+	if (now?.phBefore != null && now.target && withPh.length >= 2) {
+		const rate = withPh.reduce((s, h) => s + h.totalMl / (h.volumeL / 10) / (h.phAfter - h.phBefore), 0) / withPh.length;
+		const rise = (now.target.lo + now.target.hi) / 2 - now.phBefore;
+		if (rise <= 0) return {
+			predictedMl: 0,
+			startMl: 0,
+			basis: "perPh",
+			rate: r1(rate),
+			tanks: withPh.length
+		};
+		const predictedMl = r1(rate * rise * k);
+		return {
+			predictedMl,
+			startMl: r1(predictedMl * START_FRACTION),
+			basis: "perPh",
+			rate: r1(rate),
+			tanks: withPh.length
+		};
+	}
+	const rate = recent.reduce((s, h) => s + h.totalMl / (h.volumeL / 10), 0) / recent.length;
+	const predictedMl = r1(rate * k);
+	return {
+		predictedMl,
+		startMl: r1(predictedMl * START_FRACTION),
+		basis: "per10L",
+		rate: r1(rate * 100) / 100,
+		tanks: recent.length
+	};
+}
+/** Total poured so far: the start (if any) + steps of 1 mL per 4 L. */
+function titrationTotal(t) {
+	const stepMl = balanceStepMl(t.volumeL);
+	return {
+		stepMl,
+		totalMl: r1(t.startMl + t.steps * stepMl)
+	};
+}
+/** Where a reading stands against the target: go on, done, or over (no dose suggested to come back down). */
+function phStatus(ph, target) {
+	if (ph == null) return "unknown";
+	if (ph < target.lo) return "low";
+	if (ph > target.hi) return "over";
+	return "ok";
+}
+//#endregion
+//#region src/screens/tools/ph-balance.tsx
+function PhBalanceTool() {
+	const { t, num, range, settings } = useSettings();
+	const n1 = (v) => num(v, v % 1 ? 1 : 0);
+	const { cycle, space, mixes, all, targetsFor, nutrition, saveMix } = useGrow();
+	const cat = getCatalog(nutrition.line);
+	const show = (v) => v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v);
+	const tg = cycle ? targetsFor(todayIso(), cycle) : null;
+	const target = tg?.phIn ?? {
+		lo: cat.ph.coco[0],
+		hi: cat.ph.coco[1],
+		src: "athena"
+	};
+	const last = mixes[0];
+	const history = balanceHistory(all.mixes, cat.id);
+	const [vol, setVol] = (0, import_react.useState)("");
+	const [phBefore, setPhBefore] = (0, import_react.useState)("");
+	const [phNow, setPhNow] = (0, import_react.useState)("");
+	const [startMl, setStartMl] = (0, import_react.useState)(0);
+	const [steps, setSteps] = (0, import_react.useState)(0);
+	const [readings, setReadings] = (0, import_react.useState)([]);
+	(0, import_react.useEffect)(() => {
+		setVol(show(last?.volumeL));
+		setPhBefore("");
+		reset();
+	}, [
+		space?.id,
+		last?.id,
+		settings.lang
+	]);
+	function reset() {
+		setStartMl(0);
+		setSteps(0);
+		setReadings([]);
+		setPhNow("");
+	}
+	const volumeL = parseNum(vol) ?? 0;
+	const before = parseNum(phBefore);
+	const pred = predictBalance(history, volumeL, {
+		phBefore: before,
+		target
+	});
+	const { stepMl, totalMl } = titrationTotal({
+		volumeL,
+		startMl,
+		steps
+	});
+	const lastPh = readings.length ? readings[readings.length - 1].ph : before;
+	const status = phStatus(lastPh, target);
+	const note = () => {
+		const ph = parseNum(phNow);
+		if (ph == null) return;
+		setReadings((r) => [...r, {
+			ml: totalMl,
+			ph
+		}]);
+		setPhNow("");
+	};
+	const undo = () => {
+		if (steps > 0) setSteps((s) => s - 1);
+		else setStartMl(0);
+	};
+	const srcText = target.src === "athena" ? target.page ? t("nut.srcPage", { p: target.page }) : t("nut.srcAthena") : target.src === "spec" ? t("nut.srcSpec") : t("nut.srcEstimate");
+	const save = async () => {
+		if (!last) return;
+		try {
+			await saveMix({
+				...last,
+				phBefore: before ?? last.phBefore,
+				ph: lastPh ?? last.ph,
+				balanceAddedMl: totalMl
+			});
+			toast.success(t("phb.saved"));
+		} catch (e) {
+			toast.error(t("common.saveError", { reason: e.message }));
+		}
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "flex flex-col gap-3",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 0,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-2.5",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex items-center justify-between gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+								emoji: "scales",
+								children: t("phb.target")
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chip, {
+								tone: "primary",
+								children: srcText
+							})]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "text-[34px] leading-none font-semibold tabular",
+							id: "phb-target",
+							children: range(target.lo, target.hi, 1)
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12px] leading-[1.45] text-fg-2",
+							children: tg ? t("phb.targetFrom", { stage: t(`stage.${tg.stage}`) }) : t("phb.targetNoCycle")
+						}),
+						!nutrition.addons.includes("balance") && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12px] text-warn",
+							children: t("phb.balanceOff")
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 1,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-3",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							emoji: "testTube",
+							children: t("phb.titration")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+							id: "b-vol",
+							label: t("phb.volume"),
+							hint: last ? t("phb.volumeHint", { v: num(last.volumeL) }) : void 0,
+							value: vol,
+							onChange: setVol
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+							id: "b-before",
+							label: t("phb.before"),
+							value: phBefore,
+							onChange: setPhBefore
+						})] }),
+						pred ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "rounded-md border border-primary/30 bg-primary/8 px-3 py-2.5",
+							id: "phb-pred",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "text-[12px] text-fg-2",
+								children: t(pred.basis === "perPh" ? "phb.predPerPh" : "phb.predPer10", {
+									n: pred.tanks,
+									rate: num(pred.rate, pred.basis === "perPh" ? 1 : 2)
+								})
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "mt-0.5 text-[15px] font-semibold",
+								children: t("phb.predLine", {
+									pred: n1(pred.predictedMl),
+									start: n1(pred.startMl),
+									pct: Math.round(START_FRACTION * 100)
+								})
+							})]
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12px] leading-[1.45] text-fg-3",
+							children: t("phb.noPred", { n: history.length })
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "rounded-[var(--r-xl)] border border-line bg-surface-2 px-4 py-5 text-center",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "text-[12px] font-medium text-fg-3",
+									children: t("phb.total")
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "mt-1 text-[76px] leading-none font-semibold tracking-[-2px] tabular",
+									id: "phb-total",
+									"aria-live": "polite",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+										className: "inline-block animate-in fade-in zoom-in-95 duration-200",
+										children: n1(totalMl)
+									}, totalMl), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+										className: "ml-1 text-[28px] font-medium text-fg-2",
+										children: "mL"
+									})]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "mt-1.5 text-[12px] text-fg-3",
+									children: t("phb.detail", {
+										start: n1(startMl),
+										steps,
+										step: n1(stepMl)
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "mt-4 grid grid-cols-[48px_1fr_48px] gap-2",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											variant: "outline",
+											size: "icon-lg",
+											className: "size-12 rounded-full",
+											onClick: undo,
+											disabled: !steps && !startMl,
+											"aria-label": t("phb.undo"),
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Minus, { className: "size-5" })
+										}),
+										pred && pred.startMl > 0 && !startMl && !steps ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											className: "h-12 rounded-full text-[15px] font-bold",
+											onClick: () => setStartMl(pred.startMl),
+											disabled: volumeL <= 0,
+											children: t("phb.pourStart", { v: n1(pred.startMl) })
+										}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+											className: "h-12 rounded-full text-[15px] font-bold",
+											onClick: () => setSteps((s) => s + 1),
+											disabled: volumeL <= 0 || status === "ok" || status === "over",
+											id: "phb-step",
+											children: [
+												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, { className: "size-5" }),
+												" ",
+												t("phb.step", { v: num(stepMl, stepMl % 1 ? 1 : 0) })
+											]
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											variant: "outline",
+											size: "icon-lg",
+											className: "size-12 rounded-full",
+											onClick: reset,
+											"aria-label": t("phb.reset"),
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RotateCcw, { className: "size-5" })
+										})
+									]
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "grid grid-cols-[1fr_auto] items-end gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+								id: "b-ph",
+								label: t("phb.reading"),
+								hint: t("phb.readingHint"),
+								value: phNow,
+								onChange: setPhNow
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+								variant: "outline",
+								className: "mb-[18px] h-12 rounded-full px-5",
+								onClick: note,
+								disabled: parseNum(phNow) == null,
+								children: t("phb.note")
+							})]
+						}),
+						readings.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", {
+							className: "flex flex-col",
+							id: "phb-readings",
+							children: readings.map((r, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+								className: "flex items-center justify-between border-t border-line py-2 text-[13.5px] tabular-nums first:border-t-0",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									className: "text-fg-2",
+									children: t("phb.after", { ml: num(r.ml, r.ml % 1 ? 1 : 0) })
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", {
+									className: cn("font-semibold", phStatus(r.ph, target) === "ok" ? "text-primary" : phStatus(r.ph, target) === "over" ? "text-bad" : ""),
+									children: ["pH ", num(r.ph, 2)]
+								})]
+							}, i))
+						}),
+						status !== "unknown" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							id: "phb-status",
+							className: cn("rounded-md px-3 py-2 text-[12.5px] leading-[1.45] font-medium", status === "ok" && "bg-primary/10 text-primary", status === "low" && "bg-info/10 text-info", status === "over" && "bg-bad/10 text-bad"),
+							children: status === "ok" ? t("phb.ok") : status === "low" ? t("phb.low", { step: num(stepMl, stepMl % 1 ? 1 : 0) }) : t("phb.over")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							onClick: save,
+							disabled: !last || totalMl <= 0,
+							className: "h-12 rounded-full text-[15px] font-bold",
+							children: last ? t("phb.save", {
+								litres: num(last.volumeL),
+								date: last.date.slice(8, 10) + "/" + last.date.slice(5, 7)
+							}) : t("phb.noTank")
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 2,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-1.5",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+						emoji: "book",
+						children: t("phb.how")
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", {
+						className: "flex list-disc flex-col gap-1 pl-5 text-[12.5px] leading-[1.45] text-fg-2",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: t("phb.how1") }),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: t("phb.how2") }),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: t("phb.how3") })
+						]
+					})]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourceNote, { children: t("phb.sources") })
+		]
+	});
+}
+//#endregion
+//#region src/screens/tools/ipw.tsx
+function IpwTool() {
+	const { t, num, settings } = useSettings();
+	const { cycle, space, sprays, saveSpray, nutrition, grow, saveGrow, saveSpace } = useGrow();
+	const today = todayIso();
+	const enabled = nutrition.addons.includes("ipw");
+	const stage = cycle ? stageOn(cycle, today) : null;
+	const allowed = stage ? ipwAllowed(stage) : {
+		ok: false,
+		reason: "notStarted"
+	};
+	const lastDay = ipwLastDay(cycle?.flipDate);
+	const mine = space ? sprays.filter((s) => s.product === "ipw" && s.spaceIds.includes(space.id)) : [];
+	const running = space ? nextIpw(sprays, space.id, lastDay) : null;
+	const [protocol, setProtocol] = (0, import_react.useState)("prevention");
+	const [litres, setLitres] = (0, import_react.useState)("");
+	const [checked, setChecked] = (0, import_react.useState)([]);
+	(0, import_react.useEffect)(() => {
+		const last = mine[0];
+		setProtocol(last?.protocol ?? "prevention");
+		setLitres(last ? settings.lang === "fr" ? String(last.litres).replace(".", ",") : String(last.litres) : "");
+		setChecked([]);
+	}, [space?.id, mine.length]);
+	const L = parseNum(litres);
+	const dose = L && L > 0 ? ipwDoseMl(L, protocol) : null;
+	const start = running && running.protocol === protocol ? running.start : today;
+	const plan = ipwSchedule(protocol, start, lastDay).filter((d) => d >= today).slice(0, 8);
+	const fmt = (d) => (/* @__PURE__ */ new Date(`${d}T12:00:00`)).toLocaleDateString(settings.lang === "fr" ? "fr-FR" : "en-GB", {
+		weekday: "short",
+		day: "numeric",
+		month: "short"
+	});
+	const allChecked = IPW_CHECKLIST.every((c) => checked.includes(c));
+	const enable = async () => {
+		const addons = [...nutrition.addons, "ipw"];
+		if (space?.nutrition && Object.keys(space.nutrition).length) await saveSpace({
+			...space,
+			nutrition: {
+				...space.nutrition,
+				addons
+			}
+		});
+		else await saveGrow({ nutrition: {
+			...grow?.nutrition ?? nutrition,
+			addons
+		} });
+		toast.success(t("ipw.enabled"));
+	};
+	const save = async () => {
+		if (!space || !L || !allowed.ok) return;
+		try {
+			await saveSpray({
+				schemaVersion: GROW_SCHEMA.spray,
+				id: newId("spray-"),
+				date: today,
+				spaceIds: [space.id],
+				...cycle ? { cycleId: cycle.id } : {},
+				product: "ipw",
+				mlPerL: ipwMlPerL(protocol),
+				litres: L,
+				protocol,
+				protocolStart: start,
+				checked,
+				createdAt: (/* @__PURE__ */ new Date()).toISOString()
+			});
+			toast.success(t("ipw.saved"));
+			setChecked([]);
+		} catch (e) {
+			toast.error(t("common.saveError", { reason: e.message }));
+		}
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "flex flex-col gap-3",
+		children: [
+			!enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 0,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-2 border-warn/35",
+					id: "ipw-off",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "text-[12.5px] leading-[1.45] text-fg-2",
+						children: t("ipw.off")
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+						variant: "outline",
+						className: "h-10 self-start rounded-full",
+						onClick: enable,
+						children: t("ipw.enable")
+					})]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 1,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-2.5",
+					id: "ipw-window",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex items-center justify-between gap-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+								emoji: "sweat",
+								children: t("ipw.window")
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chip, {
+								tone: allowed.ok ? "primary" : "warn",
+								children: allowed.ok ? t("ipw.allowed") : t("ipw.blocked")
+							})]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: cn("text-[13px] leading-[1.45]", allowed.ok ? "text-fg-2" : "font-medium text-bad"),
+							children: allowed.ok ? lastDay ? t("ipw.until", { date: fmt(lastDay) }) : t("ipw.okVeg") : t(`ipw.why.${allowed.reason}`)
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[11.5px] text-fg-3",
+							children: t("ipw.windowRule")
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 2,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-3",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							emoji: "testTube",
+							children: t("ipw.protocol")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Seg, {
+							label: t("ipw.protocol"),
+							value: protocol,
+							onChange: setProtocol,
+							options: IPW_PROTOCOLS.map((p) => ({
+								value: p,
+								label: t(`ipw.p.${p}`)
+							}))
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12px] leading-[1.45] text-fg-2",
+							children: t(`ipw.pd.${protocol}`)
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "grid grid-cols-[1fr_1fr] items-end gap-2.5",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(NumField, {
+								id: "ipw-l",
+								label: t("ipw.litres"),
+								hint: t("ipw.litresHint"),
+								value: litres,
+								onChange: setLitres
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "rounded-md border border-line bg-surface-2 px-3 py-2",
+								id: "ipw-dose",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "text-[11px] text-fg-3",
+									children: t("ipw.dose", { r: ipwMlPerL(protocol) })
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "text-[26px] leading-tight font-semibold tabular",
+									children: dose != null ? `${num(dose, dose % 1 ? 1 : 0)} mL` : "—"
+								})]
+							})]
+						}),
+						plan.length > 0 && allowed.ok && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "mb-1 text-[12px] font-medium text-fg-2",
+							children: running && running.protocol === protocol ? t("ipw.planRunning") : t("ipw.planNew")
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "flex flex-wrap gap-1.5",
+							id: "ipw-plan",
+							children: plan.map((d) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chip, {
+								tone: d === today ? "primary" : "neutral",
+								children: fmt(d)
+							}, d))
+						})] })
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 3,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-1",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							emoji: "book",
+							children: t("ipw.checklist")
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+							className: "mt-1.5 flex flex-col",
+							id: "ipw-checklist",
+							children: IPW_CHECKLIST.map((c) => {
+								const on = checked.includes(c);
+								return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+									type: "button",
+									"aria-pressed": on,
+									onClick: () => setChecked((x) => on ? x.filter((y) => y !== c) : [...x, c]),
+									className: "flex min-h-11 w-full items-center gap-3 border-t border-line py-2 text-left first:border-t-0",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+										className: cn("flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px]", on ? "border-primary bg-primary text-primary-foreground" : "border-line-strong"),
+										children: on && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, { className: "size-4" })
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+										className: "text-[13.5px] leading-snug",
+										children: t(`ipw.c.${c}`)
+									})]
+								}) }, c);
+							})
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							onClick: save,
+							disabled: !allowed.ok || !L || !space,
+							className: "mt-2 h-12 rounded-full text-[15px] font-bold",
+							children: allChecked ? t("ipw.save") : t("ipw.saveUnchecked", {
+								n: checked.length,
+								total: IPW_CHECKLIST.length
+							})
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Reveal, {
+				i: 4,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+					className: "gap-1.5",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							emoji: "calendar",
+							children: t("ipw.history")
+						}),
+						running && enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12.5px] font-medium text-primary",
+							children: t("ipw.next", { date: fmt(running.date) })
+						}),
+						mine.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-[12.5px] text-fg-3",
+							children: t("ipw.none")
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+							id: "ipw-history",
+							children: mine.slice(0, 10).map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+								className: "flex items-center justify-between gap-2 border-t border-line py-2 text-[13px] first:border-t-0",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									className: "text-fg-2",
+									children: fmt(s.date)
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+									className: "tabular-nums",
+									children: [
+										t(`ipw.p.${s.protocol ?? "prevention"}`),
+										" · ",
+										num(s.litres, s.litres % 1 ? 1 : 0),
+										" L · ",
+										num(s.mlPerL * s.litres, 0),
+										" mL"
+									]
+								})]
+							}, s.id))
+						})
+					]
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SourceNote, { children: t("ipw.sources") })
+		]
+	});
+}
+//#endregion
 //#region src/screens/tools.tsx
 var TOOLS = [
 	{
@@ -73662,16 +74607,14 @@ var TOOLS = [
 		emoji: "scales",
 		title: "tools.ph",
 		desc: "tools.phD",
-		lot: 5,
-		soon: "soon.ph"
+		perSpace: true
 	},
 	{
 		id: "ipw",
 		emoji: "sweat",
 		title: "tools.ipw",
 		desc: "tools.ipwD",
-		lot: 5,
-		soon: "soon.ipw"
+		perSpace: true
 	},
 	{
 		id: "light",
@@ -73761,7 +74704,7 @@ function ToolsScreen() {
 				title: t(tool.title),
 				body: t(tool.soon),
 				foot: t("soon.keep")
-			}) : open === "irrigation" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IrrigationTool, {}) : open === "nutrition" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NutritionTool, {}) : open === "equipment" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EquipmentTool, {}) : open === "settings" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsTool, {}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GuideScreen, { embedded: true })
+			}) : open === "irrigation" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IrrigationTool, {}) : open === "nutrition" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NutritionTool, {}) : open === "ph" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhBalanceTool, {}) : open === "ipw" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IpwTool, {}) : open === "equipment" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EquipmentTool, {}) : open === "settings" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsTool, {}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GuideScreen, { embedded: true })
 		] });
 	}
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScreenHero, {
@@ -75673,6 +76616,10 @@ var Boundary = class extends import_react.Component {
     margin-bottom: calc(var(--spacing) * 4);
   }
 
+  .mb-\[18px\] {
+    margin-bottom: 18px;
+  }
+
   .-ml-1 {
     margin-left: calc(var(--spacing) * -1);
   }
@@ -76203,6 +77150,10 @@ var Boundary = class extends import_react.Component {
     transform: var(--tw-rotate-x, ) var(--tw-rotate-y, ) var(--tw-rotate-z, ) var(--tw-skew-x, ) var(--tw-skew-y, );
   }
 
+  .animate-in {
+    animation: enter var(--tw-animation-duration, var(--tw-duration, .15s))var(--tw-ease, ease)var(--tw-animation-delay, 0s)var(--tw-animation-iteration-count, 1)var(--tw-animation-direction, normal)var(--tw-animation-fill-mode, none);
+  }
+
   .animate-spin {
     animation: var(--animate-spin);
   }
@@ -76230,6 +77181,10 @@ var Boundary = class extends import_react.Component {
 
   .list-decimal {
     list-style-type: decimal;
+  }
+
+  .list-disc {
+    list-style-type: disc;
   }
 
   .auto-rows-min {
@@ -76260,8 +77215,20 @@ var Boundary = class extends import_react.Component {
     grid-template-columns: 1.2fr .8fr 1fr 1fr;
   }
 
+  .grid-cols-\[1fr_1fr\] {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid-cols-\[1fr_auto\] {
+    grid-template-columns: 1fr auto;
+  }
+
   .grid-cols-\[28px_1fr_auto\] {
     grid-template-columns: 28px 1fr auto;
+  }
+
+  .grid-cols-\[48px_1fr_48px\] {
+    grid-template-columns: 48px 1fr 48px;
   }
 
   .grid-cols-\[48px_38px_1fr_auto\] {
@@ -76701,7 +77668,17 @@ var Boundary = class extends import_react.Component {
     border-color: var(--line-strong);
   }
 
-  .border-primary, .border-primary\/35 {
+  .border-primary, .border-primary\/30 {
+    border-color: var(--primary);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .border-primary\/30 {
+      border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+    }
+  }
+
+  .border-primary\/35 {
     border-color: var(--primary);
   }
 
@@ -76813,7 +77790,17 @@ var Boundary = class extends import_react.Component {
     }
   }
 
-  .bg-bad, .bg-bad\/12 {
+  .bg-bad, .bg-bad\/10 {
+    background-color: var(--bad);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-bad\/10 {
+      background-color: color-mix(in oklab, var(--bad) 10%, transparent);
+    }
+  }
+
+  .bg-bad\/12 {
     background-color: var(--bad);
   }
 
@@ -76865,7 +77852,17 @@ var Boundary = class extends import_react.Component {
     background-color: var(--destructive);
   }
 
-  .bg-info, .bg-info\/14 {
+  .bg-info, .bg-info\/10 {
+    background-color: var(--info);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-info\/10 {
+      background-color: color-mix(in oklab, var(--info) 10%, transparent);
+    }
+  }
+
+  .bg-info\/14 {
     background-color: var(--info);
   }
 
@@ -77205,6 +78202,10 @@ var Boundary = class extends import_react.Component {
     padding-block: calc(var(--spacing) * 4);
   }
 
+  .py-5 {
+    padding-block: calc(var(--spacing) * 5);
+  }
+
   .py-6 {
     padding-block: calc(var(--spacing) * 6);
   }
@@ -77413,8 +78414,20 @@ var Boundary = class extends import_react.Component {
     font-size: 26px;
   }
 
+  .text-\[28px\] {
+    font-size: 28px;
+  }
+
   .text-\[30px\] {
     font-size: 30px;
+  }
+
+  .text-\[34px\] {
+    font-size: 34px;
+  }
+
+  .text-\[76px\] {
+    font-size: 76px;
   }
 
   .leading-\[1\.1\] {
@@ -77500,6 +78513,11 @@ var Boundary = class extends import_react.Component {
   .tracking-\[-0\.6px\] {
     --tw-tracking: -.6px;
     letter-spacing: -.6px;
+  }
+
+  .tracking-\[-2px\] {
+    --tw-tracking: -2px;
+    letter-spacing: -2px;
   }
 
   .tracking-\[0\.4px\] {
@@ -77962,8 +78980,16 @@ var Boundary = class extends import_react.Component {
     user-select: none;
   }
 
+  .zoom-in-95 {
+    --tw-enter-scale: .95;
+  }
+
   :where(.divide-x-reverse > :not(:last-child)) {
     --tw-divide-x-reverse: 1;
+  }
+
+  .fade-in {
+    --tw-enter-opacity: 0;
   }
 
   .paused {

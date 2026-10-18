@@ -13,14 +13,16 @@ import { NutritionTool } from "./tools/nutrition"
 import { EquipmentTool } from "./tools/equipment"
 import { SettingsTool } from "./tools/settings"
 import { GuideScreen } from "./guide"
+import { PhBalanceTool } from "./tools/ph-balance"
+import { IpwTool } from "./tools/ipw"
 
 type ToolId = "irrigation" | "nutrition" | "ph" | "ipw" | "light" | "climate" | "equipment" | "reperes" | "settings"
 type Tool = { id: ToolId; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; soon?: MessageKey; wide?: boolean; perSpace?: boolean }
 const TOOLS: Tool[] = [
   { id: "irrigation", emoji: "droplet", title: "tools.irrigation", desc: "tools.irrigationD", wide: true, perSpace: true },
   { id: "nutrition", emoji: "testTube", title: "tools.nutrition", desc: "tools.nutritionD", perSpace: true },
-  { id: "ph", emoji: "scales", title: "tools.ph", desc: "tools.phD", lot: 5, soon: "soon.ph" },
-  { id: "ipw", emoji: "sweat", title: "tools.ipw", desc: "tools.ipwD", lot: 5, soon: "soon.ipw" },
+  { id: "ph", emoji: "scales", title: "tools.ph", desc: "tools.phD", perSpace: true },
+  { id: "ipw", emoji: "sweat", title: "tools.ipw", desc: "tools.ipwD", perSpace: true },
   { id: "light", emoji: "bulb", title: "tools.light", desc: "tools.lightD", lot: 5, soon: "soon.light" },
   { id: "climate", emoji: "cyclone", title: "tools.climate", desc: "tools.climateD", lot: 5, soon: "soon.climate", wide: true },
   { id: "equipment", emoji: "plug", title: "tools.equipment", desc: "tools.equipmentD", wide: true },
@@ -69,6 +71,10 @@ export function ToolsScreen() {
           <IrrigationTool />
         ) : open === "nutrition" ? (
           <NutritionTool />
+        ) : open === "ph" ? (
+          <PhBalanceTool />
+        ) : open === "ipw" ? (
+          <IpwTool />
         ) : open === "equipment" ? (
           <EquipmentTool />
         ) : open === "settings" ? (

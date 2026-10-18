@@ -14,7 +14,7 @@ export const GROW_SCHEMA = {
   assignment: 1,
   reminder: 2,
   concentrateStock: 2,
-  spray: 1,
+  spray: 2,
   customProduct: 2,
 } as const
 
@@ -205,15 +205,23 @@ export type ConcentrateStock = {
   note?: string
   createdAt?: string
 }
+/** A foliar spray (IPW): never in the tank. */
 export type Spray = {
   schemaVersion: number
   id: string
   date: IsoDate
   spaceIds: string[]
+  cycleId?: string
   product: string
   mlPerL: number
   litres: number
   protocol?: "prevention" | "pressure" | "restoration"
+  /** First day of the running protocol (the schedule counts from it). */
+  protocolStart?: IsoDate
+  /** Checklist ticked before spraying. */
+  checked?: string[]
+  note?: string
+  createdAt?: string
 }
 export type CustomProduct = {
   schemaVersion: number

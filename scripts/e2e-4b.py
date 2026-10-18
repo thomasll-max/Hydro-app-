@@ -25,17 +25,18 @@ with sync_playwright() as p:
     checks["floraison"] = pg.inner_text("#irr-equipment").replace("\n", " | ")
     pg.screenshot(path=str(out / "02-floraison-auto.png"), full_page=True)
 
-    # Pot volume can be changed: 11 L instead of 15 L, saved to the space's container.
-    pg.fill("#i-pot", "11")
-    pg.wait_for_timeout(400)
-    pg.get_by_role("button", name="Enregistrer dans l'équipement").click()
-    pg.wait_for_selector("text=Pots mis à jour", timeout=10000)
-    pg.wait_for_timeout(800)
+    # Pot volume can be changed (lot 9: in the space's settings, opened from the tool): 11 L instead of 15 L.
+    pg.locator("#irr-equipment").get_by_role("button", name="Réglages").click()
+    pg.wait_for_selector("#sp-potL")
+    pg.fill("#sp-potL", "11")
+    pg.screenshot(path=str(out / "02a-space-settings.png"))
+    pg.get_by_role("button", name="Enregistrer").click()
+    pg.wait_for_selector("text=Enregistré", timeout=10000)
+    pg.wait_for_timeout(1200)
     checks["pot11"] = pg.locator("#irr-equipment").inner_text().replace("\n", " | ")
     pg.locator("#irr-equipment").screenshot(path=str(out / "02b-pot-11.png"))
 
-    pg.get_by_role("radio", name="Manuel").click()
-    pg.wait_for_timeout(800)
+    # Manual watering table of the line: always shown (reference), the stage row highlighted.
     checks["manual-current"] = pg.locator("#irr-manual li[data-current]").inner_text().replace("\n", " | ")
     pg.locator("#irr-manual").screenshot(path=str(out / "03-manual-table.png"))
     pg.screenshot(path=str(out / "04-floraison-manual.png"), full_page=True)

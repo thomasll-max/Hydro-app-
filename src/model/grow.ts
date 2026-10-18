@@ -91,6 +91,8 @@ export type Space = {
   dimensionsCm?: Partial<DimensionsCm>
   /** Module switches. Turning one off hides its data, never deletes it. */
   modules: Record<ModuleId, boolean>
+  /** Photoperiod set for the space (hours of light); absent = by stage (18 h veg, 12 h flower). */
+  light?: { photoperiodH?: number }
   /** Last PPFD map measured on a 3 × 3 grid (row by row, from the back left), µmol/m²/s; null = not measured. */
   lightMap?: { date: IsoDate; cells: (number | null)[]; heightCm?: number }
   /** Overrides of the grow's nutrition settings for this space. */

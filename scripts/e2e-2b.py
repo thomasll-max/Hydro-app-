@@ -32,7 +32,7 @@ with sync_playwright() as p:
     pg.locator("#e-dome").click()
     pg.fill("#e-note", "Première levée")
     pg.screenshot(path=str(out / "02-entry-colonne.png"), full_page=False)
-    pg.get_by_role("button", name="Enregistrer").click()
+    pg.get_by_role("button", name="Enregistrer", exact=True).click()
     pg.wait_for_selector("text=Saisie enregistrée", timeout=10000)
     elapsed = time.time() - t0
     pg.wait_for_timeout(1200)
@@ -47,7 +47,7 @@ with sync_playwright() as p:
     pg.fill("#q-floraison-rh", "60")
     pg.fill("#q-floraison-res", "60")
     pg.screenshot(path=str(out / "04-quick.png"))
-    pg.get_by_role("button", name="Enregistrer").click()
+    pg.get_by_role("button", name="Enregistrer", exact=True).click()
     pg.wait_for_selector("text=espace(s) enregistré(s)", timeout=10000)
     pg.wait_for_timeout(1200)
     pg.screenshot(path=str(out / "05-today-all-after.png"), full_page=True)

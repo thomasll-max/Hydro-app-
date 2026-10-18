@@ -6,9 +6,9 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
-  - Lots 1 à 6b poussés le 18/10/2026. Dernier commit de lot : « Lot 6b : sauvegarde, import et « Demander à Claude »… ».
+  - Lots 1 à 6b et 9 poussés le 18/10/2026. Dernier commit de lot : « Lot 9 : tâche du matin, réglages par espace, finition ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
   - Le lot 7 ne garde que l'élargissement multi-marques de la Nutrition (GitHub est déjà en place).
 
@@ -23,7 +23,7 @@
 - [x] Lot 5b : lumière, climat (171 tests)
 - [x] Lot 6a : graphiques (179 tests)
 - [x] Lot 6b : export / import JSON, « Demander à Claude » (186 tests)
-- [ ] Lot 9 : tâche du matin + passe de finition (avant la validation de Thomas)
+- [x] Lot 9 : tâche du matin + passe de finition (189 tests) — **en attente de la validation de Thomas**
 - [ ] Lot 7 : nutrition multi-marques (après validation)
 - [ ] Lot 8 : version locale (Netlify relié au dépôt, après validation)
 
@@ -85,7 +85,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 186 au lot 6b
+npm test                          # tests (Vitest), 189 au lot 9
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -189,4 +189,19 @@ PYTHONPATH=scripts python3 scripts/e2e-6b.py dist-preview/index.html <dossier>
 ```
 
 ### Prochain lot
-**Lot 9 — tâche du matin + passe de finition** (avant la validation de Thomas).
+Voir « Lot 9 — notes ».
+
+## Lot 9 — notes
+- **Tâche programmée** « Hydro — résumé du matin » (id `trig_011XAxjtkHi6uRbgxZSKmjNC`) : `CRON_TZ=Europe/Oslo 51 6 * * *`, nouvelle session à chaque fois, notification push. Elle lit `digest/{date du jour}` (sinon `digest/latest` du jour) via ArtifactData, en lecture seule, et recopie `texts.fr`. Changer l'heure dans l'app ne déplace pas la tâche : le faire avec `update_trigger`.
+- `Digest` v3 : `computedOn`, `texts: { fr, en }`. `usePersistDigest` écrit la semaine quand le texte change (version Claude seulement).
+- **Réglages par espace** : `SpaceSheet` (`screens/tools/space-sheet.tsx`) avec sections `general | nutrition | irrigation | light | air` ; ouverte depuis n'importe où par `useEditors().openSpace(spaceId, section)` (une seule section affichée, bouton « Tous les réglages de l'espace »). Réglages d'arrosage = cycle en cours ; pots = contenant de l'espace (`withPots`) ; photopériode = `space.light.photoperiodH` (vide = selon le stade) ; gradation et vitesse = équipement. Composant `SettingsLink` (résumé + bouton) dans les outils.
+- Les sélecteurs FR/EN et clair/sombre restent dans la barre du haut (maquette) et aussi dans Réglages.
+- Build minifié (`vite.config.ts`) ; `HYDRO_DEBUG=1 npm run build` pour un build lisible.
+
+### Commandes (lot 9)
+```bash
+PYTHONPATH=scripts python3 scripts/e2e-2b.py dist-preview/index.html <dossier>   # corrigé (bouton « Enregistrer » exact)
+```
+
+### Prochain lot
+**Validation par Thomas.** Ensuite : lot 7 (nutrition multi-marques), puis lot 8 (version locale, Netlify).

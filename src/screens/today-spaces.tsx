@@ -11,7 +11,7 @@ import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
 import { stageLine } from "@/app/labels"
 import { stageOn, todayIso, daysBetween } from "@/calc/stage"
-import { buildDailyDigest, spaceContext, type Digest, type DigestData } from "@/calc/digest"
+import { buildDailyDigest, digestWeek, spaceContext, type DigestData } from "@/calc/digest"
 import { status } from "@/calc/advice"
 import { groupBySite } from "@/model/grow-ops"
 import type { Space } from "@/model/grow"
@@ -27,24 +27,27 @@ function useDigestData(): DigestData {
   )
 }
 
-/** Keeps digest/latest current for the morning task (Claude version only). */
-function usePersistDigest(d: Digest) {
-  const { storeKind, saveDigest } = useGrow()
+/** Keeps a week of digests current for the morning task (Claude version only): written when the text changes. */
+function usePersistDigest(data: DigestData, lang: "fr" | "en") {
+  const { storeKind, saveDigestWeek } = useGrow()
   const last = useRef("")
   useEffect(() => {
-    if (storeKind !== "artifact" || last.current === d.text) return
-    last.current = d.text
-    void saveDigest(d).catch(() => {
+    if (storeKind !== "artifact") return
+    const week = digestWeek(data, todayIso(), lang)
+    const key = week.map((d) => d.text).join("\u0000")
+    if (last.current === key) return
+    last.current = key
+    void saveDigestWeek(week).catch(() => {
       last.current = ""
     })
-  }, [d, storeKind, saveDigest])
+  }, [data, lang, storeKind, saveDigestWeek])
 }
 
 export function BonjourCard({ only }: { only?: string }) {
   const { t, settings } = useSettings()
   const data = useDigestData()
   const digest = useMemo(() => buildDailyDigest(data, todayIso(), settings.lang), [data, settings.lang])
-  usePersistDigest(digest)
+  usePersistDigest(data, settings.lang)
   const [open, setOpen] = useState(false)
   const spaces = only ? digest.spaces.filter((s) => s.spaceId === only) : digest.spaces
   const shown = only || open ? spaces : spaces.slice(0, 2)

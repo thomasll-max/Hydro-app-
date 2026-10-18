@@ -7,13 +7,15 @@ import type { Lang } from "@/i18n/types"
 import { formatDayMonth, formatNumber, translate } from "@/i18n/core"
 import { groupBySite } from "@/model/grow-ops"
 import { buildProgram, PHOTOPERIOD, programTotals, steerStage } from "./program"
-import { daysBetween, stageOn } from "./stage"
+import { addDays, daysBetween, stageOn } from "./stage"
 import { spaceContext } from "./space-context"
 import { calendarItems, growTimeZone } from "@/calendar/agenda"
 import { itemTitle } from "@/calendar/labels"
 import type { CustomProduct, Reminder } from "@/model/grow"
 
-export const DIGEST_SCHEMA = 2
+export const DIGEST_SCHEMA = 3
+/** Days prepared ahead (today included), so the morning task has a digest even if the app was not opened. */
+export const DIGEST_DAYS = 7
 
 export type DigestData = {
   grow?: (Pick<Grow, "name"> & Partial<Pick<Grow, "nutrition" | "timeZone">>) | null
@@ -31,7 +33,20 @@ export type DigestData = {
 
 export type DigestLine = { kind: "climate" | "watering" | "lastEntry" | "reservoir" | "stage" | "reminder" | "deadline"; text: string; warn?: boolean }
 export type DigestSpace = { spaceId: string; name: string; lines: DigestLine[] }
-export type Digest = { schemaVersion: number; date: IsoDate; locale: Lang; title: string; spaces: DigestSpace[]; /** Reminders of the day not tied to a space. */ general: DigestLine[]; text: string }
+export type Digest = {
+  schemaVersion: number
+  date: IsoDate
+  locale: Lang
+  title: string
+  spaces: DigestSpace[]
+  /** Reminders of the day not tied to a space. */
+  general: DigestLine[]
+  text: string
+  /** Day the app computed it (the journal as it was then). */
+  computedOn?: IsoDate
+  /** The text in both languages (the morning task sends French, whatever the language of the phone that computed it). */
+  texts?: Record<Lang, string>
+}
 
 export { spaceContext }
 
@@ -108,4 +123,33 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang):
     ...spaces.map((s) => `${s.name}\n${s.lines.map((l) => `• ${l.text}`).join("\n")}`),
   ].join("\n\n")
   return { schemaVersion: DIGEST_SCHEMA, date, locale, title, spaces, general, text }
+}
+
+/** Today's digest and the next days', computed from today's data (reminders and deadlines are exact; measurements are the latest known). */
+export function digestWeek(data: DigestData, today: IsoDate, locale: Lang, days = DIGEST_DAYS): Digest[] {
+  return Array.from({ length: days }, (_, i) => {
+    const date = addDays(today, i)
+    const d = buildDailyDigest(data, date, locale)
+    const other = buildDailyDigest(data, date, locale === "fr" ? "en" : "fr")
+    return { ...d, computedOn: today, texts: { [locale]: d.text, [other.locale]: other.text } as Record<Lang, string> }
+  })
+}
+
+/** Document ids for a week of digests: digest/latest (today) and digest/{date}. Older dated ones are removed after 7 days. */
+export function digestDocs(week: Digest[]): [string, Digest][] {
+  return [["digest/latest", week[0]] as [string, Digest], ...week.map((d) => [`digest/${d.date}`, d] as [string, Digest])]
+}
+export const staleDigestIds = (ids: string[], today: IsoDate) => ids.filter((id) => /^\d{4}-\d{2}-\d{2}$/.test(id) && id < addDays(today, -DIGEST_DAYS))
+
+/**
+ * What the morning task sends (spec §12): the digest of the day, else the latest one. "stale" when it was computed on an
+ * earlier day (the app has not been opened since): reminders and deadlines are still right, the measurements are older.
+ */
+export function morningText(docs: Record<string, Partial<Digest>>, today: IsoDate, locale: Lang): { text: string; stale: boolean; found: boolean } {
+  const d = docs[today] ?? (docs.latest?.date === today ? docs.latest : undefined)
+  const body = d?.texts?.[locale] ?? d?.text
+  if (!d || !body) return { text: translate(locale, "digest.none"), stale: true, found: false }
+  const stale = !!d.computedOn && d.computedOn < today
+  const note = stale ? `\n\n${translate(locale, "digest.staleNote", { date: formatDayMonth(locale, new Date(`${d.computedOn}T12:00:00`)) })}` : ""
+  return { text: body + note, stale, found: true }
 }

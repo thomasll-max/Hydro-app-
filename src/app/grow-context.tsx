@@ -11,7 +11,7 @@ import { stageOn, todayIso } from "@/calc/stage"
 import { cycleNumber, dayTargets, snapshot, type DayTargets } from "@/calc/targets"
 import { compressPhoto } from "@/lib/photo"
 import { seedDocs, thomasGrow } from "@/data/thomas-grow"
-import type { Digest } from "@/calc/digest"
+import { digestDocs, staleDigestIds, type Digest } from "@/calc/digest"
 
 const byDateDesc = <T extends { date: string; id: string }>(a: T, b: T) => (a.date === b.date ? (a.id < b.id ? 1 : -1) : a.date < b.date ? 1 : -1)
 const byOrder = <T extends { order: number }>(a: T, b: T) => a.order - b.order
@@ -81,6 +81,8 @@ type GrowCtx = {
   deleteReminder: (id: string) => Promise<void>
   /** Claude version: the morning task reads digest/latest. */
   saveDigest: (d: Digest) => Promise<void>
+  /** Claude version: today's digest and the next days' (digest/latest + digest/{date}), old ones removed. */
+  saveDigestWeek: (week: Digest[]) => Promise<void>
   uploadPhoto: (file: Blob) => Promise<string>
   photoUrl: (id: string) => Promise<string>
 }
@@ -342,6 +344,12 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       saveReminder: async (r) => need().set(`reminders/${r.id}`, { ...r, schemaVersion: GROW_SCHEMA.reminder, updatedAt: stamp() }),
       deleteReminder: async (id) => need().delete(`reminders/${id}`),
       saveDigest: async (d) => need().set("digest/latest", { ...d, updatedAt: stamp() }),
+      saveDigestWeek: async (week) => {
+        const docs = need()
+        for (const [p, d] of digestDocs(week)) await docs.set(p, { ...d, updatedAt: stamp() })
+        const old = staleDigestIds(Object.keys(await docs.list("digest")), week[0].date)
+        for (const id of old) await docs.delete(`digest/${id}`)
+      },
       uploadPhoto: async (file) => {
         if (!stores) throw new Error("store not ready")
         return stores.photos.upload(await compressPhoto(file))

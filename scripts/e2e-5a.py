@@ -45,7 +45,9 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}#ipw"); pg.wait_for_timeout(2500)
     checks["off"] = pg.locator("#ipw-off").count() == 1
     pg.screenshot(path=str(out / "02-ipw-off.png"), full_page=True)
-    pg.get_by_role("button", name="Activer IPW").click(); pg.wait_for_timeout(1200)
+    pg.get_by_role("button", name="L'activer dans les réglages").click(); pg.wait_for_timeout(1200)
+    pg.get_by_role("button", name="IPW", exact=True).first.click()
+    pg.get_by_role("button", name="Enregistrer").click(); pg.wait_for_selector("text=Enregistré", timeout=10000); pg.wait_for_timeout(1500)
     checks["offAfterEnable"] = pg.locator("#ipw-off").count()
     pg.fill("#ipw-l", "2"); pg.wait_for_timeout(300)
     checks["dose"] = pg.inner_text("#ipw-dose").replace("\n", " ")

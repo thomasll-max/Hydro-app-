@@ -13,12 +13,13 @@ import { stageOn, todayIso } from "@/calc/stage"
 import { cellLevel, dimmerFor, dliOf, mapStats, ppfdFor, spaceFreeHeight, spaceLightAt, spaceSchema } from "@/calc/light"
 import { equipmentAt } from "@/equipment/calc"
 import type { Equipment } from "@/model/grow"
-import { CalcRow, CalcValue } from "./equipment-shared"
+import { CalcRow, CalcValue, SettingsLink } from "./equipment-shared"
+import { useEditors } from "@/app/editors"
 import { cn } from "@/lib/utils"
 
 export function LightTool() {
   const { t, num, range, settings } = useSettings()
-  const { cycle, space, equipment, assignments, targetsFor, saveSpace, saveEquipment } = useGrow()
+  const { cycle, space, equipment, assignments, targetsFor, saveSpace } = useGrow()
   const today = todayIso()
   const show = (v?: number | null) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
   const lamps = space
@@ -30,13 +31,10 @@ export function LightTool() {
   const tg = cycle ? targetsFor(today, cycle) : null
   const defaultHours = !stage || stage.key === "seedling" || stage.key === "veg" || stage.key === "notStarted" ? 18 : 12
 
-  const [dim, setDim] = useState<Record<string, string>>({})
-  const [hours, setHours] = useState("")
+  const ed = useEditors()
   const [dliTarget, setDliTarget] = useState("")
   const [cells, setCells] = useState<string[]>(Array(9).fill(""))
   useEffect(() => {
-    setDim(Object.fromEntries(lamps.map(({ e }) => [e.id, show(e.lamp?.dimmerPct)])))
-    setHours(show(defaultHours))
     setDliTarget("")
     setCells(Array.from({ length: 9 }, (_, i) => show(space?.lightMap?.cells[i] ?? undefined)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,10 +50,10 @@ export function LightTool() {
     [space?.id, space?.dimensionsCm, lamps.length, equipment],
   )
   if (!space) return <p className="text-[13px] text-fg-3">{t("lgt.noSpace")}</p>
-  const dimmers = Object.fromEntries(Object.entries(dim).map(([k, v]) => [k, parseNum(v)]))
+  const dimmers = Object.fromEntries(lamps.map(({ e }) => [e.id, e.lamp?.dimmerPct]))
   const unknownDimmer = lamps.some(({ e }) => dimmers[e.id] == null)
   const { now, full } = spaceLightAt(space, today, equipment, assignments, dimmers)
-  const h = parseNum(hours) ?? defaultHours
+  const h = space.light?.photoperiodH ?? defaultHours
   const stats = mapStats(cells.map((c) => parseNum(c) ?? null))
   const ppfdEst = now?.ppfd
   const ppfdUsed = stats ? { v: stats.mean, src: "measured" as const } : ppfdEst?.ok ? { v: ppfdEst.value, src: "estimate" as const } : null
@@ -67,14 +65,7 @@ export function LightTool() {
   const ppfdTarget = tg?.ppfd
   const srcLabel = (s?: string) => (s === "common" ? t("lgt.srcCommon") : s === "athena" ? t("nut.srcAthena") : s ? t("nut.srcEstimate") : "")
 
-  const saveDimmers = async () => {
-    try {
-      for (const { e } of lamps) if (dimmers[e.id] != null && dimmers[e.id] !== e.lamp?.dimmerPct) await saveEquipment({ ...e, lamp: { ...e.lamp, dimmerPct: dimmers[e.id] } })
-      toast.success(t("lgt.dimSaved"))
-    } catch (err) {
-      toast.error(t("common.saveError", { reason: (err as Error).message }))
-    }
-  }
+
   const saveMap = async () => {
     try {
       await saveSpace({ ...space, lightMap: { date: today, cells: cells.map((c) => parseNum(c) ?? null) } })
@@ -83,7 +74,6 @@ export function LightTool() {
       toast.error(t("common.saveError", { reason: (err as Error).message }))
     }
   }
-  const dimDirty = lamps.some(({ e }) => dimmers[e.id] != null && dimmers[e.id] !== e.lamp?.dimmerPct)
 
   return (
     <div className="flex flex-col gap-3">
@@ -115,17 +105,14 @@ export function LightTool() {
       <Reveal i={1}>
         <Card className="gap-3">
           <Label emoji="gear">{t("lgt.settings")}</Label>
-          <Grid>
-            <NumField id="l-h" label={t("lgt.hours")} value={hours} onChange={setHours} />
-            {lamps.map(({ e }) => (
-              <NumField key={e.id} id={`l-dim-${e.id}`} integer label={t("lgt.dimmer", { name: e.name })} hint={e.lamp?.dimmable ? t("lgt.dimLevels", { n: e.lamp.dimmable }) : undefined} value={dim[e.id] ?? ""} onChange={(v) => setDim((x) => ({ ...x, [e.id]: v }))} />
-            ))}
-          </Grid>
-          {dimDirty && (
-            <Button variant="outline" className="h-10 self-start rounded-full" onClick={saveDimmers}>
-              {t("lgt.dimSave")}
-            </Button>
-          )}
+          <SettingsLink
+            summary={[
+              space.light?.photoperiodH ? t("lgt.sumHours", { h: num(h) }) : t("lgt.sumHoursStage", { h: num(h) }),
+              ...lamps.map(({ e }) => (e.lamp?.dimmerPct != null ? t("lgt.sumDim", { name: e.name, p: num(e.lamp.dimmerPct) }) : t("lgt.sumDimUnknown", { name: e.name }))),
+            ].join(" · ")}
+            label={t("tools.settingsBtn")}
+            onOpen={() => ed.openSpace(space.id, "light")}
+          />
           <div>
             {now && (
               <CalcRow label={t("lgt.wm2")} sub={t("lgt.wm2Sub")}>

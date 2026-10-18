@@ -14,10 +14,12 @@ import { stageOn, todayIso } from "@/calc/stage"
 import { IPW_CHECKLIST, IPW_PROTOCOLS, ipwAllowed, ipwDoseMl, ipwLastDay, ipwMlPerL, ipwSchedule, nextIpw, type IpwCheck, type IpwProtocol } from "@/calc/ipw"
 import { GROW_SCHEMA } from "@/model/grow"
 import { cn } from "@/lib/utils"
+import { useEditors } from "@/app/editors"
 
 export function IpwTool() {
   const { t, num, settings } = useSettings()
-  const { cycle, space, sprays, saveSpray, nutrition, grow, saveGrow, saveSpace } = useGrow()
+  const { cycle, space, sprays, saveSpray, nutrition } = useGrow()
+  const ed = useEditors()
   const today = todayIso()
   const enabled = nutrition.addons.includes("ipw")
   const stage = cycle ? stageOn(cycle, today) : null
@@ -44,12 +46,7 @@ export function IpwTool() {
   const fmt = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(settings.lang === "fr" ? "fr-FR" : "en-GB", { weekday: "short", day: "numeric", month: "short" })
   const allChecked = IPW_CHECKLIST.every((c) => checked.includes(c))
 
-  const enable = async () => {
-    const addons = [...nutrition.addons, "ipw" as const]
-    if (space?.nutrition && Object.keys(space.nutrition).length) await saveSpace({ ...space, nutrition: { ...space.nutrition, addons } })
-    else await saveGrow({ nutrition: { ...(grow?.nutrition ?? nutrition), addons } })
-    toast.success(t("ipw.enabled"))
-  }
+
   const save = async () => {
     if (!space || !L || !allowed.ok) return
     try {
@@ -80,9 +77,11 @@ export function IpwTool() {
         <Reveal i={0}>
           <Card className="gap-2 border-warn/35" id="ipw-off">
             <p className="text-[12.5px] leading-[1.45] text-fg-2">{t("ipw.off")}</p>
-            <Button variant="outline" className="h-10 self-start rounded-full" onClick={enable}>
-              {t("ipw.enable")}
-            </Button>
+            {space && (
+              <button type="button" onClick={() => ed.openSpace(space.id, "nutrition")} className="self-start rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12.5px] font-semibold text-primary">
+                {t("ipw.enableInSettings")}
+              </button>
+            )}
           </Card>
         </Reveal>
       )}

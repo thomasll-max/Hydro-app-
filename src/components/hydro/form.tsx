@@ -37,9 +37,9 @@ export function Sheet({
   )
 }
 
-export function Group({ title, aside, children, className }: { title: string; aside?: ReactNode; children: ReactNode; className?: string }) {
+export function Group({ title, aside, children, className, id }: { title: string; aside?: ReactNode; children: ReactNode; className?: string; id?: string }) {
   return (
-    <section className={cn("mt-4 first:mt-1", className)}>
+    <section id={id} className={cn("mt-4 scroll-mt-4 first:mt-1", className)}>
       <div className="mb-2 flex items-center justify-between gap-2">
         <h3 className="eyebrow">{title}</h3>
         {aside}
@@ -171,7 +171,7 @@ export function Seg<T extends string>({
         <ToggleGroupItem
           key={o.value}
           value={o.value}
-          className="h-10 min-w-0 flex-1 rounded-full! px-2 text-[13px] font-semibold text-fg-3 hover:bg-transparent hover:text-fg data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
+          className="min-h-10 min-w-0 flex-1 rounded-full! px-2 py-1 text-center text-[13px] leading-tight font-semibold whitespace-normal text-fg-3 hover:bg-transparent hover:text-fg data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
         >
           {o.label}
         </ToggleGroupItem>

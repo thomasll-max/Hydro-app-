@@ -1,9 +1,7 @@
 // Outils → Climat et air (lot 5): leaf VPD from the last reading (or typed), target by stage (common benchmark,
 // labelled), humidity to aim for at this temperature, air renewal from the space's extractor.
 import { useEffect, useState } from "react"
-import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Grid, NumField } from "@/components/hydro/form"
 import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
@@ -11,20 +9,22 @@ import { useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { AIR_REF_SECONDS, leafVpd, rhRangeForVpd, spaceAir, vpdStatus } from "@/calc/climate"
-import { CalcRow, CalcValue } from "./equipment-shared"
+import { CalcRow, CalcValue, SettingsLink } from "./equipment-shared"
+import { useEditors } from "@/app/editors"
 import { cn } from "@/lib/utils"
 
 export function ClimateTool() {
   const { t, num, range, settings } = useSettings()
-  const { cycle, space, all, equipment, assignments, targetsFor, saveEquipment } = useGrow()
+  const { cycle, space, all, equipment, assignments, targetsFor } = useGrow()
   const today = todayIso()
   const show = (v?: number) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
   const last = space ? all.entries.find((e) => e.spaceId === space.id && !e.plantId && e.tempDay != null) : undefined
   const tg = cycle ? targetsFor(today, cycle) : null
 
+  const ed = useEditors()
   const [f, setF] = useState<Record<string, string>>({})
   useEffect(() => {
-    setF({ temp: show(last?.tempDay), rh: show(last?.rh), offset: show(last?.leafOffsetC ?? cycle?.leafOffsetC ?? -2), speed: "" })
+    setF({ temp: show(last?.tempDay), rh: show(last?.rh), offset: show(last?.leafOffsetC ?? cycle?.leafOffsetC ?? -2) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [space?.id, last?.id, settings.lang])
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }))
@@ -36,19 +36,10 @@ export function ClimateTool() {
   const res = T != null && RH != null ? leafVpd(T, RH, off) : null
   const status = res ? vpdStatus(res.vpd, tg?.vpd) : "none"
   const rhAim = tg?.vpd && T != null ? rhRangeForVpd(tg.vpd, T, off) : null
-  const air = spaceAir(space, today, equipment, assignments, parseNum(f.speed))
+  const air = spaceAir(space, today, equipment, assignments)
   const dur = (s: number) => (s >= 60 ? `${Math.floor(s / 60)} min ${String(Math.round(s % 60)).padStart(2, "0")} s` : `${Math.round(s)} s`)
 
-  const saveSpeed = async () => {
-    const sp = parseNum(f.speed)
-    if (!air || sp == null) return
-    try {
-      await saveEquipment({ ...air.ext, extractor: { ...air.ext.extractor, speedPct: sp } })
-      toast.success(t("clim.speedSaved"))
-    } catch (e) {
-      toast.error(t("common.saveError", { reason: (e as Error).message }))
-    }
-  }
+
 
   return (
     <div className="flex flex-col gap-3">
@@ -98,18 +89,15 @@ export function ClimateTool() {
             <p className="text-[12.5px] text-warn">{t("clim.noExtractor")}</p>
           ) : (
             <>
-              <Grid>
-                <NumField id="c-speed" integer label={t("clim.speed", { name: air.ext.name })} hint={air.ext.extractor?.speedPct != null ? t("clim.speedHint", { v: num(air.ext.extractor.speedPct) }) : t("clim.speedUnknown")} value={f.speed ?? ""} onChange={set("speed")} />
-                <div className="rounded-md border border-line bg-surface-2 px-3 py-2">
-                  <div className="text-[11px] text-fg-3">{t("clim.flow")}</div>
-                  <div className="text-[18px] font-semibold tabular">{air.m3h != null ? `${num(air.m3h)} m³/h` : t("equip.missing")}</div>
-                </div>
-              </Grid>
-              {parseNum(f.speed) != null && parseNum(f.speed) !== air.ext.extractor?.speedPct && (
-                <Button variant="outline" className="h-10 self-start rounded-full" onClick={saveSpeed}>
-                  {t("clim.speedSave")}
-                </Button>
-              )}
+              <SettingsLink
+                summary={[
+                  air.ext.name,
+                  air.m3h != null ? `${num(air.m3h)} m³/h` : t("clim.flowMissing"),
+                  air.ext.extractor?.speedPct != null ? t("clim.sumSpeed", { p: num(air.ext.extractor.speedPct) }) : t("clim.speedUnknown"),
+                ].join(" · ")}
+                label={t("tools.settingsBtn")}
+                onOpen={() => ed.openSpace(space.id, "air")}
+              />
               <div>
                 <CalcRow label={t("clim.renewal")} sub={t("clim.renewalRef", { a: AIR_REF_SECONDS[0] / 60, b: AIR_REF_SECONDS[1] / 60 })}>
                   <CalcValue c={air.seconds} fmt={(v) => t("clim.every", { d: dur(v) })} />

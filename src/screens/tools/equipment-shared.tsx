@@ -81,3 +81,15 @@ export function spaceSummary(space: Space, date: string, equipment: Equipment[],
   const tank = of("reservoir").find((x) => x.e.reservoir?.kind !== "runoff")?.e
   return { items, area: areaM2(space.dimensionsCm), volume: volumeM3(space.dimensionsCm), light, air, ext, pots, potL, shot, tank, loss: DEFAULT_LOSS_FACTOR }
 }
+
+/** Summary of a space's settings in a tool, with the way to change them (Réglages de l'espace). */
+export function SettingsLink({ summary, onOpen, label }: { summary: ReactNode; onOpen: () => void; label: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-md border border-line bg-surface-2 px-3 py-2.5" data-settings-link>
+      <span className="min-w-0 text-[12.5px] leading-[1.45] text-fg-2">{summary}</span>
+      <button type="button" onClick={onOpen} className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12px] font-semibold text-primary">
+        {label}
+      </button>
+    </div>
+  )
+}

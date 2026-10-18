@@ -5,6 +5,8 @@ import { CycleSheet, EventSheet, MixSheet, PlantSheet } from "@/screens/sheets"
 import { QuickSheet } from "@/screens/quick-sheet"
 import { ReminderSheet, type ReminderInit } from "@/screens/reminder-sheet"
 import type { GrowEvent, Mix, PlantId } from "@/model/types"
+import { SpaceSheet, type SpaceSection } from "@/screens/tools/space-sheet"
+import { useGrow } from "./grow-context"
 
 type Editors = {
   openEntry: (init?: EntryInit) => void
@@ -14,6 +16,8 @@ type Editors = {
   openMix: (m?: Mix) => void
   openQuick: () => void
   openReminder: (init?: ReminderInit) => void
+  /** Settings of a space, scrolled to a section (lot 9: one settings page per space). */
+  openSpace: (spaceId: string, section?: SpaceSection) => void
 }
 const Ctx = React.createContext<Editors | null>(null)
 
@@ -25,6 +29,7 @@ type State =
   | { kind: "mix"; mix?: Mix }
   | { kind: "quick" }
   | { kind: "reminder"; init: ReminderInit }
+  | { kind: "space"; spaceId: string; section?: SpaceSection }
   | null
 
 export function EditorsProvider({ children }: { children: React.ReactNode }) {
@@ -45,6 +50,7 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
       openMix: (mix) => open({ kind: "mix", mix }),
       openQuick: () => open({ kind: "quick" }),
       openReminder: (init = {}) => open({ kind: "reminder", init }),
+      openSpace: (spaceId, section) => open({ kind: "space", spaceId, section }),
     }),
     [],
   )
@@ -64,9 +70,16 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
       <EventSheet open={is("event")} onOpenChange={close} event={last.kind === "event" ? last.event : undefined} />
       <MixSheet open={is("mix")} onOpenChange={close} mix={last.kind === "mix" ? last.mix : undefined} />
       <ReminderSheet open={is("reminder")} onOpenChange={close} init={last.kind === "reminder" ? last.init : {}} />
+      <SpaceSettings open={is("space")} onOpenChange={close} spaceId={last.kind === "space" ? last.spaceId : undefined} section={last.kind === "space" ? last.section : undefined} />
       <QuickSheet open={is("quick")} onOpenChange={close} onFull={(spaceId) => open({ kind: "entry", init: { spaceId } })} />
     </Ctx.Provider>
   )
+}
+
+function SpaceSettings({ open, onOpenChange, spaceId, section }: { open: boolean; onOpenChange: (o: boolean) => void; spaceId?: string; section?: SpaceSection }) {
+  const { allSpaces } = useGrow()
+  const space = allSpaces.find((s) => s.id === spaceId)
+  return space ? <SpaceSheet open={open} onOpenChange={onOpenChange} space={space} section={section} /> : null
 }
 
 export function useEditors() {

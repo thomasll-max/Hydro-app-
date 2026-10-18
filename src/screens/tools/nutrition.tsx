@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Grid, NumField, Seg } from "@/components/hydro/form"
+import { Grid, NumField } from "@/components/hydro/form"
 import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -19,7 +19,9 @@ import { spaceNutrition } from "@/model/grow-ops"
 import { SCHEMA } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
-import { concToDosing, dosingToConc } from "./nutrition-settings"
+import { ADDON_NAMES, dosingToConc } from "./nutrition-settings"
+import { SettingsLink } from "./equipment-shared"
+import { useEditors } from "@/app/editors"
 import { ConcentrateCard, CustomProductsCard } from "./nutrition-parts"
 import { equipmentAt } from "@/equipment/calc"
 import type { Equipment, EquipmentAssignment } from "@/model/grow"
@@ -54,18 +56,15 @@ function defaultEc(cat: NutrientCatalog, phase: ProgramPhase, firstCycle: boolea
 
 export function NutritionTool() {
   const { t, num, range, settings } = useSettings()
-  const { cycle, mixes, entries, saveMix, saveCycle, nutrition, space, spaces, grow, saveGrow, saveSpace, equipment, assignments, customProducts } = useGrow()
+  const { cycle, mixes, entries, saveMix, saveCycle, nutrition, space, spaces, grow, equipment, assignments, customProducts } = useGrow()
   const cat = getCatalog(nutrition.line)
   const phaseLabel = usePhaseLabel()
   const srcLabel = useSrcLabel()
   const show = (v?: number) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
   // Tank volume defaults to the usable volume of the space's reservoir (equipment).
   const reservoirL = space ? reservoirOf(space.id, equipment, assignments) : undefined
-  const setConcentrate = (c: number) => {
-    const dosing = concToDosing(c)
-    if (space?.nutrition && Object.keys(space.nutrition).length) void saveSpace({ ...space, nutrition: { ...space.nutrition, dosing } })
-    else void saveGrow({ nutrition: { ...(grow?.nutrition ?? nutrition), dosing } })
-  }
+  const ed = useEditors()
+
   const pos = cycle ? positionOf(stageOn(cycle, todayIso())) : null
   const cyclePhase = (pos && phaseAt(cat, pos)) || phaseById(cat, "veg") || cat.program[0]
   const firstCycle = !cycle || cycleNumber(cycle) <= 1
@@ -236,18 +235,20 @@ export function NutritionTool() {
               </button>
             ))}
           </div>
-          {phase.stage !== "flush" && concOptions.length > 0 && (
-            <div className="flex flex-col gap-1">
-              <span className="text-[12px] font-medium text-fg-2">{t("nut.dosing")}</span>
-              <Seg<string>
-                label={t("nut.dosing")}
-                value={String(conc)}
-                onChange={(v) => setConcentrate(Number(v))}
-                options={concOptions.map((c) => ({ value: String(c), label: c === 0 ? t("nut.powder") : `${num(c)} g/L` }))}
-              />
-              {conc > 0 && <span className="text-[11px] leading-snug text-fg-3">{t("nut.concNote", { core: coreName })}</span>}
-            </div>
+          {space && (
+            <SettingsLink
+              summary={[
+                cat.name,
+                concOptions.length ? (conc > 0 ? t("nut.sumConc", { c: num(conc) }) : t("nut.powder")) : null,
+                nutrition.addons.length ? t("nut.sumAddons", { list: nutrition.addons.map((a) => ADDON_NAMES[a]).join(", ") }) : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+              label={t("tools.settingsBtn")}
+              onOpen={() => ed.openSpace(space.id, "nutrition")}
+            />
           )}
+          {phase.stage !== "flush" && conc > 0 && <span className="-mt-1 text-[11px] leading-snug text-fg-3">{t("nut.concNote", { core: coreName })}</span>}
           <Grid>
             <NumField
               id="n-vol"

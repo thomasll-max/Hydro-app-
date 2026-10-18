@@ -104,7 +104,7 @@ export function CycleSheet({
   const [s, setS] = useState<Record<string, string>>({})
   const { busy, run } = useSaver(() => onOpenChange(false))
 
-  const NUM_FIELDS = ["flowerWeeks", "potVolumeL", "potCount", "flowMlPerMin", "shotPct", "p1Shots", "p1IntervalMin", "p0DelayMin", "leafOffsetC"] as const
+  const NUM_FIELDS = ["flowerWeeks", "potVolumeL", "potCount", "flowMlPerMin", "shotPct", "p1Shots", "p1IntervalMin", "p0DelayMin", "leafOffsetC", "plannedDryingDays"] as const
   const H_FIELDS = ["wetG", "dryG", "watts", "dryingDays", "jarRh"] as const
 
   useEffect(() => {
@@ -160,11 +160,13 @@ export function CycleSheet({
           <Group title={t("cycleForm.dates")}>
             <Grid>
               <TextField id="c-germ" type="date" label={t("cycleForm.germination")} value={c.germinationDate ?? ""} onChange={txt("germinationDate")} />
+              <TextField id="c-ptrans" type="date" label={t("cycleForm.plannedTransfer")} hint={t("cycleForm.plannedTransferHint")} value={c.plannedTransferDate ?? ""} onChange={txt("plannedTransferDate")} />
               <TextField id="c-trans" type="date" label={t("cycleForm.transfer")} value={c.transferDate ?? ""} onChange={txt("transferDate")} />
               <TextField id="c-pflip" type="date" label={t("cycleForm.plannedFlip")} value={c.plannedFlipDate ?? ""} onChange={txt("plannedFlipDate")} />
               <TextField id="c-flip" type="date" label={t("cycleForm.flip")} value={c.flipDate ?? ""} onChange={txt("flipDate")} />
               <NumField id="c-fw" integer label={t("cycleForm.flowerWeeks")} hint={t("cycleForm.flowerWeeksHint")} value={s.flowerWeeks ?? ""} onChange={sv("flowerWeeks")} />
               <TextField id="c-harv" type="date" label={t("cycleForm.harvestDate")} value={c.harvestDate ?? ""} onChange={txt("harvestDate")} />
+              <NumField id="c-pdry" integer label={t("cycleForm.plannedDrying")} value={s.plannedDryingDays ?? ""} onChange={sv("plannedDryingDays")} />
             </Grid>
           </Group>
           <Group title={t("cycleForm.setup")}>

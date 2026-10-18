@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 3 — Calendrier (18/10/2026)
+- Rappels perso (`reminders/{id}`) : intitulé, espace ou tout le grow, date et heure dans le fuseau du grow (Europe/Oslo pour Thomas), répétition (tous les N jours, jours de la semaine, chaque mois ; fin jamais / après N fois / jusqu'au), alerte, note. « Fait » et « Reporter à demain » agissent sur une seule occurrence. Les heures restent fixes au changement d'heure.
+- Échéances automatiques (`src/calendar/deadlines.ts`) : 12/12 prévu, début du Fade (S8, si l'add-on est activé), rinçage (3 derniers jours), récolte prévue, bidon à refaire (autonomie du réservoir), fin de propagation et **Great White sur les racines au transfert** (nouveau champ « Transfert prévu » du cycle), fin de séchage (nouveau champ « Séchage prévu »), **mesurer le débit** de la pompe (jamais mesuré, ou plus de 60 jours). Chaque échéance cite sa source ; leur état (fait, reporté) est stocké dans `reminders/auto_{clé}`.
+- Onglet Calendrier : vue mois (points journal / échéances / rappels / en retard, stats du mois), agenda (en retard + 30 jours), fiche du jour (à faire + saisies, bidons, événements), filtres, suit le sélecteur d'espace. Bouton « Rappel » aussi dans « À venir » et dans la saisie du jour (enregistre puis ouvre un rappel).
+- Aujourd'hui : « À venir » branché sur le calendrier (vue Tous, vue d'un espace, même sans cycle). Carte Bonjour v2 : rappels et échéances du jour, par espace et pour tout le grow.
+- Export .ics (`src/calendar/ics.ts`) : RRULE, VALARM, VTIMEZONE générée depuis les vrais décalages du fuseau, occurrences reportées en RECURRENCE-ID, UID stables (`{id}@hydro.app`, `auto-{clé}@hydro.app`). Version Claude : `hydro.zip` contenant `hydro.ics` (l'artefact n'autorise pas l'extension .ics au téléchargement) + bouton Copier ; version locale : `hydro.ics` direct.
+- 117 tests (dont rappel tous les 3 jours × 5 à travers le passage à l'heure d'hiver, .ics relu par ical.js, UID stables, zip vérifié) ; parcours Playwright `scripts/e2e-3.py`.
+
 ## Lot 2b — Journal et Aujourd'hui (18/10/2026)
 - Saisie quotidienne rattachée à un espace (plante en option) : n'affiche que les modules actifs (climat, propagation — graines, levées, dôme —, arrosage, runoff, nutrition, lumière avec hauteur lampe / canopée, plante), niveau du réservoir si un réservoir est affecté. Possible sans cycle (séchage, réservoir…).
 - Saisie rapide multi-espaces (T°, HR, réservoir) depuis « Tous » ou le Journal ; le bouton « Saisie du jour » ouvre la saisie rapide en vue « Tous », la saisie complète sur un espace.

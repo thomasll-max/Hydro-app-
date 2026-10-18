@@ -3,7 +3,7 @@ import * as React from "react"
 import { getStores, TARGET, type Stores } from "@/store"
 import { useSettings } from "./settings-context"
 import { SCHEMA, type Cycle, type Entry, type GrowEvent, type Mix, type Plant } from "@/model/types"
-import { GROW_SCHEMA, type CustomProduct, type Equipment, type EquipmentAssignment, type Grow, type Group, type NutritionSettings, type Site, type Space } from "@/model/grow"
+import { GROW_SCHEMA, type CustomProduct, type Equipment, type Reminder, type EquipmentAssignment, type Grow, type Group, type NutritionSettings, type Site, type Space } from "@/model/grow"
 import { DEFAULT_NUTRITION, newGrow, spaceNutrition } from "@/model/grow-ops"
 import { moveEquipment } from "@/equipment/calc"
 import { derive } from "@/model/entry"
@@ -31,6 +31,8 @@ type GrowCtx = {
   assignments: EquipmentAssignment[]
   groups: Group[]
   customProducts: CustomProduct[]
+  /** Personal reminders and the state of automatic deadlines (lot 3). */
+  reminders: Reminder[]
   selection: Selection
   /** Space shown by the tools: the selected one, else the space of the active cycle, else the first. */
   space: Space | null
@@ -65,6 +67,8 @@ type GrowCtx = {
   /** Remove one placement (for items shared by several spaces). */
   unassign: (assignmentId: string, date?: string) => Promise<void>
   addAssignment: (a: EquipmentAssignment) => Promise<void>
+  saveReminder: (r: Reminder) => Promise<void>
+  deleteReminder: (id: string) => Promise<void>
   /** Claude version: the morning task reads digest/latest. */
   saveDigest: (d: Digest) => Promise<void>
   uploadPhoto: (file: Blob) => Promise<string>
@@ -78,7 +82,7 @@ export function newId(prefix: string) {
 }
 
 type Raw = Record<string, Record<string, unknown>>
-const COLS = ["sites", "spaces", "cycles", "plants", "groups", "entries", "events", "mixes", "equipment", "equipmentAssignments", "customProducts"] as const
+const COLS = ["sites", "spaces", "cycles", "plants", "groups", "entries", "events", "mixes", "equipment", "equipmentAssignments", "customProducts", "reminders"] as const
 type ColName = (typeof COLS)[number]
 
 export function GrowProvider({ children }: { children: React.ReactNode }) {
@@ -131,6 +135,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
   const equipment = React.useMemo(() => list<Equipment>("equipment").sort((a, b) => a.name.localeCompare(b.name)), [raw.equipment]) // eslint-disable-line react-hooks/exhaustive-deps
   const assignments = React.useMemo(() => list<EquipmentAssignment>("equipmentAssignments"), [raw.equipmentAssignments]) // eslint-disable-line react-hooks/exhaustive-deps
   const groups = React.useMemo(() => list<Group>("groups"), [raw.groups]) // eslint-disable-line react-hooks/exhaustive-deps
+  const reminders = React.useMemo(() => list<Reminder>("reminders"), [raw.reminders]) // eslint-disable-line react-hooks/exhaustive-deps
   const customProducts = React.useMemo(() => list<CustomProduct>("customProducts").sort((a, b) => a.name.localeCompare(b.name)), [raw.customProducts]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const sel = settings.space ?? "all"
@@ -216,6 +221,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       assignments,
       groups,
       customProducts,
+      reminders,
       selection,
       space,
       nutrition,
@@ -309,6 +315,8 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
         else await need().set(`equipmentAssignments/${id}`, { ...a, to: date })
       },
       addAssignment: async (a) => need().set(`equipmentAssignments/${a.id}`, { ...a, schemaVersion: GROW_SCHEMA.assignment }),
+      saveReminder: async (r) => need().set(`reminders/${r.id}`, { ...r, schemaVersion: GROW_SCHEMA.reminder, updatedAt: stamp() }),
+      deleteReminder: async (id) => need().delete(`reminders/${id}`),
       saveDigest: async (d) => need().set("digest/latest", { ...d, updatedAt: stamp() }),
       uploadPhoto: async (file) => {
         if (!stores) throw new Error("store not ready")
@@ -316,7 +324,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       },
       photoUrl: async (id) => (stores ? stores.photos.url(id) : ""),
     }
-  }, [stores, growLoaded, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, customProducts, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, all, cycleIn, settings.activeCycleId, setActiveCycle])
+  }, [stores, growLoaded, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, customProducts, reminders, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, all, cycleIn, settings.activeCycleId, setActiveCycle])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

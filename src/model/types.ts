@@ -24,6 +24,10 @@ export type Cycle = {
   transferDate?: IsoDate // into the flowering space
   flipDate?: IsoDate // 12/12 — flowering is counted from here
   plannedFlipDate?: IsoDate // reminder only
+  /** End of propagation: planned move to the next space (reminder only; Great White at the roots). */
+  plannedTransferDate?: IsoDate
+  /** Planned drying length after the harvest, in days (end-of-drying reminder). */
+  plannedDryingDays?: number
   flowerWeeks: number // planned flowering length (Athena program: 9)
   harvestDate?: IsoDate
   substrate: Substrate

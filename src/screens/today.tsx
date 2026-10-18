@@ -18,7 +18,7 @@ import { cycleNumber, dayTargets, type DayTargets, type Target } from "@/calc/ta
 import { oneCorrection, status, type Status } from "@/calc/advice"
 import { buildProgram, nextIndex, PHOTOPERIOD, steerStage } from "@/calc/program"
 import { PhaseTag, rowText } from "./tools/irrigation"
-import { reminders, type Reminder } from "@/calc/reminders"
+import { UpcomingCard } from "./calendar-parts"
 import { cn } from "@/lib/utils"
 import type { EmojiName } from "@/assets/emoji"
 import type { Entry } from "@/model/types"
@@ -40,7 +40,7 @@ function useNowMinutes() {
 /** Culture view of one space (stage, targets, program, last entry, one correction). `extra` goes under the hero. */
 function CultureToday({ extra }: { extra?: React.ReactNode }) {
   const { t, num, range, locale, dm } = useSettings()
-  const { ready, cycle, entries, mixes, space } = useGrow()
+  const { ready, cycle, entries, space } = useGrow()
   const ed = useEditors()
   const nowMin = useNowMinutes()
   const [allRows, setAllRows] = useState(false)
@@ -70,6 +70,9 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
             </Button>
           </Card>
         </Reveal>
+        <Reveal i={1} className="mt-3">
+          <UpcomingCard spaceIds={space ? new Set([space.id]) : null} />
+        </Reveal>
       </>
     )
 
@@ -78,7 +81,6 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
   const nextI = nextIndex(program, nowMin)
   const start = Math.max(0, Math.min(nextI < 0 ? program.length : nextI - 1, program.length - 5))
   const rows = allRows ? program : program.slice(start, start + 5)
-  const rems = reminders(cycle, mixes, entries, today)
   const spark = room.filter((e) => e.dryback != null).slice(0, 7).reverse()
 
   const pill = (v: number | undefined, r?: Pick<Target, "lo" | "hi">): Status | undefined => (v != null && r ? status(v, r) : undefined)
@@ -230,18 +232,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
         </Reveal>
 
         <Reveal i={5} className="col-span-2">
-          <Card>
-            <Label emoji="bell">{t("today.upcoming")}</Label>
-            {rems.length === 0 ? (
-              <p className="mt-2 text-[13px] text-fg-3">{t("today.noReminders")}</p>
-            ) : (
-              <ul className="mt-1.5">
-                {rems.slice(0, 4).map((r) => (
-                  <ReminderRow key={r.kind} r={r} />
-                ))}
-              </ul>
-            )}
-          </Card>
+          <UpcomingCard spaceIds={space ? new Set([space.id]) : null} />
         </Reveal>
       </div>
 
@@ -287,26 +278,6 @@ function Metric({ k, status: st, target, children }: { k: string; status?: Statu
   )
 }
 
-function ReminderRow({ r }: { r: Reminder }) {
-  const { t, num } = useSettings()
-  const map: Record<Reminder["kind"], { emoji: EmojiName; text: string }> = {
-    tank: { emoji: "testTube", text: r.kind === "tank" ? t("today.remTank", { liters: num(r.litres) }) : "" },
-    flip: { emoji: "moon", text: t("today.remFlip") },
-    fade: { emoji: "sun", text: t("today.remFade", { week: 8 }) },
-    flush: { emoji: "droplet", text: t("today.remFlush") },
-    harvest: { emoji: "scissors", text: t("today.remHarvest") },
-  }
-  const m = map[r.kind]
-  return (
-    <li className="flex items-center gap-2.5 border-t border-line px-0.5 py-[11px] text-[13.5px] first:border-t-0">
-      <Emoji name={m.emoji} size={28} />
-      <span className="min-w-0">{m.text}</span>
-      <span className={cn("ml-auto text-[12px] whitespace-nowrap", r.inDays <= 1 ? "font-semibold text-warn" : "text-fg-3")}>
-        {r.inDays <= 0 ? t("today.todayShort") : t("today.inDays", { n: r.inDays })}
-      </span>
-    </li>
-  )
-}
 
 export function TodayScreen() {
   const { t } = useSettings()

@@ -5,16 +5,18 @@ import type { Equipment, EquipmentAssignment, Grow, Site, Space } from "@/model/
 import type { Cycle, Entry, IsoDate, Mix } from "@/model/types"
 import type { Lang } from "@/i18n/types"
 import { formatDayMonth, formatNumber, translate } from "@/i18n/core"
-import { equipmentAt } from "@/equipment/calc"
 import { groupBySite } from "@/model/grow-ops"
 import { buildProgram, PHOTOPERIOD, programTotals, steerStage } from "./program"
 import { daysBetween, stageOn } from "./stage"
-import { reservoirAutonomy, type Autonomy } from "./reservoir"
+import { spaceContext } from "./space-context"
+import { calendarItems, growTimeZone } from "@/calendar/agenda"
+import { itemTitle } from "@/calendar/labels"
+import type { CustomProduct, Reminder } from "@/model/grow"
 
-export const DIGEST_SCHEMA = 1
+export const DIGEST_SCHEMA = 2
 
 export type DigestData = {
-  grow?: Pick<Grow, "name"> | null
+  grow?: (Pick<Grow, "name"> & Partial<Pick<Grow, "nutrition" | "timeZone">>) | null
   spaces: Space[]
   sites?: Site[]
   cycles: Cycle[]
@@ -22,31 +24,29 @@ export type DigestData = {
   mixes: Mix[]
   equipment: Equipment[]
   assignments: EquipmentAssignment[]
+  /** Lot 3: reminders (and the state of automatic deadlines), products used by deadlines. */
+  reminders?: Reminder[]
+  customProducts?: CustomProduct[]
 }
 
-export type DigestLine = { kind: "climate" | "watering" | "lastEntry" | "reservoir" | "stage"; text: string; warn?: boolean }
+export type DigestLine = { kind: "climate" | "watering" | "lastEntry" | "reservoir" | "stage" | "reminder" | "deadline"; text: string; warn?: boolean }
 export type DigestSpace = { spaceId: string; name: string; lines: DigestLine[] }
-export type Digest = { schemaVersion: number; date: IsoDate; locale: Lang; title: string; spaces: DigestSpace[]; text: string }
+export type Digest = { schemaVersion: number; date: IsoDate; locale: Lang; title: string; spaces: DigestSpace[]; /** Reminders of the day not tied to a space. */ general: DigestLine[]; text: string }
 
-/** Everything Today and the digest need about one space, at a date. */
-export function spaceContext(space: Space, data: Omit<DigestData, "spaces" | "grow" | "sites">, date: IsoDate) {
-  const cycle = data.cycles.find((c) => c.spaceId === space.id && !c.harvestDate && !c.archived) ?? null
-  const entries = data.entries.filter((e) => e.spaceId === space.id && e.date <= date).sort((a, b) => (a.date === b.date ? (a.id < b.id ? 1 : -1) : a.date < b.date ? 1 : -1))
-  const mixes = data.mixes.filter((m) => m.spaceIds?.includes(space.id) || (!!cycle && m.cycleId === cycle.id))
-  const here = equipmentAt(space.id, date, data.assignments).map((a) => data.equipment.find((e) => e.id === a.equipmentId)).filter((e): e is Equipment => !!e)
-  const tank = here.find((e) => e.type === "reservoir" && e.reservoir?.kind !== "runoff")
-  const pots = here.find((e) => e.type === "container")
-  const potCount = cycle?.potCount ?? pots?.container?.count ?? pots?.quantity
-  const autonomy: Autonomy | null = tank ? reservoirAutonomy({ entries, mixes, potCount, usableL: tank.reservoir?.usableL, mode: tank.reservoir?.mode, today: date }) : null
-  const last = entries.find((e) => !e.plantId)
-  return { cycle, entries, mixes, tank, autonomy, last, here }
-}
+export { spaceContext }
 
 export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang): Digest {
   const t = (k: Parameters<typeof translate>[1], v?: Record<string, string | number>) => translate(locale, k, v)
   const n = (v: number, d = 0) => formatNumber(locale, v, d)
   const dm = (iso: IsoDate) => formatDayMonth(locale, new Date(`${iso}T12:00:00`))
   const ordered = groupBySite(data.spaces, data.sites ?? []).flatMap((g) => g.spaces)
+
+  // Lot 3: reminders and deadlines due today, from the calendar.
+  const due = calendarItems(data, date, date, date, growTimeZone(data)).filter((i) => !i.done)
+  const dueLine = (i: (typeof due)[number]): DigestLine =>
+    i.type === "reminder"
+      ? { kind: "reminder", text: t("digest.reminder", { title: itemTitle(locale, i), time: i.time }), warn: false }
+      : { kind: "deadline", text: t("digest.deadline", { title: itemTitle(locale, i) }), warn: true }
 
   const spaces: DigestSpace[] = ordered.map((space) => {
     const ctx = spaceContext(space, data, date)
@@ -96,10 +96,16 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang):
       } else lines.push({ kind: "reservoir", text: t("digest.reservoirMissing"), warn: true })
       if (autonomy.tooOld) lines.push({ kind: "reservoir", text: t("digest.tooOld", { days: n(autonomy.mixAgeDays ?? 0) }), warn: true })
     }
+    for (const i of due) if (i.spaceId === space.id) lines.push(dueLine(i))
     return { spaceId: space.id, name: space.name, lines }
   })
+  const general = due.filter((i) => !i.spaceId || !ordered.some((s) => s.id === i.spaceId)).map(dueLine)
 
   const title = t("digest.title", { date: dm(date) })
-  const text = [title, ...spaces.map((s) => `${s.name}\n${s.lines.map((l) => `• ${l.text}`).join("\n")}`)].join("\n\n")
-  return { schemaVersion: DIGEST_SCHEMA, date, locale, title, spaces, text }
+  const text = [
+    title,
+    ...(general.length ? [`${t("digest.general")}\n${general.map((l) => `• ${l.text}`).join("\n")}`] : []),
+    ...spaces.map((s) => `${s.name}\n${s.lines.map((l) => `• ${l.text}`).join("\n")}`),
+  ].join("\n\n")
+  return { schemaVersion: DIGEST_SCHEMA, date, locale, title, spaces, general, text }
 }

@@ -11,7 +11,7 @@ export const GROW_SCHEMA = {
   group: 1,
   equipment: 1,
   assignment: 1,
-  reminder: 1,
+  reminder: 2,
   concentrateStock: 1,
   spray: 1,
   customProduct: 1,
@@ -48,6 +48,8 @@ export type Grow = {
   id: "main"
   name: string
   digestTime: string // "07:00"
+  /** IANA time zone of the grow (reminders, .ics). Absent = the device's. */
+  timeZone?: string
   nutrition: NutritionSettings
   createdAt: string
   updatedAt: string
@@ -163,17 +165,29 @@ export type EquipmentAssignment = {
 }
 
 // ---------- Declared now, screens later ----------
+/** Personal reminder (lot 3) or the stored state of an automatic deadline (kind "auto"). */
 export type Reminder = {
   schemaVersion: number
   id: string
+  kind?: "custom" | "auto"
+  /** Automatic deadline this doc holds the state of (kind "auto"), e.g. "fade_cycle-1". */
+  autoKey?: string
   title: string
+  note?: string
   spaceId?: string
   cycleId?: string
-  start: string // ISO datetime with offset
+  /** Local wall-clock start in the grow's time zone: "2026-10-20T08:00". */
+  start: string
+  /** Supported subset: FREQ=DAILY|WEEKLY|MONTHLY; INTERVAL; COUNT; UNTIL=YYYYMMDD; BYDAY (weekly). */
   rrule?: string
+  /** Alarm, minutes before (VALARM in the .ics). */
+  alarmMin?: number
+  /** Occurrences marked done, by their original local date. */
   done?: IsoDate[]
-  snoozedTo?: string
+  /** Occurrences moved ("Reporter"): original local date → new local start. */
+  snoozed?: Record<IsoDate, string>
   createdAt: string
+  updatedAt?: string
 }
 export type ConcentrateStock = {
   schemaVersion: number

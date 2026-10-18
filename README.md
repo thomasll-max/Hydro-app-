@@ -23,7 +23,8 @@ npm ci
 
 ### Tests
 ```bash
-npm test            # Vitest : calculs, i18n (clés FR/EN identiques), stockage, nutrition
+npm test            # Vitest : calculs, calendrier et .ics (relu par ical.js), i18n (clés FR/EN identiques), stockage, nutrition
+PYTHONPATH=scripts python3 scripts/e2e-3.py dist-preview/index.html <dossier>   # parcours calendrier (après npm run preview:build)
 ```
 
 ### Build
@@ -35,6 +36,7 @@ VITE_TARGET=local npm run build   # version locale, sans runtime Claude
 
 ### Structure
 - `src/calc/` : calculs purs testés (formules, stade, cibles, programme d'arrosage, conseils, rappels, nutrition, repères)
+- `src/calendar/` : calendrier pur et testé — récurrences (`rrule.ts`), échéances automatiques (`deadlines.ts`), liste unifiée (`agenda.ts`), export .ics (`ics.ts`), libellés (`labels.ts`)
 - `src/equipment/calc.ts` : calculs tirés de l'équipement (PPF, PPFD, W/m², air, doses, autonomie, g/W)
 - `src/model/` : types et documents (`schemaVersion` sur chacun) ; `grow.ts` = grow, espaces, modules, équipement ; `grow-ops.ts` = opérations pures
 - `src/data/thomas-grow.ts` : grow pré-rempli de la version Claude

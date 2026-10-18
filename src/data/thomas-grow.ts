@@ -11,7 +11,7 @@ export const COLUMN_ID = "colonne"
 type Seed = { grow: Grow; spaces: Space[]; equipment: Equipment[]; assignments: EquipmentAssignment[]; cycles: Cycle[]; customProducts: CustomProduct[] }
 
 export function thomasGrow(now: string, today: string): Seed {
-  const grow = newGrow("Grow de Thomas", now, { line: "athena-pro", addons: ["fade", "cleanse", "balance"], dosing: "conc226" })
+  const grow: Grow = { ...newGrow("Grow de Thomas", now, { line: "athena-pro", addons: ["fade", "cleanse", "balance"], dosing: "conc226" }), timeZone: "Europe/Oslo" } // Bergen
   const flower = newSpace({ id: FLOWER_ID, name: "Floraison", template: "flower", order: 0, color: "emerald", now, dimensionsCm: { l: 90, w: 90, h: 180 } })
   const column = newSpace({ id: COLUMN_ID, name: "Colonne", template: "veg", order: 1, color: "sky", now, dimensionsCm: { l: 30, w: 90, h: 180 } })
   // Propagation and veg first, drying later: the propagation module is on as well.

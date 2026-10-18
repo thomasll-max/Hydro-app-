@@ -17,10 +17,14 @@ import { groupBySite } from "@/model/grow-ops"
 import type { Space } from "@/model/grow"
 import type { Autonomy } from "@/calc/reservoir"
 import { cn } from "@/lib/utils"
+import { UpcomingCard } from "./calendar-parts"
 
 function useDigestData(): DigestData {
-  const { grow, spaces, sites, cycles, all, equipment, assignments } = useGrow()
-  return useMemo(() => ({ grow, spaces, sites, cycles, entries: all.entries, mixes: all.mixes, equipment, assignments }), [grow, spaces, sites, cycles, all.entries, all.mixes, equipment, assignments])
+  const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts } = useGrow()
+  return useMemo(
+    () => ({ grow, spaces, sites, cycles, entries: all.entries, mixes: all.mixes, equipment, assignments, reminders, customProducts }),
+    [grow, spaces, sites, cycles, all.entries, all.mixes, equipment, assignments, reminders, customProducts],
+  )
 }
 
 /** Keeps digest/latest current for the morning task (Claude version only). */
@@ -94,6 +98,9 @@ export function AllToday() {
       </ScreenHero>
       <Reveal i={0} className="mb-3">
         <BonjourCard />
+      </Reveal>
+      <Reveal i={1} className="mb-3">
+        <UpcomingCard spaceIds={selection.kind === "site" ? new Set(shown.map((s) => s.id)) : null} />
       </Reveal>
       {groups.map((g, gi) => (
         <section key={g.site?.id ?? "none"} className="mb-1">

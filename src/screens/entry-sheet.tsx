@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Camera, Loader2, Trash2, X } from "lucide-react"
+import { AlarmClockPlus, Camera, Loader2, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -7,6 +7,7 @@ import { AreaField, Computed, Grid, Group, NumField, Seg, Sheet, TagChip, TextFi
 import { ConfirmDelete } from "@/components/hydro/confirm"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
+import { useEditors } from "@/app/editors"
 import { blankEntry, CARRIED, derive, entryId, HINTED, previousEntry } from "@/model/entry"
 import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, type ActionTag, type Entry, type ObsTag, type PlantId, type Severity } from "@/model/types"
 import { equipmentAt } from "@/equipment/calc"
@@ -14,7 +15,7 @@ import { SpaceDot } from "@/components/hydro/space-pill"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { parseNum } from "@/calc/formulas"
 import { status } from "@/calc/advice"
-import { todayIso } from "@/calc/stage"
+import { addDays, todayIso } from "@/calc/stage"
 import type { MessageKey } from "@/i18n/types"
 
 export type EntryInit = { date?: string; plantId?: PlantId; spaceId?: string }
@@ -24,6 +25,7 @@ const NUMS: NumKey[] = [...CARRIED.filter((k) => k !== "mixId"), ...HINTED] as N
 
 export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpenChange: (o: boolean) => void; init: EntryInit }) {
   const { t, num, range, dm, settings } = useSettings()
+  const ed = useEditors()
   const { spaces, space: curSpace, all, cycleIn, equipment, assignments, saveEntry, deleteEntry, targetsFor, uploadPhoto, photoUrl } = useGrow()
   const [spaceId, setSpaceId] = useState(init.spaceId ?? curSpace?.id ?? "")
   const space = spaces.find((x) => x.id === spaceId) ?? curSpace ?? null
@@ -136,13 +138,15 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     }
   }
 
-  const save = async () => {
+  /** "+ Rappel" saves the entry first, then opens a reminder for this space (next day by default). */
+  const save = async (remind = false) => {
     if (!date || !space) return
     setBusy(true)
     try {
       await saveEntry(build())
       toast.success(t("entry.saved"))
-      onOpenChange(false)
+      if (remind) ed.openReminder({ spaceId: space.id, date: addDays(date, 1) })
+      else onOpenChange(false)
     } catch (err) {
       toast.error(t("common.saveError", { reason: (err as { message?: string })?.message ?? "?" }))
     } finally {
@@ -180,7 +184,16 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
               }
             />
           )}
-          <Button onClick={save} disabled={busy || !date || uploading > 0} className="h-12 flex-1 rounded-full text-[15px] font-bold">
+          <Button
+            variant="outline"
+            onClick={() => save(true)}
+            disabled={busy || !date || uploading > 0}
+            className="h-12 rounded-full border-line-strong px-4 text-[14px] font-semibold"
+            aria-label={`${t("common.save")} + ${t("cal.addShort")}`}
+          >
+            <AlarmClockPlus className="size-4.5" /> {t("cal.addShort")}
+          </Button>
+          <Button onClick={() => save()} disabled={busy || !date || uploading > 0} className="h-12 flex-1 rounded-full text-[15px] font-bold">
             {busy && <Loader2 className="animate-spin" />}
             {t("common.save")}
           </Button>

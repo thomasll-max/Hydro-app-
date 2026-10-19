@@ -22,7 +22,8 @@ Constat de Thomas après 10j : « toujours un effet plein d'infos éparpillées,
 5. **Pas de jargon dans les listes** : le jargon reste à l'intérieur des outils, avec le glossaire.
 6. **Lignes de graphique honnêtes** : segments droits, pas de lissage qui invente des creux.
 7. **Typographie droite** (retour de Thomas sur les planches : les grands titres en Fraunces « mous » ne lui plaisent pas, par exemple « Végé S6 ») :
-   - **Fraunces seulement dans le logo** « hydro. » (et l'écran de démarrage). Tous les titres d'écran, de section, de carte et « Bonjour Thomas. » passent en **Figtree 700**, droit, interlettrage −0,015 em (titre d'écran ≈ 26 px, titre de section ≈ 19 px, titre de carte ≈ 17 px) ;
+   - **Fraunces seulement dans le logo** « hydro. » (et l'écran de démarrage). Tous les titres d'écran, de section, de carte et « Bonjour Thomas. » passent en **Geologica 700** (choix de Thomas parmi 5 polices le 19/10, planche https://claude.ai/artifact/DQTEWL5dWdUnrpEGxaNDcJ), droit, interlettrage −0,02 em (titre d'écran ≈ 28–30 px, titre de section ≈ 19 px, titre de carte ≈ 17–18 px). Charger Geologica comme les autres polices (même méthode qu'au lot 10f : fichiers embarqués pour l'artefact et la version locale hors ligne, `font-display: swap`, repli Figtree puis system-ui), seulement les graisses utilisées (500 et 700). Créer un jeton de police « titre » et l'utiliser partout au lieu de nommer la police dans les composants ;
+   - le texte courant reste en **Figtree** ;
    - **JetBrains Mono seulement pour les chiffres** (valeurs, dates, heures). Les phrases et libellés (« 5 saisies · dryback … ») sont en Figtree ; seuls les nombres dedans sont en mono ;
    - vérifier que rien d'autre n'utilise encore Fraunces (`font-display` ou équivalent) en dehors du logo.
 

@@ -1,5 +1,5 @@
 """Lot 6a walk-through at 390 px: 40 days of test entries written straight into the local store (IndexedDB), then
-Graphiques: 2 spaces compared, curves chosen, one chart per curve with target band and events, overlay view, periods.
+Graphiques: 2 spaces compared, curves chosen (« Perso »), one chart per curve with target band, overlay view, periods.
 Usage: PYTHONPATH=scripts python3 scripts/e2e-6a.py dist-preview/index.html <out dir>"""
 import sys, pathlib, json, datetime
 from playwright.sync_api import sync_playwright
@@ -33,19 +33,27 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}#charts"); pg.wait_for_timeout(2500)
     pg.evaluate("""(docs) => new Promise((res, rej) => { const r = indexedDB.open('hydro', 1); r.onsuccess = () => { const tx = r.result.transaction('docs', 'readwrite'); const s = tx.objectStore('docs'); for (const [k, v] of Object.entries(docs)) s.put(v, k); tx.oncomplete = () => res(true); tx.onerror = () => rej(tx.error) } })""", docs)
     pg.reload(); pg.wait_for_timeout(3000)
+    # Since lot 10k4: the spaces compared are in « Comparer… », the curves in « Choisir mes courbes » (view « Perso »).
+    pg.click("#ch-compare"); pg.wait_for_timeout(700)
     checks["spaces"] = pg.inner_text("#ch-spaces").replace("\n", " ")
-    pg.get_by_role("radio", name="30 j").click(); pg.wait_for_timeout(1200)
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(600)
+    pg.locator("#ch-period button", has_text="30 j").click(); pg.wait_for_timeout(1200)
     checks["charts"] = pg.locator("[data-curve]").count()
-    checks["lines"] = pg.locator("[data-curve] .recharts-line").count()
-    checks["bands"] = pg.locator("[data-curve] .recharts-area").count()
+    checks["lines"] = pg.locator("[data-curve] [data-series]").count()
+    checks["bands"] = pg.locator("[data-curve] [data-band]").count()
     checks["eventLines"] = pg.locator("[data-curve] .recharts-reference-line").count()
     pg.screenshot(path=str(out / "01-split-30d.png"), full_page=True)
-    pg.get_by_role("button", name="VPD").click(); pg.wait_for_timeout(600)
+    pg.click("#ch-choose"); pg.wait_for_timeout(700)
+    pg.locator("#ch-curves").get_by_role("button", name="VPD").click(); pg.wait_for_timeout(600)
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(600)
     checks["chartsAfterVpd"] = pg.locator("[data-curve]").count()
-    pg.get_by_role("radio", name="Superposées").click(); pg.wait_for_timeout(1200)
+    pg.click("#ch-choose"); pg.wait_for_timeout(700)
+    pg.get_by_role("radio", name="Superposées").click(); pg.wait_for_timeout(600)
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(1200)
     checks["overlayLines"] = pg.locator(".recharts-line").count()
     pg.screenshot(path=str(out / "02-overlay.png"), full_page=True)
     pg.reload(); pg.wait_for_timeout(2500)
+    pg.click("#ch-choose"); pg.wait_for_timeout(700)
     checks["prefsKept"] = pg.get_by_role("radio", name="Superposées").get_attribute("aria-checked") or pg.get_by_role("radio", name="Superposées").get_attribute("data-state")
     b.close()
 for k, v in checks.items(): print(k, "→", v)

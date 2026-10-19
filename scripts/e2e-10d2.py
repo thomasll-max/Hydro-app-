@@ -2,7 +2,7 @@
 with a gap of three weeks, plant entries, a daily reminder):
 - Graphiques: « Cycle » follows the current cycle (not the 2025 one), « Tout » goes back to the first value, a line
   breaks across the gap, each chart has a name for screen readers, the overlay shows one space with its own colours,
-  the top selector wins over the spaces ticked below;
+  the top selector wins over the spaces compared (« Comparer… », lot 10k4);
 - Journal: labelled filter rows in the « Filtres » sheet (lot 10j) and their one-line summary, the space entry before the plants, no stray « 0 », filters reset with the selector;
 - Aujourd'hui: the daily reminder is listed once;
 - Nutrition: the tank just saved is shown, pH labels say « avant / après Balance ».
@@ -48,27 +48,43 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}#charts"); pg.wait_for_timeout(2500)
     pg.evaluate("""(docs) => new Promise((res, rej) => { const r = indexedDB.open('hydro', 1); r.onsuccess = () => { const tx = r.result.transaction('docs', 'readwrite'); const s = tx.objectStore('docs'); for (const [k, v] of Object.entries(docs)) s.put(v, k); tx.oncomplete = () => res(true); tx.onerror = () => rej(tx.error) } })""", docs)
     pg.reload(); pg.wait_for_timeout(3000)
-    rng = lambda: pg.locator("text=/^du .* au /").first.inner_text()
+    # Since lot 10k4 the window is read on the chart's axis (first date), the spaces are in « Comparer… », the overlay in
+    # « Choisir mes courbes ».
+    rng = lambda: pg.evaluate("() => [...document.querySelectorAll('[data-curve] svg text')].map((t) => t.textContent).find((t) => /^[0-9]{2}[/][0-9]{2}$/.test(t))")
+    dm = lambda n: (today - datetime.timedelta(days=n)).strftime("%d/%m")
+    def compare(name):
+        pg.click("#ch-compare"); pg.wait_for_timeout(600)
+        pg.locator("#ch-spaces button", has_text=name).click(); pg.wait_for_timeout(500)
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(600)
+    def choose(radio):
+        pg.click("#ch-choose"); pg.wait_for_timeout(600)
+        pg.get_by_role("radio", name=radio).click(); pg.wait_for_timeout(500)
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(800)
 
     # Graphiques
-    pg.get_by_role("radio", name="Cycle").click(); pg.wait_for_timeout(800)
+    pg.locator("#ch-period button", has_text="Cycle").click(); pg.wait_for_timeout(800)
     checks["cycleRange"] = rng()
-    pg.get_by_role("radio", name="Tout").click(); pg.wait_for_timeout(800)
+    pg.locator("#ch-period button", has_text="Tout").click(); pg.wait_for_timeout(800)
     checks["allRange"] = rng()
-    # Only Floraison ticked: one space, its dryback line in two pieces (the gap).
-    if pg.locator("#ch-spaces [aria-pressed=true]", has_text="Colonne").count():
-        pg.locator("#ch-spaces button", has_text="Colonne").click(); pg.wait_for_timeout(600)
-    checks["drybackLines"] = pg.locator("[data-curve=dryback] .recharts-line").count()
+    # Only Floraison: one space, its dryback line in two pieces (the gap of three weeks: no dotted link).
+    pg.click("#ch-compare"); pg.wait_for_timeout(600)
+    colonne_on = pg.locator("#ch-spaces [aria-pressed=true]", has_text="Colonne").count()
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(600)
+    if colonne_on: compare("Colonne")
+    checks["drybackLines"] = pg.locator("[data-curve=dryback] [data-solid]").count()
+    checks["drybackDotted"] = pg.locator("[data-curve=dryback] [data-dotted]").count()
     checks["chartName"] = pg.locator("[data-curve=dryback] [role=img]").get_attribute("aria-label")
     pg.screenshot(path=str(out / "01-charts-all.png"), full_page=True)
-    pg.locator("#ch-spaces button", has_text="Colonne").click(); pg.wait_for_timeout(500)
-    pg.get_by_role("radio", name="Superposées").click(); pg.wait_for_timeout(800)
+    compare("Colonne")
+    choose("Superposées")
     checks["overlayPicker"] = pg.get_by_role("group", name="Espace superposé").count() + pg.locator("[aria-label='Espace superposé']").count()
     pg.screenshot(path=str(out / "02-overlay.png"), full_page=True)
-    pg.get_by_role("radio", name="Un graphique par courbe").click(); pg.wait_for_timeout(300)
-    # The top selector wins over the ticked spaces.
+    choose("Un graphique par courbe")
+    # The top selector wins over the spaces compared.
     pg.get_by_role("group", name="Espace affiché").get_by_role("button", name="Colonne").click(); pg.wait_for_timeout(800)
+    pg.click("#ch-compare"); pg.wait_for_timeout(600)
     checks["selectorWins"] = [b.inner_text().strip() for b in pg.locator("#ch-spaces [aria-pressed=true]").all()]
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(600)
     pg.get_by_role("group", name="Espace affiché").get_by_role("button", name="Tous").click(); pg.wait_for_timeout(500)
 
     # Journal
@@ -111,8 +127,8 @@ with sync_playwright() as p:
 print(json.dumps(checks, ensure_ascii=False, indent=1))
 print("errors:", errors[:5])
 ok = (
-    checks["cycleRange"].startswith("du ") and "2025" not in checks["cycleRange"] and checks["allRange"] != checks["cycleRange"]
-    and checks["drybackLines"] == 2 and "valeurs" in (checks["chartName"] or "") and checks["overlayPicker"] > 0
+    checks["cycleRange"] == dm(45) and checks["allRange"] == dm(70)
+    and checks["drybackLines"] == 2 and checks["drybackDotted"] == 0 and "valeurs" in (checks["chartName"] or "") and checks["overlayPicker"] > 0
     and checks["selectorWins"] == ["Colonne"] and checks["filterLabels"] == ["Espace", "Tag"] and checks["filteredRows"] > 0 and checks["filterSummary"] == "Colonne · Griffes"
     and checks["afterSelector"] and checks["roomFirst"] and checks["noStrayZero"] and checks["reminderLines"] == 1
     and checks["phLabels"] == ["pH avant Balance", "pH après Balance"] and "enregistré à l'instant" in checks["lastTank"] and not errors

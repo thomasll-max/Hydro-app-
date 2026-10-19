@@ -74,8 +74,9 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}#journal"); pg.wait_for_timeout(1800)
     checks["journal"] = pg.locator("text=Dryback capteur").count() > 0
     pg.goto(f"file://{page_file}#charts"); pg.wait_for_timeout(1800)
-    pg.get_by_role("button", name="Dryback capteur (échelle capteur)").click(); pg.wait_for_timeout(800)
-    checks["chartChip"] = True
+    # Since lot 10k4 the view « Arrosage » shows the sensor dryback on its own chart when there is one.
+    checks["chartChip"] = pg.locator("[data-curve=drybackSensor]", has_text="Dryback capteur (échelle capteur)").count() > 0
+    if not checks["chartChip"]: errors.append("no sensor dryback chart in « Arrosage »")
     shot(pg, "04-charts.png", full=True)
 
     # Another sensor, named.

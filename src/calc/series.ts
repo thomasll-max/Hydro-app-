@@ -272,3 +272,72 @@ export function withDates<R extends { date?: unknown }>(rows: R[], dates: IsoDat
 
 /** Days in a window (for the axis). */
 export const spanDays = (r: { from: IsoDate; to: IsoDate }) => daysBetween(r.from, r.to) + 1
+
+
+// ---- Graphiques « calmes » (lot 10k4) ----------------------------------------------------------------------------
+
+/** Ready views (planche « Les menus »), in place of the 17 pills; « Perso » is the user's own list of curves. */
+export const VIEWS = {
+  watering: ["dryback", "drybackSensor", "runoffPct", "ecRunoff"],
+  solution: ["ecIn", "phIn", "phRunoff", "balance"],
+  climate: ["temp", "rh", "vpd"],
+  light: ["ppfd", "dli"],
+  plant: ["height", "germination"],
+} as const satisfies Record<string, readonly CurveId[]>
+export type ViewId = keyof typeof VIEWS | "custom"
+export const VIEW_IDS = Object.keys(VIEWS) as (keyof typeof VIEWS)[]
+
+/** A point out of the target recorded with it (« à surveiller » on the chart). */
+export const isOff = (p: Point) => p.lo != null && p.hi != null && (p.v < p.lo || p.v > p.hi)
+
+/** The usual spacing of a series, in days (1 for daily entries, the bucket size once downsampled). */
+export function typicalStep(points: Point[]): number {
+  const gaps = new Map<number, number>()
+  for (let i = 1; i < points.length; i++) {
+    const g = daysBetween(points[i - 1].date, points[i].date)
+    gaps.set(g, (gaps.get(g) ?? 0) + 1)
+  }
+  return [...gaps].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0]?.[0] ?? 1
+}
+
+/**
+ * How a series is drawn (lot 10k4): straight segments between measurements; a day without measurement is linked with
+ * a dotted segment; the line stops only after more than GAP_DAYS without measurement (no line over weeks of nothing).
+ * `every`: the expected spacing instead of the usual one (Infinity for a value per tank, which holds until the next).
+ */
+export function segments(points: Point[], gap = GAP_DAYS, every?: number): { solid: Point[][]; dotted: [Point, Point][] } {
+  const step = every ?? Math.max(1, typicalStep(points))
+  const solid: Point[][] = []
+  const dotted: [Point, Point][] = []
+  points.forEach((p, i) => {
+    const prev = points[i - 1]
+    const d = prev ? daysBetween(prev.date, p.date) : Infinity
+    if (prev && d <= step) solid.at(-1)!.push(p)
+    else {
+      if (prev && d <= Math.max(gap, step)) dotted.push([prev, p])
+      solid.push([p])
+    }
+  })
+  return { solid, dotted }
+}
+
+/** The target of the last point that has one (« cible 25–50 · % » in a chart's header). */
+export function lastTarget(points: Point[]): { lo: number; hi: number } | null {
+  for (let i = points.length - 1; i >= 0; i--) {
+    const p = points[i]
+    if (p.lo != null && p.hi != null) return { lo: p.lo, hi: p.hi }
+  }
+  return null
+}
+
+/**
+ * The curves that have at least one value for these spaces, whatever the period: a view without any is hidden, and so
+ * is a curve of a view that was never measured (the sensor dryback of a space weighed by hand).
+ */
+export function curvesWithData(curves: readonly CurveId[], spaceIds: string[], data: { byspace: Map<string, Entry[]>; mixes: Mix[]; potCount?: (spaceId: string) => number | undefined }): CurveId[] {
+  return curves.filter((c) => {
+    const def = CURVE_DEFS[c]
+    if (def.fromMixes) return data.mixes.some((m) => (m.spaceIds ?? []).some((id) => spaceIds.includes(id)) && def.fromMixes!(m) != null)
+    return spaceIds.some((id) => (data.byspace.get(id) ?? []).some((e) => def.value!(e, { potCount: data.potCount?.(id) }) != null))
+  })
+}

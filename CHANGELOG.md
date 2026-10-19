@@ -1,5 +1,14 @@
 # Changelog
 
+## Lot 10k4 — Graphiques calmes (19/10/2026)
+- Les 17 pilules disparaissent : **des vues toutes prêtes** en onglets sous le titre : **Arrosage** (dryback, dryback capteur s'il y en a, runoff, EC runoff), **Solution** (EC et pH entrée, pH runoff, Balance), **Climat** (T°, HR, VPD), **Lumière** (PPFD, DLI), **Plante** (hauteur, levée). Une vue sans aucune donnée pour l'espace n'apparaît pas.
+- **La période sur une ligne** : 7 j · 30 j · Cycle · Tout, et à droite **« Comparer… »** : une feuille pour mettre jusqu'à 4 espaces sur les mêmes graphiques. L'espace suit l'onglet du haut.
+- **Chaque graphique dit l'essentiel** : son nom, la cible et l'unité à gauche, **la dernière valeur en grand** à droite (orange si elle sort de la cible). Toucher un jour affiche ses valeurs sur tous les graphiques ; le toucher encore revient à la dernière.
+- **Des lignes qui ne mentent pas** : segments droits entre les mesures (plus de courbe lissée), un jour sans mesure relié en pointillé, la ligne ne s'arrête qu'après plus de 7 jours sans mesure. La bande de cible du jour derrière, les points hors cible en orange, chaque bidon en trait vertical pointillé, la courbe à la couleur de l'espace.
+- **La légende tient en une ligne** ; les phrases d'explication et la liste d'événements sous les graphiques disparaissent (les événements sont dans le Journal).
+- **« Choisir mes courbes »**, en bas : la liste complète dans une feuille ; ton choix devient la vue **« Perso »**, qui peut aussi être superposée sur un seul graphique. Tes anciens réglages deviennent « Perso ».
+- 377 tests.
+
 ## Lot 10k3c — La page d'une semaine (19/10/2026)
 - « Voir la semaine → », le résumé d'une semaine ouverte ou un jour de la bande ouvrent **la page de la semaine** : « Végé S6 · 2–8 févr. · 5 saisies · comparée à Végé S5 ».
 - **Le verdict d'abord**, calculé seulement à partir des cibles enregistrées : « Bonne direction » ou « À surveiller », ce qui est hors cible avec la date, ce qui est revenu dans la cible.

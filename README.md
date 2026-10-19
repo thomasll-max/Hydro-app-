@@ -35,7 +35,7 @@ Journal en une minute · Crop steering · Nutrition · Calendrier · Graphiques 
 | 🌫️ **Pulvérisation** | Le protocole IPW d'Athena (fenêtre d'utilisation, dose du pulvérisateur, checklist), ou **ton propre mélange** (spray maison, stack) décrit par toi, « perso, non vérifié » : l'app calcule seulement les quantités à partir de tes doses, et met la prochaine pulvérisation au calendrier. |
 | ⚖️ **pH / Balance** | pH cible selon le stade, titrage guidé, et une prédiction qui apprend de tes bidons précédents. |
 | 📅 **Calendrier** | Rappels récurrents, échéances automatiques (12/12, Fade, rinçage, récolte, bidon à refaire…) et export vers le calendrier du téléphone (.ics). Il s'ouvre depuis la date en haut de l'écran, « Tout le calendrier → » d'Aujourd'hui ou Outils. |
-| 📈 **Graphiques** | Courbes avec les zones cibles en fond, événements sur la frise, comparaison de jusqu'à 4 espaces. |
+| 📈 **Graphiques** | Vues toutes prêtes (Arrosage, Solution, Climat, Lumière, Plante, ou « Perso »), un graphique par courbe avec sa cible et la dernière valeur en grand, segments droits, bande de cible du jour, bidons en pointillé ; « Comparer… » jusqu'à 4 espaces. |
 | 🌍 **Partout** | Français / anglais / allemand, thème clair / sombre, conçu pour une main et un écran de téléphone : quatre onglets en bas (Aujourd'hui, Journal, Graphiques, Outils) avec le « + » au milieu (saisie du jour, saisie rapide, bidon, événement) ; Outils rangé en trois groupes (chaque jour, la pièce, l'installation). |
 
 <div align="center">

@@ -20,6 +20,7 @@ import type { Spray, SprayMix } from "@/model/grow"
 import { buildWeeks, CULTURE_METRICS, metricLines, mondayOf, offValues, weekLabel, weekVerdict } from "./weeks"
 import { addDays } from "./stage"
 import type { Cycle, GrowEvent, Mix } from "@/model/types"
+import { CURVES, curvesWithData, indexEntries, isOff, lastTarget, segments, typicalStep, VIEW_IDS, VIEWS, type Point } from "./series"
 
 const root = path.resolve(import.meta.dirname, "../..")
 const read = (f: string) => fs.readFileSync(path.join(root, f), "utf8")
@@ -396,5 +397,70 @@ describe("lot 10k3c — page d'une semaine : l'écran", () => {
     expect(translate("fr", "wp.good")).toBe("Bonne direction.")
     expect(translate("fr", "wp.back1", { metric: "VPD", prev: "1,42" })).toBe("VPD : de retour dans la cible (1,42 la semaine d'avant).")
     for (const l of ["en", "de"] as const) expect(Object.keys((l === "en" ? en : de).wp)).toEqual(Object.keys(fr.wp))
+  })
+})
+
+describe("lot 10k4 — Graphiques (calculs purs)", () => {
+  const pts = (dates: string[], v = 30, tg?: [number, number]): Point[] => dates.map((date) => (tg ? { date, v, lo: tg[0], hi: tg[1] } : { date, v }))
+  it("vues toutes prêtes : Arrosage, Solution, Climat, Lumière, Plante ; chaque courbe existe", () => {
+    expect(VIEW_IDS).toEqual(["watering", "solution", "climate", "light", "plant"])
+    expect(VIEWS.watering).toEqual(["dryback", "drybackSensor", "runoffPct", "ecRunoff"])
+    expect(VIEWS.solution).toEqual(["ecIn", "phIn", "phRunoff", "balance"])
+    expect(VIEWS.climate).toEqual(["temp", "rh", "vpd"])
+    expect(VIEWS.light).toEqual(["ppfd", "dli"])
+    expect(VIEWS.plant).toEqual(["height", "germination"])
+    for (const v of VIEW_IDS) for (const c of VIEWS[v]) expect(CURVES).toContain(c)
+  })
+  it("segments droits : un jour sans mesure relié en pointillé, la ligne s'arrête après plus de 7 jours", () => {
+    const daily = segments(pts(["2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-01-31", "2026-02-01", "2026-02-03", "2026-02-04"]))
+    expect(daily.solid.map((p) => p.length)).toEqual([7, 2])
+    expect(daily.dotted.map(([a, b]) => `${a.date}>${b.date}`)).toEqual(["2026-02-01>2026-02-03"])
+    const gap = segments(pts(["2026-01-01", "2026-01-02", "2026-01-03", "2026-01-12", "2026-01-13"]))
+    expect(gap.dotted).toEqual([])
+    expect(gap.solid.map((p) => p.length)).toEqual([3, 2])
+    // A spacing of 2 days (or a bucket once downsampled) is the normal step: solid.
+    expect(typicalStep(pts(["2026-01-01", "2026-01-03", "2026-01-05", "2026-01-07"]))).toBe(2)
+    expect(segments(pts(["2026-01-01", "2026-01-03", "2026-01-05", "2026-01-07"])).dotted).toEqual([])
+    // A value per tank holds until the next one: never dotted.
+    expect(segments(pts(["2026-01-01", "2026-01-11", "2026-01-30"]), 7, Infinity)).toEqual({ solid: [pts(["2026-01-01", "2026-01-11", "2026-01-30"])], dotted: [] })
+  })
+  it("hors cible d'après la cible enregistrée ; cible du dernier point qui en a une", () => {
+    expect(isOff({ date: "2026-01-01", v: 56, lo: 25, hi: 50 })).toBe(true)
+    expect(isOff({ date: "2026-01-01", v: 38, lo: 25, hi: 50 })).toBe(false)
+    expect(isOff({ date: "2026-01-01", v: 99 })).toBe(false)
+    expect(lastTarget([...pts(["2026-01-01"], 30, [40, 50]), ...pts(["2026-01-02"], 30)])).toEqual({ lo: 40, hi: 50 })
+    expect(lastTarget(pts(["2026-01-01"]))).toBeNull()
+  })
+  it("une vue sans aucune donnée est masquée : courbes mesurées au moins une fois, quelle que soit la période", () => {
+    const e = (date: string, x: Partial<Entry>): Entry => ({ schemaVersion: 2, id: `${date}_a`, date, spaceId: "a", createdAt: "x", updatedAt: "x", ...x }) as Entry
+    const byspace = indexEntries([e("2025-01-01", { dryback: 33 }), e("2026-01-02", { tempDay: 24 })])
+    const mixes = [{ id: "m", date: "2026-01-01", volumeL: 10, spaceIds: ["a"], products: [], balanceMl: 5 }] as unknown as Mix[]
+    const has = curvesWithData(CURVES, ["a"], { byspace, mixes: [] })
+    expect(has).toEqual(["dryback", "temp"])
+    expect(curvesWithData(VIEWS.light, ["a"], { byspace, mixes })).toEqual([])
+    expect(curvesWithData(["dryback"], ["b"], { byspace, mixes })).toEqual([])
+  })
+})
+
+describe("lot 10k4 — Graphiques : l'écran", () => {
+  const charts = read("src/screens/charts.tsx")
+  const line = read("src/screens/line-chart.tsx")
+  it("onglets de vues, période en une ligne avec « Comparer… », « Choisir mes courbes » en bas ; plus de pilules ni de liste d'événements", () => {
+    expect(charts).toMatch(/id="ch-views"/)
+    expect(charts).toMatch(/id="ch-compare"/)
+    expect(charts).toMatch(/id="ch-choose"/)
+    expect(charts).not.toMatch(/eventsIn|charts\.events|charts\.foot|charts\.gapNote|charts\.subtitle/)
+    expect(charts).not.toMatch(/type="monotone"/)
+  })
+  it("chaque graphique : segments droits, pointillé pour un jour sans mesure, bidons en trait vertical, points hors cible en « à surveiller »", () => {
+    expect(line).toMatch(/<polyline/)
+    expect(line).toMatch(/data-dotted/)
+    expect(line).toMatch(/data-tank/)
+    expect(line).toMatch(/var\(--warn\)/)
+    expect(line).not.toMatch(/monotone|curveBasis|cubic/i)
+  })
+  it("la légende tient en une ligne, dans les trois langues", () => {
+    for (const l of [fr, en, de]) for (const k of ["legendOff", "legendBand", "legendTank", "legendGap", "compare", "choose"] as const) expect(l.charts[k].length).toBeGreaterThan(2)
+    expect(fr.charts.views).toEqual({ watering: "Arrosage", solution: "Solution", climate: "Climat", light: "Lumière", plant: "Plante", custom: "Perso" })
   })
 })

@@ -3,7 +3,7 @@
 - manifest background_color / theme_color #0d1310;
 - loading drop: with prefers-reduced-motion the text « Chargement… » is visible;
 - reservoir gauge (drop filled to the share of litres left, the number next to it) on a space with a tank;
-- charts: a water drop at the foot of the chart on the days of a tank, with its legend.
+- charts: a mark on the days of a tank, with its legend (a dotted vertical line since lot 10k4).
 Usage: npm run build:local && npx -y tsx scripts/sim/build.ts <sim dir> &&
        PYTHONPATH=scripts python3 scripts/e2e-10g.py dist-local <sim dir> <out dir>"""
 import sys, json, pathlib, threading, http.server, functools, socketserver
@@ -67,10 +67,10 @@ with sync_playwright() as p:
     checks["gauge"] = found and pg.evaluate("(() => { const g = document.querySelector('#res-gauge'); return { text: g.innerText, svg: !!g.querySelector('svg'), mono: getComputedStyle(g.querySelector('.tabular')).fontFamily } })()")
     if not found or "%" not in checks["gauge"]["text"] or "Geologica" not in checks["gauge"]["mono"]: errors.append(f"gauge {checks['gauge']}")
     else: pg.evaluate("document.querySelector('#res-gauge').scrollIntoView({block: 'center'})"); pg.wait_for_timeout(300); pg.screenshot(path=str(out / "gauge.png"))
-    # Charts: water marks on tank days.
+    # Charts: a dotted vertical line on tank days, and the legend says so (lot 10k4; a water drop before).
     pg.goto(url + "#charts"); pg.reload(); pg.wait_for_timeout(2500)
-    checks["tankMarks"] = pg.locator(".tank-mark").count()
-    checks["tankLegend"] = pg.locator("#ch-tank-legend").count()
+    checks["tankMarks"] = pg.locator("[data-tank]").count()
+    checks["tankLegend"] = pg.locator("#ch-legend", has_text="nouveau bidon").count()
     if not checks["tankMarks"] or not checks["tankLegend"]: errors.append(f"tank marks {checks['tankMarks']} legend {checks['tankLegend']}")
     pg.screenshot(path=str(out / "charts.png"), full_page=True)
     ctx.close(); b.close()

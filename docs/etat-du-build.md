@@ -25,6 +25,7 @@
 - [x] Lot 6b : export / import JSON, « Demander à Claude » (186 tests)
 - [x] Lot 9 : tâche du matin + passe de finition (189 tests) — **validé par Thomas le 19/10/2026**
 - [ ] Lot 7 : nutrition multi-marques (le lot 9 est validé : peut démarrer à la demande de Thomas)
+- [ ] Lot 11 : saisie vocale, dicter le journal à Claude (après 10h, 10i et 7 ; prompt `docs/prompt-lot-11.md`)
 - [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)
 - [x] Lot 8b : assistant de premier lancement, guides (205 tests)
 - [x] Lot 8c : guide de démarrage « Premiers pas » (211 tests)

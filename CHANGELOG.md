@@ -1,5 +1,15 @@
 # Changelog
 
+## Lot 7a — « Autre marque » : ta recette (19/10/2026)
+Décision de Thomas : pas de catalogue multi-marques. L'app reste Athena seule ; les autres marques s'entrent à la main, avec les doses de leur étiquette.
+- **Ta gamme** : avec « Autre marque / je dose moi-même », Nutrition calcule le bidon de la semaine à partir de tes produits : dose de l'étiquette × volume, produit par produit, une fourchette en min–max. Tout est marqué « perso, non vérifié ».
+- **Partir de l'étiquette** : un formulaire court par produit (nom, dose, pour 1 L, 4 L, 10 L ou 1 gallon US, semaines de végé ou de floraison). Pas de NPK, pas de tableau.
+- **Ordre de mélange** : celui de « Ma gamme », avec des flèches pour le changer ; tant qu'il n'est pas donné, l'app écrit « ordre non précisé ».
+- **Semaines** : un produit n'apparaît que dans ses semaines.
+- **EC et pH** : seulement tes cibles, par phase, si tu les saisis (Réglages → Nutrition). Sans saisie, pas de cible : l'app ne propose jamais de valeur.
+- Le bidon enregistré garde les produits et les quantités du jour. Un espace déjà en « Autre marque » garde sa note, affichée au-dessus de la recette tant qu'elle n'est pas remplie.
+- 337 tests ; `scripts/e2e-7.py`.
+
 ## Lot 10j2 — Journal, Graphiques et Réglages plus clairs (19/10/2026)
 - **Filtres du Journal** rangés derrière un bouton « Filtres » qui ouvre une feuille (espace, plante, stade, tag) ; les filtres actifs tiennent en une ligne (« Colonne · Griffes ») avec « Effacer ».
 - Les titres du Journal, de chaque graphique et des groupes des Réglages retrouvent leur petit dessin (📖 Historique, 💦 Dryback, 🧪 EC runoff, 🌡️ Température…). Outils ne change pas.

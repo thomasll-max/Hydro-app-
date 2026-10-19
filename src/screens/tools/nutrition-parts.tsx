@@ -16,6 +16,8 @@ import type { NutrientCatalog } from "@/data/nutrients"
 import { cn } from "@/lib/utils"
 import { secondary, tertiary } from "@/components/hydro/styles"
 import { locales } from "@/i18n/core"
+import { LABEL_VOLUMES, litresOf, per10L, type LabelVolume } from "@/calc/own-recipe"
+import { PerVolume } from "./own-recipe"
 
 // ---------- Concentrates ----------
 export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: number; i: number }) {
@@ -153,6 +155,17 @@ function ConcentrateSheet({ open, onOpenChange, cat, conc }: { open: boolean; on
 }
 
 // ---------- Personal products ----------
+/** Weeks of use of a personal product: « Végé, Floraison S3–6 », else the label's text, else null. */
+export function useWeeksText() {
+  const { t } = useSettings()
+  return (p: CustomProduct): string | null => {
+    const u = p.use
+    if (!u) return p.weeks ?? null
+    const parts = [u.veg ? t("nut.ph_veg") : null, u.flowerFrom != null ? t("nut.ph_week", { w: u.flowerTo != null && u.flowerTo !== u.flowerFrom ? `${u.flowerFrom}–${u.flowerTo}` : u.flowerFrom }) : null]
+    return parts.filter(Boolean).join(", ") || p.weeks || null
+  }
+}
+
 export function CustomProductsCard({ i }: { i: number }) {
   const { t, range } = useSettings()
   const { customProducts } = useGrow()
@@ -162,12 +175,7 @@ export function CustomProductsCard({ i }: { i: number }) {
     setEdit(p)
     setOpen(true)
   }
-  const weeks = (p: CustomProduct) => {
-    const u = p.use
-    if (!u) return p.weeks ?? null
-    const parts = [u.veg ? t("nut.ph_veg") : null, u.flowerFrom != null ? t("nut.ph_week", { w: u.flowerTo != null && u.flowerTo !== u.flowerFrom ? `${u.flowerFrom}–${u.flowerTo}` : u.flowerFrom }) : null]
-    return parts.filter(Boolean).join(", ") || p.weeks || null
-  }
+  const weeks = useWeeksText()
   return (
     <Reveal i={i}>
       <Card className="gap-2.5" id="nut-custom">
@@ -220,6 +228,8 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
   const [unit, setUnit] = useState<CustomProduct["unit"]>("mL")
   const [veg, setVeg] = useState(false)
   const [inactive, setInactive] = useState(false)
+  // The label's volume (lot 7a): 1 L, 4 L, 10 L, 1 US gallon, or another one typed.
+  const [per, setPer] = useState<LabelVolume | "other">(10)
   const { busy, run } = useSaver(() => onOpenChange(false))
   useEffect(() => {
     if (!open) return
@@ -229,6 +239,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
     setVeg(!!p?.use?.veg)
     setInactive(!!p?.inactive)
     const label = p?.labelDose ?? (p?.dosePer10L ? { ...p.dosePer10L, perL: 10 } : undefined)
+    setPer(label?.gal ? "gal" : label && (LABEL_VOLUMES as readonly unknown[]).includes(label.perL) ? (label.perL as LabelVolume) : label ? "other" : 10)
     setF({
       name: p?.name ?? "",
       brand: p?.brand ?? "",
@@ -245,8 +256,8 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }))
   const lo = parseNum(f.lo)
   const hi = parseNum(f.hi) ?? lo
-  const perL = parseNum(f.perL)
-  const per10 = useMemo(() => (lo != null && hi != null && perL ? { lo: Math.round((lo / perL) * 10 * 100) / 100, hi: Math.round((hi / perL) * 10 * 100) / 100 } : undefined), [lo, hi, perL])
+  const perL = per === "other" ? parseNum(f.perL) : litresOf(per)
+  const per10 = useMemo(() => (lo != null && hi != null && perL ? per10L(lo, hi, perL) : undefined), [lo, hi, perL])
   const save = () =>
     run(async () => {
       const name = f.name.trim()
@@ -271,7 +282,8 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
         ...(product?.onEvent ? { onEvent: product.onEvent } : where === "roots" ? { onEvent: "transfer" as const } : {}),
       }
       if (where === "tank") {
-        if (per10 && lo != null && hi != null && perL) Object.assign(base, { dosePer10L: per10, labelDose: { lo, hi, perL } })
+        if (per10 && lo != null && hi != null && perL) Object.assign(base, { dosePer10L: per10, labelDose: { lo, hi, perL, ...(per === "gal" ? { gal: true } : {}) } })
+        if (product?.mixOrder != null) base.mixOrder = product.mixOrder
         if (use) base.use = use
       } else if (lo != null && hi != null) base.dosePerPlant = { lo, hi }
       await saveCustomProduct(base)
@@ -306,11 +318,22 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
           <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.pUnit")}</div>
           <Seg<CustomProduct["unit"]> label={t("nut.pUnit")} value={unit} onChange={setUnit} options={(["mL", "g"] as const).map((u) => ({ value: u, label: u }))} />
         </div>
-        <Grid cols={where === "tank" ? 3 : 2}>
+        <Grid>
           <NumField id="p-lo" label={t("nut.pDoseLo", { unit })} value={f.lo ?? ""} onChange={set("lo")} />
           <NumField id="p-hi" label={t("nut.pDoseHi", { unit })} value={f.hi ?? ""} onChange={set("hi")} />
-          {where === "tank" && <NumField id="p-per" label={t("nut.pDoseFor")} hint={t("nut.pDoseForHint")} value={f.perL ?? ""} onChange={set("perL")} />}
         </Grid>
+        {where === "tank" && (
+          <div>
+            <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("own.per")}</div>
+            <PerVolume value={per} onChange={setPer} other />
+            {per === "gal" && <p className="mt-1 text-[0.75rem] text-fg-3">{t("own.galNote")}</p>}
+            {per === "other" && (
+              <div className="mt-2">
+                <NumField id="p-per" label={t("nut.pDoseFor")} hint={t("nut.pDoseForHint")} value={f.perL ?? ""} onChange={set("perL")} />
+              </div>
+            )}
+          </div>
+        )}
         {where === "tank" && per10 && <p className="text-[0.75rem] text-primary tabular">{t("nut.pPer10", { range: range(per10.lo, per10.hi, 2), unit })}</p>}
         {where === "roots" && <p className="text-[0.75rem] text-fg-3">{t("nut.pPerPlant")}</p>}
         {where === "tank" && (

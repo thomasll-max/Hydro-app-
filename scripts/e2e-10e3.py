@@ -1,6 +1,7 @@
 """Lot 10e3 in the browser at 390 px, preview build: « Autre marque / je dose moi-même » (Thomas's decision).
 - Réglages → Gamme: the option is offered; once picked, no add-ons nor dosing, a note says why;
-- Nutrition: « Mon bidon » (volume, products as typed, EC and pH measured), no recipe; the saved tank shows;
+- Nutrition: « Mon bidon » (volume, products as typed, EC and pH measured), no recipe; the saved tank shows (lot 7a:
+  « Ma recette » from the grower's own products, the free text becomes the tank's note);
 - pH / Balance: a note, no Balance titration; Today: no EC / pH target shown;
 - back to Athena Pro Line: the recipe comes back (nothing mixed).
 Usage: npm run preview:build && PYTHONPATH=scripts python3 scripts/e2e-10e3.py dist-preview/index.html <out dir>"""
@@ -28,7 +29,7 @@ with sync_playwright() as p:
 
     pg.goto(f"file://{page_file}#tools/nutrition"); pg.wait_for_timeout(1500)
     checks["ownForm"] = pg.locator("#own-tank").count() == 1 and pg.locator("#nut-phases").count() == 0
-    pg.fill("#own-vol", "40"); pg.fill("#own-products", "Grow A 20 mL, Grow B 20 mL"); pg.fill("#own-ec", "1,8"); pg.fill("#own-ph", "6,0")
+    pg.fill("#own-vol", "40"); pg.fill("#own-note", "Grow A 20 mL, Grow B 20 mL"); pg.fill("#own-ec", "1,8"); pg.fill("#own-ph", "6,0")
     pg.get_by_role("button", name="Enregistrer ce bidon").click(); pg.wait_for_timeout(1200)
     checks["saved"] = pg.inner_text("#nut-last")[:60]
     pg.screenshot(path=str(out / "02-own-tank.png"))
@@ -50,6 +51,6 @@ with sync_playwright() as p:
 
 print(json.dumps(checks, ensure_ascii=False, indent=1))
 print("errors:", errors[:5])
-ok = checks["offered"] and checks["note"].startswith("Pas de recette") and checks["noAddons"] and checks["ownForm"] and "Dernier bidon" in checks["saved"] and checks["phNote"] and checks["backToAthena"] and not errors
+ok = checks["offered"] and checks["note"].startswith("Ta propre gamme") and checks["noAddons"] and checks["ownForm"] and "Dernier bidon" in checks["saved"] and checks["phNote"] and checks["backToAthena"] and not errors
 print("OK" if ok else "FAIL")
 sys.exit(0 if ok else 1)

@@ -98,6 +98,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
     srcs.has("spec") && t("today.srcSpec"),
     srcs.has("common") && t("today.srcCommon"),
     srcs.has("app") && t("today.srcApp"),
+    srcs.has("user") && t("today.srcUser"),
     srcs.has("estimate") && t("today.srcEstimate"),
     cycle.waterMode === "auto" && (cycle.flowMlPerMin ? t("today.srcFlow", { flow: num(cycle.flowMlPerMin / 1000, 1) }) : t("today.srcFlowMissing")),
   ].filter(Boolean)

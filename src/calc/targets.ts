@@ -7,9 +7,14 @@ import type { Cycle, Range, StageKey, Substrate, TargetsSnapshot, WaterMode } fr
 import { getCatalog, isOwnLine, type ManualPhase, type NutrientCatalog } from "@/data/nutrients"
 import { phaseAt, phFor } from "./nutrients"
 import { isPrecision } from "./program"
+import { ownTargetsFor } from "./own-recipe"
+import type { OwnTargets } from "@/model/grow"
 
-/** app = a starting value of the app itself (not from the Handbook), labelled "repère de l'app" (lot 10c). */
-export type Src = "athena" | "spec" | "estimate" | "common" | "app"
+/**
+ * app = a starting value of the app itself (not from the Handbook), labelled "repère de l'app" (lot 10c).
+ * user = typed by the grower for another brand (lot 7a), labelled "ta cible".
+ */
+export type Src = "athena" | "spec" | "estimate" | "common" | "app" | "user"
 export type Target = Range & { src: Src; page?: number }
 export type DayTargets = { [K in keyof Omit<TargetsSnapshot, "stage">]?: Target } & { stage: StageKey; steer?: "vegetative" | "generative" | "mixed" }
 
@@ -76,12 +81,16 @@ const LIGHT: Partial<Record<StageKey, { ppfd: Target; dli: Target; vpd: Target }
 
 export function dayTargets(
   stage: StageKey | "notStarted",
-  opts: { mode: WaterMode; substrate: Substrate; flowerWeek?: number; cycleNumber?: number; line?: string; addons?: readonly string[] },
+  opts: { mode: WaterMode; substrate: Substrate; flowerWeek?: number; cycleNumber?: number; line?: string; addons?: readonly string[]; own?: OwnTargets },
 ): DayTargets | null {
   if (stage === "notStarted" || stage === "harvested") return null
-  // Another brand, dosed by the grower: no EC or pH target (none published for it); the watering method's stay.
+  // Another brand, dosed by the grower: no EC or pH target unless the grower typed one (lot 7a, « ta cible »); the
+  // watering method's stay.
   if (isOwnLine(opts.line)) {
     const own: DayTargets = { stage, ...LIGHT[stage] }
+    const mine = ownTargetsFor(opts.own, stage)
+    if (mine.ec) own.ecIn = r(mine.ec.lo, mine.ec.hi, "user")
+    if (mine.ph) own.phIn = r(mine.ph.lo, mine.ph.hi, "user")
     if (stage === "seedling" || stage === "flush") return own
     if (isPrecision({ waterMode: opts.mode, substrate: opts.substrate })) {
       const a = AUTO[stage]

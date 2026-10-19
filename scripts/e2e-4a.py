@@ -58,7 +58,9 @@ with sync_playwright() as p:
     pg.get_by_role("button", name="Proper").click()
     pg.wait_for_selector("#p-lo")
     pg.screenshot(path=str(out / "05-proper-empty.png"))
-    pg.fill("#p-lo", "1"); pg.fill("#p-hi", "2"); pg.fill("#p-per", "4")
+    pg.fill("#p-lo", "1"); pg.fill("#p-hi", "2")
+    # Lot 7a: the label's volume is a choice (1 L, 4 L, 10 L, 1 gal US, other).
+    pg.locator("[data-slot=drawer-content]").get_by_role("radiogroup", name="Pour").get_by_role("radio", name="4 L", exact=True).click()
     pg.fill("#p-from", "4"); pg.fill("#p-to", "9")
     pg.wait_for_timeout(300)
     pg.screenshot(path=str(out / "06-proper-typed.png"))

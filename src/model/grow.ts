@@ -42,7 +42,13 @@ export type CollectionName = (typeof COLLECTIONS)[number]
 // ---------- Grow ----------
 export type DosingMethod = "powder" | "conc113" | "conc226" | "conc282"
 export type { AddonId }
-export type NutritionSettings = { line: string; addons: AddonId[]; dosing: DosingMethod }
+/**
+ * EC and pH aimed for with another brand (lot 7a), by phase, typed by the grower: nothing is ever proposed. EC is one
+ * value (lo = hi), pH a range. Absent = no target (the reading shows no zone).
+ */
+export type OwnPhaseTargets = { ec?: Range; ph?: Range }
+export type OwnTargets = { veg?: OwnPhaseTargets; flower?: OwnPhaseTargets }
+export type NutritionSettings = { line: string; addons: AddonId[]; dosing: DosingMethod; own?: OwnTargets }
 
 export type Grow = {
   schemaVersion: number
@@ -248,8 +254,12 @@ export type CustomProduct = {
   /** Dose per 10 L (tank) or per plant (roots). Empty until typed from the label: never guessed. */
   dosePer10L?: Range
   dosePerPlant?: Range
-  /** Label dose as written (amount for a volume), kept for display; dosePer10L is derived from it. */
-  labelDose?: { lo: number; hi: number; perL: number }
+  /** Label dose as written (amount for a volume), kept for display; dosePer10L is derived from it. `gal`: the label says
+   *  « per US gallon » (perL = 3.785, lot 7a). */
+  labelDose?: { lo: number; hi: number; perL: number; gal?: boolean }
+  /** Place in the mixing order of « Autre marque » (lot 7a): the order of the list once moved. Absent everywhere = order
+   *  not given (the recipe says « ordre non précisé »). */
+  mixOrder?: number
   /** Weeks of use as written on the label, free text until typed. */
   weeks?: string
   /** Weeks of use in the tank, typed from the label: in veg, and/or flowering weeks from–to. Empty = not typed. */

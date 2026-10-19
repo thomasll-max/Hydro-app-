@@ -93,6 +93,8 @@ type GrowCtx = {
   addAssignment: (a: EquipmentAssignment) => Promise<void>
   saveCustomProduct: (p: CustomProduct) => Promise<void>
   deleteCustomProduct: (id: string) => Promise<void>
+  /** Several products in one write (the mixing order of « Autre marque », lot 7a). */
+  saveCustomProducts: (list: CustomProduct[]) => Promise<void>
   saveConcentrateStock: (s: ConcentrateStock) => Promise<void>
   saveSpray: (s: Spray) => Promise<void>
   deleteSpray: (id: string) => Promise<void>
@@ -273,7 +275,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       const s = stageOn(c, date)
       // Manual method, solution EC and pH follow the line of the cycle's space (Pro p. 31/41, Blended p. 58/60), with its add-ons.
       const nut = spaceNutrition(grow, spaces.find((x) => x.id === c.spaceId))
-      return dayTargets(s.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(c, cycles), line: nut.line, addons: nut.addons })
+      return dayTargets(s.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(c, cycles), line: nut.line, addons: nut.addons, own: nut.own })
     },
     [cycle, cycles, grow, spaces],
   )
@@ -412,6 +414,11 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       addAssignment: async (a) => need().set(`equipmentAssignments/${a.id}`, { ...a, schemaVersion: GROW_SCHEMA.assignment }),
       saveCustomProduct: async (p) => need().set(`customProducts/${p.id}`, { ...p, schemaVersion: GROW_SCHEMA.customProduct }),
       deleteCustomProduct: async (id) => need().delete(`customProducts/${id}`),
+      saveCustomProducts: async (list) => {
+        const docs = need()
+        const ops: BatchOp[] = list.map((p) => [`customProducts/${p.id}`, { ...p, schemaVersion: GROW_SCHEMA.customProduct }])
+        await (docs.batch ? docs.batch(ops) : runBatch(docs, ops))
+      },
       saveConcentrateStock: async (x) => need().set(`concentrateStocks/${x.id}`, { ...x, schemaVersion: GROW_SCHEMA.concentrateStock }),
       saveSpray: async (x) => need().set(`sprays/${x.id}`, { ...x, schemaVersion: GROW_SCHEMA.spray }),
       deleteSpray: async (id) => need().delete(`sprays/${id}`),

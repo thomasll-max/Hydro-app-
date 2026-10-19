@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AreaField, Grid, NumField } from "@/components/hydro/form"
+import { Grid, NumField } from "@/components/hydro/form"
 import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -14,7 +14,7 @@ import { stageOn, todayIso } from "@/calc/stage"
 import { cycleNumber } from "@/calc/targets"
 import { tankForecast } from "@/calc/reminders"
 import { chosenPer10L, expectedEc, mixRecipe, nextBalancePer10L, phaseAt, phaseById, phaseKind, positionOf, suggestedVolume, type MixItem } from "@/calc/nutrients"
-import { getCatalog, isOwnLine, OWN_LINE, type NutrientCatalog, type ProgramPhase, type ValueSource } from "@/data/nutrients"
+import { getCatalog, isOwnLine, type NutrientCatalog, type ProgramPhase, type ValueSource } from "@/data/nutrients"
 import { spaceNutrition } from "@/model/grow-ops"
 import { SCHEMA } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
@@ -23,6 +23,7 @@ import { ADDON_NAMES, dosingToConc } from "./nutrition-settings"
 import { SettingsLink } from "./equipment-shared"
 import { useEditors } from "@/app/editors"
 import { ConcentrateCard, CustomProductsCard } from "./nutrition-parts"
+import { OwnRecipeTool } from "./own-recipe"
 import { equipmentAt } from "@/equipment/calc"
 import type { Equipment, EquipmentAssignment } from "@/model/grow"
 import { joined, segment, tertiary, toggle } from "@/components/hydro/styles"
@@ -57,101 +58,7 @@ function defaultEc(cat: NutrientCatalog, phase: ProgramPhase, firstCycle: boolea
 
 export function NutritionTool() {
   const { nutrition } = useGrow()
-  return isOwnLine(nutrition.line) ? <OwnTankTool /> : <LineNutrition />
-}
-
-/**
- * « Autre marque / je dose moi-même » (lot 10e): no recipe, no dose, no target. The tank is noted as made (volume,
- * products as typed, EC and pH measured) so the journal and the charts follow EC and pH.
- */
-function OwnTankTool() {
-  const { t, num, dm, show } = useSettings()
-  const { cycle, space, mixes, equipment, assignments, saveMix } = useGrow()
-  const ed = useEditors()
-  const reservoirL = space ? reservoirOf(space.id, equipment, assignments) : undefined
-  const last = mixes.find((m) => m.line === OWN_LINE)
-  const [f, setF] = useState<Record<string, string>>({})
-  const [products, setProducts] = useState("")
-  const [busy, setBusy] = useState(false)
-  const [justSaved, setJustSaved] = useState<string | null>(null)
-  useEffect(() => {
-    setF({ volume: show(last?.volumeL ?? reservoirL) })
-    setProducts("")
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [space?.id])
-  const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }))
-  const volumeL = parseNum(f.volume) ?? 0
-  const save = async () => {
-    if (busy) return
-    if (badNums(f).length) return toast.error(t("safe.fixFields"))
-    if (!space) return toast.error(t("nut.needSpace"))
-    if (volumeL <= 0) return toast.error(t("nut.invalidVolume"))
-    setBusy(true)
-    try {
-      const id = newId("mix-")
-      await saveMix({
-        schemaVersion: SCHEMA.mix,
-        id,
-        date: todayIso(),
-        spaceIds: [space.id],
-        ...(cycle ? { cycleId: cycle.id } : {}),
-        volumeL,
-        line: OWN_LINE,
-        ...(parseNum(f.ecTarget) != null ? { ecTarget: parseNum(f.ecTarget) } : {}),
-        ...(parseNum(f.ec) != null ? { ec: parseNum(f.ec) } : {}),
-        ...(parseNum(f.ph) != null ? { ph: parseNum(f.ph) } : {}),
-        ...(products.trim() ? { recipe: products.trim() } : {}),
-        items: [],
-        createdAt: new Date().toISOString(),
-      })
-      toast.success(t("nut.saved"))
-      setJustSaved(id)
-      setF((s) => ({ ...s, ec: "", ph: "", ecTarget: "" }))
-    } catch (e) {
-      toast.error(t("common.saveError", { reason: (e as Error).message }))
-    } finally {
-      setBusy(false)
-    }
-  }
-  return (
-    <div className="flex flex-col gap-3">
-      <Reveal i={0}>
-        <Card className="gap-3" id="own-tank">
-          <div className="flex items-center justify-between gap-2">
-            <Label emoji="testTube">{t("own.title")}</Label>
-            <Chip>{t("growSet.ownLine")}</Chip>
-          </div>
-          <p className="text-[0.8125rem] leading-[1.45] text-fg-2">{t("own.desc")}</p>
-          <Grid>
-            <NumField id="own-vol" label={t("nut.volume")} value={f.volume ?? ""} onChange={set("volume")} />
-            <NumField id="own-ect" label={`${t("own.ecTarget")} · ${t("common.optional")}`} value={f.ecTarget ?? ""} onChange={set("ecTarget")} />
-          </Grid>
-          <AreaField id="own-products" label={t("own.products")} value={products} onChange={setProducts} placeholder={t("own.productsPh")} />
-          <Grid>
-            <NumField id="own-ec" label={t("nut.ecMeasured")} value={f.ec ?? ""} onChange={set("ec")} />
-            <NumField id="own-ph" label={t("nut.phTank")} value={f.ph ?? ""} onChange={set("ph")} />
-          </Grid>
-          <Button onClick={save} disabled={busy || volumeL <= 0} className="h-12">
-            {t("nut.save")}
-          </Button>
-          {last && (
-            <div id="nut-last" className="flex items-center gap-2 border-t border-line pt-2">
-              <p className="min-w-0 flex-1 text-[0.78125rem] leading-snug text-fg-2">
-                {t("nut.lastTank", { date: dm(last.date), volume: num(last.volumeL) })}
-                {last.ec != null && ` · EC ${num(last.ec, 1)}`}
-                {last.ph != null && ` · pH ${num(last.ph, 1)}`}
-                {last.id === justSaved && <b className="ml-1 font-semibold text-fg">· {t("nut.lastTankJust")}</b>}
-              </p>
-              <button type="button" onClick={() => ed.openMix(last)} className={tertiary}>
-                {t("nut.openTank")}
-              </button>
-            </div>
-          )}
-        </Card>
-      </Reveal>
-      <SourceNote>{t("own.note")}</SourceNote>
-    </div>
-  )
+  return isOwnLine(nutrition.line) ? <OwnRecipeTool /> : <LineNutrition />
 }
 
 function LineNutrition() {

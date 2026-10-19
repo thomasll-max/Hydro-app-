@@ -56,7 +56,7 @@ function defaultEc(cat: NutrientCatalog, phase: ProgramPhase, firstCycle: boolea
 
 export function NutritionTool() {
   const { t, num, range, settings } = useSettings()
-  const { cycle, mixes, entries, saveMix, saveCycle, nutrition, space, spaces, grow, equipment, assignments, customProducts } = useGrow()
+  const { cycle, cycles, mixes, entries, saveMix, saveCycle, nutrition, space, spaces, grow, equipment, assignments, customProducts } = useGrow()
   const cat = getCatalog(nutrition.line)
   const phaseLabel = usePhaseLabel()
   const srcLabel = useSrcLabel()
@@ -67,7 +67,7 @@ export function NutritionTool() {
 
   const pos = cycle ? positionOf(stageOn(cycle, todayIso())) : null
   const cyclePhase = (pos && phaseAt(cat, pos)) || phaseById(cat, "veg") || cat.program[0]
-  const firstCycle = !cycle || cycleNumber(cycle) <= 1
+  const firstCycle = !cycle || cycleNumber(cycle, cycles) <= 1
   const lineMixes = mixes.filter((m) => !m.line || m.line === cat.id)
   const last = lineMixes[0]
   const forecast = cycle?.potCount ? tankForecast(mixes, entries, cycle.potCount) : null

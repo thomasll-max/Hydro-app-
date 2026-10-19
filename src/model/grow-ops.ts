@@ -110,6 +110,16 @@ export function activeCyclesIn(spaceId: string, cycles: Cycle[]): Cycle[] {
   return cycles.filter((c) => !c.archived && !c.harvestDate && c.spaceId === spaceId)
 }
 
+/**
+ * The cycle running in a space (lot 10b: the one function used by Today, the digest, the calendar, the entry form and
+ * the tools): the preferred (active) cycle when it runs there, else the most recently created running one.
+ */
+export function cycleOfSpace(cycles: Cycle[], spaceId: string | undefined, preferId?: string | null): Cycle | null {
+  if (!spaceId) return null
+  const running = activeCyclesIn(spaceId, cycles)
+  return running.find((c) => c.id === preferId) ?? [...running].sort((a, b) => String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? "")) || (a.id < b.id ? 1 : -1))[0] ?? null
+}
+
 export function lampWatts(e: Equipment): number | undefined {
   return e.lamp?.watts
 }

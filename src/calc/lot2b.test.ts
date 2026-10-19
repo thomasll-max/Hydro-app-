@@ -76,9 +76,9 @@ describe("buildDailyDigest v1", () => {
     expect(f.some((x) => /^Arrosage prévu : \d+ doses dès \d\d:\d\d, [\d,]+ L par pot$/.test(x))).toBe(true)
     expect(f).toContain("Dernière saisie : aujourd'hui 07:42")
     expect(f).toContain("Réservoir : ≈ 3 j (60 L)")
-    // The Colonne has no cycle and nothing measured: it says so, it does not invent.
+    // The Colonne has no cycle: one line says it is empty (lot 10b), nothing invented, nothing repeated.
     const c = d.spaces.find((s) => s.spaceId === COLUMN_ID)!.lines.map((l) => l.text)
-    expect(c).toEqual(["Climat : pas de mesure depuis hier", "Pas encore de saisie"])
+    expect(c).toEqual(["Vide : pas de cycle en cours"])
     expect(d.text.startsWith("Bonjour · 18/10\n\nFloraison\n• ")).toBe(true)
   })
   it("EN: same digest in English", () => {

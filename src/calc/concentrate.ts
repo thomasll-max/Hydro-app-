@@ -2,6 +2,7 @@
 // product, Core never mixed with Grow or Bloom. Stock = litres made − mL drawn by the tanks saved since.
 import type { ConcentrateStock } from "@/model/grow"
 import type { IsoDate, Mix } from "@/model/types"
+import { addDays, daysBetween } from "./stage"
 
 /** Litres a whole bag makes: bag weight ÷ strength (0.9 kg → ≈ 4.0 L at 226 g/L; 11.3 kg → 50 L). */
 export function bagLitres(bagKg: number, gPerL: number): number {
@@ -42,8 +43,13 @@ export type StockStatus = {
   /** Fewer than LOW_TANKS tanks left at the last draw (estimate). */
   low: boolean
   empty: boolean
-  /** Date of the tank after which the stock went low (stable deadline date). */
+  /** Date of the tank after which the stock went low. */
   lowSince?: IsoDate
+  /**
+   * Estimated day of the first tank the jerrycan can no longer cover (lot 10b): the day a new bag must be dissolved.
+   * From the usual gap between its tanks; without two tanks to measure it, the day it went low.
+   */
+  neededBy?: IsoDate
 }
 
 /** "Presque vide": not enough left for 2 more tanks like the last one (time to dissolve a new bag). */
@@ -66,6 +72,11 @@ export function stockStatus(stock: ConcentrateStock, stocks: ConcentrateStock[],
   }
   const leftL = Math.max(0, Math.round(left * 100) / 100)
   const tanksLeft = lastDraw ? Math.floor((leftL + 1e-9) / lastDraw) : undefined
+  // Usual gap between two tanks drawing from this jerrycan (median, whole days).
+  const gaps = mine.slice(1).map((x, i) => daysBetween(mine[i].m.date, x.m.date)).filter((d) => d > 0).sort((a, b) => a - b)
+  const gap = gaps.length ? gaps[Math.floor(gaps.length / 2)] : undefined
+  const lastDate = mine.at(-1)?.m.date
+  const neededBy = lowSince && gap && lastDate && tanksLeft != null ? addDays(lastDate, gap * (tanksLeft + 1)) : lowSince
   return {
     stock,
     leftL,
@@ -75,6 +86,7 @@ export function stockStatus(stock: ConcentrateStock, stocks: ConcentrateStock[],
     low: !!lowSince,
     empty: leftL <= 0 || (lastDraw != null && leftL < lastDraw),
     lowSince,
+    neededBy,
   }
 }
 

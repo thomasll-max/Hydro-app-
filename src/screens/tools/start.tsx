@@ -16,6 +16,8 @@ import { TARGET } from "@/store"
 import type { EmojiName } from "@/assets/emoji"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
 
 export function useStartChecklist(): StartItem[] {
   const { spaces, cycles, equipment, assignments, all } = useGrow()
@@ -110,6 +112,7 @@ export function StartTool() {
                     </span>
                     <ChevronRight className="mt-1 size-4.5 shrink-0 text-fg-3" />
                   </button>
+                  {it.canStart && it.cycleId && <StartToday cycleId={it.cycleId} />}
                 </li>
               )
             })}
@@ -147,6 +150,31 @@ export function StartTool() {
         </button>
       )}
     </div>
+  )
+}
+
+/** A running cycle without a start date: one tap sets it to today (lot 10b). */
+function StartToday({ cycleId }: { cycleId: string }) {
+  const { t } = useSettings()
+  const { cycles, saveCycle } = useGrow()
+  const [busy, setBusy] = useState(false)
+  const c = cycles.find((x) => x.id === cycleId)
+  if (!c) return null
+  const go = async () => {
+    setBusy(true)
+    try {
+      await saveCycle({ ...c, germinationDate: todayIso() })
+      toast.success(t("start.started"))
+    } catch (e) {
+      toast.error(t("common.saveError", { reason: (e as Error)?.message ?? "?" }))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <Button onClick={go} disabled={busy} className="mb-2.5 ml-9 h-10 rounded-full px-4 text-[13.5px] font-bold" id="start-today">
+      {t("start.startToday")}
+    </Button>
   )
 }
 

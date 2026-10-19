@@ -184,12 +184,13 @@ describe("lot 4a — concentré et stocks", () => {
     expect(s.tanksLeft).toBe(2)
     expect(s.low).toBe(false)
   })
-  it("échéance « concentré presque vide » : moins de 2 bidons comme le dernier, datée de ce bidon", () => {
+  it("échéance « concentré presque vide » : moins de 2 bidons comme le dernier, datée du premier bac qu'il ne couvre plus", () => {
     const seed = thomasGrow(NOW, "2026-10-18")
     const mixes = [tank("m1", "2026-10-05"), tank("m2", "2026-10-11"), tank("m3", "2026-10-16")]
     const data = { grow: seed.grow, spaces: seed.spaces, cycles: seed.cycles, entries: [], mixes, equipment: seed.equipment, assignments: seed.assignments, concentrateStocks: [stock] }
     const dl = deadlines(data, "2026-10-18").find((d) => d.kind === "concentrateLow")!
-    expect(dl).toMatchObject({ key: "concentrateLow_s1", date: "2026-10-16", source: "estimate", vars: { product: "Pro Bloom", litres: 1.3 } })
+    // Lot 10b: 1,3 L = 1 more tank of 0,9 L; tanks every 6 days (median) → the one of 28/10 needs a new bag.
+    expect(dl).toMatchObject({ key: "concentrateLow_s1", date: "2026-10-28", source: "estimate", vars: { product: "Pro Bloom", litres: 1.3 } })
     expect(deadlineTitle("fr", dl)).toBe("Concentré presque vide : Pro Bloom (≈ 1,3 L)")
     // Bidon fini : plus d'échéance.
     expect(deadlines({ ...data, concentrateStocks: [{ ...stock, finishedOn: "2026-10-17" }] }, "2026-10-18").some((d) => d.kind === "concentrateLow")).toBe(false)

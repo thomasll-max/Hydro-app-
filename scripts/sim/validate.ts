@@ -33,7 +33,7 @@ for (const e of data.entries) {
   const c = cycleById(e.cycleId)!
   const st = stageOn(c, e.date)
   if (e.targets?.stage !== st.key) add({ kind: "stade incohérent", date: e.date, space: e.spaceId, detail: `${e.targets?.stage} ≠ ${st.key}` })
-  const t = dayTargets(st.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: st.flowerWeek, cycleNumber: cycleNumber(c), line: c.nutrientLine })
+  const t = dayTargets(st.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: st.flowerWeek, cycleNumber: cycleNumber(c, data.cycles), line: c.nutrientLine })
   if (!t) continue
   const adv = oneCorrection(e, t, c.waterMode)
   const inj = data.injected.find((i) => i.date === e.date && i.space === e.spaceId)

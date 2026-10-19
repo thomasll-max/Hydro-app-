@@ -109,8 +109,10 @@ export function deadlines(data: CalendarData, today: IsoDate): Deadline[] {
       if (a?.days.ok) {
         const mix = [...ctx.mixes].sort((x, y) => (x.date < y.date ? 1 : -1))[0]
         const litres = mix?.volumeL ?? ctx.tank?.reservoir?.usableL
+        // Without a tank, the deadline follows the last level typed: "Fait" closes this one, not every later one.
+        const level = ctx.entries.find((e) => !e.plantId && e.reservoirL != null)?.date ?? today
         out.push({
-          key: `tank_${space.id}_${mix?.id ?? "level"}`,
+          key: `tank_${space.id}_${mix?.id ?? `level-${level}`}`,
           kind: "tank",
           date: addDays(today, Math.max(0, Math.floor(a.days.value))),
           spaceId: space.id,
@@ -145,7 +147,12 @@ export function deadlines(data: CalendarData, today: IsoDate): Deadline[] {
     const s = stockStatus(st, stocks, data.mixes)
     if (!s.low || !s.lowSince) continue
     const name = getCatalog(st.line).products.find((p) => p.id === st.productId)?.name ?? st.productId
-    out.push({ key: `concentrateLow_${st.id}`, kind: "concentrateLow", date: s.lowSince, productId: st.productId, vars: { product: name, litres: s.leftL }, source: "estimate" })
+    // Dated the day a new bag is needed (estimated), not the day the jerrycan went low: never born overdue (lot 10b).
+    // An estimate is never "late": past the estimated day it stays due today until a new jerrycan is made (the next
+    // tank that needs this product may come later than the usual gap, e.g. Bloom during veg).
+    const needed = s.neededBy ?? s.lowSince
+    const date = needed < today ? today : needed
+    out.push({ key: `concentrateLow_${st.id}`, kind: "concentrateLow", date, productId: st.productId, vars: { product: name, litres: s.leftL }, source: "estimate" })
   }
   // A pump shared by two spaces gives one deadline.
   const seen = new Set<string>()

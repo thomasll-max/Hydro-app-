@@ -4,7 +4,7 @@ import { getStores, StoreUnavailable, TARGET, type Stores } from "@/store"
 import { useSettings } from "./settings-context"
 import { SCHEMA, type Cycle, type Entry, type GrowEvent, type Mix, type Plant } from "@/model/types"
 import { GROW_SCHEMA, type ConcentrateStock, type Spray, type CustomProduct, type Equipment, type Reminder, type EquipmentAssignment, type Grow, type Group, type NutritionSettings, type Site, type Space } from "@/model/grow"
-import { DEFAULT_NUTRITION, newGrow, spaceNutrition } from "@/model/grow-ops"
+import { cycleOfSpace, DEFAULT_NUTRITION, newGrow, spaceNutrition } from "@/model/grow-ops"
 import { moveEquipment } from "@/equipment/calc"
 import { derive } from "@/model/entry"
 import { stageOn, todayIso } from "@/calc/stage"
@@ -242,8 +242,8 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
     const pref = cycles.find((c) => c.id === settings.activeCycleId)
     if (selection.kind === "space") {
       const id = selection.space.id
-      if (pref && pref.spaceId === id) return pref
-      return live.find((c) => c.spaceId === id) ?? cycles.find((c) => c.spaceId === id) ?? null
+      // The running cycle; with none, the last one of the space (its journal stays readable).
+      return cycleOfSpace(cycles, id, pref?.id) ?? (pref?.spaceId === id ? pref : cycles.find((c) => c.spaceId === id)) ?? null
     }
     if (selection.kind === "site") {
       const ids = new Set(spaces.filter((s) => s.siteId === selection.site.id).map((s) => s.id))
@@ -271,9 +271,9 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       const s = stageOn(c, date)
       // Manual method and solution EC follow the line of the cycle's space (Pro p. 41, Blended p. 60).
       const line = spaceNutrition(grow, spaces.find((x) => x.id === c.spaceId)).line
-      return dayTargets(s.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(c), line })
+      return dayTargets(s.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(c, cycles), line })
     },
-    [cycle, grow, spaces],
+    [cycle, cycles, grow, spaces],
   )
   const all = React.useMemo(
     () => ({
@@ -285,12 +285,8 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
     [raw.entries, raw.events, raw.mixes, raw.plants], // eslint-disable-line react-hooks/exhaustive-deps
   )
   const cycleIn = React.useCallback(
-    (spaceId: string) => {
-      const pref = cycles.find((c) => c.id === settings.activeCycleId)
-      if (pref && pref.spaceId === spaceId && !pref.harvestDate && !pref.archived) return pref
-      return live.find((c) => c.spaceId === spaceId) ?? null
-    },
-    [cycles, live, settings.activeCycleId],
+    (spaceId: string) => cycleOfSpace(cycles, spaceId, settings.activeCycleId),
+    [cycles, settings.activeCycleId],
   )
 
   const value = React.useMemo<GrowCtx>(() => {

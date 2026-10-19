@@ -30,11 +30,13 @@ describe("lot 8c — premiers pas : ce qu'il faut rentrer", () => {
     expect(byId(startChecklist({ ...base, lastBackup: "2026-10-17" })).backup.done).toBe(true)
   })
 
-  it("une lampe sans efficacité ni PPF ne suffit pas (l'estimation du PPFD en a besoin)", () => {
+  it("une lampe compte dès ses watts réels (lot 10b) ; sans watts, ni PPF ni efficacité, elle manque", () => {
     const docs = draftDocs({ ...emptyDraft("Tente"), name: "G", spaces: [{ ...emptyDraft("Tente").spaces[0], gear: { lampW: 240 } }] }, { now: NOW, today: TODAY, id: (p) => `${p}1`, names: { lamp: "Lampe", pots: (v) => `Pots ${v} L`, tank: (l) => `R ${l}`, extractor: "E" } })
     const pick = <T,>(c: string) => docs.filter(([p]) => p.startsWith(`${c}/`)).map(([, d]) => d as unknown as T)
     const p = { ...base, spaces: pick<Space>("spaces"), equipment: pick<Equipment>("equipment"), assignments: pick<EquipmentAssignment>("equipmentAssignments"), cycles: [] }
-    expect(byId(startChecklist(p)).lamp.done).toBe(false)
+    expect(byId(startChecklist(p)).lamp.done).toBe(true)
+    const noWatts = p.equipment.map((e) => ({ ...e, lamp: {} }))
+    expect(byId(startChecklist({ ...p, equipment: noWatts })).lamp.done).toBe(false)
     const withEff = p.equipment.map((e) => ({ ...e, lamp: { ...e.lamp, efficacy: 2.7 } }))
     expect(byId(startChecklist({ ...p, equipment: withEff })).lamp.done).toBe(true)
     const withPpf = p.equipment.map((e) => ({ ...e, lamp: { ppf: 650 } }))
@@ -54,7 +56,8 @@ describe("lot 8c — premiers pas : ce qu'il faut rentrer", () => {
     const items = startChecklist({ ...base, cycles, equipment, mixes: [{ id: "m1" }], entries: [{ id: "e1" }] })
     const m = byId(items)
     expect([m.cycle.done, m.flow.done, m.mix.done, m.entry.done]).toEqual([true, true, true, true])
-    expect(m.pots.done).toBe(false) // the Colonne still has no pots
+    // Lot 10b: the Colonne is watered by hand (no pump, no automatic cycle there): no pots asked.
+    expect(m.pots.done).toBe(true)
   })
 })
 

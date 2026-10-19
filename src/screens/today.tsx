@@ -111,7 +111,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
     <>
       <ScreenHero emoji={s.flowerWeek ? "blossom" : s.key === "seedling" || s.key === "notStarted" ? "sprout" : "herb"} eyebrow={`${space ? `${space.name} · ` : ""}${t("today.cycle", { name: cycle.name, cultivar: cycle.cultivars[0] ?? "" })}`} title={stageLine(t, s)}>
         <Chips>
-          {tg?.steer && <Chip tone="primary">{`${t(`steer.${tg.steer}`)} · ${t(`stage.${s.key}`)}`}</Chip>}
+          {tg?.steer && <Chip tone="primary">{`${t(`stage.${s.key}`)} · ${t(`steerChip.${tg.steer}`)}`}</Chip>}
           {!tg?.steer && s.key !== "notStarted" && <Chip tone="primary">{t(`stage.${s.key}`)}</Chip>}
           <Chip>{`${t(`mode.${cycle.waterMode}Short`)} · ${t(`substrate.${cycle.substrate}`).toLowerCase()}`}</Chip>
         </Chips>

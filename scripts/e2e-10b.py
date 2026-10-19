@@ -60,6 +60,22 @@ with sync_playwright() as p:
     checks["harvestLabel"] = pg.locator("label[for=c-harv]").inner_text()
     pg.screenshot(path=str(out / "06-cycle-steps.png"))
     ctx.close()
+
+    # Lot 10b2: Premiers pas "Démarrer aujourd'hui" on Thomas's starting cycle (no start date yet); Bonjour lines.
+    ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, color_scheme="light")
+    serve_fonts(ctx)
+    pg = ctx.new_page()
+    pg.on("pageerror", lambda e: errors.append(f"PAGEERROR {e}"))
+    pg.goto(f"file://{page_file}#start"); pg.wait_for_timeout(2500)
+    checks["startTodayShown"] = pg.locator("#start-today").count() == 1
+    pg.click("#start-today"); pg.wait_for_timeout(1200)
+    checks["cycleDone"] = pg.get_attribute("#start-cycle", "data-done")
+    pg.screenshot(path=str(out / "07-start-today.png"), full_page=True)
+    pg.goto(f"file://{page_file}#today"); pg.wait_for_timeout(2500)
+    bonjour = pg.locator("text=Bonjour ·").first.locator("xpath=ancestor::div[contains(@class,'relative')][1]/..").inner_text()
+    checks["bonjour"] = [l for l in bonjour.split("\n") if l.strip()][:12]
+    pg.screenshot(path=str(out / "08-bonjour.png"), full_page=True)
+    ctx.close()
     b.close()
 for k, v in checks.items(): print(k, "→", v)
 print("\n".join(errors) if errors else "no console errors")

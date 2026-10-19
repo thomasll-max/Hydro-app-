@@ -19,6 +19,8 @@ export type Autonomy = {
 }
 
 const ok = (value: number): Calc => ({ ok: true, value })
+/** Readings older than this no longer give the daily use (the stage, hence the use, has changed). */
+const READING_DAYS = 14
 const miss = (...m: string[]): Calc => ({ ok: false, missing: m })
 
 export function reservoirAutonomy(p: { entries: Entry[]; mixes: Mix[]; potCount?: number; usableL?: number; mode?: "dtw" | "recirc"; today: IsoDate }): Autonomy {
@@ -39,11 +41,17 @@ export function reservoirAutonomy(p: { entries: Entry[]; mixes: Mix[]; potCount?
   }
 
   let perDay: Calc = miss("perDayL")
-  const r1 = readings[1]
-  const mixBetween = r0 && r1 && mix && mix.date > r1.date && mix.date <= r0.date
-  if (r0 && r1 && !mixBetween && r1.reservoirL! > r0.reservoirL! && daysBetween(r1.date, r0.date) > 0) {
-    perDay = ok((r1.reservoirL! - r0.reservoirL!) / daysBetween(r1.date, r0.date))
-  } else if (p.potCount) {
+  // The most recent two readings with no tank made in between (a refill is not consumption, lot 10b), not too old.
+  for (let i = 0; i + 1 < readings.length; i++) {
+    const [a, b] = [readings[i], readings[i + 1]]
+    if (daysBetween(a.date, p.today) > READING_DAYS) break
+    const gap = daysBetween(b.date, a.date)
+    if (gap <= 0 || b.reservoirL! <= a.reservoirL!) continue
+    if (p.mixes.some((m) => m.date > b.date && m.date <= a.date)) continue
+    perDay = ok((b.reservoirL! - a.reservoirL!) / gap)
+    break
+  }
+  if (!perDay.ok && p.potCount) {
     const recent = room.filter((e) => e.volumePerPotMl).slice(0, 7)
     if (recent.length) perDay = ok(recent.reduce((s, e) => s + litresUsed(e, p.potCount!), 0) / recent.length)
   }

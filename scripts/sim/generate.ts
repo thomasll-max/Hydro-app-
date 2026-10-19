@@ -156,7 +156,7 @@ function makeMix(space: string, c: Cycle, d: IsoDate, volumeL: number) {
   const st = stageOn(c, d)
   const pos = positionOf(st)!
   const phase = phaseAt(CAT, pos)!
-  const ecT = phase.stage === "flush" ? 0 : phase.stage === "clone" ? 2.0 : cycleNumber(c) <= 1 ? 2.2 : 3.0
+  const ecT = phase.stage === "flush" ? 0 : phase.stage === "clone" ? 2.0 : cycleNumber(c, cycles) <= 1 ? 2.2 : 3.0
   const prev = lastMix[space]
   const balanceKnown = prev ? nextBalancePer10L(prev) : undefined
   const res = mixRecipe(LINE, { phaseId: phase.id, volumeL, ec: ecT, concentrate: 226, chosenPer10L: { cleanse: 8 }, balanceMlPer10L: balanceKnown, custom: customProducts, substrate: "coco", week: st.flowerWeek })
@@ -273,7 +273,7 @@ for (let d = START; d <= LAST; d = addDays(d, 1)) {
       continue
     }
 
-    const t = dayTargets(st.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: st.flowerWeek, cycleNumber: cycleNumber(c), line: LINE })
+    const t = dayTargets(st.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: st.flowerWeek, cycleNumber: cycleNumber(c, cycles), line: LINE })
     if (!t) continue
     // Anomalie voulue : environ 1 jour sur 14 en Floraison.
     const offPool = ["ecRunoff", "phRunoff", "dryback", "runoffPct", "vpd"].filter((k) => t[k as keyof DayTargets] && !(k === "dryback" && d >= SENSOR_FROM))

@@ -11,6 +11,7 @@ import { addDays, daysBetween, stageOn } from "./stage"
 import { spaceContext } from "./space-context"
 import { calendarItems, growTimeZone } from "@/calendar/agenda"
 import { itemTitle } from "@/calendar/labels"
+import { stageShort } from "@/app/labels"
 import type { CustomProduct, Reminder } from "@/model/grow"
 
 export const DIGEST_SCHEMA = 3
@@ -52,14 +53,17 @@ export type Digest = {
 
 export { spaceContext }
 
-export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang): Digest {
+export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, today: IsoDate = date): Digest {
   const t = (k: Parameters<typeof translate>[1], v?: Record<string, string | number>) => translate(locale, k, v)
   const n = (v: number, d = 0) => formatNumber(locale, v, d)
   const dm = (iso: IsoDate) => formatDayMonth(locale, new Date(`${iso}T12:00:00`))
   const ordered = groupBySite(data.spaces, data.sites ?? []).flatMap((g) => g.spaces)
+  /** Days after the day the app computed it (the next days of digestWeek): estimates count down from today. */
+  const ahead = Math.max(0, daysBetween(today, date))
 
-  // Lot 3: reminders and deadlines due today, from the calendar.
-  const due = calendarItems(data, date, date, date, growTimeZone(data)).filter((i) => !i.done)
+  // Lot 3: reminders and deadlines due that day, from the calendar. Deadlines are computed on the real day (lot 10b):
+  // a tank to remake shows on its own day, not always "in N days" from each future morning.
+  const due = calendarItems(data, date, date, today, growTimeZone(data)).filter((i) => !i.done)
   const dueLine = (i: (typeof due)[number]): DigestLine =>
     i.type === "reminder"
       ? { kind: "reminder", text: t("digest.reminder", { title: itemTitle(locale, i), time: i.time }), warn: false }
@@ -69,30 +73,49 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang):
     const ctx = spaceContext(space, data, date)
     const lines: DigestLine[] = []
     const { cycle, last, autonomy } = ctx
+    const mine = due.filter((i) => i.spaceId === space.id).map(dueLine)
+    const s = cycle ? stageOn(cycle, date) : null
 
-    if (cycle) {
-      const s = stageOn(cycle, date)
-      lines.push({ kind: "stage", text: t("digest.stage", { cycle: cycle.name, stage: t(`stage.${s.key}`) }) })
+    // Drying space: the cycle drying here, its day out of the planned days (lot 10b).
+    const drying = space.modules.drying
+      ? data.cycles.filter((c) => c.spaceId === space.id && c.harvestDate && c.harvestDate <= date && !c.harvest?.curingStart && !c.archived).sort((a, b) => (a.harvestDate! < b.harvestDate! ? 1 : -1))[0]
+      : undefined
+    if (!cycle && !drying) {
+      // Nothing growing here: one line, then what is due (lot 10b: no "no measure / no entry / reservoir" repeated).
+      return { spaceId: space.id, name: space.name, lines: [{ kind: "stage", text: t("digest.empty") }, ...mine] }
+    }
+    if (cycle && s) lines.push({ kind: "stage", text: t("digest.stage", { cycle: cycle.name, stage: stageShort(t, s) }) })
+    if (drying) {
+      const day = daysBetween(drying.harvestDate!, date) + 1
+      lines.push({ kind: "stage", text: drying.plannedDryingDays ? t("digest.drying", { cycle: drying.name, day, total: drying.plannedDryingDays }) : t("digest.dryingNoPlan", { cycle: drying.name, day }) })
     }
 
-    if (space.modules.climate) {
-      const recent = last && daysBetween(last.date, date) <= 1 ? last : undefined
+    // Climate: only once something was ever measured here (a new space says "no entry yet" once, below).
+    if (space.modules.climate && last) {
+      const recent = daysBetween(last.date, date) <= 1 ? last : undefined
       if (recent && (recent.tempDay != null || recent.rh != null)) {
         const parts = [recent.tempDay != null ? `${n(recent.tempDay, 1)} °C` : null, recent.rh != null ? `${n(recent.rh)} %` : null, recent.vpd != null ? `VPD ${n(recent.vpd, 2)} kPa` : null].filter(Boolean)
         lines.push({ kind: "climate", text: t("digest.climate", { v: parts.join(" · ") }) })
       } else lines.push({ kind: "climate", text: t("digest.climateNone") })
     }
 
-    if (space.modules.irrigation && cycle) {
-      const s = stageOn(cycle, date)
+    if (space.modules.irrigation && cycle && s && s.key !== "notStarted") {
+      // Automatic only where a pump is (when the grow lists its pumps): a cycle in a propagation space is hand-watered.
+      const pumps = data.equipment.some((e) => e.type === "pump")
+      const auto = cycle.waterMode === "auto" && (!pumps || ctx.here.some((e) => e.type === "pump"))
       const ss = steerStage(s.key, cycle.establishing)
-      if (!ss) lines.push({ kind: "watering", text: t("digest.wateringHand") })
-      else if (cycle.waterMode === "manual") lines.push({ kind: "watering", text: t("digest.wateringManual", { time: cycle.lightsOn }) })
+      if (s.key === "flush") lines.push({ kind: "watering", text: t(auto ? "digest.wateringFlushAuto" : "digest.wateringFlushManual") })
+      else if (!ss) lines.push({ kind: "watering", text: t(auto ? "digest.wateringSeedlingAuto" : "digest.wateringHand") })
+      else if (ss === "inst") {
+        const small = buildProgram(cycle, ss).find((r) => r.kind === "inst")?.ml
+        lines.push({ kind: "watering", text: small ? t("digest.wateringInst", { ml: n(small) }) : t("digest.wateringInstNoVol") })
+      } else if (!auto) lines.push({ kind: "watering", text: t("digest.wateringManual", { time: cycle.lightsOn }) })
       else {
         const rows = buildProgram(cycle, ss, last?.photoperiodH ?? PHOTOPERIOD[ss])
         const shots = rows.filter((r) => r.kind === "shot" && !r.optional).length
+        const first = rows.find((r) => r.kind === "shot")?.time ?? "—"
         const { fixed } = programTotals(rows)
-        lines.push({ kind: "watering", text: t("digest.wateringAuto", { shots, litres: n(fixed / 1000, 1), first: rows.find((r) => r.kind === "shot")?.time ?? "—" }) })
+        lines.push({ kind: "watering", text: fixed ? t("digest.wateringAuto", { shots, litres: n(fixed / 1000, 1), first }) : t("digest.wateringAutoNoVol", { shots, first }) })
       }
     }
 
@@ -102,9 +125,9 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang):
       warn: !last || daysBetween(last.date, date) > 1,
     })
 
-    if (autonomy) {
+    if (autonomy && cycle) {
       if (autonomy.days.ok) {
-        const d = Math.floor(autonomy.days.value)
+        const d = Math.max(0, Math.floor(autonomy.days.value) - ahead)
         lines.push({
           kind: "reservoir",
           text: t(autonomy.source === "reading" ? "digest.reservoir" : "digest.reservoirEst", { days: n(d), litres: n(autonomy.left.ok ? autonomy.left.value : 0) }),
@@ -113,7 +136,7 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang):
       } else lines.push({ kind: "reservoir", text: t("digest.reservoirMissing"), warn: true })
       if (autonomy.tooOld) lines.push({ kind: "reservoir", text: t("digest.tooOld", { days: n(autonomy.mixAgeDays ?? 0) }), warn: true })
     }
-    for (const i of due) if (i.spaceId === space.id) lines.push(dueLine(i))
+    lines.push(...mine)
     return { spaceId: space.id, name: space.name, lines }
   })
   const general = due.filter((i) => !i.spaceId || !ordered.some((s) => s.id === i.spaceId)).map(dueLine)
@@ -131,8 +154,8 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang):
 export function digestWeek(data: DigestData, today: IsoDate, locale: Lang, days = DIGEST_DAYS): Digest[] {
   return Array.from({ length: days }, (_, i) => {
     const date = addDays(today, i)
-    const d = buildDailyDigest(data, date, locale)
-    const other = buildDailyDigest(data, date, locale === "fr" ? "en" : "fr")
+    const d = buildDailyDigest(data, date, locale, today)
+    const other = buildDailyDigest(data, date, locale === "fr" ? "en" : "fr", today)
     return { ...d, computedOn: today, texts: { [locale]: d.text, [other.locale]: other.text } as Record<Lang, string> }
   })
 }
@@ -148,10 +171,16 @@ export const staleDigestIds = (ids: string[], today: IsoDate) => ids.filter((id)
  * earlier day (the app has not been opened since): reminders and deadlines are still right, the measurements are older.
  */
 export function morningText(docs: Record<string, Partial<Digest>>, today: IsoDate, locale: Lang): { text: string; stale: boolean; found: boolean } {
-  const d = docs[today] ?? (docs.latest?.date === today ? docs.latest : undefined)
+  // The day's digest; else (app not opened for more than a week) the most recent one, flagged as old (lot 10b).
+  const before = Object.entries(docs)
+    .filter(([k, x]) => k !== "latest" && /^\d{4}-\d{2}-\d{2}$/.test(k) && k <= today && (x?.texts?.[locale] ?? x?.text))
+    .sort(([a], [b]) => (a < b ? 1 : -1))[0]?.[1]
+  const d = docs[today] ?? (docs.latest?.date === today ? docs.latest : undefined) ?? before ?? docs.latest
   const body = d?.texts?.[locale] ?? d?.text
   if (!d || !body) return { text: translate(locale, "digest.none"), stale: true, found: false }
-  const stale = !!d.computedOn && d.computedOn < today
-  const note = stale ? `\n\n${translate(locale, "digest.staleNote", { date: formatDayMonth(locale, new Date(`${d.computedOn}T12:00:00`)) })}` : ""
+  const stale = (!!d.computedOn && d.computedOn < today) || (!!d.date && d.date < today)
+  const day = (iso: string) => formatDayMonth(locale, new Date(`${iso}T12:00:00`))
+  // An older day's digest (fallback): its reminders are those of that day, so it says so plainly.
+  const note = d.date && d.date < today ? `\n\n${translate(locale, "digest.oldNote", { date: day(d.date) })}` : stale ? `\n\n${translate(locale, "digest.staleNote", { date: day(d.computedOn!) })}` : ""
   return { text: body + note, stale, found: true }
 }

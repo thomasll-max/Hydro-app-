@@ -100,7 +100,12 @@ export function snapshot(t: DayTargets | null): TargetsSnapshot | undefined {
   return out
 }
 
-export function cycleNumber(c: Pick<Cycle, "name">): number {
-  const m = c.name.match(/\d+/)
-  return m ? Number(m[0]) : 1
+/**
+ * Rank of a cycle in the grow, by creation date (lot 10b): 1 for the first one. Never read from the name ("Blue Zushi
+ * 2026" is not the 2026th cycle). The spec's lower EC (2.0–2.4) applies to cycle 1 only.
+ */
+export function cycleNumber(c: Pick<Cycle, "id" | "createdAt">, cycles: Pick<Cycle, "id" | "createdAt">[]): number {
+  const key = (x: Pick<Cycle, "id" | "createdAt">) => `${x.createdAt ?? ""}\u0000${x.id}`
+  const mine = key(c)
+  return 1 + cycles.filter((x) => x.id !== c.id && key(x) < mine).length
 }

@@ -6,7 +6,7 @@ import { equipmentAt, ppf, spaceIrrigation } from "@/equipment/calc"
 
 export const START_STEPS = ["lamp", "pots", "cycle", "flow", "mix", "entry", "backup"] as const
 export type StartStep = (typeof START_STEPS)[number]
-export type StartItem = { id: StartStep; done: boolean; /** First space still missing it. */ spaceId?: string; cycleId?: string }
+export type StartItem = { id: StartStep; done: boolean; /** First space still missing it. */ spaceId?: string; cycleId?: string; /** Cycle line: a running cycle without a start date. */ canStart?: boolean }
 
 export const START_HIDDEN_KEY = "hydro.startHidden"
 
@@ -30,14 +30,21 @@ export function startChecklist(p: {
     const hasLamp = (s: Space) =>
       equipmentAt(s.id, p.today, p.assignments).some((a) => {
         const e = p.equipment.find((x) => x.id === a.equipmentId)
-        // Same rule as the light estimate: published PPF, else real watts × efficacy.
-        return e?.type === "lamp" && ppf(e.lamp).ok
+        // The lamp is there as soon as its real watts are known (lot 10b); PPF or efficacy only refine the estimate.
+        return e?.type === "lamp" && (ppf(e.lamp).ok || (e.lamp?.watts ?? 0) > 0)
       })
     const missing = firstMissing(lit, hasLamp)
     out.push({ id: "lamp", done: !missing, spaceId: missing })
   }
 
-  const watered = live.filter((s) => s.modules.irrigation)
+  // Pots only where watering is automatic (a pump in the space, or an automatic cycle): watered by hand, no pots asked.
+  const running0 = p.cycles.filter((c) => !c.archived && !c.harvestDate)
+  const watered = live.filter((s) => {
+    if (!s.modules.irrigation) return false
+    const cyc = running0.find((c) => c.spaceId === s.id)
+    if (cyc) return cyc.waterMode === "auto"
+    return !!spaceIrrigation(s.id, p.today, p.equipment, p.assignments).pumpName
+  })
   if (watered.length) {
     const hasPots = (s: Space) => {
       const irr = spaceIrrigation(s.id, p.today, p.equipment, p.assignments)
@@ -47,9 +54,10 @@ export function startChecklist(p: {
     out.push({ id: "pots", done: !missing, spaceId: missing })
   }
 
-  const running = p.cycles.filter((c) => !c.archived && !c.harvestDate)
+  const running = running0
   const dated = running.find((c) => c.germinationDate || c.flipDate)
-  out.push({ id: "cycle", done: !!dated, cycleId: (dated ?? running[0])?.id, spaceId: (dated ?? running[0])?.spaceId })
+  // A cycle without its start date: "Démarrer aujourd'hui" fills it in one tap (lot 10b).
+  out.push({ id: "cycle", done: !!dated, cycleId: (dated ?? running[0])?.id, spaceId: (dated ?? running[0])?.spaceId, canStart: !dated && !!running[0] })
 
   // Pump flow: only for automatic watering (the length of one shot comes from it).
   const auto = running.filter((c) => c.waterMode === "auto" && live.some((s) => s.id === c.spaceId && s.modules.irrigation))

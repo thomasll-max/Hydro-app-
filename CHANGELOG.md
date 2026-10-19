@@ -1,5 +1,18 @@
 # Changelog
 
+## Lot 10b2 — Stades, carte Bonjour, Premiers pas, simulation d'un an (19/10/2026)
+Passe de corrections, points 31 à 39 de `docs/audit-2026-10-19.md`.
+- **Carte Bonjour** : rinçage en arrosage automatique affiché comme tel (eau osmosée, EC < 0,1), installation « 2 petites doses de N mL près de la tige » au lieu de « 0 doses dès — », semis en automatique expliqué (le programme démarre avec « Passer en végé »), pas de programme automatique dans un espace sans pompe ; un espace sans cycle = **une seule ligne « Vide »** ; espace de séchage = **« séchage J3/10 »** ; un nouvel utilisateur ne voit plus « pas de mesure depuis hier » (seulement « Pas encore de saisie », une fois) ; volume des pots manquant signalé au lieu de « 0 L ».
+- **Résumés des jours suivants** (tâche du matin) : les échéances sont calculées avec le vrai « aujourd'hui », donc « Refaire le bidon » tombe le bon jour, et l'autonomie du réservoir décompte les jours. Plus de résumé du jour (app pas ouverte depuis plus d'une semaine) : repli sur le dernier, avec la mention de sa date.
+- **Premiers pas** : pas de pots demandés pour un espace arrosé à la main ; la lampe est cochée dès que ses watts réels sont connus ; bouton **« Démarrer aujourd'hui »** pour un cycle sans date de départ.
+- **Numéro de cycle** = rang par date de création (« Blue Zushi 2026 » n'est plus le cycle 2026) : l'EC de départ du cycle 1 ne s'applique qu'au premier.
+- **Échéance « bidon »** sans bac enregistré : liée au dernier niveau saisi (un « Fait » ne l'éteint plus pour toujours). **Concentré presque vide** : daté du jour où un nouveau sac sera nécessaire (estimé d'après l'écart habituel entre les bacs), jamais « en retard » dès sa naissance.
+- **Consommation du réservoir** : jamais calculée à travers un remplissage (deux niveaux séparés par un bac), relevés de moins de 14 jours ; les bacs de l'espace précédent d'un cycle ne comptent plus pour le nouvel espace.
+- **Noms de stade** : un seul vocabulaire (« Masse » partout ; « Floraison S6 · masse » ; « Stretch · pilotage génératif » au lieu de « Génératif · Stretch »).
+- **Une seule fonction « cycle d'un espace »** (`cycleOfSpace`) pour Aujourd'hui, la carte Bonjour, le calendrier, la saisie et les outils.
+- **Simulation d'un an** (fin de 10b) : 0 jour de végé jugée comme un semis (96 avant), 0 fausse alerte, 28/28 anomalies signalées, 0 plantage ; 4 échéances traînent encore (12 avant), toutes « mesurer le débit de la pompe » : le simulateur ne remesure la pompe qu'aux transferts (tous les 71 jours) alors que le rappel est à 60 jours, l'app a raison de le rappeler. Passage navigateur sur les 9 dates : aucune erreur, aucun débordement.
+- 254 tests (9 nouveaux ; tests 2b, 4a et 8c adaptés aux nouvelles règles) ; `e2e-10b.py` complété (Démarrer aujourd'hui, carte Bonjour).
+
 ## Lot 10b1 — Cycles : création minimale, étapes en un geste (19/10/2026)
 Passe de corrections, points 24 à 30 de `docs/audit-2026-10-19.md` (le lot 10b est coupé en 10b1 et 10b2).
 - **Créer un cycle** (décision de Thomas) : nom, variété(s), espace, **date de départ**. Le reste est replié : « Dates prévues (facultatif) » (12/12 prévu, semaines de floraison, séchage) et « Arrosage et matériel », **prérempli depuis l'équipement de l'espace** (pots, débit, lampes, mode : pompe présente = automatique). Sans équipement, pots et débit restent vides (« donnée manquante ») : le formulaire ne recopie plus jamais le cycle de Thomas (Cherry Limeade, 4 pots de 15 L, lampes).

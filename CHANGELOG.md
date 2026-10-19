@@ -1,5 +1,15 @@
 # Changelog
 
+## Lot 10e3 — « Autre marque / je dose moi-même » et simulation finale (19/10/2026)
+Décision de Thomas (hors des 84 points), en attendant le lot 7 multi-marques. Fin de la passe de corrections 10a → 10e.
+- **Nouvelle gamme « Autre marque / je dose moi-même »** dans les réglages et l'assistant : pas de recette, pas de dose, pas d'add-on.
+- **Nutrition → « Mon bidon »** : volume, EC visée (facultative), produits et doses tels que tu les écris, EC et pH mesurés. Le bidon s'affiche, l'EC et le pH se suivent dans le journal et les graphiques.
+- **Aucune cible inventée** : pas de cible d'EC ni de pH pour une autre marque ; les repères d'arrosage (dryback, runoff) restent. Pas d'échéance Fade ni rinçage Athena ; la carte Bonjour renvoie aux consignes de ta marque pour le rinçage. pH / Balance : une note au lieu du titrage Balance.
+- Jauges sans cible en couleur neutre ; « Demander à Claude » sait que la marque est dosée par toi.
+- Version locale : icône de page déclarée (plus de `/favicon.ico` en 404).
+- **Simulation d'un an (fin de passe)** : 0 jour de végé jugée comme un semis (96 avant la passe), 0 fausse alerte, 28/28 anomalies signalées, graphique « Cycle » sur le cycle en cours ; 4 échéances « débit de la pompe » restent en retard de 11 jours, parce que le simulateur ne remesure la pompe que tous les 71 jours (rappel à 60 jours). Passage navigateur sur 9 dates : aucune erreur, aucun débordement.
+- 288 tests ; `scripts/e2e-10e3.py` ; tous les scripts e2e repassés.
+
 ## Lot 10e2 — Textes, glossaire, assistant, ARIA (19/10/2026)
 Passe de corrections, points 76 à 84 de `docs/audit-2026-10-19.md`.
 - **« EC runoff », « pH runoff »** partout (plus « RO », qui se lit « eau osmosée ») ; « EC entrée ».

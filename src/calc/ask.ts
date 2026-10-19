@@ -6,7 +6,7 @@ import type { Cycle, Entry, IsoDate, Mix } from "@/model/types"
 import type { DayTargets } from "./targets"
 import { stageOn, todayIso } from "./stage"
 import { equipmentAt } from "@/equipment/calc"
-import { getCatalog } from "@/data/nutrients"
+import { getCatalog, isOwnLine } from "@/data/nutrients"
 import { spaceNutrition } from "@/model/grow-ops"
 
 export type AskTurn = { role: "user" | "assistant"; content: string }
@@ -48,11 +48,15 @@ export function askContext(d: AskData, today: IsoDate): string {
   const nut = spaceNutrition(d.grow, d.space)
   const cat = getCatalog(nut.line)
   lines.push(`Grow : ${d.grow?.name ?? "—"} · espace « ${d.space.name} » (${d.space.template}${d.space.dimensionsCm?.l && d.space.dimensionsCm?.w ? `, ${d.space.dimensionsCm.l}×${d.space.dimensionsCm.w}×${d.space.dimensionsCm.h ?? "?"} cm` : ""}).`)
-  lines.push(`Nutrition : ${cat.name}, add-ons ${nut.addons.join(", ") || "aucun"}, dosage ${nut.dosing}. Ne jamais mélanger avec une autre gamme.`)
+  lines.push(
+    isOwnLine(nut.line)
+      ? "Nutrition : autre marque, dosée par le cultivateur (aucune recette ni cible d'EC ou de pH dans l'app). Ne pas proposer de doses Athena."
+      : `Nutrition : ${cat.name}, add-ons ${nut.addons.join(", ") || "aucun"}, dosage ${nut.dosing}. Ne jamais mélanger avec une autre gamme.`,
+  )
   if (d.cycle) {
     const s = stageOn(d.cycle, today)
     lines.push(
-      `Cycle « ${d.cycle.name} » (${d.cycle.cultivars.join(", ") || "variété ?"}) : stade ${s.key}${s.flowerWeek ? `, floraison S${s.flowerWeek} J${s.flowerDay}` : s.day ? `, jour ${s.day}` : ""}; substrat ${d.cycle.substrate}, arrosage ${d.cycle.waterMode}, ${d.cycle.potCount} pots de ${d.cycle.potVolumeL} L.`,
+      `Cycle « ${d.cycle.name} » (${d.cycle.cultivars.join(", ") || "variété ?"}) : stade ${s.key}${s.flowerWeek ? `, floraison S${s.flowerWeek} J${s.flowerDay}` : s.day ? `, jour ${s.day}` : ""}; substrat ${d.cycle.substrate}, arrosage ${d.cycle.waterMode}, ${d.cycle.potCount ?? "?"} pots de ${d.cycle.potVolumeL ?? "?"} L.`,
     )
   } else lines.push("Pas de cycle en cours dans cet espace.")
   if (d.targets) {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { isOwnLine } from "@/data/nutrients"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -154,7 +155,9 @@ export function EventSheet({ open, onOpenChange, event }: { open: boolean; onOpe
 
 export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenChange: (o: boolean) => void; mix?: Mix }) {
   const { t } = useSettings()
-  const { saveMix, deleteMix } = useGrow()
+  const { saveMix, deleteMix, nutrition } = useGrow()
+  // Another brand: one pH (the tank's), no Balance fields (lot 10e).
+  const own = isOwnLine(mix?.line ?? nutrition.line)
   const show = useShow()
   const [date, setDate] = useState(todayIso())
   const [s, setS] = useState({ volume: "", ec: "", ph: "", phBefore: "", balAdded: "" })
@@ -184,6 +187,7 @@ export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenCha
         phBefore: parseNum(s.phBefore),
         balanceAddedMl: parseNum(s.balAdded),
         recipe: mix?.recipe,
+        ...(!mix && own ? { line: nutrition.line } : {}),
         note: note.trim() || undefined,
         createdAt: mix?.createdAt ?? new Date().toISOString(),
       })
@@ -201,12 +205,12 @@ export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenCha
         <Grid cols={3}>
           <NumField id="m-vol" label={t("mixForm.volume")} value={s.volume} onChange={(v) => setS((x) => ({ ...x, volume: v }))} />
           <NumField id="m-ec" label={t("mixForm.ec")} value={s.ec} onChange={(v) => setS((x) => ({ ...x, ec: v }))} />
-          <NumField id="m-ph" label={t("mixForm.ph")} value={s.ph} onChange={(v) => setS((x) => ({ ...x, ph: v }))} />
+          <NumField id="m-ph" label={own ? t("nut.phTank") : t("mixForm.ph")} value={s.ph} onChange={(v) => setS((x) => ({ ...x, ph: v }))} />
         </Grid>
-        <Grid>
+        {!own && <Grid>
           <NumField id="m-phb" label={t("nut.phBefore", { name: "Balance" })} value={s.phBefore} onChange={(v) => setS((x) => ({ ...x, phBefore: v }))} />
           <NumField id="m-bal" label={t("nut.balanceAdded", { name: "Balance" })} value={s.balAdded} onChange={(v) => setS((x) => ({ ...x, balAdded: v }))} />
-        </Grid>
+        </Grid>}
         <AreaField id="m-note" label={t("mixForm.note")} value={note} onChange={setNote} />
       </div>
     </Sheet>

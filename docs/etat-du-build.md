@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -38,18 +38,19 @@
 - [x] Lot 10d : navigation, saisie, graphiques
   - [x] Lot 10d1 : points 54–57, 61, 62, 65–68, 70 (272 tests, artefact v32)
   - [x] Lot 10d2 : points 58–60, 63, 64, 69 (281 tests, artefact v33)
-- [ ] Lot 10e : accessibilité, textes, assistant, option « Autre marque »
+- [x] Lot 10e : accessibilité, textes, assistant, option « Autre marque »
   - [x] Lot 10e1 : points 71–75, accessibilité visuelle (281 tests, artefact v34)
   - [x] Lot 10e2 : points 76–84, textes, assistant, ARIA (286 tests, artefact v35)
-  - [ ] Lot 10e3 : option « Autre marque / je dose moi-même », simulation finale
+  - [x] Lot 10e3 : option « Autre marque / je dose moi-même », simulation finale (288 tests, artefact v36)
 
 ## Lot 10 : passe de corrections (19/10/2026)
 - Source : `docs/audit-2026-10-19.md`, avec 84 points tirés de la simulation d'un an, de 4 audits et des retours des testeurs. Les points faits y sont cochés ✅.
 - Prompt de la session : `docs/prompt-passe-10.md`. Décisions de Thomas : voir ce prompt.
 - Scripts de simulation : `scripts/sim/`.
-- Point de reprise : premier point non coché de l'audit.
+- Point de reprise : premier point non coché de l'audit. **Passe terminée le 19/10/2026 : les 84 points sont cochés** (et l'option « Autre marque » de la section « Hors passe »).
+- **Après la passe** : lots 10f et 10g (identité « hydro. », `docs/prompt-lots-10f-10g.md`, poussé par Thomas pendant la passe), puis le lot 7 (multi-marques de la Nutrition). Netlify ne met plus en ligne à chaque push (voir `CLAUDE.md`) : aucun commit de la passe ne porte `[deploy]`. Hors passe, non faits : photos dans la sauvegarde (.zip), poids du premier chargement. À vérifier sur le téléphone de Thomas : le geste retour dans l'app Claude (lot 10d1).
 - **Branche** (décision de la session du 19/10, Thomas absent) : la session est configurée sur `claude/hydro-passe-10a-10e-pcm10n`. Le prompt demande « push sur main » et `CLAUDE.md` autorise le push direct : chaque lot est poussé **sur cette branche et sur `main`** (mêmes commits), donc pas de PR à ouvrir.
-- Simulation d'un an : résultats notés dans « Lot 10b2 — notes » et « Lot 10e — notes » (intermédiaire dans « Lot 10b1 — notes »).
+- Simulation d'un an : résultats notés dans « Lot 10b2 — notes » et « Lot 10e3 — notes » (intermédiaire dans « Lot 10b1 — notes »).
 
 ## Lot 10a — notes
 - Stockage (`store/`) : `list()` lève l'erreur ; `watchDoc` / `watchCollection` prennent un `onError` et ne rendent plus jamais un état vide sur erreur ; `batch(ops)` (une transaction IndexedDB, une notification par collection) et `writeAll` (par paquets de 200, avec progression). `MemoryStore` enregistre (`persist`) **avant** de changer la mémoire. `LocalStore` : ouverture d'IndexedDB limitée à 6 s, sinon `volatile` (mémoire seule, bandeau rouge) ; `BroadcastChannel("hydro-docs")` rejoue les écritures dans les autres onglets.
@@ -95,6 +96,23 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 - Premiers pas : pots demandés seulement si l'arrosage de l'espace est automatique (cycle en automatique, sinon pompe dans l'espace) ; lampe cochée avec ses watts (`StartItem.canStart` pour « Démarrer aujourd'hui »).
 - Carte Bonjour : un cycle « automatique » dans un espace sans pompe (quand le grow liste ses pompes) est traité comme arrosé à la main. Pas de dose ni de programme inventés pour le rinçage (eau osmosée, EC < 0,1 : fiche Athena).
 - **Simulation d'un an (fin de 10b, 19/10)** : 479 saisies vérifiées, 28/28 anomalies signalées, **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 0 plantage, 364 matins rejoués ; **4 échéances traînent** (12 avant) : toutes « mesurer le débit » (11 matins chacune), car le simulateur ne remesure la pompe qu'aux transferts (71 jours) alors que la règle du cahier des charges est 60 jours. Je n'ai pas changé ce comportement du simulateur : le rappel est juste. Passage navigateur (`browse.py`, 9 dates × 13 écrans) : aucune erreur console, aucun débordement (le seul « Infinity » relevé est la marque AC Infinity).
+
+## Lot 10e3 — notes
+- **« Autre marque / je dose moi-même »** (décision de Thomas, en attendant le lot 7) : `OWN_LINE = "own"` et `isOwnLine` dans `data/nutrients/index.ts`. Ce n'est **jamais** un catalogue : `getCatalog("own")` retombe sur la Pro Line, donc chaque usage teste `isOwnLine` d'abord.
+  - Réglages (grow et espace) et assistant : l'option s'ajoute à la liste des gammes, dans l'artefact comme dans la version locale ; choisie, elle vide les add-ons et cache le dosage, avec une note ; revenir à une gamme Athena remet ses add-ons par défaut.
+  - Nutrition : « Mon bidon » (volume, EC visée facultative, produits et doses en texte libre, EC et pH mesurés), enregistré avec `line: "own"` et `items: []` ; « Dernier bidon » affiché. Aucune recette, aucune dose, aucun concentré.
+  - pH / Balance : une note (le Balance est un produit Athena). Feuille « Bidon » du Journal : un seul pH (« pH du bidon »), pas de champs Balance.
+  - **Décisions prises seules** : cibles du jour sans EC ni pH (aucune source pour une autre marque) ; les repères d'arrosage restent (dryback et runoff de la méthode de précision en coco automatique, runoff 10–25 % « repère de l'app » en manuel ; pas le tableau manuel de la gamme, qui est Athena) ; pas d'échéance Fade ni rinçage (programme Athena) ; la carte Bonjour dit « Rinçage : suis les consignes de ta marque » la semaine de rinçage ; jauges sans cible en couleur neutre (plus en vert).
+  - « Demander à Claude » reçoit « autre marque, dosée par le cultivateur… ne pas proposer de doses Athena ».
+- Version locale : `<link rel="icon">` (icône 192 px) — supprime la seule erreur de la simulation dans le navigateur (`/favicon.ico` en 404).
+- `scripts/e2e-10e3.py` ; 288 tests (2 nouveaux).
+
+### Simulation d'un an, fin de passe (19/10/2026)
+- `npx -y tsx scripts/sim/build.ts <dossier>` puis `validate.ts` puis `browse.py dist-local <dossier>`.
+- **0 jour de « végé jugée comme un semis »** (96 avant la passe), **0 fausse alerte**, **28/28 anomalies signalées**, 364 matins rejoués, 0 plantage.
+- Graphique « Cycle » de Floraison : du 31/07/2026 au 19/10/2026, le cycle en cours (avant : depuis le 20/10/2025).
+- **Échéances qui traînent : 4** (12 avant la passe), toutes « Mesurer le débit de la pompe » (`flowCheck`), en retard de 11 matins : le simulateur ne remesure la pompe qu'aux transferts, tous les 71 jours, alors que le rappel tombe à 60 jours. L'app a raison de le rappeler ; l'objectif « 0 » n'est donc pas atteint à cause du rythme du simulateur, pas d'un défaut de l'app. **Non corrigé exprès** (changer le simulateur pour qu'il obéisse au rappel masquerait le constat).
+- Navigateur, 9 dates : aucune erreur après le correctif de l'icône (une seule avant : `/favicon.ico` en 404 à la première date), aucun débordement, aucun « NaN » / « undefined » (le seul mot signalé, « Infinity », est la marque AC Infinity dans Équipement).
 
 ## Lot 10e2 — notes
 - Mots : « EC runoff », « pH runoff » (plus « RO », lu « eau osmosée ») ; « EC entrée » ; « pièce » au lieu de « room » ; plus de « version Claude », « lot 8 », « Version 0.3 » (« l'app dans Claude », « l'app installée sur le téléphone ») ; « heure du grow (Oslo) » au lieu de « Europe/Oslo ».
@@ -205,7 +223,7 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1, 281 au lot 10d2, 286 au lot 10e2
+npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1, 281 au lot 10d2, 286 au lot 10e2, 288 au lot 10e3
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale

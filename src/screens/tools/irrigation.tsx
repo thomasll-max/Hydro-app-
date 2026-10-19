@@ -15,7 +15,7 @@ import { defaultCycle } from "@/screens/sheets"
 import { spaceIrrigation } from "@/equipment/calc"
 import { SettingsLink } from "./equipment-shared"
 import { useEditors } from "@/app/editors"
-import { getCatalog, type ManualPhase } from "@/data/nutrients"
+import { getCatalog, isOwnLine, type ManualPhase } from "@/data/nutrients"
 import { manualRow } from "@/calc/targets"
 import type { Cycle, StageKey, Substrate, WaterMode } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
@@ -33,6 +33,8 @@ export function IrrigationTool() {
   const potL = eq?.potL.ok ? eq.potL.value : undefined
   const potOk = potL != null
   const cat = getCatalog(nutrition.line)
+  // Another brand: no line table (its EC and pH by week are Athena's), lot 10e.
+  const own = isOwnLine(nutrition.line)
 
   const base = cycle ?? defaultCycle()
   const cycleStage = cycle ? steerStage(stageOn(cycle, todayIso()).key, cycle.establishing) : null
@@ -71,7 +73,7 @@ export function IrrigationTool() {
   const totals = programTotals(rows)
   const cs = cycle ? stageOn(cycle, todayIso()) : null
   const flowerWeek = stage === cycleStage && cs?.flowerWeek ? cs.flowerWeek : stage === "str" ? 2 : undefined
-  const tg = dayTargets(STEER_TO_STAGE[stage], { mode, substrate, flowerWeek, line: cat.id })
+  const tg = dayTargets(STEER_TO_STAGE[stage], { mode, substrate, flowerWeek, line: nutrition.line })
   const currentManual = manualRow(cat, STEER_TO_STAGE[stage], flowerWeek)
   const potCount = eq?.potCount ?? base.potCount ?? 0
   const shotMl = Math.round(input.potVolumeL * 10 * input.shotPct)
@@ -191,7 +193,7 @@ export function IrrigationTool() {
         </Card>
       </Reveal>
 
-      {cat.manual.length > 0 && (
+      {!own && cat.manual.length > 0 && (
         <Reveal i={5}>
           <ManualTable rows={cat.manual} current={currentManual} line={cat.name} />
         </Reveal>

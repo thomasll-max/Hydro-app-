@@ -10,7 +10,7 @@ import { addDays, fadeStart, flushStart, plannedHarvest } from "@/calc/stage"
 import { spaceContext } from "@/calc/space-context"
 import type { DigestData } from "@/calc/digest"
 import { openStocks, stockStatus } from "@/calc/concentrate"
-import { getCatalog } from "@/data/nutrients"
+import { getCatalog, isOwnLine } from "@/data/nutrients"
 import { ipwLastDay, nextIpw } from "@/calc/ipw"
 
 export const DEADLINE_KINDS = ["flip", "fade", "flush", "harvest", "tank", "propagationEnd", "greatWhite", "dryingEnd", "flowCheck", "concentrateLow", "ipw"] as const
@@ -74,7 +74,8 @@ export function deadlines(data: CalendarData, today: IsoDate): Deadline[] {
         if (next) out.push({ key: `ipw_${space.id}_${next.date}`, kind: "ipw", date: next.date, ...base, vars: { ...vars, space: space.name }, source: "athena" })
       }
       const flush = flushStart(c)
-      if (flush) out.push({ key: `flush_${c.id}`, kind: "flush", date: flush, ...base, vars, source: "athena", ...doneBy("flush", flush, (m) => m.kind === "flush" || m.phase === "flush") })
+      // Flush (plain water + Cleanse, EC < 0.1) is Athena's program: not for another brand (lot 10e).
+      if (flush && !isOwnLine(nut.line)) out.push({ key: `flush_${c.id}`, kind: "flush", date: flush, ...base, vars, source: "athena", ...doneBy("flush", flush, (m) => m.kind === "flush" || m.phase === "flush") })
       const harvest = plannedHarvest(c)
       if (harvest) out.push({ key: `harvest_${c.id}`, kind: "harvest", date: harvest, ...base, vars, source: "user" })
       const moved = !!c.transferDate || (c.transfers ?? []).some((t) => !t.partial)

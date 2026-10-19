@@ -12,11 +12,26 @@ import { useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { balanceHistory, phStatus, predictBalance, START_FRACTION, titrationTotal } from "@/calc/balance"
-import { getCatalog } from "@/data/nutrients"
+import { getCatalog, isOwnLine } from "@/data/nutrients"
 import { cn } from "@/lib/utils"
 import type { Target } from "@/calc/targets"
 
 export function PhBalanceTool() {
+  const { nutrition } = useGrow()
+  return isOwnLine(nutrition.line) ? <OwnPhNote /> : <BalanceTool />
+}
+
+/** Another brand: no pH-up recipe (Balance is Athena's); the tank's pH is noted in Nutrition (lot 10e). */
+function OwnPhNote() {
+  const { t } = useSettings()
+  return (
+    <Card className="px-4 py-4" id="own-ph">
+      <p className="text-[0.8125rem] leading-[1.45] text-fg-2">{t("own.ph")}</p>
+    </Card>
+  )
+}
+
+function BalanceTool() {
   const { t, num, range, show } = useSettings()
   const n1 = (v: number) => num(v, v % 1 ? 1 : 0)
   const { cycle, space, mixes, all, targetsFor, nutrition, saveMix } = useGrow()

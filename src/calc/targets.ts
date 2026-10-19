@@ -4,7 +4,7 @@
 // estimate = estimate, shown as such
 // common   = common benchmark (not from the Handbook), labelled as such in the UI
 import type { Cycle, Range, StageKey, Substrate, TargetsSnapshot, WaterMode } from "@/model/types"
-import { getCatalog, type ManualPhase, type NutrientCatalog } from "@/data/nutrients"
+import { getCatalog, isOwnLine, type ManualPhase, type NutrientCatalog } from "@/data/nutrients"
 import { phaseAt, phFor } from "./nutrients"
 import { isPrecision } from "./program"
 
@@ -79,6 +79,16 @@ export function dayTargets(
   opts: { mode: WaterMode; substrate: Substrate; flowerWeek?: number; cycleNumber?: number; line?: string; addons?: readonly string[] },
 ): DayTargets | null {
   if (stage === "notStarted" || stage === "harvested") return null
+  // Another brand, dosed by the grower: no EC or pH target (none published for it); the watering method's stay.
+  if (isOwnLine(opts.line)) {
+    const own: DayTargets = { stage, ...LIGHT[stage] }
+    if (stage === "seedling" || stage === "flush") return own
+    if (isPrecision({ waterMode: opts.mode, substrate: opts.substrate })) {
+      const a = AUTO[stage]
+      if (a) Object.assign(own, { dryback: a.dryback, runoffPct: a.runoffPct, steer: a.steer })
+    } else own.runoffPct = r(10, 25, "app")
+    return own
+  }
   const ph = phTarget(stage, opts.substrate, { line: opts.line, flowerWeek: opts.flowerWeek, addons: opts.addons })
   const t: DayTargets = { stage, phIn: ph, phRunoff: ph, ...LIGHT[stage] }
   // Solution EC: Athena clone/seedling row 2.0; cycle 1 runs 2.0–2.4 (spec); flush = plain water + Cleanse, EC < 0.1.

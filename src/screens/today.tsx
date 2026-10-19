@@ -273,7 +273,7 @@ function GaugeCard({ emoji, label, value, target, max, unit, decimals, note, ter
         {term && <InfoTip term={term} />}
       </span>
       {value != null ? (
-        <ArcGauge value={value} lo={target?.lo ?? 0} hi={target?.hi ?? 0} max={Math.max(max, value)} decimals={decimals} unit={unit} locale={locale} tone={target ? status(value, target) : note ? "neutral" : "ok"} />
+        <ArcGauge value={value} lo={target?.lo ?? 0} hi={target?.hi ?? 0} max={Math.max(max, value)} decimals={decimals} unit={unit} locale={locale} tone={target ? status(value, target) : "neutral"} />
       ) : (
         <div className="my-1.5 flex size-[92px] items-center justify-center rounded-full border-[9px] border-track text-[1.375rem] font-semibold text-fg-3">—</div>
       )}

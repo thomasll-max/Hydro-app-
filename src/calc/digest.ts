@@ -1,11 +1,12 @@
 // "Bonjour" card (spec §4ter): buildDailyDigest(data, date, locale) — pure, no AI, no server.
 // v1 (lot 2b): per space, the latest climate, today's planned watering, the last entry, the reservoir autonomy.
 // Later batches add reminders (3), nutrition (4)…  The Claude version stores the result in digest/latest.
+import { isOwnLine } from "@/data/nutrients"
 import type { Equipment, EquipmentAssignment, Grow, Site, Space } from "@/model/grow"
 import type { Cycle, Entry, GrowEvent, IsoDate, Mix } from "@/model/types"
 import type { Lang } from "@/i18n/types"
 import { formatDayMonth, formatNumber, translate } from "@/i18n/core"
-import { groupBySite } from "@/model/grow-ops"
+import { groupBySite, spaceNutrition } from "@/model/grow-ops"
 import { buildProgram, PHOTOPERIOD, programTotals, steerStage } from "./program"
 import { addDays, daysBetween, stageOn } from "./stage"
 import { spaceContext } from "./space-context"
@@ -104,7 +105,9 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, 
       const pumps = data.equipment.some((e) => e.type === "pump")
       const auto = cycle.waterMode === "auto" && (!pumps || ctx.here.some((e) => e.type === "pump"))
       const ss = steerStage(s.key, cycle.establishing)
-      if (s.key === "flush") lines.push({ kind: "watering", text: t(auto ? "digest.wateringFlushAuto" : "digest.wateringFlushManual") })
+      // Another brand: its own flush instructions, never Athena's EC < 0.1 (lot 10e).
+      const own = isOwnLine(spaceNutrition(data.grow?.nutrition ? { nutrition: data.grow.nutrition } : null, space).line)
+      if (s.key === "flush") lines.push({ kind: "watering", text: t(own ? "digest.wateringFlushOwn" : auto ? "digest.wateringFlushAuto" : "digest.wateringFlushManual") })
       else if (!ss) lines.push({ kind: "watering", text: t(auto ? "digest.wateringSeedlingAuto" : "digest.wateringHand") })
       else if (ss === "inst") {
         const small = buildProgram(cycle, ss).find((r) => r.kind === "inst")?.ml

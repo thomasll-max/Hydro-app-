@@ -9,14 +9,23 @@ export const TAB_IDS = ["today", "journal", "calendar", "charts", "tools"] as co
 export type TabId = (typeof TAB_IDS)[number]
 export const TOOL_IDS = ["start", "irrigation", "nutrition", "ph", "ipw", "light", "climate", "ask", "equipment", "data", "reperes", "settings"] as const
 export type ToolId = (typeof TOOL_IDS)[number]
-export type Route = { tab: TabId; tool?: ToolId; /** Calendar opened on a day (week strip of Aujourd'hui). */ day?: string }
+export type Route = {
+  tab: TabId
+  tool?: ToolId
+  /** Calendar opened on a day; the day of a week page of the Journal (lot 10k3). */
+  day?: string
+  /** A week page of the Journal (lot 10k3): « spaceId/2026-02-02 » (its Monday). */
+  week?: string
+}
 
 const isTool = (s: string | undefined): s is ToolId => !!s && (TOOL_IDS as readonly string[]).includes(s)
 
 /** Route of a hash. Old links (#irrigation, #guide) still open their tool. */
 export function parseHash(hash: string): Route {
-  const [a, b] = decodeURIComponent(hash.replace(/^#/, "")).split("/")
+  const [a, b, c, d] = decodeURIComponent(hash.replace(/^#/, "")).split("/")
   if (a === "tools") return isTool(b) ? { tab: "tools", tool: b } : { tab: "tools" }
+  const iso = (x?: string) => /^\d{4}-\d{2}-\d{2}$/.test(x ?? "")
+  if (a === "journal" && b && iso(c)) return { tab: "journal", week: `${b}/${c}`, ...(iso(d) ? { day: d } : {}) }
   if (a === "calendar") return /^\d{4}-\d{2}-\d{2}$/.test(b ?? "") ? { tab: "calendar", day: b } : { tab: "calendar" }
   if (isTool(a)) return { tab: "tools", tool: a }
   if (a === "guide") return { tab: "tools", tool: "reperes" }
@@ -27,6 +36,7 @@ export function parseHash(hash: string): Route {
 export function routeHash(r: Route): string {
   if (r.tab === "today") return ""
   if (r.tab === "calendar" && r.day) return `#calendar/${r.day}`
+  if (r.tab === "journal" && r.week) return `#journal/${r.week}${r.day ? `/${r.day}` : ""}`
   return r.tab === "tools" && r.tool ? `#tools/${r.tool}` : `#${r.tab}`
 }
 

@@ -6,6 +6,7 @@ import type { Autonomy } from "./reservoir"
 import type { CalItem } from "@/calendar/agenda"
 import type { Entry } from "@/model/types"
 import { translate } from "@/i18n/core"
+import { parseHash, routeHash } from "@/app/nav"
 import { fr } from "@/i18n/fr"
 import { en } from "@/i18n/en"
 import { de } from "@/i18n/de"
@@ -16,6 +17,9 @@ import { deadlines } from "@/calendar/deadlines"
 import { deadlineTitle } from "@/calendar/labels"
 import { FLOWER_ID, thomasGrow } from "@/data/thomas-grow"
 import type { Spray, SprayMix } from "@/model/grow"
+import { buildWeeks, CULTURE_METRICS, metricLines, mondayOf, offValues, weekLabel, weekVerdict } from "./weeks"
+import { addDays } from "./stage"
+import type { Cycle, GrowEvent, Mix } from "@/model/types"
 
 const root = path.resolve(import.meta.dirname, "../..")
 const read = (f: string) => fs.readFileSync(path.join(root, f), "utf8")
@@ -255,5 +259,142 @@ describe("lot 10k3a — le « + » ouvre une petite feuille", () => {
   it("les trois gros boutons du haut du Journal disparaissent", () => {
     const j = read("src/screens/journal.tsx")
     expect(j).not.toMatch(/openQuick|ed\.openEvent\(\)|ed\.openMix\(\)/)
+  })
+})
+
+describe("lot 10k3b — Journal par semaines (calculs purs)", () => {
+  const cyc = { id: "c2", name: "Cycle 2", germinationDate: "2025-12-30", vegDate: "2026-01-06", flipDate: "2026-02-11", flowerWeeks: 9 } as unknown as Cycle
+  const tg = { stage: "veg", dryback: { lo: 25, hi: 50 }, ecRunoff: { lo: 3, hi: 5 }, phRunoff: { lo: 5.8, hi: 6.2 } }
+  const en = (date: string, extra: Partial<Entry> = {}): Entry => ({ schemaVersion: 2, id: `${date}_flo`, date, spaceId: "flo", cycleId: "c2", createdAt: "x", updatedAt: "x", targets: tg, dryback: 35, ecRunoff: 4, ...extra }) as unknown as Entry
+  it("semaines du lundi au dimanche ; nom de la semaine = stade de son jeudi, dans le cycle", () => {
+    expect(mondayOf("2026-02-08")).toBe("2026-02-02")
+    expect(mondayOf("2026-02-02")).toBe("2026-02-02")
+    expect(weekLabel(cyc, "2026-02-02")).toEqual({ kind: "veg", week: 6 })
+    expect(weekLabel(cyc, "2026-02-09")).toEqual({ kind: "flower", week: 1 })
+    expect(weekLabel(cyc, "2025-12-29")).toEqual({ kind: "seedling", week: 1 })
+    expect(weekLabel({ ...cyc, germinationDate: "2026-01-03" } as Cycle, "2025-12-29")).toEqual({ kind: "seedling", week: 1 })
+    expect(weekLabel({ ...cyc, harvestDate: "2026-04-15" } as Cycle, "2026-04-20")).toEqual({ kind: "drying", week: 2 })
+    expect(weekLabel(cyc, "2025-12-15")).toEqual({ kind: "before", week: 0 })
+  })
+  it("hors cible : seulement d'après les cibles enregistrées dans la saisie", () => {
+    expect(offValues(en("2026-02-05", { phRunoff: 4.8 }))).toEqual([{ metric: "phRunoff", status: "bad", value: 4.8, lo: 5.8, hi: 6.2 }])
+    expect(offValues(en("2026-02-05", { phRunoff: 4.8, targets: undefined }))).toEqual([])
+  })
+  it("une semaine : bande des 7 jours, jours qui comptent, jours sans souci, résumé", () => {
+    const entries = [en("2026-02-03"), en("2026-02-04", { observations: [{ tag: "yellowing", severity: 1 }] as never }), en("2026-02-05", { phRunoff: 4.8 }), en("2026-02-06", { actions: ["lst"] as never }), en("2026-02-07", { dryback: 38, ecRunoff: 4.3 }), en("2026-01-28")]
+    const mixes = [{ schemaVersion: 2, id: "m1", date: "2026-02-03", volumeL: 40, spaceIds: ["flo"], cycleId: "c2", createdAt: "x", updatedAt: "x" }] as unknown as Mix[]
+    const events = [{ schemaVersion: 2, id: "e1", date: "2026-02-03", type: "transplant", cycleId: "c2", spaceId: "flo", createdAt: "x" }] as unknown as GrowEvent[]
+    const weeks = buildWeeks({ entries, mixes, events, cycles: [cyc], today: "2026-02-08", perSpace: false, cycle: cyc })
+    expect(weeks.map((w) => w.monday)).toEqual(["2026-02-02", "2026-01-26"])
+    const w = weeks[0]
+    expect(w.current).toBe(true)
+    expect(w.label).toEqual({ kind: "veg", week: 6 })
+    expect(w.days.map((d) => d.state)).toEqual(["none", "ok", "ok", "warn", "ok", "ok", "none"])
+    expect(w.days.map((d) => d.dot)).toEqual([false, true, false, false, true, false, false])
+    expect(w.days[6].today).toBe(true)
+    expect(w.rows.map((r) => [r.date, r.kind])).toEqual([["2026-02-06", "action"], ["2026-02-05", "warn"], ["2026-02-04", "obs"], ["2026-02-03", "mix"]])
+    expect(w.quiet.map((d) => d.date)).toEqual(["2026-02-07"])
+    expect([w.offDays, w.incidents]).toEqual([1, 1])
+    expect(w.ranges).toEqual({ dryback: [35, 38], ecRunoff: [4, 4.3] })
+    // A future day of a past… no: a later day of the current week is « future ».
+    expect(buildWeeks({ entries, mixes: [], events: [], cycles: [cyc], today: "2026-02-05", perSpace: false, cycle: cyc })[0].days.map((d) => d.state).slice(3)).toEqual(["warn", "future", "future", "future"])
+  })
+  it("« Tous » : une carte par semaine et par espace ; la semaine en cours du cycle même sans saisie", () => {
+    const both = [en("2026-02-03"), { ...en("2026-02-03"), id: "x", spaceId: "col" }]
+    const weeks = buildWeeks({ entries: both, mixes: [], events: [], cycles: [cyc], today: "2026-02-08", perSpace: true })
+    expect(weeks.map((w) => w.key)).toEqual(["col_2026-02-02", "flo_2026-02-02"])
+    expect(weeks[0].label).toEqual({ kind: "veg", week: 6 })
+    const empty = buildWeeks({ entries: [en("2026-01-28")], mixes: [], events: [], cycles: [cyc], today: "2026-02-08", perSpace: false, cycle: cyc })
+    expect(empty.map((w) => [w.monday, w.entries.length])).toEqual([["2026-02-02", 0], ["2026-01-26", 1]])
+  })
+  it("rapide avec une année de saisies (la simulation en a plus de 189)", () => {
+    const many = Array.from({ length: 400 }, (_, i) => en(addDays("2025-02-01", i)))
+    const t0 = performance.now()
+    const weeks = buildWeeks({ entries: many, mixes: [], events: [], cycles: [cyc], today: "2026-03-08", perSpace: false })
+    expect(weeks.length).toBeGreaterThan(55)
+    expect(performance.now() - t0).toBeLessThan(250)
+  })
+})
+
+describe("lot 10k3b — Journal par semaines : l'écran", () => {
+  const j = read("src/screens/journal.tsx")
+  const wk = read("src/screens/journal-weeks.tsx")
+  it("une ligne : cycle, loupe, filtres ; puis une carte par semaine ; plus de tiroirs Événements · Bidons · Récolte", () => {
+    expect(j).toMatch(/id="journal-cycles"/)
+    expect(j).toMatch(/id="journal-search-btn"/)
+    expect(j).toMatch(/id="journal-filters"/)
+    expect(j).toMatch(/<WeekCard/)
+    expect(j).not.toMatch(/Accordion|journal\.events|journal\.mixes|journal\.harvest/)
+    expect(j).toMatch(/buildWeeks\(/)
+    // The weeks are computed once per change of the journal.
+    expect(j).toMatch(/const weeks = useMemo\(/)
+  })
+  it("bande des 7 jours, icône de type de 28 px, « + N jours sans souci »", () => {
+    expect(wk).toMatch(/grid grid-cols-7/)
+    expect(wk).toMatch(/border-\[1\.5px\] border-water/)
+    expect(wk).toMatch(/bg-leaf\/20/)
+    expect(wk).toMatch(/bg-warn\/30/)
+    expect(wk).toMatch(/border border-dashed/)
+    expect(wk).toMatch(/size-7 shrink-0 place-items-center rounded-\[8px\]/)
+    expect(translate("fr", "jw.quiet", { n: 2 })).toBe("+ 2 jours sans souci")
+    expect(translate("fr", "jw.veg", { n: 6 })).toBe("Végé S6")
+    expect(translate("en", "jw.flower", { n: 3 })).toBe("Flower W3")
+    expect(translate("de", "jw.quote", { text: "x" })).toBe("„x“")
+  })
+})
+
+describe("lot 10k3c — page d'une semaine (calculs purs)", () => {
+  const tg = { stage: "veg", dryback: { lo: 25, hi: 50 }, phRunoff: { lo: 5.8, hi: 6.2 }, vpd: { lo: 0.8, hi: 1.2 } }
+  const en = (date: string, extra: Partial<Entry> = {}): Entry => ({ schemaVersion: 2, id: `${date}_flo`, date, spaceId: "flo", createdAt: "x", updatedAt: "x", targets: tg, ...extra }) as unknown as Entry
+  const week = [en("2026-02-03", { dryback: 37, phRunoff: 6.0, vpd: 0.95 }), en("2026-02-04", { dryback: 33, phRunoff: 6.1, vpd: 1.0 }), en("2026-02-05", { dryback: 32, phRunoff: 4.8, vpd: 1.02 }), en("2026-02-06", { dryback: 33, phRunoff: 6.1, vpd: 0.99 })]
+  const prev = [en("2026-01-27", { dryback: 41, phRunoff: 6.0, vpd: 1.4 }), en("2026-01-29", { dryback: 41, phRunoff: 6.0, vpd: 1.44 })]
+  it("moyenne, semaine d'avant, jours dans la cible, sens par rapport à la cible", () => {
+    const lines = metricLines(week, prev, CULTURE_METRICS)
+    expect(lines.map((l) => l.metric)).toEqual(["dryback", "phRunoff", "vpd"])
+    const [dry, ph, vpd] = lines
+    expect([dry.avg, dry.prevAvg, dry.inTarget, dry.measured, dry.trend]).toEqual([33.75, 41, 4, 4, "in"])
+    expect([ph.inTarget, ph.measured, ph.points.find((p) => p.date === "2026-02-05")?.status]).toEqual([3, 4, "bad"])
+    expect(ph.target).toEqual({ lo: 5.8, hi: 6.2 })
+    expect([vpd.trend, Math.round(vpd.prevAvg! * 100) / 100]).toEqual(["in", 1.42])
+    // Without a recorded target (sensor dryback, T°, HR): no status, no « jours dans la cible ».
+    const sensor = metricLines([en("2026-02-03", { drybackSensor: 12 })], [], CULTURE_METRICS)[0]
+    expect([sensor.metric, sensor.target, sensor.measured, sensor.points[0].status]).toEqual(["drybackSensor", undefined, 0, undefined])
+  })
+  it("verdict : « Bonne direction » quand tout est dans la cible ou s'en rapproche ; ce qui est hors cible, avec la date ; ce qui est revenu", () => {
+    const v = weekVerdict(metricLines(week, prev, CULTURE_METRICS), true)
+    expect(v.good).toBe(false) // the 4,8 of 05/02 takes the pH average out of the target (5,75, it was 6,0): « farther »
+    expect(v.offs).toEqual([{ metric: "phRunoff", dates: ["2026-02-05"] }])
+    expect(v.back.map((b) => b.metric)).toEqual(["vpd"])
+    const fine = weekVerdict(metricLines(week.map((e) => ({ ...e, phRunoff: 6.0 })), prev, CULTURE_METRICS), true)
+    expect([fine.good, fine.allIn, fine.first]).toEqual([true, true, false])
+    // Coming closer counts as a good direction.
+    const closer = weekVerdict(metricLines([en("2026-02-03", { dryback: 55 })], [en("2026-01-27", { dryback: 62 })], CULTURE_METRICS), true)
+    expect([closer.good, closer.allIn]).toEqual([true, false])
+    const away = weekVerdict(metricLines([en("2026-02-03", { dryback: 62 })], [en("2026-01-27", { dryback: 55 })], CULTURE_METRICS), true)
+    expect([away.good, away.away.map((a) => a.metric)]).toEqual([false, ["dryback"]])
+    expect(weekVerdict(metricLines(week, [], CULTURE_METRICS), false).first).toBe(true)
+  })
+})
+
+describe("lot 10k3c — page d'une semaine : l'écran", () => {
+  it("route #journal/<espace>/<lundi>[/<jour>] ; ouverte par « Voir la semaine → », le résumé ou un jour de la bande", () => {
+    expect(parseHash("#journal/floraison/2026-02-02")).toEqual({ tab: "journal", week: "floraison/2026-02-02" })
+    expect(parseHash("#journal/floraison/2026-02-02/2026-02-06")).toEqual({ tab: "journal", week: "floraison/2026-02-02", day: "2026-02-06" })
+    expect(routeHash({ tab: "journal", week: "floraison/2026-02-02", day: "2026-02-06" })).toBe("#journal/floraison/2026-02-02/2026-02-06")
+    expect(parseHash("#journal/floraison")).toEqual({ tab: "journal" })
+    const wk = read("src/screens/journal-weeks.tsx")
+    expect(wk).toMatch(/navigate\(\{ tab: "journal", week: `\$\{sid\}\/\$\{w\.monday\}`/)
+    expect(wk).toMatch(/data-see-week/)
+  })
+  it("verdict, une ligne par valeur clé (mini-courbe sur la bande de cible), puis une carte par jour qui ouvre la saisie", () => {
+    const p = read("src/screens/journal-week.tsx")
+    expect(p).toMatch(/id="week-verdict"/)
+    expect(p).toMatch(/<MiniWeek line=\{l\} monday=\{monday\} \/>/)
+    expect(p).toMatch(/strokeDasharray=\{gap \? "2 3" : undefined\}/) // a day without a value: dotted link, straight segments
+    expect(p).toMatch(/onOpen=\{\(e\) => ed\.openEntry\(\{ date: d, spaceId/)
+    expect(p).toMatch(/shownDays = allDays \? roomDays : roomDays\.slice\(0, 3\)/)
+    expect(translate("fr", "wp.good")).toBe("Bonne direction.")
+    expect(translate("fr", "wp.back1", { metric: "VPD", prev: "1,42" })).toBe("VPD : de retour dans la cible (1,42 la semaine d'avant).")
+    for (const l of ["en", "de"] as const) expect(Object.keys((l === "en" ? en : de).wp)).toEqual(Object.keys(fr.wp))
   })
 })

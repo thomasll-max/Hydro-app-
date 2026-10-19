@@ -1,5 +1,20 @@
 # Changelog
 
+## Lot 10k3c — La page d'une semaine (19/10/2026)
+- « Voir la semaine → », le résumé d'une semaine ouverte ou un jour de la bande ouvrent **la page de la semaine** : « Végé S6 · 2–8 févr. · 5 saisies · comparée à Végé S5 ».
+- **Le verdict d'abord**, calculé seulement à partir des cibles enregistrées : « Bonne direction » ou « À surveiller », ce qui est hors cible avec la date, ce qui est revenu dans la cible.
+- **Une ligne par valeur clé** (dryback, runoff, EC et pH runoff, VPD ; en séchage T°, HR, VPD) : la cible, une mini-courbe des 7 jours sur la bande de cible, la moyenne, la semaine d'avant et le nombre de jours dans la cible.
+- **Une carte par jour** avec quatre valeurs ; la toucher ouvre la saisie pour la corriger.
+- 370 tests.
+
+## Lot 10k3b — Le Journal par semaines (19/10/2026)
+- Une **carte par semaine** du cycle (« Végé S6 · 2–8 févr. »), repliée sauf la semaine en cours. En vue « Tous », une carte par semaine et par espace.
+- Dans chaque carte, la **bande des 7 jours** : vert clair quand la saisie est dans la cible, orange quand une valeur sort de la cible, pointillé sans saisie, contour pour aujourd'hui, un petit point quand il y a un bidon, une action ou un événement. Toucher un jour ouvre la page de la semaine sur ce jour.
+- La semaine ouverte ne montre que **les jours qui comptent** (alerte, bidon, action, observation, note, événement), chacun avec sa petite icône ; les autres tiennent en « + 2 jours sans souci ».
+- En haut, sur une ligne : le **cycle** (Cycle 2, Cycle 1…), la **loupe** (cherche dans les notes, observations et actions) et les **filtres**.
+- Les tiroirs « Événements · Bidons · Récolte » disparaissent : bidons et événements sont dans leur semaine. « Modifier le cycle », « Récolte » et « Plantes » restent en bas.
+- Livré avec la page d'une semaine (10k3c).
+
 ## Lot 10k3a — Le « + » ouvre un petit menu (19/10/2026)
 - Le « + » de la barre du bas ouvre une petite feuille : **Saisie du jour**, **Saisie rapide** (tous les espaces), **Nouveau bidon**, **Événement**.
 - Les trois gros boutons du haut du Journal disparaissent.

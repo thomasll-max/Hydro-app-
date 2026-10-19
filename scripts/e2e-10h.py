@@ -9,7 +9,7 @@
 - keyboard focus: 2 px « eau » outline, 2 px away;
 10h2, with a cycle and entries seeded: readings (bar, target zone, tick in « à surveiller » / « alerte » out of target),
 « Bonjour Thomas. » upright (Geologica 700 since lot 10k, the title of the screen since lot 10k1), sections without frames, space tabs underlined,
-the cycle step button with its consequence, the journal in one line per day with the plants under it;
+the cycle step button with its consequence, the journal by weeks (lot 10k3);
 10h3: the tab bar anchored at the bottom (page ground, thin line, « + » 52 × 44 in the middle, four tabs), no week strip
 (removed in lot 10k1), the date of the top bar,
 « Tout le calendrier → », the Calendar at the top of Outils, « Tous les réglages → » of the display menu (back returns
@@ -144,9 +144,10 @@ with sync_playwright() as p:
         if not c["step"] or "→" not in c["step"][0] or c["step"][1] != "1px" or "Geologica" not in c["step"][2]: errors.append(f"{theme} step {c['step']}")
         pg.screenshot(path=str(out / f"space-{theme}.png"), full_page=True)
         pg.get_by_role("tab", name="Journal").click(); pg.wait_for_timeout(1500)
-        c["journal"] = pg.evaluate("""() => { const li = document.querySelector('ul.mt-1 > li'); const btn = li.querySelector('button'); const kids = [...btn.children]; return { date: getComputedStyle(kids[0]).fontFamily.split(',')[0], key: kids[2].textContent, plants: [...li.querySelectorAll('ul li')].map((x) => x.textContent.trim()) } }""")
+        # Since lot 10k3: one card per week, the running one open, the strip of 7 days, the ranges in the number font.
+        c["journal"] = pg.evaluate("""() => { const w = document.querySelector('[data-week][data-open]'); return w && { days: w.querySelectorAll('[data-strip] button').length, today: !!w.querySelector('[data-today]'), summary: w.querySelector('[data-summary]').textContent, num: getComputedStyle(w.querySelector('[data-summary] .font-num')).fontFamily.split(',')[0] } }""")
         j = c["journal"]
-        if "Geologica" not in j["date"] or j["key"] != "45 %" or j["plants"] != ["P1Hauteur 88 cm", "P2Hauteur 91 cm"]: errors.append(f"{theme} journal {j}")
+        if not j or j["days"] != 7 or not j["today"] or "dryback" not in j["summary"] or "Geologica" not in j["num"]: errors.append(f"{theme} journal {j}")
         pg.screenshot(path=str(out / f"journal-{theme}.png"), full_page=True)
         checks[f"10h2-{theme}"] = c
         ctx.close()

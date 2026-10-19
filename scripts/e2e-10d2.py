@@ -80,12 +80,13 @@ with sync_playwright() as p:
     pg.get_by_role("radiogroup", name="Tag").get_by_role("radio", name="Griffes").click(); pg.wait_for_timeout(300)
     pg.locator("[data-slot=drawer-content] button", has_text="Voir").click(); pg.wait_for_timeout(600)
     checks["filterSummary"] = pg.locator("#journal-filter-summary").inner_text()
-    checks["filteredRows"] = pg.locator("ul li button", has_text="Colonne").count()
+    # Since lot 10k3 the Journal is by weeks: the filtered week of the Colonne shows its « Griffes » day.
+    checks["filteredRows"] = pg.locator("[data-week] [data-row]", has_text="Griffes").count()
     pg.get_by_role("group", name="Espace affiché").get_by_role("button", name="Floraison").click(); pg.wait_for_timeout(800)
-    checks["afterSelector"] = pg.locator("text=Aucune saisie avec ces filtres").count() == 0 and pg.locator("text=Hauteur").count() > 0
-    first = pg.locator("ul.mt-1 > li").first.inner_text()
+    checks["afterSelector"] = pg.locator("text=Aucune saisie avec ces filtres").count() == 0 and pg.locator("[data-week]").count() > 0
+    first = pg.locator("[data-week]").first.inner_text()
     checks["roomFirst"] = "P1" not in first.split("\n")[0] and "P2" not in first.split("\n")[0]
-    checks["noStrayZero"] = not any(t.strip() == "0" for t in pg.locator("ul.mt-1 > li button > div").all_inner_texts())
+    checks["noStrayZero"] = not any(t.strip() == "0" for t in pg.locator("[data-week] [data-row] span").all_inner_texts())
     pg.screenshot(path=str(out / "03-journal.png"), full_page=True)
 
     # Aujourd'hui: one line for the daily reminder.

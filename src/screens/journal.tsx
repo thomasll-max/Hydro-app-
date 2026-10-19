@@ -1,54 +1,88 @@
 import { useMemo, useState, type ReactNode } from "react"
 import { Loading } from "@/components/hydro/wordmark"
-import { ChevronRight, Pencil, Plus, SlidersHorizontal } from "lucide-react"
-import { Card } from "@/components/ui/card"
+import { ChevronDown, ChevronRight, Plus, Search, SlidersHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Chip, Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
+import { Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
-import { stageLine } from "@/app/labels"
-import { stageOn, todayIso, plannedHarvest } from "@/calc/stage"
+import { todayIso } from "@/calc/stage"
 import { status } from "@/calc/advice"
-import { round } from "@/calc/formulas"
+import { buildWeeks } from "@/calc/weeks"
 import { filterEntries, journalOrder, liveFilter, NO_FILTER, type EntryFilter } from "@/model/entry"
 import { PLANT_IDS, type Entry, type StageKey } from "@/model/types"
 import { PhotoThumb } from "./entry-sheet"
+import { WeekCard } from "./journal-weeks"
+import { WeekPage } from "./journal-week"
+import { useRoute } from "@/app/nav"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { cn } from "@/lib/utils"
-import { secondary, tertiary } from "@/components/hydro/styles"
-import { Sheet } from "@/components/hydro/form"
+import { iconButton, tertiary } from "@/components/hydro/styles"
+import { Sheet, TextField } from "@/components/hydro/form"
 
-const PAGE = 12
+const WEEKS = 8
 
+/**
+ * Journal (lot 10k3, planche « Les menus »): the cycle to show (a space's tab), the search and the filters on one line,
+ * then one card per week of the cycle (per week and per space in « Tous »), folded except the running one. Tanks and
+ * events sit in the weeks, at their date (the drawers « Événements · Bidons · Récolte » are gone).
+ */
 export function JournalScreen() {
-  const { t, num, dm } = useSettings()
-  const { ready, cycle, plants, all, spaces, selection, photoUrl, space } = useGrow()
+  const route = useRoute()
+  const { ready } = useGrow()
+  const { t } = useSettings()
+  if (!ready) return <Loading label={t("app.loading")} />
+  if (route.week) {
+    const [spaceId, monday] = route.week.split("/")
+    return <WeekPage spaceId={spaceId} monday={monday} day={route.day} />
+  }
+  return <JournalWeeks />
+}
+
+function JournalWeeks() {
+  const { t, settings } = useSettings()
+  const { ready, cycle: active, cycles, plants, all, spaces, selection, photoUrl, space } = useGrow()
   const ed = useEditors()
   const [filter, setFilter] = useState<EntryFilter>(NO_FILTER)
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [shown, setShown] = useState(PAGE)
+  const [plantsOpen, setPlantsOpen] = useState(false)
+  const [shown, setShown] = useState(WEEKS)
+  const [query, setQuery] = useState<string | null>(null)
+  const [opened, setOpened] = useState<Record<string, boolean>>({})
   // The journal follows the space selector: one space, one room, or everything.
   const scope = useMemo(
     () => (selection.kind === "space" ? [selection.space] : selection.kind === "site" ? spaces.filter((x) => x.siteId === selection.site.id) : spaces),
     [selection, spaces],
   )
   const ids = useMemo(() => new Set(scope.map((x) => x.id)), [scope])
-  // Another space or room selected at the top: the filters start over (lot 10d).
+  const one = selection.kind === "space" ? selection.space : null
+  // The cycles of the space, newest first; the active one by default.
+  const spaceCycles = useMemo(
+    () => (one ? cycles.filter((c) => c.spaceId === one.id || all.entries.some((e) => e.spaceId === one.id && e.cycleId === c.id)).sort((a, b) => (b.germinationDate ?? b.createdAt ?? "").localeCompare(a.germinationDate ?? a.createdAt ?? "")) : []),
+    [one, cycles, all.entries],
+  )
+  const [cycleId, setCycleId] = useState<string | undefined>()
+  const cycle = one ? (spaceCycles.find((c) => c.id === cycleId) ?? spaceCycles.find((c) => c.id === active?.id) ?? spaceCycles[0]) : undefined
+  // Another space or room selected at the top: the filters, the search and the cycle start over (lot 10d).
   const scopeKey = scope.map((x) => x.id).join(",")
   const [filterScope, setFilterScope] = useState(scopeKey)
   if (filterScope !== scopeKey) {
     setFilterScope(scopeKey)
     setFilter(NO_FILTER)
-    setShown(PAGE)
+    setShown(WEEKS)
+    setQuery(null)
+    setCycleId(undefined)
+    setOpened({})
   }
   const multi = scope.length > 1
-  const entries = useMemo(() => all.entries.filter((e) => ids.has(e.spaceId)), [all.entries, ids])
-  const events = useMemo(() => all.events.filter((e) => (e.spaceId ? ids.has(e.spaceId) : !!cycle && e.cycleId === cycle.id)), [all.events, ids, cycle])
-  const mixes = useMemo(() => all.mixes.filter((m) => m.spaceIds?.some((x) => ids.has(x)) || (!!cycle && m.cycleId === cycle.id)), [all.mixes, ids, cycle])
+  // A space: the entries of the chosen cycle in it. « Tous » or a room: everything in scope.
+  const entries = useMemo(() => all.entries.filter((e) => ids.has(e.spaceId) && (!cycle || e.cycleId === cycle.id)), [all.entries, ids, cycle])
+  const events = useMemo(() => all.events.filter((e) => (e.spaceId ? ids.has(e.spaceId) : !!cycle && e.cycleId === cycle.id) && (!cycle || !e.cycleId || e.cycleId === cycle.id)), [all.events, ids, cycle])
+  const mixes = useMemo(
+    () => all.mixes.filter((m) => (m.spaceIds?.length ? m.spaceIds.some((x) => ids.has(x)) : !!cycle && m.cycleId === cycle.id) && (!cycle || !m.cycleId || m.cycleId === cycle.id)),
+    [all.mixes, ids, cycle],
+  )
   const spaceOf = (id?: string) => spaces.find((x) => x.id === id)
-  const showCycle = selection.kind === "space" && !!cycle
 
   const tagsPresent = useMemo(() => {
     const s = new Set<string>()
@@ -78,181 +112,178 @@ export function JournalScreen() {
     .filter(Boolean)
     .join(" · ")
 
+  // Weeks computed once per change of the journal (a year of entries stays fast, lot 10k3).
+  const today = todayIso()
+  const isDrying = (id?: string) => !!spaceOf(id ?? one?.id)?.modules.drying && !spaceOf(id ?? one?.id)?.modules.irrigation
+  const weeks = useMemo(
+    () =>
+      buildWeeks({
+        entries: list,
+        mixes: filtered ? [] : mixes,
+        events: filtered ? [] : events,
+        cycles,
+        today,
+        perSpace: !one,
+        ...(cycle ? { cycle } : {}),
+        drying: isDrying,
+      }).sort((x, y) => (x.monday === y.monday ? spaces.findIndex((sp) => sp.id === x.spaceId) - spaces.findIndex((sp) => sp.id === y.spaceId) : 0)),
+    [list, mixes, events, cycles, today, one, cycle, filtered, spaces], // eslint-disable-line react-hooks/exhaustive-deps
+  )
+  // Search in the notes, the observations and the actions (in the language shown).
+  const fold = (s: string) => s.toLocaleLowerCase(settings.lang).normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  const q = query?.trim() ? fold(query.trim()) : ""
+  const found = useMemo(
+    () =>
+      q
+        ? list.filter((e) => fold([e.note ?? "", ...(e.observations ?? []).map((o) => t(`obs.${o.tag}` as never)), ...(e.actions ?? []).map((a) => t(`action.${a}` as never))].join(" ")).includes(q))
+        : [],
+    [q, list], // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
   if (!ready) return <Loading label={t("app.loading")} />
 
-  const s = cycle ? stageOn(cycle, todayIso()) : null
-  const harvestPlanned = cycle ? plannedHarvest(cycle) : undefined
-  const h = cycle?.harvest
-  const gPerW = h?.dryG && h?.watts ? round(h.dryG / h.watts, 2) : undefined
-  const eyebrow = selection.kind === "space" ? (cycle ? `${selection.space.name} · ${cycle.name} · ${cycle.cultivars.join(", ")}` : selection.space.name) : selection.kind === "site" ? selection.site.name : t("space.all")
+  // Open by default: the running week (each space's in « Tous »); when it has no entry yet, the one before too.
+  const hasCurrent = weeks.some((w) => w.current)
+  const isOpen = (key: string, current: boolean, i: number) =>
+    opened[key] ?? (current || (!hasCurrent && i === 0) || (i === 1 && !!weeks[0]?.current && !weeks[0].entries.length && !weeks[0].spaceId))
   const potIds = PLANT_IDS.slice(0, Math.max(1, Math.min(PLANT_IDS.length, cycle?.potCount ?? 4)))
 
   return (
     <>
-      <ScreenHero emoji="notebook" eyebrow={eyebrow} title={t("journal.title")}>
-        <p className="mt-1 text-[0.8125rem] leading-snug text-fg-2">{t("journal.subtitle")}</p>
-      </ScreenHero>
+      <ScreenHero emoji="notebook" title={t("journal.title")} />
 
-      {selection.kind === "space" && !cycle && (
-        <Reveal i={0} className="mb-3">
-          <Card className="flex-row items-center gap-3">
+      {one && !spaceCycles.length && (
+        <Reveal i={0} className="mb-4">
+          <div className="flex items-center gap-3 border-t border-line pt-4">
             <p className="min-w-0 flex-1 text-[0.8125rem] leading-snug text-fg-2">{t("journal.noCycleHere")}</p>
             <Button variant="outline" className="h-11 shrink-0 text-[0.8125rem] font-semibold" onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })}>
               <Plus /> {t("growSet.newCycle")}
             </Button>
-          </Card>
+          </div>
         </Reveal>
       )}
 
-      {/* Cycle */}
-      {showCycle && cycle && s && (
-      <Reveal i={0} className="mb-4">
-        {/* The cycle is an object apart: it keeps a frame (lot 10j). */}
-        <Card framed className="gap-3" id="journal-cycle">
-          <div className="flex items-center justify-between">
-            <Label>
-              {t("journal.cycle")}
-            </Label>
-            <Button variant="link" size="sm" className="px-0" onClick={() => ed.openCycle()}>
-              <Pencil /> {t("common.edit")}
+      {/* One line: the cycle (a space's tab), the search, the filters. */}
+      <div className="mb-4 flex items-center gap-1 border-b border-line" id="journal-bar">
+        <div role="group" aria-label={t("jw.cycles")} className="no-scrollbar flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" id="journal-cycles">
+          {spaceCycles.map((c) => {
+            const on = c.id === cycle?.id
+            return (
+              <button key={c.id} type="button" aria-pressed={on} onClick={() => setCycleId(c.id)} className={cn("relative h-11 shrink-0 px-2 text-[0.875rem] whitespace-nowrap", on ? "font-semibold text-fg" : "text-fg-3")}>
+                {c.name}
+                {on && <span aria-hidden="true" className="absolute inset-x-1 -bottom-px h-0.5 rounded-[1px] bg-water" />}
+              </button>
+            )
+          })}
+        </div>
+        <button type="button" id="journal-search-btn" aria-pressed={query != null} aria-label={query != null ? t("jw.closeSearch") : t("jw.search")} onClick={() => setQuery((x) => (x == null ? "" : null))} className={iconButton}>
+          {query != null ? <X className="size-5" /> : <Search className="size-5" strokeWidth={1.7} />}
+        </button>
+        {canFilter && (
+          <button type="button" id="journal-filters" aria-haspopup="dialog" aria-label={t("journal.filters")} onClick={() => setFiltersOpen(true)} className={cn(iconButton, "relative -mr-2")}>
+            <SlidersHorizontal className="size-5" strokeWidth={1.7} />
+            {filtered && <span aria-hidden="true" className="absolute top-2.5 right-2.5 size-2 rounded-full bg-water" />}
+          </button>
+        )}
+      </div>
+
+      {query != null && (
+        <div className="-mt-2 mb-4">
+          <TextField id="journal-search" label={t("jw.search")} value={query} onChange={setQuery} placeholder={t("jw.searchPh")} />
+        </div>
+      )}
+
+      {filtered && (
+        <div className="-mt-2 mb-4 flex flex-wrap items-center gap-x-3 gap-y-1" id="journal-filter-bar">
+          <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium" id="journal-filter-summary">
+            {summary}
+          </span>
+          <button type="button" className={tertiary} onClick={() => setFilter(NO_FILTER)}>
+            {t("journal.clear")}
+          </button>
+        </div>
+      )}
+
+      <Sheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        title={t("journal.filters")}
+        dirty={false}
+        footer={
+          <div className="flex items-center gap-3">
+            {filtered && (
+              <button type="button" className={tertiary} onClick={() => setFilter(NO_FILTER)}>
+                {t("journal.clear")}
+              </button>
+            )}
+            <Button className="h-12 flex-1" onClick={() => setFiltersOpen(false)}>
+              {t("journal.filtersShow", { n: list.length })}
             </Button>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            <Chip tone="primary">{stageLine(t, s)}</Chip>
-            <Chip>{`${t(`mode.${cycle.waterMode}Short`)} · ${t(`substrate.${cycle.substrate}`)}`}</Chip>
-            {cycle.potCount && cycle.potVolumeL ? <Chip>{`${cycle.potCount} × ${num(cycle.potVolumeL)} L`}</Chip> : null}
-          </div>
-          <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[0.8125rem]">
-            <Fact k={t("cycleForm.germination")} v={cycle.germinationDate && dm(cycle.germinationDate)} />
-            <Fact k={t("cycleForm.transfer")} v={cycle.transferDate && dm(cycle.transferDate)} />
-            <Fact k={t("cycleForm.flip")} v={cycle.flipDate ? dm(cycle.flipDate) : cycle.plannedFlipDate && `${t("cycleForm.plannedFlip")} ${dm(cycle.plannedFlipDate)}`} />
-            <Fact k={t("cycleForm.harvestDate")} v={cycle.harvestDate ? dm(cycle.harvestDate) : harvestPlanned && `≈ ${dm(harvestPlanned)}`} />
-            <Fact k={t("cycleForm.flow")} v={cycle.flowMlPerMin ? `${num(cycle.flowMlPerMin)} mL/min` : t("today.flowUnknown")} warn={!cycle.flowMlPerMin} />
-            <Fact k={t("cycleForm.lights")} v={cycle.lights} />
-          </dl>
-        </Card>
-      </Reveal>
-      )}
+        }
+      >
+        {multi && (
+          <FilterRow
+            label={t("journal.filterSpace")}
+            value={live.space ?? "all"}
+            onChange={(v) => setFilter((f) => ({ ...f, space: v }))}
+            options={[{ v: "all", l: t("common.all") }, ...scope.map((x) => ({ v: x.id, l: x.name }))]}
+          />
+        )}
+        {hasPlants && (
+          <FilterRow
+            label={t("journal.filterPlant")}
+            value={live.plant}
+            onChange={(v) => setFilter((f) => ({ ...f, plant: v as EntryFilter["plant"] }))}
+            options={[{ v: "all", l: t("common.all") }, { v: "room", l: t("entry.wholeSpace") }, ...PLANT_IDS.map((p) => ({ v: p, l: p }))]}
+          />
+        )}
+        {stagesPresent.length > 1 && (
+          <FilterRow
+            label={t("journal.filterStage")}
+            value={live.stage}
+            onChange={(v) => setFilter((f) => ({ ...f, stage: v }))}
+            options={[{ v: "all", l: t("common.all") }, ...stagesPresent.map((st) => ({ v: st, l: t(`stage.${st}`) }))]}
+          />
+        )}
+        {tagsPresent.length > 0 && (
+          <FilterRow
+            label={t("journal.filterTag")}
+            value={live.tag}
+            onChange={(v) => setFilter((f) => ({ ...f, tag: v }))}
+            options={[{ v: "all", l: t("common.all") }, ...tagsPresent.map((k) => ({ v: k.split(".")[1], l: t(k as never) }))]}
+          />
+        )}
+      </Sheet>
 
-      {/* Plants */}
-      {showCycle && space?.modules.plants && (
-      <Reveal i={1} className="mb-3">
-        <Card>
-          <Label>
-            {t("journal.plants")}
-          </Label>
-          <div className="mt-2.5 grid grid-cols-4 gap-2">
-            {potIds.map((id) => {
-              const p = plants.find((x) => x.label === id)
-              return (
-                <button
-                  key={id}
-                  onClick={() => ed.openPlant(id)}
-                  className="flex min-h-[64px] min-w-0 flex-col items-start rounded-[10px] border border-line-strong px-2.5 py-2 text-left"
-                >
-                  <span className="font-num text-[0.875rem] font-semibold">{id}</span>
-                  <span className={cn("w-full truncate text-[0.75rem]", p?.phenotype || p?.cultivar ? "text-fg-2" : "text-fg-3")}>
-                    {p?.phenotype || p?.cultivar || t("journal.plantEmpty")}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </Card>
-      </Reveal>
-      )}
-
-      {/* History */}
-      <Reveal i={3} className="mb-3">
-        <Card>
-          <div className="flex items-center justify-between">
-            <Label>
-              {t("journal.history")}
-            </Label>
-            <span className="font-num text-[0.75rem] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
-          </div>
-          {/* Filters folded behind one button (lot 10j); the active ones in one line, with « Effacer ». */}
-          {canFilter && (
-            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1" id="journal-filter-bar">
-              <button type="button" id="journal-filters" aria-haspopup="dialog" onClick={() => setFiltersOpen(true)} className={cn(secondary, "px-3")}>
-                <SlidersHorizontal className="size-4" /> {t("journal.filters")}
-              </button>
-              {filtered && (
-                <>
-                  <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium" id="journal-filter-summary">
-                    {summary}
-                  </span>
-                  <button type="button" className={tertiary} onClick={() => setFilter(NO_FILTER)}>
-                    {t("journal.clear")}
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-          <Sheet
-            open={filtersOpen}
-            onOpenChange={setFiltersOpen}
-            title={t("journal.filters")}
-            dirty={false}
-            footer={
-              <div className="flex items-center gap-3">
-                {filtered && (
-                  <button type="button" className={tertiary} onClick={() => setFilter(NO_FILTER)}>
-                    {t("journal.clear")}
-                  </button>
-                )}
-                <Button className="h-12 flex-1" onClick={() => setFiltersOpen(false)}>
-                  {t("journal.filtersShow", { n: list.length })}
-                </Button>
-              </div>
-            }
-          >
-          {multi && (
-            <FilterRow
-              label={t("journal.filterSpace")}
-              value={live.space ?? "all"}
-              onChange={(v) => setFilter((f) => ({ ...f, space: v }))}
-              options={[{ v: "all", l: t("common.all") }, ...scope.map((x) => ({ v: x.id, l: x.name }))]}
-            />
-          )}
-          {hasPlants && (
-            <FilterRow
-              label={t("journal.filterPlant")}
-              value={live.plant}
-              onChange={(v) => setFilter((f) => ({ ...f, plant: v as EntryFilter["plant"] }))}
-              options={[{ v: "all", l: t("common.all") }, { v: "room", l: t("entry.wholeSpace") }, ...PLANT_IDS.map((p) => ({ v: p, l: p }))]}
-            />
-          )}
-          {stagesPresent.length > 1 && (
-            <FilterRow
-              label={t("journal.filterStage")}
-              value={live.stage}
-              onChange={(v) => setFilter((f) => ({ ...f, stage: v }))}
-              options={[{ v: "all", l: t("common.all") }, ...stagesPresent.map((st) => ({ v: st, l: t(`stage.${st}`) }))]}
-            />
-          )}
-          {tagsPresent.length > 0 && (
-            <FilterRow
-              label={t("journal.filterTag")}
-              value={live.tag}
-              onChange={(v) => setFilter((f) => ({ ...f, tag: v }))}
-              options={[{ v: "all", l: t("common.all") }, ...tagsPresent.map((k) => ({ v: k.split(".")[1], l: t(k as never) }))]}
-            />
-          )}
-          </Sheet>
-          <ul className="mt-1">
-            {dayGroups(list.slice(0, shown)).map((g) => (
-              <DayRow
-                key={g.key}
-                room={g.room}
-                plants={g.plants}
-                space={multi ? spaceOf(g.spaceId) : undefined}
-                onOpen={(e) => ed.openEntry({ date: e.date, plantId: e.plantId, spaceId: e.spaceId })}
-                photoUrl={photoUrl}
-              />
+      {q ? (
+        <section id="journal-results" aria-live="polite">
+          <p className="mb-1 text-[0.8125rem] text-fg-3">{found.length ? t("jw.results", { n: found.length }) : t("jw.noResult")}</p>
+          <ul>
+            {dayGroups(found.slice(0, 60)).map((g) => (
+              <DayRow key={g.key} room={g.room} plants={g.plants} space={multi ? spaceOf(g.spaceId) : undefined} onOpen={(e) => ed.openEntry({ date: e.date, plantId: e.plantId, spaceId: e.spaceId })} photoUrl={photoUrl} />
             ))}
           </ul>
-          {list.length === 0 && (
+        </section>
+      ) : (
+        <div className="flex flex-col gap-3" id="journal-weeks">
+          {weeks.slice(0, shown).map((w, i) => (
+            <WeekCard
+              key={w.key}
+              w={w}
+              open={isOpen(w.key, w.current, i)}
+              onToggle={() => setOpened((o) => ({ ...o, [w.key]: !isOpen(w.key, w.current, i) }))}
+              space={!one ? spaceOf(w.spaceId) : undefined}
+              {...(one ? { spaceId: one.id } : {})}
+              drying={isDrying(w.spaceId)}
+            />
+          ))}
+          {weeks.length > shown && (
+            <button type="button" className={cn("self-center", tertiary)} onClick={() => setShown((n) => n + WEEKS)} id="journal-older">
+              {t("jw.older")} <ChevronDown className="size-4" />
+            </button>
+          )}
+          {weeks.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-6 text-center">
               <p className="text-[0.8125rem] text-fg-3">{filtered ? t("journal.historyEmpty") : t("journal.historyNone")}</p>
               {filtered && (
@@ -262,101 +293,51 @@ export function JournalScreen() {
               )}
             </div>
           )}
-          {list.length > shown && (
-            <button className={cn("self-center", tertiary)} onClick={() => setShown((n) => n + PAGE)}>
-              {t("common.more")}
+        </div>
+      )}
+
+      {/* The cycle itself: its sheet (dates, harvest) and its plants, in one quiet line at the bottom. */}
+      {one && cycle && (
+        <p className="mt-6 flex flex-wrap items-center gap-x-4 text-[0.8125rem] text-fg-3" id="journal-cycle">
+          <span className="font-semibold text-fg-2">{cycle.name}</span>
+          <button type="button" className={tertiary} onClick={() => ed.openCycle({ cycleId: cycle.id })}>
+            {t("jw.editCycle")}
+          </button>
+          {(cycle.harvestDate || cycle.flipDate) && (
+            <button type="button" className={tertiary} onClick={() => ed.openCycle({ cycleId: cycle.id, harvestOnly: true })}>
+              {t("jw.harvest")}
             </button>
           )}
-        </Card>
-      </Reveal>
-
-      <Reveal i={4}>
-        <Card>
-          <Accordion type="multiple">
-            <AccordionItem value="events" className="border-line">
-              <AccordionTrigger className="py-3.5 hover:no-underline">
-                <Label>{`${t("journal.events")} · ${events.length}`}</Label>
-              </AccordionTrigger>
-              <AccordionContent>
-                {events.length === 0 ? (
-                  <p className="text-[0.8125rem] text-fg-3">{t("journal.eventsEmpty")}</p>
-                ) : (
-                  <ul>
-                    {events.map((ev) => (
-                      <li key={ev.id}>
-                        <button onClick={() => ed.openEvent(ev)} className="flex w-full items-center gap-3 border-t border-line py-2.5 text-left first:border-t-0">
-                          <span className="w-12 text-[0.78125rem] text-fg-3 tabular">{dm(ev.date)}</span>
-                          {multi && <SpaceDot color={spaceOf(ev.spaceId)?.color} />}
-                          <span className="flex-1 text-[0.84375rem] font-medium">{t(`event.${ev.type}`)}</span>
-                          {ev.note && <span className="max-w-[40%] truncate text-[0.75rem] text-fg-3">{ev.note}</span>}
-                          <ChevronRight className="size-4 text-fg-3" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="mixes" className="border-line">
-              <AccordionTrigger className="py-3.5 hover:no-underline">
-                <Label>{`${t("journal.mixes")} · ${mixes.length}`}</Label>
-              </AccordionTrigger>
-              <AccordionContent>
-                {mixes.length === 0 ? (
-                  <p className="text-[0.8125rem] text-fg-3">{t("journal.mixesEmpty")}</p>
-                ) : (
-                  <ul>
-                    {mixes.map((m) => (
-                      <li key={m.id}>
-                        <button onClick={() => ed.openMix(m)} className="flex w-full items-center gap-3 border-t border-line py-2.5 text-left first:border-t-0">
-                          <span className="w-12 text-[0.78125rem] text-fg-3 tabular">{dm(m.date)}</span>
-                          <span className="flex-1 text-[0.84375rem] font-medium tabular-nums">{num(m.volumeL)} L</span>
-                          <span className="text-[0.75rem] text-fg-2 tabular-nums">
-                            {m.ec != null ? `EC ${num(m.ec, 1)}` : m.ecExpected != null ? `EC ≈ ${num(m.ecExpected, 1)}` : ""} {m.ph != null && `· pH ${num(m.ph, 1)}`}
-                          </span>
-                          <ChevronRight className="size-4 text-fg-3" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-            {cycle && (
-            <AccordionItem value="harvest" className="border-0">
-              <AccordionTrigger className="py-3.5 hover:no-underline">
-                <Label>
-                  {t("journal.harvest")}
-                </Label>
-              </AccordionTrigger>
-              <AccordionContent className="flex flex-col gap-2">
-                {h && (
-                  <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[0.8125rem]">
-                    <Fact k={t("cycleForm.wet")} v={h.wetG != null ? `${num(h.wetG)} g` : undefined} />
-                    <Fact k={t("cycleForm.dry")} v={h.dryG != null ? `${num(h.dryG)} g` : undefined} />
-                    <Fact k="g/W" v={gPerW != null ? num(gPerW, 2) : undefined} />
-                    <Fact k={t("cycleForm.jarRh")} v={h.jarRh != null ? `${num(h.jarRh)} %` : undefined} />
-                  </dl>
-                )}
-                <Button variant="outline" className="h-11" onClick={() => ed.openCycle({ harvestOnly: true })}>
-                  {t("journal.editHarvest")}
-                </Button>
-              </AccordionContent>
-            </AccordionItem>
-            )}
-          </Accordion>
-        </Card>
-      </Reveal>
+          {one.modules.plants && (
+            <button type="button" className={tertiary} onClick={() => setPlantsOpen(true)} id="journal-plants">
+              {t("jw.plants")}
+            </button>
+          )}
+        </p>
+      )}
+      {one && cycle && (
+        <Sheet open={plantsOpen} onOpenChange={setPlantsOpen} title={t("journal.plants")} dirty={false}>
+          <div className="grid grid-cols-4 gap-2 pb-2">
+            {potIds.map((id) => {
+              const p = plants.find((x) => x.label === id)
+              return (
+                <button
+                  key={id}
+                  onClick={() => {
+                    setPlantsOpen(false)
+                    ed.openPlant(id)
+                  }}
+                  className="flex min-h-[64px] min-w-0 flex-col items-start rounded-[10px] border border-line-strong px-2.5 py-2 text-left"
+                >
+                  <span className="font-num text-[0.875rem] font-semibold">{id}</span>
+                  <span className={cn("w-full truncate text-[0.75rem]", p?.phenotype || p?.cultivar ? "text-fg-2" : "text-fg-3")}>{p?.phenotype || p?.cultivar || t("journal.plantEmpty")}</span>
+                </button>
+              )
+            })}
+          </div>
+        </Sheet>
+      )}
     </>
-  )
-}
-
-function Fact({ k, v, warn }: { k: string; v?: string | false; warn?: boolean }) {
-  return (
-    <div className="min-w-0">
-      <dt className="truncate text-[0.75rem] text-fg-3">{k}</dt>
-      <dd className={cn("truncate font-medium tabular-nums", warn && "text-warn", !v && "text-fg-3")}>{v || "—"}</dd>
-    </div>
   )
 }
 

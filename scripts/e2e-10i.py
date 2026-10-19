@@ -102,9 +102,12 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}#journal"); pg.wait_for_timeout(2500)
     pg.evaluate("""() => new Promise((res) => { const r = indexedDB.open('hydro', 1); r.onsuccess = () => { const tx = r.result.transaction('docs', 'readwrite'); tx.objectStore('docs').put({ schemaVersion: 2, id: '2026-10-19_floraison', date: '2026-10-19', spaceId: 'floraison', createdAt: 'x', updatedAt: 'x', ecRunoff: 3.4, dryback: 41 }, 'entries/2026-10-19_floraison'); tx.oncomplete = () => res(true) } })""")
     pg.reload(); pg.wait_for_timeout(2500)
-    row = pg.locator("ul.mt-1 > li").first.inner_text()
+    # Since lot 10k3: the running week is open; a day without anything off is among the quiet days.
+    wk = pg.locator("[data-week][data-open]").first
+    if wk.locator("[data-quiet]").count(): wk.locator("[data-quiet]").click(); pg.wait_for_timeout(300)
+    row = wk.locator("[data-row], [data-quiet-day]").filter(has_text="3,4").first.inner_text()
     checks["journalRow"] = row
-    if "19.10." not in row or "3,4" not in row: errors.append(f"journal row in German {row!r}")
+    if "Mo" not in row or "19" not in row or "3,4" not in row: errors.append(f"journal row in German {row!r}")
     ctx.close()
     b.close()
 httpd.shutdown()

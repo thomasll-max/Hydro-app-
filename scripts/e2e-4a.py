@@ -74,7 +74,7 @@ with sync_playwright() as p:
     for sp in ["Floraison", "Colonne"]:
         pg.goto(f"file://{page_file}#journal"); pg.wait_for_timeout(1500)
         pg.get_by_role("button", name=sp).first.click(); pg.wait_for_timeout(1200)
-        checks[f"journal-{sp}"] = "bidons · 1" in pg.inner_text("main").lower()
+        checks[f"journal-{sp}"] = "bidon" in pg.inner_text("main").lower()  # in its week since lot 10k3 (« 1 bidon »)
     b.close()
 for k, v in checks.items(): print(k, "→", v)
 print("\n".join(errors) if errors else "no console errors")

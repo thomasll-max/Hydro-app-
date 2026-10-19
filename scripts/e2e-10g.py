@@ -65,7 +65,7 @@ with sync_playwright() as p:
         if pg.locator("#res-gauge").count():
             found = name; break
     checks["gauge"] = found and pg.evaluate("(() => { const g = document.querySelector('#res-gauge'); return { text: g.innerText, svg: !!g.querySelector('svg'), mono: getComputedStyle(g.querySelector('.tabular')).fontFamily } })()")
-    if not found or "%" not in checks["gauge"]["text"] or "JetBrains" not in checks["gauge"]["mono"]: errors.append(f"gauge {checks['gauge']}")
+    if not found or "%" not in checks["gauge"]["text"] or "Geologica" not in checks["gauge"]["mono"]: errors.append(f"gauge {checks['gauge']}")
     else: pg.evaluate("document.querySelector('#res-gauge').scrollIntoView({block: 'center'})"); pg.wait_for_timeout(300); pg.screenshot(path=str(out / "gauge.png"))
     # Charts: water marks on tank days.
     pg.goto(url + "#charts"); pg.reload(); pg.wait_for_timeout(2500)

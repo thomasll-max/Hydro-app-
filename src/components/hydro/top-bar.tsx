@@ -93,7 +93,7 @@ function TodayButton() {
       onClick={() => navigate({ tab: "calendar" }, { push: true })}
       aria-label={t("week.openCalendar", { date: long })}
       id="today-date"
-      className="flex h-11 items-center rounded-[10px] px-2 font-mono text-[0.8125rem] whitespace-nowrap text-fg-3 hover:text-fg max-[340px]:hidden"
+      className="flex h-11 items-center rounded-[10px] px-2 font-num text-[0.8125rem] whitespace-nowrap text-fg-3 hover:text-fg max-[340px]:hidden"
     >
       {date}
     </button>

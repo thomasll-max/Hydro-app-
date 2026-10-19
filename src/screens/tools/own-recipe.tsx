@@ -177,7 +177,7 @@ export function OwnRecipeTool() {
                       </span>
                     )}
                   </span>
-                  <span className={cn("text-right font-mono text-[1rem] font-medium tabular-nums", i.doseMissing && "text-[0.75rem] text-warn")}>
+                  <span className={cn("text-right font-num text-[1rem] font-medium tabular-nums", i.doseMissing && "text-[0.75rem] text-warn")}>
                     {i.id === "water" ? (i.qty != null ? `${num(i.qty)} L` : "—") : qtyText(i)}
                   </span>
                 </li>
@@ -467,7 +467,7 @@ export function HandProducts({ phase, athena }: { phase: OwnPhase | null; athena
                 {[i.brand, athena ? t("hand.offAthena") : t("own.unverified"), i.weeksMissing ? t("own.weeksMissing") : null].filter(Boolean).join(" · ")}
               </span>
             </span>
-            <span className={cn("max-w-[48%] shrink-0 text-right font-mono text-[0.8125rem] leading-snug", i.perL ? "text-fg" : "text-warn")}>
+            <span className={cn("max-w-[48%] shrink-0 text-right font-num text-[0.8125rem] leading-snug", i.perL ? "text-fg" : "text-warn")}>
               {i.perL ? t("hand.perL", { range: range(i.perL[0], i.perL[1], Math.max(dec(i.perL[0]), dec(i.perL[1]))), unit: i.unit }) : t("own.doseMissing")}
             </span>
           </li>

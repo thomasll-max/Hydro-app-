@@ -128,7 +128,7 @@ export function Group({ title, aside, children, className, id }: { title: string
   return (
     <section id={id} className={cn("mt-4 scroll-mt-4 first:mt-1", className)}>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="display text-[1.0625rem] leading-tight font-semibold">{title}</h3>
+        <h3 className="display text-[1.0625rem] leading-tight">{title}</h3>
         {aside}
       </div>
       {children}
@@ -203,10 +203,10 @@ export function NumField({
           aria-invalid={bad || undefined}
           aria-describedby={bad ? `${id}-err` : undefined}
           onChange={(e) => onChange(e.target.value.replace(/[^\d.,-]/g, ""))}
-          className={cn(fieldCls, "h-12 font-mono text-[1.625rem] font-medium tabular-nums")}
+          className={cn(fieldCls, "h-12 font-num text-[1.625rem] font-medium tabular-nums")}
         />
         {u && (
-          <span aria-hidden="true" className="shrink-0 font-mono text-[0.8125rem] text-fg-3">
+          <span aria-hidden="true" className="shrink-0 font-num text-[0.8125rem] text-fg-3">
             {u}
           </span>
         )}
@@ -216,7 +216,7 @@ export function NumField({
           {t("safe.badNumber")}
         </span>
       ) : (
-        hint && <span className={cn("truncate text-[0.75rem] text-fg-3", hintMono && "font-mono")}>{hint}</span>
+        hint && <span className={cn("truncate text-[0.75rem] text-fg-3", hintMono && "font-num")}>{hint}</span>
       )}
     </div>
   )
@@ -253,7 +253,7 @@ export function TextField({
           value={value}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
-          className={cn(fieldCls, "h-12 text-[1.0625rem]", type !== "text" && "font-mono text-[1rem] tabular-nums")}
+          className={cn(fieldCls, "h-12 text-[1.0625rem]", type !== "text" && "font-num text-[1rem] tabular-nums")}
         />
       </div>
       {hint && <span className="truncate text-[0.75rem] text-fg-3">{hint}</span>}
@@ -364,7 +364,7 @@ export function Computed({ label, value, status, term }: { label: string; value:
         <span className="min-w-0 truncate">{label}</span>
         {term && <InfoTip term={term} />}
       </div>
-      <div className={cn("font-mono text-[1.0625rem] font-medium tabular-nums", status === "warn" && "text-warn", status === "bad" && "text-bad")}>{value}</div>
+      <div className={cn("font-num text-[1.0625rem] font-medium tabular-nums", status === "warn" && "text-warn", status === "bad" && "text-bad")}>{value}</div>
     </div>
   )
 }

@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 /**
- * A section of a screen (lot 10h « instrument »): no frame, a thin line on top, a Fraunces title (`Label`).
+ * A section of a screen (lot 10h « instrument »): no frame, a thin line on top, a title in Geologica (`Label`, lot 10k).
  * `framed` keeps a frame for the rare blocks that stand apart (the « Premiers pas » guide).
  */
 function Card({ className, framed, ...props }: React.ComponentProps<"div"> & { framed?: boolean }) {

@@ -1,9 +1,9 @@
-"""Serve Figtree + Fraunces + JetBrains Mono locally to Playwright (Google Fonts is unreachable from the sandbox)."""
+"""Serve Figtree + Fraunces + Geologica locally to Playwright (Google Fonts is unreachable from the sandbox)."""
 import pathlib
 import base64
 def font_css():
     css = []
-    for fam, pkg, ws in [("Figtree", "figtree", [400, 500, 600, 700]), ("JetBrains Mono", "jetbrains-mono", [400, 500, 600])]:
+    for fam, pkg, ws in [("Figtree", "figtree", [400, 500, 600, 700]), ("Geologica", "geologica", [500, 600, 700])]:
         for w in ws:
             f = pathlib.Path(f"node_modules/@fontsource/{pkg}/files/{pkg}-latin-{w}-normal.woff2").read_bytes()
             css.append(f"@font-face{{font-family:'{fam}';font-weight:{w};font-display:block;src:url(data:font/woff2;base64,{base64.b64encode(f).decode()}) format('woff2')}}")

@@ -1,5 +1,12 @@
 # Changelog
 
+## Lot 10k1a — Typographie droite (19/10/2026)
+Retour de Thomas : les titres en Fraunces « mous » ne lui plaisent pas, et les chiffres en police code s'intègrent mal (chasse trop large, « 38  % » espacé, deux familles mélangées).
+- **Titres** en Geologica 700, droits et serrés (choix de Thomas parmi cinq polices) : titres d'écran, de section, de carte, « Bonjour Thomas. ».
+- **Chiffres** en Geologica à chasse fixe (ils restent alignés), l'unité plus petite et plus discrète, collée par une espace fine : « 38 % », « 4,0 ». Plus de JetBrains Mono du tout.
+- **Fraunces** reste seulement dans le logo « hydro. » et l'écran de démarrage. Le texte courant reste en Figtree.
+- 344 tests.
+
 ## Lot 7b — Produits « à la main » (19/10/2026)
 - Chaque produit perso se donne **dans le bidon**, **à la main** (arrosoir) ou **sur les racines** (une fois au transfert, comme avant).
 - Les produits « à la main » ne comptent jamais dans la recette ni dans l'EC du bidon : ils sont listés dessous, dans « À la main, si tu veux », avec leur dose par litre d'arrosoir. Pas de fréquence ni de rappel automatique : un bouton « Ajouter un rappel » si tu en veux un.

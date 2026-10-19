@@ -1,4 +1,5 @@
-"""Lot 10f checks in the browser, preview build: Fraunces (SOFT 100) on titles, the « hydro. » logo in the top bar,
+"""Lot 10f checks in the browser, preview build: titles in Geologica (lot 10k; Fraunces SOFT 100 until then), the « hydro. »
+logo in Fraunces in the top bar,
 the tokens --font-display / --water / --leaf, no horizontal overflow at 360 px and at zoom 200 % (195 px), FR/EN, light/dark.
 Usage: npm run preview:build && PYTHONPATH=scripts python3 scripts/e2e-10f.py dist-preview/index.html <out dir>"""
 import sys, json, pathlib
@@ -19,7 +20,7 @@ PROBE = """() => {
     h1: cs ? cs.fontFamily : null, soft: cs ? cs.fontVariationSettings : null,
     logo: !!logo, logoFont: logo ? getComputedStyle(logo).fontFamily : null,
     tokens: ['--font-display', '--water', '--leaf'].map((k) => root.getPropertyValue(k).trim()),
-    fraunces: document.fonts.check('700 20px Fraunces'),
+    fraunces: document.fonts.check('700 20px Fraunces'), geologica: document.fonts.check('700 20px Geologica'),
     sw: document.documentElement.scrollWidth, w: innerWidth,
   }
 }"""
@@ -40,10 +41,11 @@ with sync_playwright() as p:
                     tag = f"{theme}/{lang}/{w}/{tab}"
                     if r["sw"] > r["w"]: errors.append(f"{tag}: overflow {r['sw']}px")
                     if not r["logo"] or "Fraunces" not in (r["logoFont"] or ""): errors.append(f"{tag}: logo {r}")
-                    if r["h1"] and "Fraunces" not in r["h1"]: errors.append(f"{tag}: h1 font {r['h1']}")
-                    if r["h1"] and '"SOFT" 100' not in (r["soft"] or ""): errors.append(f"{tag}: h1 SOFT {r['soft']}")
-                    if not all(r["tokens"]) or not r["fraunces"]: errors.append(f"{tag}: tokens/font {r}")
+                    # Lot 10k: titles in Geologica, upright; Fraunces only in the logo.
+                    if r["h1"] and not r["h1"].startswith("Geologica"): errors.append(f"{tag}: h1 font {r['h1']}")
+                    if r["h1"] and '"SOFT"' in (r["soft"] or ""): errors.append(f"{tag}: h1 SOFT {r['soft']}")
+                    if not all(r["tokens"]) or not r["fraunces"] or not r["geologica"]: errors.append(f"{tag}: tokens/font {r}")
                     if w == 360 and tab in ("today", "tools"): pg.screenshot(path=str(out / f"{tab}-{theme}-{lang}-360.png"))
                 ctx.close()
     b.close()
-print("\n".join(errors) if errors else "10f: Fraunces + SOFT on titles, logo in the top bar, tokens present, no overflow (360 px, 200 %)")
+print("\n".join(errors) if errors else "10f: Geologica on titles, Fraunces logo in the top bar, tokens present, no overflow (360 px, 200 %)")

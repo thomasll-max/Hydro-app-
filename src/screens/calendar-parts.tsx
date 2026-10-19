@@ -123,7 +123,7 @@ export function ItemRow({ i, showWhen = true, onOpen }: { i: CalItem; showWhen?:
           </span>
         )}
       </button>
-      {right && <span className={cn("max-w-[38%] shrink-0 text-right font-mono text-[0.75rem] leading-tight", late && !i.done ? "text-warn" : "text-fg-3")}>{right}</span>}
+      {right && <span className={cn("max-w-[38%] shrink-0 text-right font-num text-[0.75rem] leading-tight", late && !i.done ? "text-warn" : "text-fg-3")}>{right}</span>}
       {!i.done && (
         <button type="button" onClick={() => act.snooze(i)} aria-label={t("cal.snooze")} title={t("cal.snooze")} className={cn(iconButton, "-mr-2")}>
           <Clock3 className="size-4" />

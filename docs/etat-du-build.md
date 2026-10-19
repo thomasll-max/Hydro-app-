@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1 ; 38 = lot 10f2 ; 39 = lot 10g ; 40 = lot 10h1 ; 41 = lot 10h2 ; 42 = lot 10h3 ; 43 = lot 10i ; 44 = lot 10j1 ; 45 = lot 10j2 ; 46 = lot 7a ; 47 = lot 7b)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1 ; 38 = lot 10f2 ; 39 = lot 10g ; 40 = lot 10h1 ; 41 = lot 10h2 ; 42 = lot 10h3 ; 43 = lot 10i ; 44 = lot 10j1 ; 45 = lot 10j2 ; 46 = lot 7a ; 47 = lot 7b ; 48 = lot 10k1a)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -28,7 +28,14 @@
   - [x] Lot 7a : « Autre marque » devient une vraie recette perso (337 tests, artefact v46)
   - [x] Lot 7b : « à la main » et produits perso dans Athena (340 tests, artefact v47)
 - [ ] Lot 10k : interface « calme » : Aujourd'hui, Outils, Journal par semaines, Graphiques (prompt `docs/prompt-lot-10k.md`, avant 11 et 12)
+  - [x] Lot 10k1a : typographie droite (Geologica pour les titres et les chiffres, plus de JetBrains Mono, Fraunces dans le logo seul) (344 tests, artefact v48)
+  - [ ] Lot 10k1b : Aujourd'hui calme (bandeau Premiers pas, bloc « Maintenant », À faire, une ligne par espace)
+  - [ ] Lot 10k2 : Outils en trois groupes, Pulvérisation générique
+  - [ ] Lot 10k3 : Journal par semaines, page d'une semaine, menu du « + »
+  - [ ] Lot 10k4 : Graphiques (vues prêtes, segments droits)
 - [ ] Lot 10l : page d'un espace et saisie du jour, version calme (prompt `docs/prompt-lot-10l.md`, juste après 10k)
+  - [ ] Lot 10l1 : page d'un espace
+  - [ ] Lot 10l2 : saisie du jour
 - [ ] Lot 11 : saisie vocale, dicter le journal à Claude (après 10k et 10l ; prompt `docs/prompt-lot-11.md`)
 - [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)
 - [x] Lot 8b : assistant de premier lancement, guides (205 tests)
@@ -113,6 +120,22 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 - Premiers pas : pots demandés seulement si l'arrosage de l'espace est automatique (cycle en automatique, sinon pompe dans l'espace) ; lampe cochée avec ses watts (`StartItem.canStart` pour « Démarrer aujourd'hui »).
 - Carte Bonjour : un cycle « automatique » dans un espace sans pompe (quand le grow liste ses pompes) est traité comme arrosé à la main. Pas de dose ni de programme inventés pour le rinçage (eau osmosée, EC < 0,1 : fiche Athena).
 - **Simulation d'un an (fin de 10b, 19/10)** : 479 saisies vérifiées, 28/28 anomalies signalées, **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 0 plantage, 364 matins rejoués ; **4 échéances traînent** (12 avant) : toutes « mesurer le débit » (11 matins chacune), car le simulateur ne remesure la pompe qu'aux transferts (71 jours) alors que la règle du cahier des charges est 60 jours. Je n'ai pas changé ce comportement du simulateur : le rappel est juste. Passage navigateur (`browse.py`, 9 dates × 13 écrans) : aucune erreur console, aucun débordement (le seul « Infinity » relevé est la marque AC Infinity).
+
+## Règles « calme » (lot 10k, décision de Thomas du 19/10/2026, pour toute l'app)
+Constat de Thomas après 10j : « toujours un effet plein d'infos éparpillées, ça donne mal à la tête, difficile de savoir où poser le regard » (la même information deux ou trois fois, toutes les sections du même poids, trop de petits dessins). Planches : Aujourd'hui https://claude.ai/artifact/8J98dQ5X7hpyk9FoDbSkyV, les menus https://claude.ai/artifact/T2JmTqXVjvWPVhgSjdwuCC, polices https://claude.ai/artifact/DQTEWL5dWdUnrpEGxaNDcJ. Elles priment sur 10h et 10j.
+1. Un point d'entrée par écran : un seul cadre mis en avant, un seul bouton plein.
+2. Chaque chiffre une seule fois par écran.
+3. Petits dessins 3D seulement sur les espaces (carré teinté), le bloc « Maintenant » et le bandeau Premiers pas ; plus sur les titres de section, les lignes de résumé ni les libellés de relevés. Icônes au trait pour les outils, boutons et onglets.
+4. Trois tailles de texte par écran ; ≈ 30–36 px entre les sections ; presque plus de traits.
+5. Pas de jargon dans les listes (il reste dans les outils, avec le glossaire).
+6. Lignes de graphique honnêtes : segments droits.
+7. Typographie droite : Fraunces seulement dans le logo et l'écran de démarrage ; titres en Geologica 700 (−0,02 em) ; texte en Figtree ; tous les chiffres en Geologica à chasse fixe (plus de JetBrains Mono) ; liens de titre de section petits (≈ 13 px, Figtree 600).
+
+## Lot 10k1a — notes
+- **Polices** : `@fontsource/geologica` (500, 600, 700) ; `@fontsource/jetbrains-mono` retiré. Lien Google Fonts : Figtree, Fraunces (`opsz,wght,SOFT@9..144,700,100`, le logo seul), Geologica `wght@500;600;700`. Version locale : `src/fonts-local.css` (Geologica 500/600/700, plus de JetBrains). `scripts/fonts.py` sert Geologica aux captures. **Décision prise seule** : le prompt dit « seulement les graisses utilisées (500 et 700) » mais demande aussi Geologica 600 pour les grandes lectures et les chiffres dans les phrases : 500, 600 et 700 sont chargées (une graisse 400 demandée prend 500).
+- **Jetons** (`src/index.css`) : `--font-title` et `--font-number` (Geologica, repli Figtree puis system-ui) ; `--font-display` (Fraunces) ne sert plus qu'à `.logo-font` (le logo `Wordmark`, donc aussi l'écran de démarrage) ; `--font-mono` pointe sur `--font-number` (plus de police code). `.display` = titres : Geologica 700, −0,02 em, sans axe SOFT ; `.font-num` (et `.tabular`) = chiffres : Geologica, `tabular-nums`. Toutes les classes `font-mono` du code sont devenues `font-num`. `Label` (titre de section) passe à 19 px ; « Bonjour Thomas. » en `.display`.
+- **Valeur** (`components/hydro/value.tsx`, `Value`) : le composant unique des nombres avec unité : Geologica 600 à chasse fixe, unité plus petite (moitié pour les grandes lectures, 0,85 em dans le texte), graisse 500, couleur discrète, séparée par une espace fine insécable (`NNBSP`, U+202F) : « 38 % ». Tailles `lg` ≈ 30 px, `md` ≈ 22 px, `sm` = taille du texte. `Reading` l'utilise.
+- Scripts : `e2e-10f.py` (titres en Geologica sans SOFT, logo en Fraunces), `e2e-10g.py` (jauge en Geologica), `e2e-10h.py` (champ, « Bonjour », bouton d'étape, date du Journal en Geologica). 344 tests (4 nouveaux, `calc/lot10k.test.ts` : jetons, plus de JetBrains ni de `font-mono`, Fraunces dans le logo seul, `Value`).
 
 ## Lot 7b — notes
 - **Modèle** : `CustomProduct.application` = `"tank" | "hand" | "roots"` (« dans le bidon », « à la main », « sur les racines », une fois au transfert, inchangé). Un produit « à la main » garde sa dose d'étiquette comme un produit du bidon (`labelDose`, `dosePer10L`) et ses semaines (`use`). Rien à migrer : les anciens produits sont « bidon » ou « racines ».

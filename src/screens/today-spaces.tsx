@@ -100,7 +100,7 @@ function SummaryRow({ row, warn, dot }: { row: DigestRow; warn?: boolean; dot?: 
         {row.note && <span className="text-fg-2">{` · ${row.note}`}</span>}
       </span>
       {row.value && (
-        <span className={cn("shrink-0 font-mono text-[0.8125rem] whitespace-nowrap", warn ? "font-semibold text-warn" : "text-fg-2")}>
+        <span className={cn("shrink-0 font-num text-[0.8125rem] whitespace-nowrap", warn ? "font-semibold text-warn" : "text-fg-2")}>
           {row.value}
           {warn && <span className="sr-only">{` (${t("today.alertTag")})`}</span>}
         </span>
@@ -131,7 +131,7 @@ function useLastEntryWhen(spaceIds: string[]): string | null {
 }
 
 /**
- * The morning summary (lot 10j, replaces the sentences of 10h2): « Bonjour Thomas. » in Fraunces, upright, a small line
+ * The morning summary (lot 10j, replaces the sentences of 10h2): « Bonjour Thomas. » (Geologica since lot 10k), a small line
  * « 3 espaces · dernière saisie hier », then one short line per idea, grouped by space with its little square. An empty
  * space is one quiet line. Same information as the digest of the morning task, whose text does not change.
  */
@@ -156,7 +156,7 @@ export function BonjourCard({ only }: { only?: string }) {
   const colorOf = (id: string) => data.spaces.find((x) => x.id === id)?.color
   return (
     <section className="flex flex-col" id="bonjour" aria-labelledby="bonjour-title">
-      <h2 id="bonjour-title" className="font-[family-name:var(--font-display)] text-[1.875rem] leading-tight font-medium [font-variation-settings:'SOFT'_100] tracking-[-0.01em]">
+      <h2 id="bonjour-title" className="display text-[1.875rem] leading-tight">
         {name ? t("row.hello", { name }) : t("row.helloNoName")}
       </h2>
       <p className="mt-0.5 mb-2.5 text-[0.8125rem] text-fg-2" id="bonjour-sub">
@@ -423,7 +423,7 @@ function ReservoirCard({ a, name }: { a: Autonomy; name: string }) {
       </div>
       <div className="flex items-end justify-between gap-3">
         <div>
-          <div className={cn("font-mono text-[1.875rem] leading-none font-medium tracking-[-0.02em] tabular-nums", days != null && days <= 1 ? "text-warn" : "")}>{days != null ? t("today.resDays", { n: num(days) }) : "—"}</div>
+          <div className={cn("font-num text-[1.875rem] leading-none font-medium tracking-[-0.02em] tabular-nums", days != null && days <= 1 ? "text-warn" : "")}>{days != null ? t("today.resDays", { n: num(days) }) : "—"}</div>
           <div className="mt-1 text-[0.75rem] text-fg-3">
             {a.left.ok ? (a.usableL ? t("today.resLeftOf", { left: num(a.left.value), usable: num(a.usableL) }) : t("today.resLeft", { left: num(a.left.value) })) : t("today.resMissing")}
             {a.perDay.ok && ` · ${t("today.resPerDay", { v: num(a.perDay.value, 1) })}`}
@@ -469,8 +469,8 @@ function Tile({ k, v, sub }: { k: string; v: string; sub?: string }) {
   return (
     <div className="min-w-0">
       <div className="truncate text-[0.75rem] text-fg-3">{k}</div>
-      <div className="mt-0.5 truncate font-mono text-[1.5rem] leading-tight font-medium tabular-nums">{v}</div>
-      {sub && <div className="truncate font-mono text-[0.75rem] text-fg-3">{sub}</div>}
+      <div className="mt-0.5 truncate font-num text-[1.5rem] leading-tight font-medium tabular-nums">{v}</div>
+      {sub && <div className="truncate font-num text-[0.75rem] text-fg-3">{sub}</div>}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import type { Target } from "@/calc/targets"
 import { useSettings } from "@/app/settings-context"
 import { InfoTip, type Term } from "./info"
 import { Emoji } from "./emoji"
+import { Value } from "./value"
 import type { EmojiName } from "@/assets/emoji"
 
 /** Where the bar starts and ends: the target with as much room on each side, widened to today's value. */
@@ -74,11 +75,10 @@ export function Reading({
         <span className="min-w-0 truncate">{label}</span>
         {term && <InfoTip term={term} />}
       </div>
-      <div className="mt-0.5 flex min-w-0 items-baseline gap-1">
-        <span className={cn("truncate font-mono leading-none font-medium tracking-[-0.02em] tabular-nums", compact ? "text-[1.375rem]" : "text-[1.875rem]", st === "warn" && "text-warn", st === "bad" && "text-bad", value == null && !children && "text-fg-3")}>
+      <div className="mt-1 flex min-w-0 items-baseline">
+        <Value size={compact ? "md" : "lg"} unit={unit && value != null && !children ? unit : undefined} tone={st === "warn" ? "warn" : st === "bad" ? "bad" : value == null && !children ? "muted" : undefined} className="truncate">
           {children ?? (value != null ? num(value, decimals) : "—")}
-        </span>
-        {unit && value != null && <span className="font-mono text-[0.75rem] text-fg-3">{unit}</span>}
+        </Value>
       </div>
       {scale && (
         <div className={cn("relative h-1.5 rounded-[3px] bg-track", compact ? "mt-1.5" : "mt-2")} aria-hidden="true">
@@ -99,7 +99,7 @@ export function Reading({
         </div>
       )}
       {!compact && (
-        <div className="mt-1.5 truncate font-mono text-[0.75rem] text-fg-3">
+        <div className="mt-1.5 truncate font-num text-[0.75rem] text-fg-3">
           {target ? `${t("today.target")} ${range(target.lo, target.hi, decimals)}${unit ? ` ${unit}` : ""}` : (note ?? "")}
         </div>
       )}

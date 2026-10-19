@@ -2,13 +2,13 @@
 - palette tokens of the prompt on <html>; the logo's full stop in the colour of the text;
 - space marker: a 10 px square, radius 3;
 - main button: radius 10, inner shadow at the bottom, 48 px; secondary: 1 px outline, no fill;
-- instrument fields: no box, a bottom line, value in JetBrains Mono 26 px, the unit inside; a typo turns the line
+- instrument fields: no box, a bottom line, value in Geologica 26 px (JetBrains Mono until lot 10k), the unit inside; a typo turns the line
   « à surveiller » with its message;
 - segmented control: joined boxes, the active one inverted;
 - reminders: a square check box (22 px, radius 6) that ticks and unticks;
 - keyboard focus: 2 px « eau » outline, 2 px away;
 10h2, with a cycle and entries seeded: readings (bar, target zone, tick in « à surveiller » / « alerte » out of target),
-« Bonjour Thomas. » in upright Fraunces then lines (sentences until lot 10j), sections without frames, space tabs underlined,
+« Bonjour Thomas. » upright (Geologica 700 since lot 10k) then lines (sentences until lot 10j), sections without frames, space tabs underlined,
 the cycle step button with its consequence, the journal in one line per day with the plants under it;
 10h3: the tab bar anchored at the bottom (page ground, thin line, « + » 52 × 44 in the middle, four tabs), the week strip
 (7 days, ≤ 64 px, today underlined, a day opens the Calendar on it and back returns), the date of the top bar,
@@ -88,7 +88,7 @@ with sync_playwright() as p:
         open_entry(pg)
         c["field"] = pg.evaluate("""() => { const i = document.querySelector('#e-tempDay'); const s = getComputedStyle(i); const w = i.parentElement; return { font: s.fontFamily.split(',')[0], size: s.fontSize, border: s.borderTopWidth, bg: s.backgroundColor, line: getComputedStyle(w).boxShadow, unit: w.textContent.trim() } }""")
         f = c["field"]
-        if "JetBrains Mono" not in f["font"] or f["size"] != "26px" or f["border"] != "0px" or "inset" not in f["line"] or f["unit"] != "°C": errors.append(f"{theme} field {f}")
+        if "Geologica" not in f["font"] or f["size"] != "26px" or f["border"] != "0px" or "inset" not in f["line"] or f["unit"] != "°C": errors.append(f"{theme} field {f}")
         pg.fill("#e-tempDay", "2,4,5"); pg.wait_for_timeout(200)
         c["bad"] = pg.evaluate("""() => { const i = document.querySelector('#e-tempDay'); const m = document.querySelector('#e-tempDay-err'); return [getComputedStyle(i.parentElement).boxShadow, m && getComputedStyle(m).color] }""")
         if rgb(PALETTE[theme]["--warn"]) not in c["bad"][0] or c["bad"][1] != rgb(PALETTE[theme]["--warn"]): errors.append(f"{theme} typo {c['bad']}")
@@ -128,11 +128,11 @@ with sync_playwright() as p:
         c["bonjour"] = pg.evaluate("""() => { const h = document.querySelector('#bonjour h2'); const s = getComputedStyle(h); return { text: h.textContent, font: s.fontFamily.split(',')[0], style: s.fontStyle, weight: s.fontWeight, lists: document.querySelectorAll('#bonjour ul, #bonjour li').length, sentences: [...document.querySelectorAll('#bonjour p')].map((p) => p.textContent.trim()) } }""")
         bj = c["bonjour"]
         # Lot 10j: the summary is in short lines (one per idea), no more sentences.
-        if bj["text"] != "Bonjour Thomas." or "Fraunces" not in bj["font"] or bj["style"] != "normal" or bj["weight"] != "500" or not bj["lists"]: errors.append(f"{theme} bonjour {bj}")
+        if bj["text"] != "Bonjour Thomas." or "Geologica" not in bj["font"] or bj["style"] != "normal" or bj["weight"] != "700" or not bj["lists"]: errors.append(f"{theme} bonjour {bj}")
         c["tabs"] = pg.evaluate("""() => { const g = document.querySelector('[role=group][aria-label]'); const on = g.querySelector('[aria-pressed=true]'); const u = on.querySelector('span.absolute'); return { radius: getComputedStyle(g).borderRadius, line: u && getComputedStyle(u).backgroundColor, h: u && u.getBoundingClientRect().height } }""")
         if c["tabs"]["radius"] != "0px" or c["tabs"]["line"] != rgb(PALETTE[theme]["--water"]) or c["tabs"]["h"] != 2: errors.append(f"{theme} space tabs {c['tabs']}")
         pg.get_by_role("group").first.get_by_role("button", name="Floraison").click(); pg.wait_for_timeout(1500)
-        c["readings"] = pg.evaluate("""() => [...document.querySelectorAll('#readings [data-status]')].map((r) => ({ status: r.dataset.status, value: getComputedStyle(r.querySelector('.font-mono')).fontSize, tick: r.querySelector('[data-tick]') && getComputedStyle(r.querySelector('[data-tick]')).backgroundColor, zone: !!r.querySelector('[data-zone]'), target: r.lastElementChild.textContent }))""")
+        c["readings"] = pg.evaluate("""() => [...document.querySelectorAll('#readings [data-status]')].map((r) => ({ status: r.dataset.status, value: getComputedStyle(r.querySelector('.font-num')).fontSize, tick: r.querySelector('[data-tick]') && getComputedStyle(r.querySelector('[data-tick]')).backgroundColor, zone: !!r.querySelector('[data-zone]'), target: r.lastElementChild.textContent }))""")
         rd = c["readings"]
         if len(rd) < 3 or rd[0]["status"] != "ok" or rd[0]["value"] != "30px" or not rd[0]["zone"] or rd[0]["target"] != "cible 40–50 %": errors.append(f"{theme} dryback reading {rd[:1]}")
         ec = next((r for r in rd if r["target"].startswith("cible 3")), None)
@@ -140,12 +140,12 @@ with sync_playwright() as p:
         c["frames"] = pg.evaluate("""() => [...document.querySelectorAll('main [data-slot=card]')].filter((el) => getComputedStyle(el).borderLeftWidth !== '0px' && el.id !== 'start-card').length""")
         if c["frames"]: errors.append(f"{theme} framed sections {c['frames']}")
         c["step"] = pg.evaluate("""() => { const b = document.querySelector('button[id^=step-]'); return b ? [b.textContent, getComputedStyle(b).borderTopWidth, getComputedStyle(b.lastElementChild).fontFamily.split(',')[0]] : null }""")
-        if not c["step"] or "→" not in c["step"][0] or c["step"][1] != "1px" or "JetBrains" not in c["step"][2]: errors.append(f"{theme} step {c['step']}")
+        if not c["step"] or "→" not in c["step"][0] or c["step"][1] != "1px" or "Geologica" not in c["step"][2]: errors.append(f"{theme} step {c['step']}")
         pg.screenshot(path=str(out / f"space-{theme}.png"), full_page=True)
         pg.get_by_role("tab", name="Journal").click(); pg.wait_for_timeout(1500)
         c["journal"] = pg.evaluate("""() => { const li = document.querySelector('ul.mt-1 > li'); const btn = li.querySelector('button'); const kids = [...btn.children]; return { date: getComputedStyle(kids[0]).fontFamily.split(',')[0], key: kids[2].textContent, plants: [...li.querySelectorAll('ul li')].map((x) => x.textContent.trim()) } }""")
         j = c["journal"]
-        if "JetBrains" not in j["date"] or j["key"] != "45 %" or j["plants"] != ["P1Hauteur 88 cm", "P2Hauteur 91 cm"]: errors.append(f"{theme} journal {j}")
+        if "Geologica" not in j["date"] or j["key"] != "45 %" or j["plants"] != ["P1Hauteur 88 cm", "P2Hauteur 91 cm"]: errors.append(f"{theme} journal {j}")
         pg.screenshot(path=str(out / f"journal-{theme}.png"), full_page=True)
         checks[f"10h2-{theme}"] = c
         ctx.close()

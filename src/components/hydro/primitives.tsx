@@ -58,11 +58,11 @@ export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "prima
 }
 
 /**
- * Section title (lot 10h): Fraunces in normal case, no small capitals. `emoji` is drawn only with `mark` (lot 10j: the
+ * Section title (lot 10h; Geologica 700 since lot 10k): normal case, no small capitals. `emoji` is drawn only with `mark` (lot 10j: the
  * small drawings come back as landmarks on Aujourd'hui and the main screens; Outils keeps plain titles).
  */
 export function Label({ emoji, mark, children, className }: { emoji?: EmojiName; mark?: boolean; children: ReactNode; className?: string }) {
-  const title = <h2 className={cn("display min-w-0 text-[1.25rem] leading-tight font-semibold", className)}>{children}</h2>
+  const title = <h2 className={cn("display min-w-0 text-[1.1875rem] leading-tight", className)}>{children}</h2>
   if (!mark || !emoji) return title
   // Very narrow screens (zoom 200 %): the drawing steps aside, the words keep the room.
   return (

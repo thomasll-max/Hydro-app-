@@ -18,11 +18,11 @@ describe("lot 10f — identité « hydro. »", () => {
     expect(icon).toContain('fill="#3ecf8e"')
   })
 
-  it("Fraunces : token --font-display, axe SOFT, Google Fonts et version locale", () => {
+  it("Fraunces (le logo seul depuis le lot 10k) : token --font-display, axe SOFT, Google Fonts et version locale", () => {
     const css = read("src/index.css")
     expect(css).toMatch(/--font-display: "Fraunces"/)
     expect(css).toMatch(/font-variation-settings: "SOFT" 100/)
-    expect(read("index.html")).toMatch(/family=Fraunces:opsz,wght,SOFT@9\.\.144,500\.\.700,100/) // 500 since lot 10h (« Bonjour Thomas. »)
+    expect(read("index.html")).toMatch(/family=Fraunces:opsz,wght,SOFT@9\.\.144,700,100/) // 700 only: the logo (lot 10k)
     expect(read("src/fonts-local.css")).toMatch(/fontsource-variable\/fraunces\/files\/fraunces-latin-full-normal\.woff2/)
   })
 

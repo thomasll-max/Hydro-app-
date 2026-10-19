@@ -339,7 +339,7 @@ export function PhaseTag({ phase }: { phase: ProgramRow["phase"] }) {
   return (
     <span
       className={cn(
-        "rounded-[6px] border border-line py-[2px] text-center font-mono text-[0.75rem] font-bold",
+        "rounded-[6px] border border-line py-[2px] text-center font-num text-[0.75rem] font-bold",
         (phase === "P0" || phase === "OFF") && "text-fg-2",
         (phase === "P1" || phase === "MAN" || phase === "INST") && "text-info",
         phase === "P2" && "text-water-ink",

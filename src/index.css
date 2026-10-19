@@ -55,8 +55,11 @@
   --r-lg: 14px;
   --r-xl: 14px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  /* Display face (lot 10f, « Serre »): logo, screen and sheet titles, space names, the morning card, stage names. */
+  /* Lot 10k (« calme », Thomas's choice): Fraunces only in the « hydro. » logo and the splash screen. */
   --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  /* Titles (screen, section, card, « Bonjour Thomas. ») and every number: Geologica, upright; text stays in Figtree. */
+  --font-title: "Geologica", "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-number: "Geologica", "Figtree", ui-sans-serif, system-ui, sans-serif;
 
   /* shadcn semantic aliases — every library component goes through these */
   --background: var(--page);
@@ -165,7 +168,8 @@ body {
 
 @theme inline {
   --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  /* No code font since lot 10k: numbers are Geologica with tabular figures (`font-num`, `Value`). */
+  --font-mono: var(--font-number);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -280,16 +284,22 @@ svg.lucide[stroke-width="2"] {
 }
 
 @layer utilities {
-  /* Fraunces with the SOFT axis at 100; opsz stays automatic (font-optical-sizing). */
-  .display {
+  /* The « hydro. » logo (lot 10f): Fraunces with the SOFT axis at 100, opsz automatic. Its only use since lot 10k. */
+  .logo-font {
     font-family: var(--font-display);
     font-variation-settings: "SOFT" 100;
     font-optical-sizing: auto;
-    font-weight: 650;
-    letter-spacing: -0.01em;
   }
+  /* Titles (lot 10k): Geologica 700, upright, tight. Fraunces is the logo's only (`--font-display`). */
+  .display {
+    font-family: var(--font-title);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  /* Numbers (lot 10k): Geologica with tabular figures, so columns of values stay aligned. */
+  .font-num,
   .tabular {
-    font-family: var(--font-mono);
+    font-family: var(--font-number);
     font-variant-numeric: tabular-nums;
   }
   /* A compact pill keeps its look but takes taps over 44 px of height (lot 10e, touch targets). */

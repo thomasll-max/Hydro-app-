@@ -150,7 +150,7 @@ export function JournalScreen() {
                   onClick={() => ed.openPlant(id)}
                   className="flex min-h-[64px] min-w-0 flex-col items-start rounded-[10px] border border-line-strong px-2.5 py-2 text-left"
                 >
-                  <span className="font-mono text-[0.875rem] font-semibold">{id}</span>
+                  <span className="font-num text-[0.875rem] font-semibold">{id}</span>
                   <span className={cn("w-full truncate text-[0.75rem]", p?.phenotype || p?.cultivar ? "text-fg-2" : "text-fg-3")}>
                     {p?.phenotype || p?.cultivar || t("journal.plantEmpty")}
                   </span>
@@ -183,7 +183,7 @@ export function JournalScreen() {
             <Label emoji="book" mark>
               {t("journal.history")}
             </Label>
-            <span className="font-mono text-[0.75rem] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
+            <span className="font-num text-[0.75rem] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
           </div>
           {/* Filters folded behind one button (lot 10j); the active ones in one line, with « Effacer ». */}
           {canFilter && (
@@ -458,14 +458,14 @@ function DayRow({ room, plants, space, onOpen, photoUrl }: { room?: Entry; plant
   return (
     <li className="border-t border-line first:border-t-0">
       <button onClick={() => onOpen(e)} className="grid w-full grid-cols-[3.375rem_minmax(0,1fr)_auto] items-baseline gap-x-2 py-2.5 text-left">
-        <span className="font-mono text-[0.8125rem] text-fg-3">{dm(e.date)}</span>
+        <span className="font-num text-[0.8125rem] text-fg-3">{dm(e.date)}</span>
         <span className="truncate text-[0.9375rem]">
           {space && (
             <span className="mr-1.5 inline-flex items-baseline gap-1 font-semibold">
               <SpaceDot color={space.color} /> {space.name}
             </span>
           )}
-          {e.time && <span className="mr-1.5 font-mono text-[0.75rem] text-fg-3">{e.time}</span>}
+          {e.time && <span className="mr-1.5 font-num text-[0.75rem] text-fg-3">{e.time}</span>}
           {bits.map((b, i) => (
             <span key={i} className="text-fg-2">
               {i > 0 && " · "}
@@ -473,7 +473,7 @@ function DayRow({ room, plants, space, onOpen, photoUrl }: { room?: Entry; plant
             </span>
           ))}
         </span>
-        <span className={cn("font-mono text-[0.8125rem] font-medium", tone(key?.s) ?? "text-fg")}>{key?.v ?? ""}</span>
+        <span className={cn("font-num text-[0.8125rem] font-medium", tone(key?.s) ?? "text-fg")}>{key?.v ?? ""}</span>
         {(tags.length > 0 || room?.note || room?.photos?.length) && (
           <span className="col-start-2 col-end-4 mt-1 flex min-w-0 flex-col gap-1">
             {tags.length > 0 && (
@@ -504,7 +504,7 @@ function DayRow({ room, plants, space, onOpen, photoUrl }: { room?: Entry; plant
           {plants.map((p) => (
             <li key={p.id}>
               <button onClick={() => onOpen(p)} className="flex min-h-11 w-full items-center gap-2 text-left text-[0.8125rem] text-fg-2">
-                <span className="rounded-[6px] border border-line px-1.5 py-0.5 font-mono text-[0.75rem] font-semibold text-fg-2">{p.plantId}</span>
+                <span className="rounded-[6px] border border-line px-1.5 py-0.5 font-num text-[0.75rem] font-semibold text-fg-2">{p.plantId}</span>
                 <span className="min-w-0 flex-1 truncate">
                   {p.heightCm != null ? `${t("journal.height")} ${num(p.heightCm)} cm` : (p.note ?? t("journal.plantEntry"))}
                 </span>

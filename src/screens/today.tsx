@@ -156,7 +156,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
               <Label emoji="chart" mark>
                 {t("today.readings")}
               </Label>
-              <span className="truncate font-mono text-[0.75rem] text-fg-3">{last ? when : t("today.noEntryTitle")}</span>
+              <span className="truncate font-num text-[0.75rem] text-fg-3">{last ? when : t("today.noEntryTitle")}</span>
             </div>
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
               {bySensor ? (

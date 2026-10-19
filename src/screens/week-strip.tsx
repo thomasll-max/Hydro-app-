@@ -68,7 +68,7 @@ export function WeekStrip() {
               className="flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-[10px] py-1 hover:bg-surface-2"
             >
               <span className="text-[0.75rem] leading-none text-fg-3">{short.format(at)}</span>
-              <span className={cn("font-mono text-[0.9375rem] leading-none font-semibold", d < today && "text-fg-3", d === today && "underline decoration-water decoration-2 underline-offset-[5px]")}>
+              <span className={cn("font-num text-[0.9375rem] leading-none font-semibold", d < today && "text-fg-3", d === today && "underline decoration-water decoration-2 underline-offset-[5px]")}>
                 {Number(d.slice(8))}
               </span>
               <span className="flex h-[5px] gap-[3px]" aria-hidden="true">

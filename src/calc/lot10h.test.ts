@@ -147,8 +147,8 @@ describe("lot 10h2 — écrans « instrument »", () => {
     expect(ownerName({ name: "Mon grow", ownerName: " Léa " })).toBe("Léa")
     expect(ownerName({ name: "La tente du garage" })).toBeUndefined()
     expect(translate("fr", "row.hello", { name: "Thomas" })).toBe("Bonjour Thomas.")
-    // Fraunces 500 is loaded for it (upright, Thomas's choice).
-    expect(read("index.html")).toMatch(/Fraunces:opsz,wght,SOFT@9\.\.144,500\.\.700,100/)
+    // Geologica since lot 10k (Fraunces is the logo's only).
+    expect(read("index.html")).toMatch(/family=Geologica:wght@500;600;700/)
   })
 
   it("lectures : la barre suit la vraie cible, élargie à la valeur du jour ; sans cible, pas de zone", () => {
@@ -169,10 +169,10 @@ describe("lot 10h2 — écrans « instrument »", () => {
     ])
   })
 
-  it("sections sans cadre (trait fin et titre Fraunces), le cadre pour ce qui est à part (lot 10j : les espaces)", () => {
+  it("sections sans cadre (trait fin et titre, en Geologica depuis le lot 10k), le cadre pour ce qui est à part (lot 10j : les espaces)", () => {
     const card = read("src/components/ui/card.tsx")
     expect(card).toMatch(/border-t border-line pt-4/)
-    expect(read("src/components/hydro/primitives.tsx")).toMatch(/<h2 className=\{cn\("display min-w-0 text-\[1\.25rem\]/)
+    expect(read("src/components/hydro/primitives.tsx")).toMatch(/<h2 className=\{cn\("display min-w-0 text-\[1\.1875rem\]/)
     expect(read("src/screens/today-spaces.tsx")).toMatch(/<Card framed/)
     expect(read("src/index.css")).not.toMatch(/text-transform: uppercase/)
   })

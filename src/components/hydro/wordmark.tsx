@@ -76,7 +76,7 @@ export function Wordmark({ size = 24, bg = "var(--background)", className }: { s
     <span
       role="img"
       aria-label="Hydro"
-      className={cn("display inline-flex items-baseline leading-none whitespace-nowrap select-none", className)}
+      className={cn("logo-font inline-flex items-baseline leading-none whitespace-nowrap select-none", className)}
       style={{ fontSize: size, fontWeight: 700, letterSpacing: "-0.03em" }}
     >
       <span aria-hidden="true">hydr</span>

@@ -52,6 +52,7 @@
   - [x] Lot 10h2 : écrans (relevés avec barre de cible, sections sans cartes, carte du matin en phrases, journal en lignes, onglets d'espace soulignés, bouton d'étape de cycle) (310 tests, artefact v41)
   - [x] Lot 10h3 : barre d'onglets ancrée avec « + » central, bande de la semaine, accès au calendrier, raccourci « Tous les réglages » du menu d'affichage, mouvements, README (313 tests, artefact v42)
 - [x] Lot 10i : allemand (318 tests, artefact v43)
+- [ ] Lot 10j : clarté (petits dessins, cadres par espace, résumé du matin en lignes ; prompt `docs/prompt-lot-10j.md`, avant le lot 7)
 
 ## Lot 10 : passe de corrections (19/10/2026)
 - Source : `docs/audit-2026-10-19.md`, avec 84 points tirés de la simulation d'un an, de 4 audits et des retours des testeurs. Les points faits y sont cochés ✅.

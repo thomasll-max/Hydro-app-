@@ -1,6 +1,6 @@
 # Prompt lot 7 : Athena + « mes produits » (version simple)
 
-À lancer dans Claude Code, une seule session à la fois, après 10h et 10i (cochés). Si le lot est trop gros, le couper en 7a et 7b.
+À lancer dans Claude Code, une seule session à la fois, après 10h, 10i et 10j (cochés). Si le lot est trop gros, le couper en 7a et 7b.
 
 **Décision de Thomas (19/10/2026)** : on abandonne le catalogue multi-marques. L'app reste **Athena seule** (Pro Line, et Blended dans la version des potes). Les autres marques s'entrent **à la main** par l'utilisateur, produit par produit, avec les doses de leur étiquette. La recherche sur Canna, Plagron, Mills, Advanced Nutrients et Terra Aquatica reste dans le projet claude.ai, pour plus tard. **Elle n'est pas importée dans l'app.**
 

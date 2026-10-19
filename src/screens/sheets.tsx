@@ -6,7 +6,7 @@ import { AreaField, Grid, Group, NumField, Seg, Sheet, TextField } from "@/compo
 import { ConfirmDelete } from "@/components/hydro/confirm"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { RootProductsField, useRootProducts } from "./root-products"
 import { TARGET } from "@/store"
@@ -139,6 +139,7 @@ export function CycleSheet({
 
   const save = () =>
     run(async () => {
+      if (badNums(s, [...NUM_FIELDS, ...H_FIELDS.map((k) => `h_${k}`)]).length) throw new Error(t("safe.fixFields"))
       const next: Cycle = { ...c, cultivars: (s.cultivars ?? "").split(",").map((x) => x.trim()).filter(Boolean) }
       // Local version: no default pots for a new cycle (nothing is guessed).
       if (TARGET === "local" && !cycle && (!parseNum(s.potVolumeL) || !parseNum(s.potCount))) throw new Error(t("onb.issue.cyclePots"))
@@ -284,7 +285,10 @@ export function EventSheet({ open, onOpenChange, event }: { open: boolean; onOpe
       open={open}
       onOpenChange={onOpenChange}
       title={t("event.title")}
-      footer={<SaveBar busy={busy} onSave={() => run(() => saveEvent(build()))} onDelete={event ? async () => { await deleteEvent(event.id); onOpenChange(false) } : undefined} />}
+      footer={<SaveBar busy={busy} onSave={() => run(async () => {
+        if (rooting && rootState.bad) throw new Error(t("safe.fixFields"))
+        await saveEvent(build())
+      })} onDelete={event ? async () => { await deleteEvent(event.id); onOpenChange(false) } : undefined} />}
     >
       <div className="flex flex-col gap-2.5">
         <TextField id="ev-date" type="date" label={t("event.date")} value={e.date} onChange={(v) => setE((x) => ({ ...x, date: v }))} />
@@ -326,6 +330,7 @@ export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenCha
   }, [open, mix])
   const save = () =>
     run(async () => {
+      if (badNums(s).length) throw new Error(t("safe.fixFields"))
       const volumeL = parseNum(s.volume)
       if (!volumeL) throw new Error(t("mixForm.volume"))
       // Editing keeps the recipe, the line and the spaces the tank feeds.

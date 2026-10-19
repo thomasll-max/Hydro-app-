@@ -1,8 +1,10 @@
 // Hands a generated file to the user. Claude version: the artifact's `downloads` capability (the viewer
 // confirms; .ics is not on its allowlist, so the caller passes a .zip). Local version: a plain download link.
 import { TARGET } from "@/store"
+import { isIos } from "./persist"
 
-export type SaveOutcome = "saved" | "declined" | "unavailable"
+/** "started": a plain download link was clicked; on iPhone nothing tells whether the file really landed. */
+export type SaveOutcome = "saved" | "started" | "declined" | "unavailable"
 
 type Downloads = { save(r: { filename: string; data: Blob | string }): Promise<unknown> }
 type Runtime = { use(name: string): Promise<unknown> }
@@ -26,6 +28,18 @@ export async function saveFile(filename: string, data: Blob): Promise<SaveOutcom
       return (e as { code?: string })?.code === "declined" ? "declined" : "unavailable"
     }
   }
+  // iPhone: the share sheet ("Enregistrer dans Fichiers") is the only way to know the file was really saved.
+  if (isIos()) {
+    try {
+      const file = new File([data], filename, { type: data.type || "application/octet-stream" })
+      if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file] })
+        return "saved"
+      }
+    } catch (e) {
+      if ((e as Error)?.name === "AbortError") return "declined"
+    }
+  }
   try {
     const url = URL.createObjectURL(data)
     const a = document.createElement("a")
@@ -35,7 +49,7 @@ export async function saveFile(filename: string, data: Blob): Promise<SaveOutcom
     a.click()
     a.remove()
     setTimeout(() => URL.revokeObjectURL(url), 10_000)
-    return "saved"
+    return isIos() ? "started" : "saved"
   } catch {
     return "unavailable"
   }

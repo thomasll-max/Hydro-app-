@@ -4,6 +4,8 @@ import { Label as UiLabel } from "@/components/ui/label"
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
+import { isBadNum } from "@/calc/formulas"
+import { useSettings } from "@/app/settings-context"
 
 /** Bottom sheet used for every form (shadcn Drawer / vaul), full-height on phones. */
 export function Sheet({
@@ -76,6 +78,9 @@ export function NumField({
   integer?: boolean
   className?: string
 }) {
+  const { t } = useSettings()
+  // A typo is flagged right away; forms refuse to save while one is left (lot 10a).
+  const bad = isBadNum(value)
   return (
     <div className={cn("flex min-w-0 flex-col gap-1", className)}>
       <UiLabel htmlFor={id} className="truncate text-[12px] font-medium text-fg-2">
@@ -89,10 +94,18 @@ export function NumField({
         enterKeyHint="next"
         value={value}
         placeholder={placeholder}
+        aria-invalid={bad || undefined}
+        aria-describedby={bad ? `${id}-err` : undefined}
         onChange={(e) => onChange(e.target.value.replace(/[^\d.,-]/g, ""))}
-        className={inputCls}
+        className={cn(inputCls, bad && "border-bad ring-2 ring-bad/30")}
       />
-      {hint && <span className="truncate text-[10.5px] text-fg-3">{hint}</span>}
+      {bad ? (
+        <span id={`${id}-err`} className="truncate text-[10.5px] font-semibold text-bad">
+          {t("safe.badNumber")}
+        </span>
+      ) : (
+        hint && <span className="truncate text-[10.5px] text-fg-3">{hint}</span>
+      )}
     </div>
   )
 }

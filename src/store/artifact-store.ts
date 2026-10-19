@@ -1,5 +1,5 @@
 // Store backed by the claude.ai artifact runtime: `db` for documents, `assets` for photos.
-import { clean, splitPath, type Doc, type DocStore, type PhotoStore } from "./doc-store"
+import { clean, runBatch, splitPath, type BatchOp, type Doc, type DocStore, type PhotoStore } from "./doc-store"
 
 type Snap = { id: string; exists: boolean; data(): Doc | undefined }
 type QSnap = { docs: Snap[] }
@@ -30,39 +30,42 @@ function safeUnsub(u: unknown): () => void {
 
 const toMap = (q: QSnap) => Object.fromEntries(q.docs.filter((d) => d.exists).map((d) => [d.id, d.data() ?? {}]))
 
+/** The runtime retries "unavailable" once on its own advice (db.d.ts): a short randomized delay, then one more try. */
+async function once<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn()
+  } catch (e) {
+    if ((e as { code?: string })?.code !== "unavailable") throw e
+    await new Promise((r) => setTimeout(r, 300 + Math.random() * 500))
+    return fn()
+  }
+}
+
 export class ArtifactStore implements DocStore {
   readonly kind = "artifact" as const
   constructor(private db: ClaudeDb) {}
   async get(path: string) {
-    const s = await this.db.doc(path).get()
+    const s = await once(() => this.db.doc(path).get())
     return s.exists ? (s.data() ?? null) : null
   }
   async set(path: string, data: Doc) {
-    await this.db.doc(path).set(clean(data))
+    await once(() => this.db.doc(path).set(clean(data)))
   }
   async delete(path: string) {
-    await this.db.doc(path).delete()
+    await once(() => this.db.doc(path).delete())
   }
+  /** A failed read throws: export, reset and import must never take an error for an empty collection. */
   async list(collection: string) {
-    try {
-      return toMap(await this.db.collection(collection).get())
-    } catch {
-      return {}
-    }
+    return toMap(await once(() => this.db.collection(collection).get()))
   }
-  watchDoc(path: string, cb: (d: Doc | null) => void) {
-    return safeUnsub(this.db.doc(path).onSnapshot(
-      (s) => cb(s.exists ? (s.data() ?? null) : null),
-      () => cb(null), // refused or unavailable: render the empty state instead of waiting forever
-    ))
+  async batch(ops: readonly BatchOp[]) {
+    await runBatch(this, ops)
   }
-  watchCollection(collection: string, cb: (d: Record<string, Doc>) => void) {
-    return safeUnsub(
-      this.db.collection(collection).onSnapshot(
-        (q) => cb(toMap(q)),
-        () => cb({}),
-      ),
-    )
+  watchDoc(path: string, cb: (d: Doc | null) => void, onError?: (e: unknown) => void) {
+    return safeUnsub(this.db.doc(path).onSnapshot((s) => cb(s.exists ? (s.data() ?? null) : null), (e) => onError?.(e)))
+  }
+  watchCollection(collection: string, cb: (d: Record<string, Doc>) => void, onError?: (e: unknown) => void) {
+    return safeUnsub(this.db.collection(collection).onSnapshot((q) => cb(toMap(q)), (e) => onError?.(e)))
   }
   /** Path of a document inside a collection (both sides of splitPath). */
   static path(collection: string, id: string) {

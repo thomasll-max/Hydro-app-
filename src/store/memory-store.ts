@@ -1,4 +1,4 @@
-import { clean, splitPath, type Doc, type DocStore, type PhotoStore, type Unsub } from "./doc-store"
+import { clean, splitPath, type BatchOp, type Doc, type DocStore, type PhotoStore, type Unsub } from "./doc-store"
 
 /** In-memory store with live listeners. Used by tests, and as the base of the local store. */
 export class MemoryStore implements DocStore {
@@ -15,14 +15,27 @@ export class MemoryStore implements DocStore {
   protected snapshot(c: string): Record<string, Doc> {
     return Object.fromEntries([...this.col(c)].map(([k, v]) => [k, structuredClone(v)]))
   }
-  protected emit(path: string) {
-    const { collection, id } = splitPath(path)
-    const d = this.col(collection).get(id) ?? null
-    this.docWatchers.get(path)?.forEach((cb) => cb(d && structuredClone(d)))
-    this.colWatchers.get(collection)?.forEach((cb) => cb(this.snapshot(collection)))
+  /** Notifies the watchers of these documents, each collection once. */
+  protected emit(...paths: string[]) {
+    const cols = new Set<string>()
+    for (const path of paths) {
+      const { collection, id } = splitPath(path)
+      cols.add(collection)
+      const d = this.col(collection).get(id) ?? null
+      this.docWatchers.get(path)?.forEach((cb) => cb(d && structuredClone(d)))
+    }
+    for (const c of cols) this.colWatchers.get(c)?.forEach((cb) => cb(this.snapshot(c)))
   }
-  /** Hook for persistence (local store). */
-  protected async persist(_path: string, _data: Doc | null): Promise<void> {}
+  /** Applies writes in memory only (persisted elsewhere, or received from another tab). */
+  protected apply(ops: readonly BatchOp[]) {
+    for (const [path, d] of ops) {
+      const { collection, id } = splitPath(path)
+      if (d) this.col(collection).set(id, d)
+      else this.col(collection).delete(id)
+    }
+  }
+  /** Hook for persistence (local store). Runs BEFORE memory changes: a refused write is never shown. */
+  protected async persist(_ops: readonly BatchOp[]): Promise<void> {}
 
   async get(path: string) {
     const { collection, id } = splitPath(path)
@@ -30,17 +43,17 @@ export class MemoryStore implements DocStore {
     return d ? structuredClone(d) : null
   }
   async set(path: string, data: Doc) {
-    const { collection, id } = splitPath(path)
-    const d = clean(structuredClone(data))
-    this.col(collection).set(id, d)
-    await this.persist(path, d)
-    this.emit(path)
+    await this.batch([[path, data]])
   }
   async delete(path: string) {
-    const { collection, id } = splitPath(path)
-    this.col(collection).delete(id)
-    await this.persist(path, null)
-    this.emit(path)
+    await this.batch([[path, null]])
+  }
+  async batch(ops: readonly BatchOp[]) {
+    if (!ops.length) return
+    const ready: BatchOp[] = ops.map(([p, d]) => [p, d ? clean(structuredClone(d)) : null])
+    await this.persist(ready)
+    this.apply(ready)
+    this.emit(...ready.map(([p]) => p))
   }
   async list(collection: string) {
     return this.snapshot(collection)
@@ -75,5 +88,8 @@ export class MemoryPhotos implements PhotoStore {
   }
   async remove(id: string) {
     this.blobs.delete(id)
+  }
+  async clear() {
+    this.blobs.clear()
   }
 }

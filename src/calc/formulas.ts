@@ -52,3 +52,13 @@ export function parseNum(s: string | undefined | null): number | undefined {
   if (t === "" || !/^-?\d*\.?\d+$/.test(t)) return undefined
   return Number(t)
 }
+
+/** Something typed that is not a number ("2,4,5", "-", "1-2"): never saved as empty (lot 10a). */
+export function isBadNum(s: string | undefined | null): boolean {
+  return s != null && String(s).trim() !== "" && parseNum(s) === undefined
+}
+
+/** Keys of a form whose text does not read as a number. */
+export function badNums(fields: Record<string, string | undefined>, keys: readonly string[] = Object.keys(fields)): string[] {
+  return keys.filter((k) => isBadNum(fields[k]))
+}

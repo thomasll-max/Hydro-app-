@@ -45,6 +45,12 @@ with sync_playwright() as p:
     copied = pg.evaluate("navigator.clipboard.readText()")
     checks["copiedHasSpace"] = '"tente"' in copied
     pg.goto(url); pg.wait_for_timeout(1500)
+    # Lot 10a: a copy is a transfer, not a backup: the reminder stays until a file is really saved.
+    checks["reminderAfterCopy"] = pg.locator("#backup-reminder").count()
+    pg.goto(url + "#data"); pg.wait_for_timeout(1500)
+    with pg.expect_download():
+        pg.click("#data-export")
+    pg.goto(url); pg.wait_for_timeout(1500)
     checks["reminderAfterBackup"] = pg.locator("#backup-reminder").count()
     pg.goto(url + "#settings"); pg.wait_for_timeout(2000)
     pg.get_by_role("button", name="Réinitialiser…").click(); pg.wait_for_timeout(400)

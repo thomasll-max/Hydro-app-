@@ -9,7 +9,7 @@ import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { blankEntry, entryId, previousEntry } from "@/model/entry"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { equipmentAt } from "@/equipment/calc"
 import type { Entry } from "@/model/types"
@@ -48,6 +48,8 @@ export function QuickSheet({ open, onOpenChange, onFull }: { open: boolean; onOp
   }, [open, date])
 
   const save = async () => {
+    if (busy) return
+    if (rows.some((r) => badNums(v[r.s.id] ?? {}).length)) return toast.error(t("safe.fixFields"))
     setBusy(true)
     try {
       let n = 0

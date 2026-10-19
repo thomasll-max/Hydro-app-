@@ -7,6 +7,16 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Sécurité (lot 10a). La Content-Security-Policy est écrite au build dans dist-local/_headers (hash des scripts).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "DENY"
+    Permissions-Policy = "camera=(self), microphone=(), geolocation=(), payment=(), usb=()"
+    Cross-Origin-Opener-Policy = "same-origin"
+
 # Le service worker doit toujours être relu pour que les mises à jour arrivent.
 [[headers]]
   for = "/sw.js"

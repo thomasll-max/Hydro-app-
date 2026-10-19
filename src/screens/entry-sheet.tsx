@@ -8,12 +8,12 @@ import { ConfirmDelete } from "@/components/hydro/confirm"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
-import { blankEntry, CARRIED, derive, drybackMethodOf, entryId, HINTED, previousEntry } from "@/model/entry"
+import { blankEntry, CARRIED, derive, drybackMethodOf, entryHasContent, entryId, HINTED, previousEntry } from "@/model/entry"
 import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, type ActionTag, type Entry, type ObsTag, type PlantId, type Severity } from "@/model/types"
 import { equipmentAt } from "@/equipment/calc"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { status } from "@/calc/advice"
 import { addDays, todayIso } from "@/calc/stage"
 import type { MessageKey } from "@/i18n/types"
@@ -26,7 +26,7 @@ const NUMS: NumKey[] = [...CARRIED.filter((k) => k !== "mixId"), ...HINTED] as N
 export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpenChange: (o: boolean) => void; init: EntryInit }) {
   const { t, num, range, dm, settings } = useSettings()
   const ed = useEditors()
-  const { spaces, space: curSpace, all, cycleIn, equipment, assignments, saveEntry, deleteEntry, targetsFor, uploadPhoto, photoUrl } = useGrow()
+  const { spaces, space: curSpace, all, cycleIn, equipment, assignments, saveEntry, deleteEntry, targetsFor, uploadPhoto, photoUrl, deletePhotos } = useGrow()
   const [spaceId, setSpaceId] = useState(init.spaceId ?? curSpace?.id ?? "")
   const space = spaces.find((x) => x.id === spaceId) ?? curSpace ?? null
   const cycle = space ? cycleIn(space.id) : null
@@ -55,6 +55,14 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(0)
   const fileRef = useRef<HTMLInputElement>(null)
+  // Photos sent during this visit: removed again if the sheet closes without saving (lot 10a, no orphan files).
+  const fresh = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    if (open) return
+    const left = [...fresh.current]
+    fresh.current = new Set()
+    if (left.length) deletePhotos(left)
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const show = (v: number | undefined) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
 
@@ -138,6 +146,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       setUploading((n) => n + 1)
       try {
         const id = await uploadPhoto(file)
+        fresh.current.add(id)
         setPhotos((p) => [...p, id])
       } catch (err) {
         toast.error(t("common.saveError", { reason: (err as { message?: string })?.message ?? "photo" }))
@@ -149,10 +158,18 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
 
   /** "+ Rappel" saves the entry first, then opens a reminder for this space (next day by default). */
   const save = async (remind = false) => {
-    if (!date || !space) return
+    if (!date || !space || busy) return
+    if (badNums(f).length) return toast.error(t("safe.fixFields"))
+    const e = build()
+    if (!entryHasContent(e, blankEntry(date, { spaceId: space.id, cycle }, prev, plantId))) return toast.error(t(existing ? "safe.emptyEntryExisting" : "safe.emptyEntry"))
     setBusy(true)
     try {
-      await saveEntry(build())
+      await saveEntry(e)
+      // Photos taken off this entry are removed from the device / the artifact once the entry no longer lists them.
+      const kept = new Set(e.photos ?? [])
+      const dropped = [...(existing?.photos ?? []), ...fresh.current].filter((id) => !kept.has(id))
+      fresh.current = new Set()
+      if (dropped.length) deletePhotos(dropped)
       toast.success(t("entry.saved"))
       if (remind) ed.openReminder({ spaceId: space.id, date: addDays(date, 1) })
       else onOpenChange(false)
@@ -185,6 +202,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
             <ConfirmDelete
               onConfirm={async () => {
                 await deleteEntry(existing.id)
+                if (existing.photos?.length) deletePhotos(existing.photos)
                 toast(t("common.deleted"))
                 onOpenChange(false)
               }}

@@ -1,7 +1,7 @@
 // Outils → Sauvegarde et données (lot 6): JSON backup (same format in both versions), import (merge or replace,
 // with a summary and a confirmation first), journal as CSV. Lot 8: moving a grow from one app to another (Claude ↔ local,
 // phone ↔ phone) with the share sheet or copy / paste, and the date of the last backup (7-day reminder, local version).
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,19 +10,22 @@ import { Label, Reveal, SourceNote } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { todayIso } from "@/calc/stage"
-import { backupJson, backupName, entriesCsv, exportBackup, importBackup, parseBackup, type Backup, type ImportMode } from "@/lib/backup"
+import { backupJson, backupName, entriesCsv, exportBackup, importBackup, MAX_BACKUP_BYTES, parseBackup, type Backup, type ImportMode } from "@/lib/backup"
 import { saveFile } from "@/lib/download"
 import { getStores, TARGET } from "@/store"
 import { markBackup } from "@/lib/backup-reminder"
 import { AreaField } from "@/components/hydro/form"
 import type { CollectionName } from "@/model/grow"
 import type { MessageKey } from "@/i18n/types"
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { askPersist, isInstalled, isIos, persistState, type PersistState } from "@/lib/persist"
 
 export function DataTool() {
-  const { t, num } = useSettings()
-  const { all, allSpaces } = useGrow()
+  const { t, num, settings } = useSettings()
+  const { all, allSpaces, skipped } = useGrow()
   const [busy, setBusy] = useState(false)
-  const [pending, setPending] = useState<{ backup: Backup; counts: Partial<Record<CollectionName, number>>; total: number; name: string } | null>(null)
+  const [pending, setPending] = useState<{ backup: Backup; counts: Partial<Record<CollectionName, number>>; total: number; skipped: number; name: string } | null>(null)
+  const [confirmReplace, setConfirmReplace] = useState(false)
   const [mode, setMode] = useState<ImportMode>("merge")
   const [progress, setProgress] = useState<string | null>(null)
   const file = useRef<HTMLInputElement>(null)
@@ -38,7 +41,7 @@ export function DataTool() {
   })()
 
   const outcome = (res: Awaited<ReturnType<typeof saveFile>>) => {
-    if (res === "saved") toast.success(t("data.saved"))
+    if (res === "saved" || res === "started") toast.success(t("data.saved"))
     else if (res === "declined") toast(t("data.declined"))
     else toast.error(t("data.unavailable"))
   }
@@ -48,6 +51,7 @@ export function DataTool() {
       const { docs } = await getStores()
       const b = await exportBackup(docs, TARGET)
       const res = await saveFile(backupName(today), new Blob([backupJson(b)], { type: "application/json" }))
+      // Only a confirmed file counts as a backup (an iPhone download link may silently fail).
       if (res === "saved") markBackup(today)
       outcome(res)
     } catch (e) {
@@ -73,8 +77,8 @@ export function DataTool() {
   const copy = async () => {
     setBusy(true)
     try {
+      // A copy is a transfer, not a backup: the reminder is not reset.
       await navigator.clipboard.writeText(await build())
-      markBackup(today)
       toast.success(t("data.copied"))
     } catch {
       toast.error(t("data.copyFailed"))
@@ -85,26 +89,45 @@ export function DataTool() {
   const readPaste = () => {
     const res = parseBackup((paste ?? "").trim())
     if (!res.ok) return toast.error(t(`data.err.${res.error}` as MessageKey))
-    setPending({ backup: res.backup, counts: res.counts, total: res.total, name: t("data.pasted") })
+    setPending({ backup: res.backup, counts: res.counts, total: res.total, skipped: res.skipped.length, name: t("data.pasted") })
     setMode("merge")
     setPaste(null)
   }
   const exportCsv = async () => {
     const name = (id: string) => allSpaces.find((s) => s.id === id)?.name ?? id
-    outcome(await saveFile(backupName(todayIso(), "csv"), new Blob(["﻿" + entriesCsv(all.entries, name)], { type: "text/csv" })))
+    outcome(await saveFile(backupName(todayIso(), "csv"), new Blob(["﻿" + entriesCsv(all.entries, name, settings.lang)], { type: "text/csv" })))
+  }
+  const clearFile = () => {
+    if (file.current) file.current.value = ""
   }
   const pick = async (f?: File | null) => {
     if (!f) return
-    const res = parseBackup(await f.text())
-    if (!res.ok) return toast.error(t(`data.err.${res.error}` as MessageKey))
-    setPending({ backup: res.backup, counts: res.counts, total: res.total, name: f.name })
-    setMode("merge")
+    try {
+      if (f.size > MAX_BACKUP_BYTES) return toast.error(t("data.err.size"))
+      const res = parseBackup(await f.text())
+      if (!res.ok) return toast.error(t(`data.err.${res.error}` as MessageKey))
+      setPending({ backup: res.backup, counts: res.counts, total: res.total, skipped: res.skipped.length, name: f.name })
+      setMode("merge")
+    } catch {
+      toast.error(t("safe.fileFailed"))
+    } finally {
+      clearFile() // the same file can be picked again
+    }
   }
   const runImport = async () => {
     if (!pending) return
     setBusy(true)
     try {
       const { docs } = await getStores()
+      if (mode === "replace") {
+        // Safety copy first: no copy, no replacement.
+        const before = await exportBackup(docs, TARGET)
+        const res = await saveFile(backupName(`${today}-${t("safe.preImportName")}`), new Blob([backupJson(before)], { type: "application/json" }))
+        if (res !== "saved" && res !== "started") {
+          toast.error(t("safe.preImportFailed"))
+          return
+        }
+      }
       const r = await importBackup(docs, pending.backup, mode, (d, n) => setProgress(`${d} / ${n}`))
       toast.success(t("data.imported", { w: r.written, d: r.deleted }))
       setPending(null)
@@ -113,7 +136,7 @@ export function DataTool() {
     } finally {
       setBusy(false)
       setProgress(null)
-      if (file.current) file.current.value = ""
+      clearFile()
     }
   }
 
@@ -175,6 +198,7 @@ export function DataTool() {
           {pending && (
             <div className="flex flex-col gap-2.5 rounded-md border border-line bg-surface-2 px-3 py-3" id="data-summary">
               <b className="text-[13.5px]">{t("data.fileSummary", { name: pending.name, n: pending.total, date: pending.backup.exportedAt.slice(0, 10) })}</b>
+              {pending.skipped > 0 && <p className="text-[12px] font-medium text-warn">{t("safe.importSkipped", { n: pending.skipped })}</p>}
               <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[12px] text-fg-2">
                 {Object.entries(pending.counts).map(([c, n]) => (
                   <li key={c} className="flex justify-between gap-2">
@@ -194,18 +218,84 @@ export function DataTool() {
               />
               <p className={mode === "replace" ? "text-[12px] font-medium text-bad" : "text-[12px] text-fg-3"}>{mode === "replace" ? t("data.replaceD") : t("data.mergeD")}</p>
               <div className="flex gap-2">
-                <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={() => setPending(null)} disabled={busy}>
+                <Button
+                  variant="outline"
+                  className="h-11 flex-1 rounded-full"
+                  onClick={() => {
+                    setPending(null)
+                    clearFile()
+                  }}
+                  disabled={busy}
+                >
                   {t("data.cancel")}
                 </Button>
-                <Button className={mode === "replace" ? "h-11 flex-1 rounded-full bg-bad font-bold text-white hover:bg-bad/90" : "h-11 flex-1 rounded-full font-bold"} onClick={runImport} disabled={busy}>
+                <Button
+                  className={mode === "replace" ? "h-11 flex-1 rounded-full bg-bad font-bold text-white hover:bg-bad/90" : "h-11 flex-1 rounded-full font-bold"}
+                  onClick={() => (mode === "replace" ? setConfirmReplace(true) : runImport())}
+                  disabled={busy}
+                  id="data-import-run"
+                >
                   {progress ?? t("data.confirm")}
                 </Button>
               </div>
             </div>
           )}
+          <AlertDialog open={confirmReplace} onOpenChange={setConfirmReplace}>
+            <AlertDialogContent className="max-w-[340px] rounded-xl border-line-strong bg-surface">
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t("safe.replaceTitle")}</AlertDialogTitle>
+                <AlertDialogDescription>{t("safe.replaceBody")}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex-row gap-2">
+                <AlertDialogCancel className="h-11 flex-1 rounded-full">{t("common.cancel")}</AlertDialogCancel>
+                <Button
+                  className="h-auto min-h-11 flex-1 rounded-full bg-bad font-bold whitespace-normal text-white hover:bg-bad/90"
+                  id="data-replace-confirm"
+                  onClick={() => {
+                    setConfirmReplace(false)
+                    runImport()
+                  }}
+                >
+                  {t("safe.replaceGo")}
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </Card>
       </Reveal>
+      {skipped.length > 0 && (
+        <p className="rounded-md border border-warn/30 bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn" id="data-skipped">
+          {t("safe.skipped", { n: skipped.length })}
+        </p>
+      )}
+      {TARGET === "local" && <StorageState />}
       <SourceNote>{t("data.note")}</SourceNote>
     </div>
+  )
+}
+
+/** Local version: is the storage protected from the browser's clean-ups? (lot 10a) */
+function StorageState() {
+  const { t } = useSettings()
+  const [st, setSt] = useState<PersistState>("unknown")
+  useEffect(() => {
+    let live = true
+    persistState().then((s) => live && setSt(s))
+    return () => {
+      live = false
+    }
+  }, [])
+  const ios = isIos() && !isInstalled()
+  if (st === "unknown" && !ios) return null
+  return (
+    <Card className="gap-2" id="data-storage">
+      {st !== "unknown" && <p className={st === "on" ? "text-[12.5px] leading-[1.45] text-fg-2" : "text-[12.5px] leading-[1.45] font-medium text-warn"}>{t(st === "on" ? "safe.persistOn" : "safe.persistOff")}</p>}
+      {st === "off" && (
+        <Button variant="outline" className="h-11 self-start rounded-full" onClick={() => askPersist(true).then(setSt)}>
+          {t("safe.persistAsk")}
+        </Button>
+      )}
+      {ios && <p className="text-[12.5px] leading-[1.45] font-medium text-warn">{t("safe.ios")}</p>}
+    </Card>
   )
 }

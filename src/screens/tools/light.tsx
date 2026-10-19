@@ -8,7 +8,7 @@ import { Grid, NumField } from "@/components/hydro/form"
 import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { stageOn, todayIso } from "@/calc/stage"
 import { cellLevel, dimmerFor, dliOf, mapStats, ppfdFor, spaceFreeHeight, spaceLightAt, spaceSchema } from "@/calc/light"
 import { equipmentAt } from "@/equipment/calc"
@@ -67,6 +67,7 @@ export function LightTool() {
 
 
   const saveMap = async () => {
+    if (badNums(Object.fromEntries(cells.map((c, i) => [String(i), c]))).length) return toast.error(t("safe.fixFields"))
     try {
       await saveSpace({ ...space, lightMap: { date: today, cells: cells.map((c) => parseNum(c) ?? null) } })
       toast.success(t("lgt.mapSaved"))

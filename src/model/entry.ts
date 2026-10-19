@@ -30,6 +30,18 @@ export const CARRIED = ["volumePerPotMl", "shots", "ecIn", "phIn", "mixId", "lig
 /** Daily measurements: yesterday's value is shown as a hint (placeholder), never saved unless typed. */
 export const HINTED = ["tempDay", "tempNight", "rh", "weightMorningKg", "weightPeakKg", "runoffMl", "sensorPct", "sensorPeakPct", "sensorMorningPct", "ecRunoff", "phRunoff", "heightCm", "germinatedCount", "reservoirL"] as const
 
+/**
+ * Does the entry hold anything of its own? A measurement, an observation, an action, a photo or a note; settings carried
+ * from yesterday only count when they were changed. An empty entry would hide the previous one (lot 10a): never saved.
+ */
+export function entryHasContent(e: Entry, prefill?: Entry): boolean {
+  if (HINTED.some((k) => e[k] != null)) return true
+  if (e.observations?.length || e.actions?.length || e.photos?.length || e.note?.trim()) return true
+  if (!prefill) return CARRIED.some((k) => e[k] != null)
+  if (CARRIED.some((k) => e[k] != null && e[k] !== prefill[k])) return true
+  return e.domeOn != null && e.domeOn !== !!prefill.domeOn
+}
+
 /** New entry for a space (and its running cycle, if any), prefilled from the previous one of the same scope. */
 export function blankEntry(date: IsoDate, ctx: { spaceId: string; cycle?: Cycle | null }, prev: Entry | undefined, plantId?: PlantId): Entry {
   const now = new Date().toISOString()

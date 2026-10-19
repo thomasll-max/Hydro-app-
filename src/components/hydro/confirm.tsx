@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { toast } from "sonner"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useSettings } from "@/app/settings-context"
 
-/** Deletion always asks first (shadcn AlertDialog). */
+/** Deletion always asks first (shadcn AlertDialog). A failed deletion says so (lot 10a). */
 export function ConfirmDelete({ trigger, onConfirm }: { trigger: ReactNode; onConfirm: () => void | Promise<void> }) {
   const { t } = useSettings()
   return (
@@ -25,7 +26,13 @@ export function ConfirmDelete({ trigger, onConfirm }: { trigger: ReactNode; onCo
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-row gap-2">
           <AlertDialogCancel className="h-11 flex-1 rounded-full">{t("common.cancel")}</AlertDialogCancel>
-          <AlertDialogAction className="h-11 flex-1 rounded-full bg-bad text-white hover:bg-bad/90" onClick={() => onConfirm()}>
+          <AlertDialogAction className="h-11 flex-1 rounded-full bg-bad text-white hover:bg-bad/90" onClick={async () => {
+              try {
+                await onConfirm()
+              } catch (e) {
+                toast.error(t("safe.deleteFailed", { reason: (e as Error)?.message ?? "?" }))
+              }
+            }}>
             {t("common.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>

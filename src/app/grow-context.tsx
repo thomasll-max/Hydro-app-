@@ -1,6 +1,6 @@
 // Live grow data (flat collections, spec §12) + write actions. All calculations live in src/calc and src/equipment.
 import * as React from "react"
-import { getStores, TARGET, type Stores } from "@/store"
+import { getStores, StoreUnavailable, TARGET, type Stores } from "@/store"
 import { useSettings } from "./settings-context"
 import { SCHEMA, type Cycle, type Entry, type GrowEvent, type Mix, type Plant } from "@/model/types"
 import { GROW_SCHEMA, type ConcentrateStock, type Spray, type CustomProduct, type Equipment, type Reminder, type EquipmentAssignment, type Grow, type Group, type NutritionSettings, type Site, type Space } from "@/model/grow"
@@ -12,14 +12,29 @@ import { cycleNumber, dayTargets, snapshot, type DayTargets } from "@/calc/targe
 import { compressPhoto } from "@/lib/photo"
 import { seedDocs, thomasGrow } from "@/data/thomas-grow"
 import { digestDocs, staleDigestIds, type Digest } from "@/calc/digest"
+import { byStr, readable, validDoc } from "@/model/validate"
+import { writeAll } from "@/store/doc-store"
+import { loadDraft } from "@/lib/onboarding"
 
 const byDateDesc = <T extends { date: string; id: string }>(a: T, b: T) => (a.date === b.date ? (a.id < b.id ? 1 : -1) : a.date < b.date ? 1 : -1)
-const byOrder = <T extends { order: number }>(a: T, b: T) => a.order - b.order
+const byOrder = <T extends { order: number }>(a: T, b: T) => (a.order ?? 0) - (b.order ?? 0)
+
+/** Why the data could not be shown: the artifact database is missing, or a read failed. Never an empty grow. */
+export type LoadProblem = "store" | "read" | null
 
 export type Selection = { kind: "all" } | { kind: "site"; site: Site } | { kind: "space"; space: Space }
 
 type GrowCtx = {
   ready: boolean
+  /** A read failed or the database is missing: an error screen with "Réessayer" replaces the app (nothing is seeded). */
+  problem: LoadProblem
+  retry: () => void
+  /** Claude version: false when the viewer is not the owner (they can read nothing). */
+  owner: boolean | null
+  /** Local version: IndexedDB unavailable, nothing is kept after closing. */
+  volatile: boolean
+  /** Documents left aside because they are malformed (collection/id). They are kept in the store. */
+  skipped: string[]
   /** Local version, nothing yet: the first-launch assistant is shown instead of the app. */
   needsSetup: boolean
   /** Assistant writes (its draft, or an imported backup): no repair seed while they run. */
@@ -89,6 +104,8 @@ type GrowCtx = {
   saveDigestWeek: (week: Digest[]) => Promise<void>
   uploadPhoto: (file: Blob) => Promise<string>
   photoUrl: (id: string) => Promise<string>
+  /** Removes photos from the device / the artifact's assets (entry deleted, photo taken off). Errors are ignored. */
+  deletePhotos: (ids: string[]) => Promise<void>
 }
 
 const Ctx = React.createContext<GrowCtx | null>(null)
@@ -104,26 +121,49 @@ type ColName = (typeof COLS)[number]
 export function GrowProvider({ children }: { children: React.ReactNode }) {
   const { settings, setActiveCycle } = useSettings()
   const [stores, setStores] = React.useState<Stores | null>(null)
-  const [grow, setGrow] = React.useState<Grow | null>(null)
+  const [growDoc, setGrow] = React.useState<Grow | null>(null)
+  const [growBad, setGrowBad] = React.useState(false)
+  // A malformed grow/main keeps its name only; the rest falls back on the defaults (the stored copy is untouched).
+  const grow = React.useMemo(() => (growDoc && growBad ? newGrow(typeof growDoc.name === "string" ? growDoc.name : "Mon grow", "") : growDoc), [growDoc, growBad])
   const [growLoaded, setGrowLoaded] = React.useState(false)
   const [raw, setRaw] = React.useState<Partial<Record<ColName, Raw>>>({})
+  const [problem, setProblem] = React.useState<LoadProblem>(null)
+  const [attempt, setAttempt] = React.useState(0)
+  const retry = React.useCallback(() => {
+    setProblem(null)
+    setAttempt((n) => n + 1)
+  }, [])
 
   React.useEffect(() => {
-    getStores().then(setStores)
-  }, [])
+    let live = true
+    getStores().then(
+      (s) => live && setStores(s),
+      (e) => live && setProblem(e instanceof StoreUnavailable ? "store" : "read"),
+    )
+    return () => {
+      live = false
+    }
+  }, [attempt])
 
   React.useEffect(() => {
     if (!stores) return
     const d = stores.docs
+    // A failed read stops everything: an error is never taken for an empty database (lot 10a).
+    const fail = () => setProblem("read")
     const uns = [
-      d.watchDoc("grow/main", (doc) => {
-        setGrow(doc as Grow | null)
-        setGrowLoaded(true)
-      }),
-      ...COLS.map((c) => d.watchCollection(c, (m) => setRaw((r) => ({ ...r, [c]: m as Raw })))),
+      d.watchDoc(
+        "grow/main",
+        (doc) => {
+          setGrowBad(!!doc && !validDoc("grow", doc))
+          setGrow(doc as Grow | null)
+          setGrowLoaded(true)
+        },
+        fail,
+      ),
+      ...COLS.map((c) => d.watchCollection(c, (m) => setRaw((r) => ({ ...r, [c]: m as Raw })), fail)),
     ]
     return () => uns.forEach((u) => u())
-  }, [stores])
+  }, [stores, attempt])
 
   // First run: Thomas's copy is prefilled (Claude version); the local version opens the first-launch assistant
   // (lot 8b), which writes grow/main last. Spaces without a grow (an interrupted reset) only get a grow back.
@@ -133,36 +173,58 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
   const seeding = React.useRef(false)
   const setupBusy = React.useRef(false)
   React.useEffect(() => {
-    if (!stores || !growLoaded || grow || seeding.current) return
+    if (!stores || !growLoaded || grow || seeding.current || problem) return
     if (raw.spaces === undefined) return
+    // Someone the artifact is shared with reads nothing (owner-only rules): never write for them.
+    if (stores.owner === false) return
     if (TARGET === "local" && (!hasSpaces || setupBusy.current)) return
+    // Interrupted assistant: its draft is still on the phone, it opens again and finishes the job (lot 10a).
+    if (TARGET === "local" && loadDraft()) return
     seeding.current = true
     const now = new Date().toISOString()
     ;(async () => {
       try {
-        if (TARGET === "artifact" && !hasSpaces) {
-          for (const [p, doc] of seedDocs(thomasGrow(now, todayIso()))) await stores.docs.set(p, doc)
+        // Seed only after reads that succeed AND find nothing (a failed read throws here).
+        const [g, sp, cy] = await Promise.all([stores.docs.get("grow/main"), stores.docs.list("spaces"), stores.docs.list("cycles")])
+        if (g) return
+        if (TARGET === "artifact" && !Object.keys(sp).length && !Object.keys(cy).length) {
+          const docs = seedDocs(thomasGrow(now, todayIso()))
+          // grow/main last, on its own: its presence means "seeded".
+          await writeAll(stores.docs, docs.filter(([p]) => p !== "grow/main"))
+          for (const [p, doc] of docs.filter(([p]) => p === "grow/main")) await stores.docs.set(p, doc)
         } else await stores.docs.set("grow/main", newGrow("Mon grow", now))
       } catch {
         seeding.current = false
+        setProblem("read")
       }
     })()
-  }, [stores, growLoaded, grow, raw.spaces, hasSpaces])
+  }, [stores, growLoaded, grow, raw.spaces, hasSpaces, problem])
 
-  const list = <T,>(c: ColName) => Object.values(raw[c] ?? {}) as T[]
+  // Malformed documents are left aside (kept in the store, counted), so one bad document never blocks the app.
+  // Checked once per collection snapshot: the lists below still only recompute when their own collection changes.
+  const checked = React.useRef(new Map<ColName, { src: Raw | undefined; res: { list: unknown[]; bad: string[] } }>())
+  const readCol = (c: ColName) => {
+    const hit = checked.current.get(c)
+    if (hit && hit.src === raw[c]) return hit.res
+    const res = readable<unknown>(c, raw[c])
+    checked.current.set(c, { src: raw[c], res })
+    return res
+  }
+  const list = <T,>(c: ColName) => [...readCol(c).list] as T[]
+  const skipped = React.useMemo(() => [...(growBad ? ["grow/main"] : []), ...COLS.flatMap((c) => readCol(c).bad)], [raw, growBad]) // eslint-disable-line react-hooks/exhaustive-deps
   const sites = React.useMemo(() => list<Site>("sites").sort(byOrder), [raw.sites]) // eslint-disable-line react-hooks/exhaustive-deps
   const allSpaces = React.useMemo(() => list<Space>("spaces").sort(byOrder), [raw.spaces]) // eslint-disable-line react-hooks/exhaustive-deps
   const spaces = React.useMemo(() => allSpaces.filter((s) => !s.archived), [allSpaces])
-  const cycles = React.useMemo(() => list<Cycle>("cycles").sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))), [raw.cycles]) // eslint-disable-line react-hooks/exhaustive-deps
-  const equipment = React.useMemo(() => list<Equipment>("equipment").sort((a, b) => a.name.localeCompare(b.name)), [raw.equipment]) // eslint-disable-line react-hooks/exhaustive-deps
+  const cycles = React.useMemo(() => list<Cycle>("cycles").sort((a, b) => byStr(b.createdAt, a.createdAt)), [raw.cycles]) // eslint-disable-line react-hooks/exhaustive-deps
+  const equipment = React.useMemo(() => list<Equipment>("equipment").sort((a, b) => byStr(a.name, b.name)), [raw.equipment]) // eslint-disable-line react-hooks/exhaustive-deps
   const assignments = React.useMemo(() => list<EquipmentAssignment>("equipmentAssignments"), [raw.equipmentAssignments]) // eslint-disable-line react-hooks/exhaustive-deps
   const groups = React.useMemo(() => list<Group>("groups"), [raw.groups]) // eslint-disable-line react-hooks/exhaustive-deps
   const reminders = React.useMemo(() => list<Reminder>("reminders"), [raw.reminders]) // eslint-disable-line react-hooks/exhaustive-deps
-  const customProducts = React.useMemo(() => list<CustomProduct>("customProducts").sort((a, b) => a.name.localeCompare(b.name)), [raw.customProducts]) // eslint-disable-line react-hooks/exhaustive-deps
+  const customProducts = React.useMemo(() => list<CustomProduct>("customProducts").sort((a, b) => byStr(a.name, b.name)), [raw.customProducts]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const concentrateStocks = React.useMemo(() => list<ConcentrateStock>("concentrateStocks").sort((a, b) => b.madeOn.localeCompare(a.madeOn)), [raw.concentrateStocks]) // eslint-disable-line react-hooks/exhaustive-deps
+  const concentrateStocks = React.useMemo(() => list<ConcentrateStock>("concentrateStocks").sort((a, b) => byStr(b.madeOn, a.madeOn)), [raw.concentrateStocks]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const sprays = React.useMemo(() => list<Spray>("sprays").sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)), [raw.sprays]) // eslint-disable-line react-hooks/exhaustive-deps
+  const sprays = React.useMemo(() => list<Spray>("sprays").sort((a, b) => byStr(b.date, a.date) || byStr(b.id, a.id)), [raw.sprays]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const sel = settings.space ?? "all"
   const selection: Selection = React.useMemo(() => {
@@ -197,7 +259,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
   const nutrition = React.useMemo(() => spaceNutrition(grow, space ?? undefined), [grow, space])
 
   const cid = cycle?.id
-  const plants = React.useMemo(() => list<Plant>("plants").filter((p) => p.cycleId === cid).sort((a, b) => a.label.localeCompare(b.label)), [raw.plants, cid]) // eslint-disable-line react-hooks/exhaustive-deps
+  const plants = React.useMemo(() => list<Plant>("plants").filter((p) => p.cycleId === cid).sort((a, b) => byStr(a.label, b.label)), [raw.plants, cid]) // eslint-disable-line react-hooks/exhaustive-deps
   const entries = React.useMemo(() => list<Entry>("entries").filter((e) => e.cycleId === cid).sort(byDateDesc), [raw.entries, cid]) // eslint-disable-line react-hooks/exhaustive-deps
   const events = React.useMemo(() => list<GrowEvent>("events").filter((e) => e.cycleId === cid || (!e.cycleId && e.spaceId === cycle?.spaceId)).sort(byDateDesc), [raw.events, cid, cycle?.spaceId]) // eslint-disable-line react-hooks/exhaustive-deps
   const mixes = React.useMemo(() => list<Mix>("mixes").filter((m) => m.cycleId === cid || (!!cycle?.spaceId && m.spaceIds?.includes(cycle.spaceId))).sort(byDateDesc), [raw.mixes, cid, cycle?.spaceId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -239,6 +301,11 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
     const stamp = () => new Date().toISOString()
     return {
       ready: growLoaded && !!stores && raw.cycles !== undefined && raw.spaces !== undefined,
+      problem,
+      retry,
+      owner: stores?.owner ?? null,
+      volatile: !!stores?.volatile,
+      skipped,
       needsSetup,
       withSetup: async (fn) => {
         setupBusy.current = true
@@ -374,8 +441,12 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
         return stores.photos.upload(await compressPhoto(file))
       },
       photoUrl: async (id) => (stores ? stores.photos.url(id) : ""),
+      deletePhotos: async (ids) => {
+        if (!stores) return
+        for (const id of ids) await stores.photos.remove(id).catch(() => {})
+      },
     }
-  }, [stores, growLoaded, needsSetup, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, customProducts, concentrateStocks, sprays, reminders, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, all, cycleIn, settings.activeCycleId, setActiveCycle])
+  }, [stores, growLoaded, problem, retry, skipped, needsSetup, raw.cycles, raw.spaces, grow, sites, spaces, allSpaces, cycles, equipment, assignments, groups, customProducts, concentrateStocks, sprays, reminders, selection, space, nutrition, cycle, plants, entries, events, mixes, targetsFor, all, cycleIn, settings.activeCycleId, setActiveCycle])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

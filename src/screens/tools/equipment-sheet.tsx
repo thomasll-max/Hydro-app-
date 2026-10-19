@@ -9,7 +9,7 @@ import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { SaveBar, useSaver, useShow } from "@/screens/sheets"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { cfmToM3h } from "@/equipment/calc"
 import { EQUIPMENT_TYPES, GROW_SCHEMA, type Equipment, type EquipmentType } from "@/model/grow"
@@ -160,6 +160,8 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
 
   const save = () =>
     run(async () => {
+      const numeric = ["quantity", ...(spec ? FIELDS[spec].filter((x) => x.kind === "num" || x.kind === "int").map((x) => x.k) : [])]
+      if (badNums(txt, numeric).length) throw new Error(t("safe.fixFields"))
       const item = build()
       if (!item.name) throw new Error(t("equip.name"))
       await saveEquipment(item)

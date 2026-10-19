@@ -16,6 +16,8 @@ import { ToolsScreen } from "@/screens/tools"
 import { CalendarScreen } from "@/screens/calendar"
 import { Onboarding } from "@/screens/onboarding"
 import { UpdateBanner } from "@/app/update"
+import { OwnerOnly, ProblemScreen } from "@/app/status"
+import { askPersist } from "@/lib/persist"
 
 const SCREENS: Record<TabId, () => React.ReactElement> = {
   today: TodayScreen,
@@ -35,7 +37,7 @@ function initialTab(): TabId {
 
 function Shell() {
   const { t } = useSettings()
-  const { cycle, storeKind, spaces, selection, needsSetup } = useGrow()
+  const { cycle, storeKind, spaces, selection, needsSetup, problem, retry, owner, volatile, grow } = useGrow()
   const ed = useEditors()
   const [tab, setTab] = useState<TabId>(initialTab)
   const Screen = SCREENS[tab]
@@ -57,6 +59,14 @@ function Shell() {
     window.scrollTo({ top: 0 })
   }, [tab])
 
+  // Local version: ask the browser to keep the data once there is a grow to keep (Firefox asks the user then).
+  const hasGrow = !!grow
+  useEffect(() => {
+    if (TARGET === "local" && hasGrow) askPersist()
+  }, [hasGrow])
+
+  if (problem) return <ProblemScreen kind={problem} onRetry={retry} />
+  if (owner === false) return <OwnerOnly />
   if (needsSetup)
     return (
       <>
@@ -73,6 +83,13 @@ function Shell() {
       {TARGET === "artifact" && storeKind === "local" && (
         <div className="relative mx-auto max-w-[480px] px-4">
           <p className="rounded-md border border-warn/30 bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn">{t("app.localOnly")}</p>
+        </div>
+      )}
+      {volatile && (
+        <div className="relative mx-auto max-w-[480px] px-4">
+          <p className="rounded-md border border-bad/30 bg-bad/10 px-3 py-2 text-[12.5px] font-medium text-bad" id="volatile-warning" role="alert">
+            {t("safe.volatile")}
+          </p>
         </div>
       )}
       <main className="relative mx-auto max-w-[480px] pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+170px)] pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">

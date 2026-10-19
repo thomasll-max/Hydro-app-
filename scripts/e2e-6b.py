@@ -40,6 +40,12 @@ with sync_playwright() as p:
     pg.get_by_role("radio", name="Remplacer").click()
     pg.screenshot(path=str(out / "02-import-summary.png"), full_page=True)
     pg.get_by_role("button", name="Importer").click()
+    # Lot 10a: "Remplacer" asks first, and saves a safety copy of the current data before anything changes.
+    pg.wait_for_selector("#data-replace-confirm")
+    pg.screenshot(path=str(out / "02b-replace-confirm.png"))
+    with pg.expect_download() as dl2:
+        pg.click("#data-replace-confirm")
+    checks["safetyCopy"] = dl2.value.suggested_filename
     pg.wait_for_selector("text=Import terminé", timeout=20000)
     checks["toast"] = pg.locator("text=Import terminé").first.inner_text()
     pg.goto(f"file://{page_file}#settings"); pg.wait_for_timeout(2000)
@@ -60,7 +66,17 @@ with sync_playwright() as p:
         for (const w of answer.split(" ")) { t += (t ? " " : "") + w; opts && opts.onText && opts.onText({ text: t, delta: w }); await new Promise(r => setTimeout(r, 15)); }
         return { text: answer, truncated: false };
       };
-      window.claude = { use: async (n) => n === "sample" ? fake : null };
+      // Lot 10a: without a db the app stops on an error screen, so the fake runtime has a small in-memory db.
+      const store = new Map(); const listeners = new Set();
+      const snapDoc = (p) => ({ id: p.split("/").pop(), exists: store.has(p), data: () => (store.has(p) ? structuredClone(store.get(p)) : undefined) });
+      const snapCol = (c) => ({ docs: [...store.keys()].filter((k) => k.slice(0, k.lastIndexOf("/")) === c).map(snapDoc) });
+      const notify = () => listeners.forEach((f) => f());
+      const watch = (f) => { listeners.add(f); queueMicrotask(f); return () => listeners.delete(f); };
+      const db = {
+        doc: (p) => ({ get: async () => snapDoc(p), set: async (d) => { store.set(p, structuredClone(d)); notify(); }, delete: async () => { store.delete(p); notify(); }, onSnapshot: (n) => watch(() => n(snapDoc(p))) }),
+        collection: (c) => ({ get: async () => snapCol(c), onSnapshot: (n) => watch(() => n(snapCol(c))) }),
+      };
+      window.claude = { use: async (n) => (n === "sample" ? fake : n === "db" ? db : null) };
     """)
     serve_fonts(ctx2)
     pg2 = ctx2.new_page()
@@ -77,6 +93,15 @@ with sync_playwright() as p:
     pg2.wait_for_timeout(2500)
     checks["followUpTurns"] = pg2.evaluate("window.__sent[1].length")
     pg2.screenshot(path=str(out / "03-ask.png"), full_page=True)
+    # Lot 10a: the Claude runtime without its database shows an error with "Réessayer" (no silent local store).
+    ctx3 = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, color_scheme="dark")
+    ctx3.add_init_script("window.claude = { use: async () => null };")
+    serve_fonts(ctx3)
+    pg3 = ctx3.new_page()
+    pg3.goto(f"file://{page_file}"); pg3.wait_for_timeout(2500)
+    checks["noDbScreen"] = pg3.locator("#load-problem").count() == 1 and pg3.locator("#load-retry").count() == 1
+    pg3.screenshot(path=str(out / "05-no-db.png"))
+    ctx3.close()
     b.close()
 for k, v in checks.items(): print(k, "→", v)
 print("\n".join(errors) if errors else "no console errors")

@@ -15,7 +15,8 @@ import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
-import { importBackup, parseBackup, type Backup } from "@/lib/backup"
+import { importBackup, MAX_BACKUP_BYTES, parseBackup, type Backup } from "@/lib/backup"
+import type { BatchOp } from "@/store/doc-store"
 import { newGrow } from "@/model/grow-ops"
 import { MODULES, SPACE_COLORS, TEMPLATES, type TemplateId } from "@/model/grow"
 import type { Substrate, WaterMode } from "@/model/types"
@@ -41,6 +42,9 @@ import { NutritionFields } from "./tools/nutrition-settings"
 import { SwitchRow } from "./tools/equipment-shared"
 import { InstallTip } from "./install-tip"
 import { cn } from "@/lib/utils"
+
+/** Collections the assistant writes before grow/main (cleared if an earlier attempt was cut short). */
+const SETUP_COLLECTIONS = ["spaces", "equipment", "equipmentAssignments", "cycles"] as const
 
 const deviceZone = () => {
   try {
@@ -86,7 +90,14 @@ export function Onboarding() {
         },
       })
       await withSetup(async (store) => {
-        for (const [p, doc] of docs) await store.set(p, doc)
+        // An earlier attempt cut short (app closed while writing) left documents without grow/main: they are replaced,
+        // and everything is written in one go (one transaction on the phone), grow/main included (lot 10a).
+        const leftovers: BatchOp[] = (await store.get("grow/main"))
+          ? []
+          : (await Promise.all(SETUP_COLLECTIONS.map(async (c) => Object.keys(await store.list(c)).map((id) => [`${c}/${id}`, null] as const)))).flat()
+        const ops: BatchOp[] = [...leftovers, ...docs]
+        if (store.batch) await store.batch(ops)
+        else for (const [p, doc] of ops) await (doc ? store.set(p, doc) : store.delete(p))
       })
       saveDraft(null)
       toast.success(t("onb.ready", { name: draft.name.trim() }))
@@ -349,8 +360,15 @@ function ImportCard() {
         className="hidden"
         onChange={async (e) => {
           const f = e.target.files?.[0]
-          if (f) read(await f.text(), f.name)
-          e.target.value = ""
+          const input = e.target
+          try {
+            if (f && f.size > MAX_BACKUP_BYTES) toast.error(t("data.err.size"))
+            else if (f) read(await f.text(), f.name)
+          } catch {
+            toast.error(t("safe.fileFailed"))
+          } finally {
+            input.value = ""
+          }
         }}
       />
     </Card>

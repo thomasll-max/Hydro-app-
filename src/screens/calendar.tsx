@@ -407,7 +407,7 @@ function ExportCard() {
         TARGET === "local"
           ? await saveFile("hydro.ics", new Blob([ics], { type: "text/calendar" }))
           : await saveFile("hydro.zip", new Blob([zipStore([{ name: "hydro.ics", data: ics }]) as BlobPart], { type: "application/zip" }))
-      if (res === "saved") toast.success(t("cal.exportDone"))
+      if (res === "saved" || res === "started") toast.success(t("cal.exportDone"))
       else if (res === "declined") toast(t("cal.exportDeclined"))
       else toast.error(t("cal.exportUnavailable"))
     } finally {

@@ -1,6 +1,7 @@
 // Personal reminder (spec §4ter): title, space, date and time in the grow's zone, repeat, end, alarm, note.
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
+import { badNums } from "@/calc/formulas"
 import { AreaField, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
 import { useSettings } from "@/app/settings-context"
 import { useGrow, newId } from "@/app/grow-context"
@@ -99,6 +100,10 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
   const save = () => {
     if (!f.title.trim()) {
       toast.error(t("remForm.needTitle"))
+      return
+    }
+    if (badNums({ every: f.every, count: f.count }).length) {
+      toast.error(t("safe.fixFields"))
       return
     }
     return run(async () => {

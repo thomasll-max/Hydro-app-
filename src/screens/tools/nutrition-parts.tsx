@@ -8,7 +8,7 @@ import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { SaveBar, useSaver, useShow } from "@/screens/sheets"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { bagLitres, openStocks, startWaterL, stockStatus } from "@/calc/concentrate"
 import { GROW_SCHEMA, type ConcentrateStock, type CustomProduct } from "@/model/grow"
@@ -101,6 +101,7 @@ function ConcentrateSheet({ open, onOpenChange, cat, conc }: { open: boolean; on
   const core = cat.products.find((p) => p.id.toLowerCase().includes("core"))?.name ?? "Core"
   const save = () =>
     run(async () => {
+      if (badNums({ bag }).length) throw new Error(t("safe.fixFields"))
       if (!kg || !final) throw new Error(t("nut.cNeedBag"))
       // A new jug replaces the open one of the same product and strength.
       for (const s of openStocks(concentrateStocks, cat.id).filter((s) => s.productId === product && s.gPerL === gPerL)) await saveConcentrateStock({ ...s, finishedOn: date })
@@ -248,6 +249,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
     run(async () => {
       const name = f.name.trim()
       if (!name) throw new Error(t("nut.pNeedName"))
+      if (badNums(f, ["lo", "hi", "perL", "from", "to"]).length) throw new Error(t("safe.fixFields"))
       const from = parseNum(f.from)
       const to = parseNum(f.to)
       const use = veg || from != null ? { ...(veg ? { veg: true } : {}), ...(from != null ? { flowerFrom: from, flowerTo: to ?? from } : {}) } : undefined

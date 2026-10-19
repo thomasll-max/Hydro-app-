@@ -22,7 +22,7 @@ describe("lot 8 — réinitialiser", () => {
   it("efface tous les documents de toutes les collections, le grow en dernier", async () => {
     const s = await filled()
     const order: string[] = []
-    const spy = { list: (c: string) => s.list(c), delete: async (p: string) => (order.push(p), s.delete(p)) }
+    const spy = { list: (c: string) => s.list(c), set: (p: string, d: Record<string, unknown>) => s.set(p, d), delete: async (p: string) => (order.push(p), s.delete(p)) }
     const n = await resetData(spy)
     expect(n).toBeGreaterThan(20)
     for (const c of COLLECTIONS) expect(Object.keys(await s.list(c))).toHaveLength(0)

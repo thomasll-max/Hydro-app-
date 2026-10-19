@@ -1,6 +1,6 @@
 // Outils → Nutrition (lot 4): recipe from the line's catalog, in mixing order with sources; one tank for one or several
 // spaces of the same line, with pH before/after and the Balance added; concentrate jugs and personal products.
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { stageOn, todayIso } from "@/calc/stage"
 import { cycleNumber } from "@/calc/targets"
 import { tankForecast } from "@/calc/reminders"
@@ -76,6 +76,9 @@ export function NutritionTool() {
   const [phaseId, setPhaseId] = useState(cyclePhase.id)
   const [f, setF] = useState<Record<string, string>>({})
   const [shared, setShared] = useState<string[]>([])
+  // A double tap must not record the tank twice (lot 10a): the ref locks at once, the state disables the button.
+  const saving = useRef(false)
+  const [busy, setBusy] = useState(false)
   const phase = phaseById(cat, phaseId) ?? cyclePhase
 
   // Dose chosen in a range last time (per 10 L), to prefill.
@@ -171,8 +174,12 @@ export function NutritionTool() {
   }
 
   const save = async () => {
+    if (saving.current) return
     const ids = shared.length ? shared : space ? [space.id] : []
     if (!ids.length) return toast(t("nut.needSpace"))
+    if (badNums(f).length) return toast.error(t("safe.fixFields"))
+    saving.current = true
+    setBusy(true)
     try {
       await saveMix({
         schemaVersion: SCHEMA.mix,
@@ -205,6 +212,9 @@ export function NutritionTool() {
       setF((s) => ({ ...s, phBefore: "", phAfter: "", balAdded: "", ecMeasured: "" }))
     } catch (e) {
       toast.error(t("common.saveError", { reason: (e as Error).message }))
+    } finally {
+      saving.current = false
+      setBusy(false)
     }
   }
   const balAfter = nextBalancePer10L({ volumeL, balanceMlPer10L: parseNum(f.balance), balanceAddedMl: parseNum(f.balAdded) })
@@ -379,7 +389,7 @@ export function NutritionTool() {
             <NumField id="n-ecm" label={t("nut.ecMeasured")} value={f.ecMeasured ?? ""} onChange={set("ecMeasured")} />
           </Grid>
           {balanceOn && balAfter != null && parseNum(f.balAdded) != null && <p className="text-[12px] text-primary">{t("nut.nextBalance", { v: num(balAfter, 2) })}</p>}
-          <Button onClick={save} disabled={volumeL <= 0} className="h-12 rounded-full text-[15px] font-bold">
+          <Button onClick={save} disabled={volumeL <= 0 || busy} className="h-12 rounded-full text-[15px] font-bold">
             {t("nut.save")}
           </Button>
         </Card>

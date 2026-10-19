@@ -1,6 +1,6 @@
 // Outils → Pulvérisation IPW (lot 5): protocol dose for the sprayer, allowed window (veg, flowering S1–S3), schedule,
 // checklist before spraying, spray log and the next-spray reminder (calendar). Foliar only, never in the tank.
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Check } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -39,6 +39,9 @@ export function IpwTool() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [space?.id, mine.length])
   const L = parseNum(litres)
+  // A double tap must not record the spray twice (lot 10a).
+  const saving = useRef(false)
+  const [busy, setBusy] = useState(false)
   const dose = L && L > 0 ? ipwDoseMl(L, protocol) : null
   // Same protocol still running: the schedule keeps its first day; otherwise a new run starts today.
   const start = running && running.protocol === protocol ? running.start : today
@@ -48,7 +51,9 @@ export function IpwTool() {
 
 
   const save = async () => {
-    if (!space || !L || !allowed.ok) return
+    if (!space || !L || !allowed.ok || saving.current) return
+    saving.current = true
+    setBusy(true)
     try {
       await saveSpray({
         schemaVersion: GROW_SCHEMA.spray,
@@ -68,6 +73,9 @@ export function IpwTool() {
       setChecked([])
     } catch (e) {
       toast.error(t("common.saveError", { reason: (e as Error).message }))
+    } finally {
+      saving.current = false
+      setBusy(false)
     }
   }
 
@@ -149,7 +157,7 @@ export function IpwTool() {
               )
             })}
           </ul>
-          <Button onClick={save} disabled={!allowed.ok || !L || !space} className="mt-2 h-12 rounded-full text-[15px] font-bold">
+          <Button onClick={save} disabled={!allowed.ok || !L || !space || busy} className="mt-2 h-12 rounded-full text-[15px] font-bold">
             {allChecked ? t("ipw.save") : t("ipw.saveUnchecked", { n: checked.length, total: IPW_CHECKLIST.length })}
           </Button>
         </Card>

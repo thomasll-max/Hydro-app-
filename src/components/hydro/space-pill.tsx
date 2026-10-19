@@ -3,10 +3,12 @@ import { useEffect, useRef } from "react"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { groupBySite } from "@/model/grow-ops"
-import type { SpaceColor } from "@/model/grow"
+import { SPACE_COLORS, type SpaceColor } from "@/model/grow"
 import { cn } from "@/lib/utils"
 
-export const spaceColor = (c?: SpaceColor) => `var(--space-${c ?? "slate"})`
+/** Only the 8 known colours reach the CSS: anything else (an edited backup…) is shown as slate (lot 10a). */
+export const safeSpaceColor = (c?: string): SpaceColor => ((SPACE_COLORS as readonly string[]).includes(c ?? "") ? (c as SpaceColor) : "slate")
+export const spaceColor = (c?: string) => `var(--space-${safeSpaceColor(c)})`
 
 export function SpaceDot({ color, className }: { color?: SpaceColor; className?: string }) {
   return <span aria-hidden="true" className={cn("inline-block size-2 shrink-0 rounded-full", className)} style={{ background: spaceColor(color) }} />

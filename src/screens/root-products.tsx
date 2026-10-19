@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { NumField } from "@/components/hydro/form"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
 import type { GrowEvent } from "@/model/types"
 
@@ -25,7 +25,8 @@ export function useRootProducts(open: boolean, preset: GrowEvent["products"], de
     const q = parseNum(qty[p.id])
     return { productId: p.id, unit: p.unit, ...(q != null ? { qty: q } : {}) }
   })
-  return { roots, on, setOn, qty, setQty, value }
+  const bad = badNums(qty, roots.filter((p) => on[p.id]).map((p) => p.id)).length > 0
+  return { roots, on, setOn, qty, setQty, value, bad }
 }
 
 export function RootProductsField({ state }: { state: ReturnType<typeof useRootProducts> }) {

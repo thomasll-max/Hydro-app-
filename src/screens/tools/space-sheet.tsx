@@ -10,7 +10,7 @@ import { spaceColor } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { SaveBar, useSaver, useShow } from "@/screens/sheets"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { areaM2, equipmentAt, spaceIrrigation, volumeM3, withPots } from "@/equipment/calc"
 import { MODULES, SPACE_COLORS, TEMPLATES, modulesFor, type Equipment, type Space, type TemplateId } from "@/model/grow"
@@ -93,6 +93,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
   }
   const save = () =>
     run(async () => {
+      if (badNums(f).length || badNums(dims).length) throw new Error(t("safe.fixFields"))
       const next = build()
       if (!next.name) throw new Error(t("space.name"))
       await saveSpace(next)

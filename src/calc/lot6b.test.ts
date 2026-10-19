@@ -55,7 +55,7 @@ describe("lot 6 — sauvegarde JSON", () => {
     expect(parseBackup("{")).toEqual({ ok: false, error: "json" })
     expect(parseBackup('{"a":1}')).toEqual({ ok: false, error: "format" })
     expect(parseBackup('{"format":"hydro-backup","version":99,"collections":{}}')).toEqual({ ok: false, error: "version" })
-    const p = parseBackup('{"format":"hydro-backup","version":1,"collections":{"spaces":{"x":{"id":"x"},"bad/id":{"id":"y"},"z":3},"unknown":{"a":{}}}}')
+    const p = parseBackup('{"format":"hydro-backup","version":1,"collections":{"spaces":{"x":{"id":"x","name":"X","modules":{}},"bad/id":{"id":"y"},"z":3},"unknown":{"a":{}}}}')
     expect(p.ok && p.counts).toEqual({ spaces: 1 })
   })
   it("journal en CSV : séparateur « ; », nom de l'espace, texte échappé", () => {

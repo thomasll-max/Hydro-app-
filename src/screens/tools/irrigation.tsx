@@ -6,7 +6,7 @@ import { Grid, NumField, Seg } from "@/components/hydro/form"
 import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
-import { parseNum } from "@/calc/formulas"
+import { badNums, parseNum } from "@/calc/formulas"
 import { stageOn, todayIso } from "@/calc/stage"
 import { dayTargets } from "@/calc/targets"
 import { buildProgram, isPrecision, programTotals, sensorPlan, steerStage, SENSOR, type ProgramRow, type SensorPhase, type SteerStage } from "@/calc/program"
@@ -82,6 +82,7 @@ export function IrrigationTool() {
 
   const saveSensor = async () => {
     if (!cycle) return toast(t("irr.noCycle"))
+    if (badNums(f, ["sBase", "sPeak", "sP2"]).length) return toast.error(t("safe.fixFields"))
     try {
       await saveCycle({ ...cycle, sensor: { phase: sPhase, base: parseNum(f.sBase), peak: parseNum(f.sPeak), p2Pct: parseNum(f.sP2) } } as Cycle)
       toast.success(t("irr.sensorSaved"))

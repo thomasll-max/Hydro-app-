@@ -5,6 +5,8 @@ import tailwindcss from "@tailwindcss/vite"
 import { viteSingleFile } from "vite-plugin-singlefile"
 import path from "node:path"
 import { execSync } from "node:child_process"
+import fs from "node:fs"
+import { headersFile } from "./src/lib/csp"
 
 const local = process.env.VITE_TARGET === "local"
 
@@ -49,6 +51,12 @@ function localTarget(): Plugin {
     // Read by the app to offer an update (never cached: see pwa/sw.js and netlify.toml).
     generateBundle() {
       this.emitFile({ type: "asset", fileName: "version.json", source: JSON.stringify(build) })
+    },
+    // Netlify: a CSP that allows exactly the inline scripts of this build (lot 10a).
+    writeBundle(opts) {
+      const dir = opts.dir ?? "dist-local"
+      const html = fs.readFileSync(path.join(dir, "index.html"), "utf8")
+      fs.writeFileSync(path.join(dir, "_headers"), headersFile(html))
     },
   }
 }

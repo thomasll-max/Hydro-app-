@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -30,7 +30,7 @@
 - [x] Lot 8c : guide de démarrage « Premiers pas » (211 tests)
 - [x] Lot 8d : méthode de mesure du dryback par espace, correctif runoff (216 tests)
 - [x] Lot 8e : numéro de version, bannière « Nouvelle version disponible » (221 tests)
-- [ ] Lot 10a : sécurité des données
+- [x] Lot 10a : sécurité des données (236 tests, artefact v28)
 - [ ] Lot 10b : cycles et stades (création de cycle minimale, étapes en un geste)
 - [ ] Lot 10c : calculs Athena
 - [ ] Lot 10d : navigation, saisie, graphiques
@@ -41,6 +41,28 @@
 - Prompt de la session : `docs/prompt-passe-10.md`. Décisions de Thomas : voir ce prompt.
 - Scripts de simulation : `scripts/sim/`.
 - Point de reprise : premier point non coché de l'audit.
+- **Branche** (décision de la session du 19/10, Thomas absent) : la session est configurée sur `claude/hydro-passe-10a-10e-pcm10n`. Le prompt demande « push sur main » et `CLAUDE.md` autorise le push direct : chaque lot est poussé **sur cette branche et sur `main`** (mêmes commits), donc pas de PR à ouvrir.
+- Simulation d'un an : résultats notés dans « Lot 10b — notes » et « Lot 10e — notes ».
+
+## Lot 10a — notes
+- Stockage (`store/`) : `list()` lève l'erreur ; `watchDoc` / `watchCollection` prennent un `onError` et ne rendent plus jamais un état vide sur erreur ; `batch(ops)` (une transaction IndexedDB, une notification par collection) et `writeAll` (par paquets de 200, avec progression). `MemoryStore` enregistre (`persist`) **avant** de changer la mémoire. `LocalStore` : ouverture d'IndexedDB limitée à 6 s, sinon `volatile` (mémoire seule, bandeau rouge) ; `BroadcastChannel("hydro-docs")` rejoue les écritures dans les autres onglets.
+- `getStores()` : runtime Claude présent mais `use("db")` nul → `StoreUnavailable` (écran « Base de données indisponible », Réessayer), jamais de repli local. `owner` = `user.isOwner()` (sans déclaration) : `false` → écran « App réservée à son propriétaire », aucune écriture. Les règles « owner » font qu'un autre lecteur lit des documents absents (pas d'erreur) : c'est pour ça qu'on demande `isOwner()`.
+- `grow-context` : `problem` (`"store" | "read"`) et `retry` ; la graine n'est écrite qu'après `get("grow/main")`, `list("spaces")` et `list("cycles")` réussis et vides (et `grow/main` seul, en dernier). Documents vérifiés par `model/validate.ts` (`readable`, `validDoc`) une fois par instantané de collection ; les mal formés sont **mis de côté sans être effacés** (`skipped`, affiché dans Sauvegarde). `grow/main` abîmé : nom gardé, le reste par défaut.
+- Import (`lib/backup.ts`) : mêmes vérifications, `Object.hasOwn`, ids interdits (`__proto__`…), 20 Mo max (`MAX_BACKUP_BYTES`), écritures puis suppressions. **Décision** : en « Remplacer », la copie de secours est un téléchargement (`hydro-AAAA-MM-JJ-avant-import.json`) ; si elle est refusée ou impossible, **rien n'est remplacé** (Fusionner reste possible).
+- `entryHasContent` (`model/entry.ts`) : mesures, observations, actions, photos, note ; les réglages recopiés (CARRIED) ne comptent que s'ils diffèrent de la veille. `isBadNum` / `badNums` (`calc/formulas.ts`) : `NumField` passe en rouge (`aria-invalid`, « Nombre invalide ») et chaque formulaire refuse d'enregistrer.
+- Photos : `deletePhotos(ids)` dans le contexte ; `resetData` lit tout d'abord (une lecture ratée = rien d'effacé), supprime les photos de l'artefact une par une (ids du journal, `photoIds`).
+- `saveFile` : nouveau résultat `"started"` (lien de téléchargement sur iPhone, rien ne confirme) ; sur iPhone la feuille de partage passe d'abord. Le rappel de sauvegarde ne se remet à zéro que sur `"saved"` ; « Copier » ne compte plus.
+- Netlify : `src/lib/csp.ts` + `writeBundle` du plugin local écrivent `dist-local/_headers` (CSP avec le hash sha256 de chaque script en ligne, `frame-ancestors 'none'`) ; les autres en-têtes sont dans `netlify.toml`. Vérifié dans Chromium : aucune violation, l'assistant s'affiche.
+- `navigator.storage.persist()` n'est plus appelé au démarrage : une fois le grow présent (`lib/persist.ts`, effet dans `App.tsx`) ; état et bouton dans Sauvegarde, avertissement iPhone non installé.
+- Assistant interrompu : si des espaces existent sans `grow/main` **et** qu'un brouillon est sur le téléphone, pas de « Mon grow » de réparation : l'assistant se rouvre ; à la fin il efface les restes (`spaces`, `equipment`, `equipmentAssignments`, `cycles`) et écrit tout en un seul `batch`. Sans brouillon : réparation comme avant.
+- Scripts adaptés : `e2e-6b.py` (la confirmation et la copie de secours ; le faux runtime a maintenant une petite base en mémoire, sinon l'app s'arrête sur l'écran d'erreur ; vérification de l'écran sans base) et `e2e-8a.py` (« Copier » ne fait plus disparaître le rappel, un export oui).
+- Python Playwright : `pip install playwright==1.56.0` (déjà noté au lot 4a).
+
+### Commandes (lot 10a)
+```bash
+npm run preview:build && npm run build:local
+PYTHONPATH=scripts python3 scripts/e2e-10a.py dist-preview/index.html dist-local <dossier>
+```
 
 ## Règles de relais
 1. **Une seule session à la fois** sur le code. Si deux tournent quand même : avant chaque commit **et** chaque republication, `git fetch`, se remettre sur `main`, relancer tous les tests et publier un build qui contient le travail de l'autre.
@@ -100,7 +122,7 @@
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 221 au lot 8e
+npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale
@@ -297,4 +319,4 @@ PYTHONPATH=scripts python3 scripts/e2e-8e.py dist-local dist-preview/index.html 
 ```
 
 ### Prochain lot
-**Lot 7 — Nutrition multi-marques**, après la validation de Thomas (lots 9 et 8).
+Passe 10 : premier point non coché de `docs/audit-2026-10-19.md` (lot 10b au 19/10). Puis **Lot 7 — Nutrition multi-marques**, après la validation de Thomas (lots 9 et 8).

@@ -3,6 +3,7 @@ import { getStores } from "@/store"
 import { createRoot } from "react-dom/client"
 import "./index.css"
 import App from "./App"
+import { RescueActions } from "@/app/status"
 
 /** Never leave a blank page: show what broke and a way to reload. */
 class Boundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -42,15 +43,15 @@ class Boundary extends Component<{ children: ReactNode }, { error: Error | null 
         <button onClick={() => location.reload()} style={{ marginTop: 12, padding: "10px 16px", borderRadius: 999 }}>
           {fr ? "Recharger" : "Reload"}
         </button>
+        <RescueActions />
       </div>
     )
   }
 }
 
-// Local (friends') version: works offline and keeps its data (installable, storage marked persistent).
+// Local (friends') version: works offline (installable). Persistent storage is asked once a grow exists (App).
 if (import.meta.env.VITE_TARGET === "local") {
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(() => {})
-  navigator.storage?.persist?.().catch(() => {})
 }
 
 createRoot(document.getElementById("root")!).render(

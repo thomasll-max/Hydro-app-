@@ -70,7 +70,17 @@ Consigne de Thomas : que l'app ne fasse plus « générée par une IA ». On rem
    - La barre d'onglets est **ancrée en bas**, pleine largeur, opaque (fond de page), avec un trait fin en haut et la marge de sécurité du téléphone. Elle ne flotte plus.
    - Le « + » de la saisie du jour est **intégré au centre de la barre** : bouton plein « eau », 52 × 44 px, rayon 12, avec un `aria-label` « Saisie du jour ». Il n'y a plus de bouton flottant qui recouvre le contenu.
    - Onglets : Aujourd'hui, Journal, « + », Graphiques, Outils.
-   - **Calendrier** passe dans Outils (en haut de la liste). Ses liens profonds (`#calendar`) restent valides et ouvrent Outils → Calendrier.
+   - **Le Calendrier reste accessible depuis l'écran d'accueil**, à la demande de Thomas :
+     - **Bande de la semaine** en haut d'Aujourd'hui, sous les onglets d'espaces : 7 jours (lundi → dimanche).
+       - Jour en Figtree, numéro en mono ; aujourd'hui souligné en « eau ».
+       - Sous chaque jour, de petits repères pour ce qui est prévu : un repère par type (rappel, échéance, bidon), 3 au maximum.
+       - Toucher un jour ouvre le Calendrier sur ce jour.
+       - Flèches ou balayage pour la semaine précédente ou suivante.
+       - Hauteur ≤ 64 px. Cibles tactiles de 44 px. `aria-label` par jour, avec la date et le nombre d'éléments.
+     - **La date de la barre du haut** (« lun. 19 oct. ») est un bouton qui ouvre le Calendrier sur aujourd'hui.
+     - **Retoucher l'onglet Aujourd'hui** quand on y est déjà ramène en haut de l'écran. Ce n'est pas un raccourci caché vers le calendrier.
+     - En bas de la section « À faire », un lien texte « Tout le calendrier → ».
+   - Le Calendrier n'a plus d'onglet propre : il s'ouvre depuis ces accès et depuis Outils (en haut de la liste). Ses liens profonds (`#calendar`) restent valides. Le retour depuis le Calendrier ramène à l'écran d'où on venait.
    - Les rappels du jour et à venir restent sur Aujourd'hui, dans la section « À faire ».
 
 7. **Mouvement** : seulement les transitions d'écran courtes et les retours d'action (appui, case cochée, toast). `prefers-reduced-motion` est respecté.

@@ -23,8 +23,8 @@
 - [x] Lot 5b : lumière, climat (171 tests)
 - [x] Lot 6a : graphiques (179 tests)
 - [x] Lot 6b : export / import JSON, « Demander à Claude » (186 tests)
-- [x] Lot 9 : tâche du matin + passe de finition (189 tests) — **en attente de la validation de Thomas**
-- [ ] Lot 7 : nutrition multi-marques (après validation)
+- [x] Lot 9 : tâche du matin + passe de finition (189 tests) — **validé par Thomas le 19/10/2026**
+- [ ] Lot 7 : nutrition multi-marques (le lot 9 est validé : peut démarrer à la demande de Thomas)
 - [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)
 - [x] Lot 8b : assistant de premier lancement, guides (205 tests)
 - [x] Lot 8c : guide de démarrage « Premiers pas » (211 tests)
@@ -364,6 +364,7 @@ PYTHONPATH=scripts python3 scripts/e2e-6b.py dist-preview/index.html <dossier>
 Voir « Lot 9 — notes ».
 
 ## Lot 9 — notes
+- **Validé par Thomas le 19/10/2026.** Vérifié ce jour-là : la tâche programmée est active (prochain envoi le 20/10 à 06:51, heure d'Oslo) ; celle du 19/10 a réussi et a envoyé le résumé calculé le 18/10 avec la mention « Calculé le 18/10… » (l'app n'avait pas encore été ouverte ce matin-là) ; le résumé du 20/10 est déjà écrit dans la base (`digest/2026-10-20`, `texts.fr` présent, calculé le 19/10 par le code de la passe 10).
 - **Tâche programmée** « Hydro — résumé du matin » (id `trig_011XAxjtkHi6uRbgxZSKmjNC`) : `CRON_TZ=Europe/Oslo 51 6 * * *`, nouvelle session à chaque fois, notification push. Elle lit `digest/{date du jour}` (sinon `digest/latest` du jour) via ArtifactData, en lecture seule, et recopie `texts.fr`. Changer l'heure dans l'app ne déplace pas la tâche : le faire avec `update_trigger`.
 - `Digest` v3 : `computedOn`, `texts: { fr, en }`. `usePersistDigest` écrit la semaine quand le texte change (version Claude seulement).
 - **Réglages par espace** : `SpaceSheet` (`screens/tools/space-sheet.tsx`) avec sections `general | nutrition | irrigation | light | air` ; ouverte depuis n'importe où par `useEditors().openSpace(spaceId, section)` (une seule section affichée, bouton « Tous les réglages de l'espace »). Réglages d'arrosage = cycle en cours ; pots = contenant de l'espace (`withPots`) ; photopériode = `space.light.photoperiodH` (vide = selon le stade) ; gradation et vitesse = équipement. Composant `SettingsLink` (résumé + bouton) dans les outils.

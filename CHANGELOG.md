@@ -1,5 +1,8 @@
 # Changelog
 
+## Lot 9 validé (19/10/2026)
+- Thomas valide le lot 9 (tâche du matin). Vérifié : la tâche « Hydro — résumé du matin » est active et a réussi le 19/10, le résumé du 20/10 est déjà prêt dans la base. Aucun changement de code ; le lot 7 (nutrition multi-marques) peut démarrer à la demande de Thomas.
+
 ## Lot 10g — Motif goutte et écran de démarrage (19/10/2026)
 - **Chargement** : la goutte du logo se remplit de bas en haut ; avec les animations réduites, elle reste fixe et « Chargement… » s'affiche.
 - **Graphiques** : une petite goutte vert eau au pied des courbes les jours de bidon.

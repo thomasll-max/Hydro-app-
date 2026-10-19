@@ -86,6 +86,28 @@ export function previousEntry(entries: Entry[], date: IsoDate, plantId?: PlantId
 }
 
 export type EntryFilter = { plant: "all" | "room" | PlantId; tag: string; stage: string; space?: string }
+export const NO_FILTER: EntryFilter = { plant: "all", tag: "all", stage: "all", space: "all" }
+
+/**
+ * A filter left on a value that no longer exists (another space selected, a tag or a stage that is not in this list)
+ * falls back to "all": a filter never empties the journal silently (lot 10d).
+ */
+export function liveFilter(f: EntryFilter, avail: { spaces: string[]; tags: string[]; stages: string[]; plants: boolean }): EntryFilter {
+  return {
+    space: f.space && avail.spaces.includes(f.space) ? f.space : "all",
+    plant: avail.plants ? f.plant : "all",
+    tag: avail.tags.includes(f.tag) ? f.tag : "all",
+    stage: avail.stages.includes(f.stage) ? f.stage : "all",
+  }
+}
+
+/** Journal order: newest day first; within a day, the whole-space entry before the plants (P1, P2…), lot 10d. */
+export function journalOrder(a: Entry, b: Entry): number {
+  if (a.date !== b.date) return a.date < b.date ? 1 : -1
+  if (!a.plantId !== !b.plantId) return a.plantId ? 1 : -1
+  if (a.plantId !== b.plantId) return (a.plantId ?? "") < (b.plantId ?? "") ? -1 : 1
+  return a.spaceId < b.spaceId ? -1 : a.spaceId > b.spaceId ? 1 : 0
+}
 /** History filter: by plant (or whole room), tag (observation or action) and stage (from the stored snapshot). */
 export function filterEntries(list: Entry[], f: EntryFilter): Entry[] {
   return list.filter((e) => {

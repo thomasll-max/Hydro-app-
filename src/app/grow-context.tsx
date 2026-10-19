@@ -13,7 +13,7 @@ import { compressPhoto } from "@/lib/photo"
 import { seedDocs, thomasGrow } from "@/data/thomas-grow"
 import { digestDocs, staleDigestIds, type Digest } from "@/calc/digest"
 import { byStr, readable, validDoc } from "@/model/validate"
-import { writeAll } from "@/store/doc-store"
+import { runBatch, writeAll, type BatchOp } from "@/store/doc-store"
 import { loadDraft } from "@/lib/onboarding"
 import { autoEventOps } from "@/calc/steps"
 
@@ -102,7 +102,8 @@ type GrowCtx = {
   /** Claude version: the morning task reads digest/latest. */
   saveDigest: (d: Digest) => Promise<void>
   /** Claude version: today's digest and the next days' (digest/latest + digest/{date}), old ones removed. */
-  saveDigestWeek: (week: Digest[]) => Promise<void>
+  /** Writes a week of digests, or only `only` (the docs that changed); `prune` removes the dated ones past a week. */
+  saveDigestWeek: (week: Digest[], opts?: { only?: [string, Digest][]; prune?: boolean }) => Promise<void>
   uploadPhoto: (file: Blob) => Promise<string>
   photoUrl: (id: string) => Promise<string>
   /** Removes photos from the device / the artifact's assets (entry deleted, photo taken off). Errors are ignored. */
@@ -418,11 +419,12 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       saveReminder: async (r) => need().set(`reminders/${r.id}`, { ...r, schemaVersion: GROW_SCHEMA.reminder, updatedAt: stamp() }),
       deleteReminder: async (id) => need().delete(`reminders/${id}`),
       saveDigest: async (d) => need().set("digest/latest", { ...d, updatedAt: stamp() }),
-      saveDigestWeek: async (week) => {
+      saveDigestWeek: async (week, opts = {}) => {
         const docs = need()
-        for (const [p, d] of digestDocs(week)) await docs.set(p, { ...d, updatedAt: stamp() })
-        const old = staleDigestIds(Object.keys(await docs.list("digest")), week[0].date)
-        for (const id of old) await docs.delete(`digest/${id}`)
+        const at = stamp()
+        const ops: BatchOp[] = (opts.only ?? digestDocs(week)).map(([p, d]) => [p, { ...d, updatedAt: at }])
+        if (opts.prune ?? true) for (const id of staleDigestIds(Object.keys(await docs.list("digest")), week[0].date)) ops.push([`digest/${id}`, null])
+        await (docs.batch ? docs.batch(ops) : runBatch(docs, ops))
       },
       uploadPhoto: async (file) => {
         if (!stores) throw new Error("store not ready")

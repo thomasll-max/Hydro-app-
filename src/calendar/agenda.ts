@@ -7,7 +7,7 @@ import { occurrences, type Occurrence } from "./rrule"
 import { deadlineState, deadlines, type CalendarData, type Deadline } from "./deadlines"
 
 export type CalItem =
-  | { type: "reminder"; id: string; date: IsoDate; time: string; at: Date; spaceId?: string; done: boolean; snoozed: boolean; overdue: boolean; occ: Occurrence }
+  | { type: "reminder"; id: string; date: IsoDate; time: string; at: Date; spaceId?: string; done: boolean; snoozed: boolean; overdue: boolean; occ: Occurrence; late?: boolean }
   | { type: "deadline"; id: string; date: IsoDate; time?: undefined; spaceId?: string; done: boolean; snoozed: boolean; overdue: boolean; deadline: Deadline }
 
 /** Device time zone (fallback when the grow has none). */
@@ -45,9 +45,25 @@ export function calendarItems(data: CalendarData, from: IsoDate, to: IsoDate, to
   return out.sort((a, b) => a.date.localeCompare(b.date) || (a.time ?? "").localeCompare(b.time ?? "") || a.id.localeCompare(b.id))
 }
 
-/** What is still to do: overdue (up to `lookBack` days) and the next `days` days, not done. */
-export function upcoming(data: CalendarData, today: IsoDate, days = 7, lookBack = 7, tz?: string): CalItem[] {
-  return calendarItems(data, addDays(today, -lookBack), addDays(today, days), today, tz).filter((i) => !i.done)
+/**
+ * What is still to do: overdue (up to `lookBack` days) and the next `days` days, not done. A recurring reminder shows
+ * only its next occurrence (today's, flagged `late` once its time has passed), not one line per day (lot 10d).
+ */
+export function upcoming(data: CalendarData, today: IsoDate, days = 7, lookBack = 7, tz?: string, now = new Date()): CalItem[] {
+  const items = calendarItems(data, addDays(today, -lookBack), addDays(today, days), today, tz).filter((i) => !i.done)
+  const keep = new Map<string, CalItem>()
+  for (const i of items) {
+    if (i.type !== "reminder" || !i.occ.reminder.rrule) continue
+    const id = i.occ.reminder.id
+    const cur = keep.get(id)
+    // The first one from today on wins; failing that, the latest overdue one.
+    if (!cur || (cur.date < today && (i.date >= today || i.date > cur.date))) keep.set(id, i)
+  }
+  return items.flatMap((i): CalItem[] => {
+    if (i.type !== "reminder") return [i]
+    if (i.occ.reminder.rrule && keep.get(i.occ.reminder.id) !== i) return []
+    return [i.date === today && i.at.getTime() < now.getTime() ? { ...i, late: true } : i]
+  })
 }
 
 /** Keeps items of the selected spaces; items without a space (whole grow) always stay. */

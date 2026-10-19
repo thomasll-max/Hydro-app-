@@ -164,6 +164,12 @@ export function digestWeek(data: DigestData, today: IsoDate, locale: Lang, days 
 export function digestDocs(week: Digest[]): [string, Digest][] {
   return [["digest/latest", week[0]] as [string, Digest], ...week.map((d) => [`digest/${d.date}`, d] as [string, Digest])]
 }
+/** What a written digest doc says (its date and texts): a doc is written again only when this changes. */
+export const digestKey = (d: Digest) => [d.date, d.text, ...Object.values(d.texts ?? {})].join("\u0000")
+/** Docs of a week whose content changed since they were last written (`written`: path → digestKey), lot 10d. */
+export function changedDigestDocs(week: Digest[], written: ReadonlyMap<string, string>): [string, Digest][] {
+  return digestDocs(week).filter(([p, d]) => written.get(p) !== digestKey(d))
+}
 export const staleDigestIds = (ids: string[], today: IsoDate) => ids.filter((id) => /^\d{4}-\d{2}-\d{2}$/.test(id) && id < addDays(today, -DIGEST_DAYS))
 
 /**

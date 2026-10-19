@@ -92,7 +92,8 @@ export function useWhen() {
   return (i: CalItem, today = todayIso()) => {
     const n = daysBetween(today, i.date)
     const day = i.overdue ? `${dm(i.date)} · ${t("cal.overdue")}` : n === 0 ? t("today.todayShort") : n === 1 ? t("cal.tomorrow") : n > 1 && n < 14 ? t("today.inDays", { n }) : dm(i.date)
-    return i.time ? `${day} · ${i.time}` : day
+    const time = i.time && i.type === "reminder" && i.late ? `${i.time} · ${t("cal.timePassed")}` : i.time
+    return time ? `${day} · ${time}` : day
   }
 }
 
@@ -111,7 +112,7 @@ export function ItemRow({ i, showWhen = true, onOpen }: { i: CalItem; showWhen?:
         <Emoji name={itemEmoji(i)} size={28} />
         <span className="min-w-0">
           <span className={cn("block truncate text-[13.5px] font-medium", i.done && "line-through decoration-fg-3")}>{itemTitle(settings.lang, i)}</span>
-          <span className={cn("flex items-center gap-1.5 truncate text-[11.5px]", i.overdue ? "font-semibold text-warn" : "text-fg-3")}>
+          <span className={cn("flex items-center gap-1.5 truncate text-[11.5px]", i.overdue || (i.type === "reminder" && i.late) ? "font-semibold text-warn" : "text-fg-3")}>
             {space && <SpaceDot color={space.color} />}
             {sub}
           </span>
@@ -157,7 +158,12 @@ export function UpcomingCard({ spaceIds, max = 4 }: { spaceIds: Set<string> | nu
   const { t } = useSettings()
   const data = useCalendarData()
   const ed = useEditors()
-  const items = useMemo(() => forSpaces(upcoming(data, todayIso(), 7, 7, data.tz), spaceIds), [data, spaceIds])
+  // Keyed by the ids, not the Set: callers build a new Set at each render, the deadlines are not recomputed for it (lot 10d).
+  const idsKey = spaceIds ? [...spaceIds].sort().join(",") : "*"
+  const items = useMemo(
+    () => forSpaces(upcoming(data, todayIso(), 7, 7, data.tz), idsKey === "*" ? null : new Set(idsKey.split(","))),
+    [data, idsKey],
+  )
   return (
     <Card>
       <div className="flex items-center justify-between gap-2">

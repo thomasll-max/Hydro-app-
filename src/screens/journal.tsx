@@ -11,7 +11,7 @@ import { stageLine } from "@/app/labels"
 import { stageOn, todayIso, plannedHarvest } from "@/calc/stage"
 import { status } from "@/calc/advice"
 import { round } from "@/calc/formulas"
-import { filterEntries, type EntryFilter } from "@/model/entry"
+import { filterEntries, journalOrder, liveFilter, NO_FILTER, type EntryFilter } from "@/model/entry"
 import { PLANT_IDS, type Entry, type StageKey } from "@/model/types"
 import { PhotoThumb } from "./entry-sheet"
 import { SpaceDot } from "@/components/hydro/space-pill"
@@ -23,7 +23,7 @@ export function JournalScreen() {
   const { t, num, dm } = useSettings()
   const { ready, cycle, plants, all, spaces, selection, photoUrl, space } = useGrow()
   const ed = useEditors()
-  const [filter, setFilter] = useState<EntryFilter>({ plant: "all", tag: "all", stage: "all", space: "all" })
+  const [filter, setFilter] = useState<EntryFilter>(NO_FILTER)
   const [shown, setShown] = useState(PAGE)
   // The journal follows the space selector: one space, one room, or everything.
   const scope = useMemo(
@@ -31,6 +31,14 @@ export function JournalScreen() {
     [selection, spaces],
   )
   const ids = useMemo(() => new Set(scope.map((x) => x.id)), [scope])
+  // Another space or room selected at the top: the filters start over (lot 10d).
+  const scopeKey = scope.map((x) => x.id).join(",")
+  const [filterScope, setFilterScope] = useState(scopeKey)
+  if (filterScope !== scopeKey) {
+    setFilterScope(scopeKey)
+    setFilter(NO_FILTER)
+    setShown(PAGE)
+  }
   const multi = scope.length > 1
   const entries = useMemo(() => all.entries.filter((e) => ids.has(e.spaceId)), [all.entries, ids])
   const events = useMemo(() => all.events.filter((e) => (e.spaceId ? ids.has(e.spaceId) : !!cycle && e.cycleId === cycle.id)), [all.events, ids, cycle])
@@ -38,7 +46,6 @@ export function JournalScreen() {
   const spaceOf = (id?: string) => spaces.find((x) => x.id === id)
   const showCycle = selection.kind === "space" && !!cycle
 
-  const list = useMemo(() => filterEntries(entries, filter), [entries, filter])
   const tagsPresent = useMemo(() => {
     const s = new Set<string>()
     entries.forEach((e) => {
@@ -48,6 +55,13 @@ export function JournalScreen() {
     return [...s]
   }, [entries])
   const stagesPresent = useMemo(() => [...new Set(entries.map((e) => e.targets?.stage).filter(Boolean))] as StageKey[], [entries])
+  const hasPlants = entries.some((e) => e.plantId)
+  const live = useMemo(
+    () => liveFilter(filter, { spaces: scope.map((x) => x.id), tags: tagsPresent.map((k) => k.split(".")[1]), stages: stagesPresent, plants: hasPlants }),
+    [filter, scope, tagsPresent, stagesPresent, hasPlants],
+  )
+  const list = useMemo(() => filterEntries(entries, live).sort(journalOrder), [entries, live])
+  const filtered = live.space !== "all" || live.plant !== "all" || live.tag !== "all" || live.stage !== "all"
 
   if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
 
@@ -151,16 +165,16 @@ export function JournalScreen() {
           </div>
           {multi && (
             <FilterRow
-              label={t("entry.space")}
-              value={filter.space ?? "all"}
+              label={t("journal.filterSpace")}
+              value={live.space ?? "all"}
               onChange={(v) => setFilter((f) => ({ ...f, space: v }))}
               options={[{ v: "all", l: t("common.all") }, ...scope.map((x) => ({ v: x.id, l: x.name }))]}
             />
           )}
-          {entries.some((e) => e.plantId) && (
+          {hasPlants && (
             <FilterRow
               label={t("journal.filterPlant")}
-              value={filter.plant}
+              value={live.plant}
               onChange={(v) => setFilter((f) => ({ ...f, plant: v as EntryFilter["plant"] }))}
               options={[{ v: "all", l: t("common.all") }, { v: "room", l: t("entry.wholeSpace") }, ...PLANT_IDS.map((p) => ({ v: p, l: p }))]}
             />
@@ -168,7 +182,7 @@ export function JournalScreen() {
           {stagesPresent.length > 1 && (
             <FilterRow
               label={t("journal.filterStage")}
-              value={filter.stage}
+              value={live.stage}
               onChange={(v) => setFilter((f) => ({ ...f, stage: v }))}
               options={[{ v: "all", l: t("common.all") }, ...stagesPresent.map((st) => ({ v: st, l: t(`stage.${st}`) }))]}
             />
@@ -176,7 +190,7 @@ export function JournalScreen() {
           {tagsPresent.length > 0 && (
             <FilterRow
               label={t("journal.filterTag")}
-              value={filter.tag}
+              value={live.tag}
               onChange={(v) => setFilter((f) => ({ ...f, tag: v }))}
               options={[{ v: "all", l: t("common.all") }, ...tagsPresent.map((k) => ({ v: k.split(".")[1], l: t(k as never) }))]}
             />
@@ -186,7 +200,16 @@ export function JournalScreen() {
               <EntryRow key={e.id} e={e} space={multi ? spaceOf(e.spaceId) : undefined} onOpen={() => ed.openEntry({ date: e.date, plantId: e.plantId, spaceId: e.spaceId })} photoUrl={photoUrl} />
             ))}
           </ul>
-          {list.length === 0 && <p className="px-3.5 py-6 text-center text-[13px] text-fg-3">{t("journal.historyEmpty")}</p>}
+          {list.length === 0 && (
+            <div className="flex flex-col items-center gap-2 px-3.5 py-6 text-center">
+              <p className="text-[13px] text-fg-3">{filtered ? t("journal.historyEmpty") : t("journal.historyNone")}</p>
+              {filtered && (
+                <button className="h-10 rounded-full px-3 text-[13px] font-semibold text-primary" onClick={() => setFilter(NO_FILTER)}>
+                  {t("journal.clearFilters")}
+                </button>
+              )}
+            </div>
+          )}
           {list.length > shown && (
             <button className="w-full p-2.5 text-[12.5px] font-semibold text-primary" onClick={() => setShown((n) => n + PAGE)}>
               {t("common.more")}
@@ -285,7 +308,10 @@ function Fact({ k, v, warn }: { k: string; v?: string | false; warn?: boolean })
 
 function FilterRow({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; l: string }[] }) {
   return (
-    <div role="radiogroup" aria-label={label} className="no-scrollbar mt-2 flex gap-1.5 overflow-x-auto px-3.5">
+    <div role="radiogroup" aria-label={label} className="no-scrollbar mt-2 flex items-center gap-1.5 overflow-x-auto px-3.5">
+      <span aria-hidden="true" className="w-12 shrink-0 text-[11px] font-semibold text-fg-3">
+        {label}
+      </span>
       {options.map((o) => (
         <button
           key={o.v}
@@ -348,6 +374,11 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
               T/HR <b className="font-semibold text-fg tabular-nums">{`${num(e.tempDay)}°/${e.rh != null ? num(e.rh) : "—"}`}</b>
             </span>
           )}
+          {e.heightCm != null && (
+            <span className="text-[12px] text-fg-2">
+              {t("journal.height")} <b className="font-semibold text-fg tabular-nums">{num(e.heightCm)} cm</b>
+            </span>
+          )}
           {e.reservoirL != null && (
             <span className="text-[12px] text-fg-2">
               {t("entry.reservoir")} <b className="font-semibold text-fg tabular-nums">{num(e.reservoirL)} L</b>
@@ -359,7 +390,7 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
             </span>
           )}
         </div>
-        {(e.observations?.length || e.actions?.length) && (
+        {!!(e.observations?.length || e.actions?.length) && (
           <div className="flex flex-wrap gap-1">
             {e.observations?.map((o) => (
               <span key={o.tag} className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold", o.severity >= 3 ? "bg-bad/12 text-bad" : o.severity === 2 ? "bg-warn/12 text-warn" : "bg-surface-2 text-fg-2")}>

@@ -204,7 +204,7 @@ export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenCha
           <NumField id="m-ph" label={t("mixForm.ph")} value={s.ph} onChange={(v) => setS((x) => ({ ...x, ph: v }))} />
         </Grid>
         <Grid>
-          <NumField id="m-phb" label={t("nut.phBefore")} value={s.phBefore} onChange={(v) => setS((x) => ({ ...x, phBefore: v }))} />
+          <NumField id="m-phb" label={t("nut.phBefore", { name: "Balance" })} value={s.phBefore} onChange={(v) => setS((x) => ({ ...x, phBefore: v }))} />
           <NumField id="m-bal" label={t("nut.balanceAdded", { name: "Balance" })} value={s.balAdded} onChange={(v) => setS((x) => ({ ...x, balAdded: v }))} />
         </Grid>
         <AreaField id="m-note" label={t("mixForm.note")} value={note} onChange={setNote} />

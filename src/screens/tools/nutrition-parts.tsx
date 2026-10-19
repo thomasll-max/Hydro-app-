@@ -23,7 +23,7 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
   const powders = cat.products.filter((p) => p.form === "powder")
   if (!powders.length || !cat.ecTable) return null
   const stocks = openStocks(concentrateStocks, cat.id)
-  const date = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(settings.lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short" })
+  const date = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(settings.lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" })
   const finish = async (s: ConcentrateStock) => {
     try {
       await saveConcentrateStock({ ...s, finishedOn: todayIso() })

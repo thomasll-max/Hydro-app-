@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -35,9 +35,9 @@
   - [x] Lot 10b1 : points 24–30 (245 tests, artefact v29)
   - [x] Lot 10b2 : points 31–39, simulation d'un an (254 tests, artefact v30)
 - [x] Lot 10c : calculs Athena (266 tests, artefact v31)
-- [ ] Lot 10d : navigation, saisie, graphiques
+- [x] Lot 10d : navigation, saisie, graphiques
   - [x] Lot 10d1 : points 54–57, 61, 62, 65–68, 70 (272 tests, artefact v32)
-  - [ ] Lot 10d2 : points 58–60, 63, 64, 69
+  - [x] Lot 10d2 : points 58–60, 63, 64, 69 (281 tests, artefact v33)
 - [ ] Lot 10e : accessibilité, textes, assistant, option « Autre marque »
 
 ## Lot 10 : passe de corrections (19/10/2026)
@@ -92,6 +92,14 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 - Premiers pas : pots demandés seulement si l'arrosage de l'espace est automatique (cycle en automatique, sinon pompe dans l'espace) ; lampe cochée avec ses watts (`StartItem.canStart` pour « Démarrer aujourd'hui »).
 - Carte Bonjour : un cycle « automatique » dans un espace sans pompe (quand le grow liste ses pompes) est traité comme arrosé à la main. Pas de dose ni de programme inventés pour le rinçage (eau osmosée, EC < 0,1 : fiche Athena).
 - **Simulation d'un an (fin de 10b, 19/10)** : 479 saisies vérifiées, 28/28 anomalies signalées, **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 0 plantage, 364 matins rejoués ; **4 échéances traînent** (12 avant) : toutes « mesurer le débit » (11 matins chacune), car le simulateur ne remesure la pompe qu'aux transferts (71 jours) alors que la règle du cahier des charges est 60 jours. Je n'ai pas changé ce comportement du simulateur : le rappel est juste. Passage navigateur (`browse.py`, 9 dates × 13 écrans) : aucune erreur console, aucun débordement (le seul « Infinity » relevé est la marque AC Infinity).
+
+## Lot 10d2 — notes
+- Journal : `liveFilter` (un filtre sur une valeur absente revient à « Tout ») et remise à zéro des filtres quand le sélecteur du haut change ; `journalOrder` (dans une journée, la saisie de l'espace avant P1, P2…) ; rangées de filtres avec leur libellé visible ; hauteur affichée dans la ligne ; message vide distinct (« pas encore de saisie » / « aucune saisie avec ces filtres » + « Effacer les filtres »).
+- Graphiques (`calc/series.ts`) : `chartCycle` (cycle en cours de l'espace, sinon son plus récent), `periodRange(period, today, cycles, firstDate)` avec la période `all` ; « Cycle » suit les cycles en cours, sinon les derniers jusqu'à leur récolte ; `defaultCurves(méthodes)` (« Dryback capteur » par défaut pour un espace sur capteur, tant que l'utilisateur n'a pas choisi ses courbes) ; `splitGaps` / `pieceKeys` / `chartRows(series, key)` : une ligne par morceau, coupée après plus de `GAP_DAYS = 7` jours sans valeur ; `seriesStats` pour le nom lu par les lecteurs d'écran (`role="img"` + `aria-label` sur chaque graphique).
+- **Décisions prises seules** : le seuil de coupure des courbes est de 7 jours (valeur de l'app, aucune source) ; le mode « Superposées » ne montre plus qu'un espace à la fois (choix sous le titre), une couleur pleine par courbe, au lieu de tous les espaces en pointillés ; choisir un espace en haut remplace les espaces cochés dans Graphiques.
+- Rappels : `upcoming(…, now)` ne garde qu'une occurrence par rappel récurrent (la prochaine à partir d'aujourd'hui, sinon la dernière en retard) et marque `late` celle d'aujourd'hui dont l'heure est passée (« heure passée »). Le calendrier, lui, montre toujours toutes les occurrences.
+- Nutrition : « Dernier bidon » sous le bouton d'enregistrement (« enregistré à l'instant » juste après, « Voir » ouvre la fiche) ; « pH avant / après {produit} » quand le pH up est actif, sinon un seul champ « pH du bidon » ; année sur les dates des bidons de concentré.
+- Performance : la carte Bonjour écrit la semaine de résumés 4 s après la dernière modification (ou quand on quitte Aujourd'hui / l'app), seulement les documents qui ont changé (`changedDigestDocs`, `digestKey`), en un lot, et ne nettoie les vieux résumés qu'une fois par jour ; « À venir » ne recalcule plus les échéances à chaque rendu (mémo sur la liste d'ids, pas sur le `Set`).
 
 ## Lot 10d1 — notes
 - Lot 10d coupé en **10d1** (navigation, feuilles, saisie, service worker) et **10d2** (journal, graphiques, rappels, nutrition, performance).
@@ -171,7 +179,7 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1
+npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1, 281 au lot 10d2
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale

@@ -1,5 +1,15 @@
 # Changelog
 
+## Lot 10d2 — Journal, graphiques, rappels, nutrition (19/10/2026)
+Passe de corrections, points 58 à 60, 63, 64 et 69 de `docs/audit-2026-10-19.md`.
+- **Journal** : les filtres repartent de zéro quand on change d'espace en haut (ils vidaient la liste) ; chaque rangée de filtres a son libellé (Espace, Plante, Stade, Tag) ; dans une journée, la saisie de l'espace passe avant celles des plantes, et la hauteur s'affiche ; plus de « 0 » parasite ; message vide juste : « Pas encore de saisie ici » ou « Aucune saisie avec ces filtres » avec « Effacer les filtres ».
+- **Graphiques** : la période « Cycle » suit le cycle en cours (plus un vieux cycle récolté de 2025) ; nouvelle période **« Tout »** ; un espace suivi par capteur montre **« Dryback capteur »** par défaut ; le sélecteur du haut remplace les espaces cochés ; une courbe **s'interrompt après plus de 7 jours sans mesure** au lieu de relier les trous.
+- **Lecture** : « Superposées » montre un espace à la fois, une couleur par courbe, légende lisible ; chaque graphique a un nom et un résumé pour les lecteurs d'écran (nombre de valeurs, dates, dernière, min, max).
+- **Rappel récurrent** : une seule ligne dans « À venir » (la prochaine occurrence), avec « heure passée » quand l'heure du jour est dépassée.
+- **Nutrition** : le bidon enregistré reste affiché (« Dernier bidon … enregistré à l'instant », « Voir ») ; « pH avant / après Balance » ; année sur les dates des bidons de concentré.
+- **Performance** : la carte Bonjour n'écrit plus ses résumés à chaque saisie (regroupés, seulement ceux qui changent, en un lot) ; les échéances d'« À venir » ne sont plus recalculées à chaque rendu.
+- 281 tests (9 nouveaux : filtres et ordre du journal, périodes, coupure des courbes, résumé, rappels, résumés regroupés) ; `scripts/e2e-10d2.py` (graphiques, journal, rappel, nutrition) ; 2b, 3, 4a, 4b, 5a, 6a, 6b, 10b, 10d repassés.
+
 ## Lot 10d1 — Navigation, feuilles et saisie (19/10/2026)
 Passe de corrections, points 54 à 57, 61, 62, 65 à 68 et 70 de `docs/audit-2026-10-19.md` (le lot 10d est coupé en 10d1 et 10d2).
 - **Le geste retour ne quitte plus l'app** : onglets, outils et feuilles sont dans l'historique. Le retour ferme d'abord la feuille ouverte, puis revient à la liste des outils, puis à Aujourd'hui.

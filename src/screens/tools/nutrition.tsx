@@ -55,7 +55,7 @@ function defaultEc(cat: NutrientCatalog, phase: ProgramPhase, firstCycle: boolea
 }
 
 export function NutritionTool() {
-  const { t, num, range, show } = useSettings()
+  const { t, num, range, dm, show } = useSettings()
   const { cycle, cycles, mixes, entries, saveMix, saveCycle, nutrition, space, spaces, grow, equipment, assignments, customProducts } = useGrow()
   const cat = getCatalog(nutrition.line)
   const phaseLabel = usePhaseLabel()
@@ -78,6 +78,8 @@ export function NutritionTool() {
   // A double tap must not record the tank twice (lot 10a): the ref locks at once, the state disables the button.
   const saving = useRef(false)
   const [busy, setBusy] = useState(false)
+  // The tank just saved stays in view (lot 10d): « Dernier bidon … enregistré à l'instant ».
+  const [justSaved, setJustSaved] = useState<string | null>(null)
   const phase = phaseById(cat, phaseId) ?? cyclePhase
 
   // Dose chosen in a range last time (per 10 L, as typed), to prefill. Older tanks only kept the scaled quantity: the
@@ -179,9 +181,10 @@ export function NutritionTool() {
     saving.current = true
     setBusy(true)
     try {
+      const id = newId("mix-")
       await saveMix({
         schemaVersion: SCHEMA.mix,
-        id: newId("mix-"),
+        id,
         date: todayIso(),
         spaceIds: ids,
         volumeL,
@@ -207,6 +210,7 @@ export function NutritionTool() {
       })
       if (cycle && tap !== cycle.tapEc) await saveCycle({ ...cycle, tapEc: tap })
       toast.success(ids.length > 1 ? t("nut.savedMany", { n: ids.length }) : t("nut.saved"))
+      setJustSaved(id)
       setF((s) => ({ ...s, phBefore: "", phAfter: "", balAdded: "", ecMeasured: "" }))
     } catch (e) {
       toast.error(t("common.saveError", { reason: (e as Error).message }))
@@ -387,15 +391,29 @@ export function NutritionTool() {
             </div>
           )}
           <Grid>
-            <NumField id="n-phb" label={t("nut.phBefore")} hint={t("nut.measuredHint")} value={f.phBefore ?? ""} onChange={set("phBefore")} />
+            {/* Before / after the pH up (Balance); without it, one pH: the tank's (lot 10d). */}
+            {balanceOn && <NumField id="n-phb" label={t("nut.phBefore", { name: pname("balance") })} hint={t("nut.measuredHint")} value={f.phBefore ?? ""} onChange={set("phBefore")} />}
             {balanceOn && <NumField id="n-bala" label={t("nut.balanceAdded", { name: pname("balance") })} value={f.balAdded ?? ""} onChange={set("balAdded")} />}
-            <NumField id="n-pha" label={t("nut.phAfter")} value={f.phAfter ?? ""} onChange={set("phAfter")} />
+            <NumField id="n-pha" label={balanceOn ? t("nut.phAfter", { name: pname("balance") }) : t("nut.phTank")} value={f.phAfter ?? ""} onChange={set("phAfter")} />
             <NumField id="n-ecm" label={t("nut.ecMeasured")} value={f.ecMeasured ?? ""} onChange={set("ecMeasured")} />
           </Grid>
           {balanceOn && balAfter != null && parseNum(f.balAdded) != null && <p className="text-[12px] text-primary">{t("nut.nextBalance", { v: num(balAfter, 2) })}</p>}
           <Button onClick={save} disabled={volumeL <= 0 || busy} className="h-12 rounded-full text-[15px] font-bold">
             {t("nut.save")}
           </Button>
+          {last && (
+            <div id="nut-last" className={cn("flex items-center gap-2 rounded-md border px-3 py-2", last.id === justSaved ? "border-primary/40 bg-primary/8" : "border-line bg-surface-2")}>
+              <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-fg-2">
+                {t("nut.lastTank", { date: dm(last.date), volume: num(last.volumeL) })}
+                {last.ec != null && ` · EC ${num(last.ec, 1)}`}
+                {last.ph != null && ` · pH ${num(last.ph, 1)}`}
+                {last.id === justSaved && <b className="ml-1 font-semibold text-primary">· {t("nut.lastTankJust")}</b>}
+              </p>
+              <button type="button" onClick={() => ed.openMix(last)} className="h-9 shrink-0 rounded-full px-3 text-[12.5px] font-semibold text-primary">
+                {t("nut.openTank")}
+              </button>
+            </div>
+          )}
         </Card>
       </Reveal>
 

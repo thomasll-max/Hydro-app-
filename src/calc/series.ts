@@ -65,19 +65,55 @@ export const CURVE_DEFS: Record<CurveId, CurveDef> = {
 
 /** Default curves shown the first time. */
 export const DEFAULT_CURVES: CurveId[] = ["dryback", "ecRunoff", "phRunoff"]
+
+/** Default curves for the spaces shown: a space whose dryback is read on a sensor gets « Dryback capteur » (lot 10d). */
+export function defaultCurves(methods: string[]): CurveId[] {
+  const sensor = methods.filter((m) => m === "acinfinity" || m === "sensor").length
+  if (!sensor) return DEFAULT_CURVES
+  const dryback: CurveId[] = sensor === methods.length ? ["drybackSensor"] : ["dryback", "drybackSensor"]
+  return [...dryback, "ecRunoff", "phRunoff"]
+}
 export const MAX_SPACES = 4
 /** Points per series kept for drawing; beyond, days are averaged by bucket. */
 export const MAX_POINTS = 120
 
 export type Point = { date: IsoDate; v: number; lo?: number; hi?: number }
 export type Series = { spaceId: string; curve: CurveId; points: Point[] }
-export type Period = "7" | "30" | "cycle"
+export type Period = "7" | "30" | "cycle" | "all"
+export const PERIODS: Period[] = ["7", "30", "cycle", "all"]
+/** A line is broken across a gap longer than this (days without a value): no line drawn over weeks of nothing. */
+export const GAP_DAYS = 7
 
-/** Date window: 7 or 30 days back (today included), or from the start of the cycle(s). */
-export function periodRange(period: Period, today: IsoDate, cycles: Pick<Cycle, "germinationDate" | "createdAt">[] = []): { from: IsoDate; to: IsoDate } {
-  if (period !== "cycle") return { from: addDays(today, -(Number(period) - 1)), to: today }
-  const starts = cycles.map((c) => c.germinationDate ?? c.createdAt?.slice(0, 10)).filter((d): d is string => !!d)
-  return { from: starts.length ? starts.sort()[0] : addDays(today, -29), to: today }
+const cycleStart = (c: Pick<Cycle, "germinationDate" | "createdAt">) => c.germinationDate ?? c.createdAt?.slice(0, 10)
+
+/**
+ * The cycle a space's chart follows: the one running there, else the space's most recent one (an old harvested cycle
+ * is never taken when a newer one exists), lot 10d.
+ */
+export function chartCycle<C extends Pick<Cycle, "spaceId" | "germinationDate" | "createdAt">>(spaceId: string, cycles: C[], running?: C | null): C | undefined {
+  if (running) return running
+  return cycles.filter((c) => c.spaceId === spaceId).sort((a, b) => String(cycleStart(b) ?? "").localeCompare(String(cycleStart(a) ?? "")))[0]
+}
+
+/**
+ * Date window: 7 or 30 days back (today included), the cycle(s) shown, or everything since the first value.
+ * « Cycle » follows the running cycles when there are some, else the last cycles up to their harvest.
+ */
+export function periodRange(
+  period: Period,
+  today: IsoDate,
+  cycles: Pick<Cycle, "germinationDate" | "createdAt" | "harvestDate">[] = [],
+  firstDate?: IsoDate,
+): { from: IsoDate; to: IsoDate } {
+  if (period === "7" || period === "30") return { from: addDays(today, -(Number(period) - 1)), to: today }
+  const fallback = { from: addDays(today, -29), to: today }
+  if (period === "all") return firstDate && firstDate < today ? { from: firstDate, to: today } : fallback
+  const running = cycles.filter((c) => !c.harvestDate)
+  const use = running.length ? running : cycles
+  const starts = use.map(cycleStart).filter((d): d is string => !!d && d <= today).sort()
+  if (!starts.length) return fallback
+  const to = running.length ? today : use.map((c) => c.harvestDate ?? today).sort().at(-1)!
+  return { from: starts[0], to: to < starts[0] ? today : to }
 }
 
 /** Index entries once: room entries (no plant) by space, sorted by date. */
@@ -155,17 +191,45 @@ export function downsample(points: Point[], max = MAX_POINTS): Point[] {
   return out
 }
 
-/** Rows for a chart: one per date, one column per space ("s:{spaceId}") plus the target band of the first space. */
-export function chartRows(series: Series[]): Record<string, number | string | [number, number] | undefined>[] {
+/** Points cut where two values are more than `gap` days apart: each piece is drawn as its own line. */
+export function splitGaps(points: Point[], gap = GAP_DAYS): Point[][] {
+  const out: Point[][] = []
+  for (const p of points) {
+    const cur = out.at(-1)
+    if (cur && daysBetween(cur.at(-1)!.date, p.date) <= gap) cur.push(p)
+    else out.push([p])
+  }
+  return out
+}
+
+/** Column of each piece of a series: `{prefix}` for the first, `{prefix}#1`, `{prefix}#2`… after each gap. */
+export function pieceKeys(points: Point[], prefix: string, gap = GAP_DAYS): string[] {
+  return splitGaps(points, gap).map((_, i) => (i ? `${prefix}#${i}` : prefix))
+}
+
+/**
+ * Rows for a chart: one per date, one column per space and piece ("s:{spaceId}", "s:{spaceId}#1" after a gap of more
+ * than GAP_DAYS) plus the target band of the first space. `key` names the columns of a series.
+ */
+export function chartRows(series: Series[], key: (s: Series) => string = (s) => `s:${s.spaceId}`): Record<string, number | string | [number, number] | undefined>[] {
   const byDate = new Map<string, Record<string, number | string | [number, number] | undefined>>()
   for (const s of series)
-    for (const p of s.points) {
-      let r = byDate.get(p.date)
-      if (!r) byDate.set(p.date, (r = { date: p.date }))
-      r[`s:${s.spaceId}`] = p.v
-      if (p.lo != null && p.hi != null && r.band == null) r.band = [p.lo, p.hi]
-    }
+    splitGaps(s.points).forEach((piece, i) => {
+      for (const p of piece) {
+        let r = byDate.get(p.date)
+        if (!r) byDate.set(p.date, (r = { date: p.date }))
+        r[i ? `${key(s)}#${i}` : key(s)] = p.v
+        if (p.lo != null && p.hi != null && r.band == null) r.band = [p.lo, p.hi]
+      }
+    })
   return [...byDate.values()].sort((a, b) => String(a.date).localeCompare(String(b.date)))
+}
+
+/** What a screen reader hears for one series: count, dates, last value, min and max (lot 10d). */
+export function seriesStats(points: Point[]): { n: number; from: IsoDate; to: IsoDate; last: number; min: number; max: number } | null {
+  if (!points.length) return null
+  const vs = points.map((p) => p.v)
+  return { n: points.length, from: points[0].date, to: points.at(-1)!.date, last: vs.at(-1)!, min: Math.min(...vs), max: Math.max(...vs) }
 }
 
 /** Overlay view: several curves on one chart, each scaled to 0–100 of its own range (real values in the tooltip). */

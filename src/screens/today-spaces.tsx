@@ -11,7 +11,7 @@ import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
 import { stageLine } from "@/app/labels"
 import { stageOn, todayIso, daysBetween } from "@/calc/stage"
-import { buildDailyDigest, digestWeek, spaceContext, type DigestData } from "@/calc/digest"
+import { buildDailyDigest, changedDigestDocs, digestKey, digestWeek, spaceContext, type DigestData } from "@/calc/digest"
 import { status } from "@/calc/advice"
 import { groupBySite } from "@/model/grow-ops"
 import type { Space } from "@/model/grow"
@@ -27,20 +27,52 @@ function useDigestData(): DigestData {
   )
 }
 
-/** Keeps a week of digests current for the morning task (Claude version only): written when the text changes. */
+/** Quiet time after the last change before the week of digests is computed and written. */
+const DIGEST_DELAY_MS = 4000
+
+/**
+ * Keeps a week of digests current for the morning task (Claude version only). Grouped (lot 10d): computed and written
+ * once things settle (4 s after the last entry, or when the app goes to the background / Today is left), and only the
+ * docs whose text changed, in one batch. Old dated docs are pruned once a day.
+ */
 function usePersistDigest(data: DigestData, lang: "fr" | "en") {
   const { storeKind, saveDigestWeek } = useGrow()
-  const last = useRef("")
+  const written = useRef(new Map<string, string>())
+  const prunedOn = useRef("")
+  const pending = useRef<(() => void) | null>(null)
   useEffect(() => {
     if (storeKind !== "artifact") return
-    const week = digestWeek(data, todayIso(), lang)
-    const key = week.map((d) => d.text).join("\u0000")
-    if (last.current === key) return
-    last.current = key
-    void saveDigestWeek(week).catch(() => {
-      last.current = ""
-    })
+    const run = () => {
+      pending.current = null
+      const today = todayIso()
+      const week = digestWeek(data, today, lang)
+      const only = changedDigestDocs(week, written.current)
+      const prune = prunedOn.current !== today
+      if (!only.length && !prune) return
+      for (const [p, d] of only) written.current.set(p, digestKey(d))
+      prunedOn.current = today
+      void saveDigestWeek(week, { only, prune }).catch(() => {
+        for (const [p] of only) written.current.delete(p)
+        prunedOn.current = ""
+      })
+    }
+    pending.current = run
+    const timer = setTimeout(run, DIGEST_DELAY_MS)
+    return () => {
+      clearTimeout(timer)
+    }
   }, [data, lang, storeKind, saveDigestWeek])
+  // Leaving Today or the app: what is pending is written now.
+  useEffect(() => {
+    const flush = () => {
+      if (document.visibilityState === "hidden") pending.current?.()
+    }
+    document.addEventListener("visibilitychange", flush)
+    return () => {
+      document.removeEventListener("visibilitychange", flush)
+      pending.current?.()
+    }
+  }, [])
 }
 
 export function BonjourCard({ only }: { only?: string }) {

@@ -1,30 +1,51 @@
-// Graphiques (lot 6): choose the curves, one chart per curve (target band + events) or all curves on one chart
-// (each scaled to its own range), compare up to 4 spaces, over 7 days, 30 days or the cycle.
+// Graphiques (lot 6): choose the curves, one chart per curve (target band + events) or all curves of one space on one
+// chart (each scaled to its own range), compare up to 4 spaces, over 7 days, 30 days, the cycle or everything.
 import { useMemo, useState } from "react"
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, XAxis, YAxis } from "recharts"
 import { Card } from "@/components/ui/card"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
-import { Chip, Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
+import { Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { Seg, TagChip } from "@/components/hydro/form"
 import { SpaceDot, spaceColor } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { todayIso } from "@/calc/stage"
-import { buildSeries, chartRows, CURVE_DEFS, CURVES, DEFAULT_CURVES, eventsIn, indexEntries, MAX_SPACES, normalize, periodRange, type CurveId, type Period, type Series } from "@/calc/series"
+import {
+  buildSeries,
+  chartCycle,
+  chartRows,
+  CURVE_DEFS,
+  CURVES,
+  defaultCurves,
+  eventsIn,
+  GAP_DAYS,
+  indexEntries,
+  MAX_SPACES,
+  normalize,
+  periodRange,
+  PERIODS,
+  pieceKeys,
+  seriesStats,
+  type CurveId,
+  type Period,
+  type Series,
+} from "@/calc/series"
+import { drybackMethodOf } from "@/model/entry"
 import type { MessageKey } from "@/i18n/types"
 import type { Space } from "@/model/grow"
 import type { GrowEvent } from "@/model/types"
 
 const STORE = "hydro.charts"
-type Prefs = { curves: CurveId[]; view: "split" | "overlay"; period: Period }
+/** `curves` null: never chosen, the defaults follow the spaces shown (sensor or weighing). */
+type Prefs = { curves: CurveId[] | null; view: "split" | "overlay"; period: Period }
 function loadPrefs(): Prefs {
   try {
     const o = JSON.parse(localStorage.getItem(STORE) ?? "{}")
     const curves = Array.isArray(o.curves) ? o.curves.filter((c: string) => (CURVES as readonly string[]).includes(c)) : []
-    return { curves: curves.length ? curves : DEFAULT_CURVES, view: o.view === "overlay" ? "overlay" : "split", period: ["7", "30", "cycle"].includes(o.period) ? o.period : "7" }
+    return { curves: curves.length ? curves : null, view: o.view === "overlay" ? "overlay" : "split", period: PERIODS.includes(o.period) ? o.period : "7" }
   } catch {
-    return { curves: DEFAULT_CURVES, view: "split", period: "7" }
+    return { curves: null, view: "split", period: "7" }
   }
 }
 function savePrefs(p: Prefs) {
@@ -54,19 +75,29 @@ export function ChartsScreen() {
     return pool.slice(0, MAX_SPACES).map((s) => s.id)
   }
   const [picked, setPicked] = useState<string[] | null>(null)
+  // The space selector at the top wins: choosing another space or room starts the comparison over (lot 10d).
+  const selKey = selection.kind === "space" ? selection.space.id : selection.kind === "site" ? selection.site.id : "all"
+  const [pickedFor, setPickedFor] = useState(selKey)
+  if (pickedFor !== selKey) {
+    setPickedFor(selKey)
+    setPicked(null)
+  }
   const shown: Space[] = (picked ?? initialSpaces()).map((id) => spaces.find((s) => s.id === id)).filter((s): s is Space => !!s)
+  const shownKey = shown.map((s) => s.id).join(",")
+  const curves = prefs.curves ?? defaultCurves(shown.map((s) => drybackMethodOf(s)))
   const today = todayIso()
   const byspace = useMemo(() => indexEntries(all.entries), [all.entries])
-  const shownCycles = shown.map((s) => cycleIn(s.id) ?? cycles.find((c) => c.spaceId === s.id)).filter((c): c is NonNullable<typeof c> => !!c)
-  const range = periodRange(prefs.period, today, shownCycles)
+  // « Cycle » = the cycle running in each space shown, else its latest one (never an old harvested one), lot 10d.
+  const shownCycles = shown.map((s) => chartCycle(s.id, cycles, cycleIn(s.id))).filter((c): c is NonNullable<typeof c> => !!c)
+  const firstDate = shown.map((s) => byspace.get(s.id)?.[0]?.date).filter((d): d is string => !!d).sort()[0]
+  const range = periodRange(prefs.period, today, shownCycles, firstDate)
   const events = eventsIn(all.events, shown.map((s) => s.id), range, shownCycles.map((c) => c.id))
   const series = useMemo(() => {
     const out: Record<string, Series[]> = {}
-    for (const c of prefs.curves)
-      out[c] = shown.map((s) => buildSeries(c, s.id, range, { byspace, mixes: all.mixes, potCount: (cycleIn(s.id) ?? undefined)?.potCount }))
+    for (const c of curves) out[c] = shown.map((s) => buildSeries(c, s.id, range, { byspace, mixes: all.mixes, potCount: (cycleIn(s.id) ?? undefined)?.potCount }))
     return out
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prefs.curves, shown.map((s) => s.id).join(","), range.from, range.to, byspace, all.mixes])
+  }, [curves.join(","), shownKey, range.from, range.to, byspace, all.mixes])
   const curveName = (c: CurveId) => t(`charts.k.${c}` as MessageKey)
   const togglePick = (id: string) => {
     const cur = shown.map((s) => s.id)
@@ -74,10 +105,12 @@ export function ChartsScreen() {
     if (next.length) setPicked(next)
   }
   const toggleCurve = (c: CurveId) => {
-    const next = prefs.curves.includes(c) ? prefs.curves.filter((x) => x !== c) : [...prefs.curves, c]
+    const next = curves.includes(c) ? curves.filter((x) => x !== c) : [...curves, c]
     if (next.length) setPrefs({ curves: CURVES.filter((x) => next.includes(x)) })
   }
-  const hasData = prefs.curves.some((c) => series[c]?.some((s) => s.points.length))
+  const hasData = curves.some((c) => series[c]?.some((s) => s.points.length))
+  const [overlayId, setOverlayId] = useState<string | null>(null)
+  const overlaySpace = shown.find((s) => s.id === overlayId) ?? shown[0]
 
   return (
     <>
@@ -91,13 +124,14 @@ export function ChartsScreen() {
           value={prefs.period}
           onValueChange={(v) => v && setPrefs({ period: v as Period })}
           aria-label={t("charts.period")}
-          className="grid w-full grid-cols-3 rounded-full border border-line bg-surface-2 p-[3px]"
+          className="grid w-full grid-cols-4 rounded-full border border-line bg-surface-2 p-[3px]"
         >
           {(
             [
               ["7", "charts.p7"],
               ["30", "charts.p30"],
               ["cycle", "charts.pCycle"],
+              ["all", "charts.pAll"],
             ] as const
           ).map(([v, k]) => (
             <ToggleGroupItem
@@ -139,7 +173,7 @@ export function ChartsScreen() {
             <div className="mb-1 text-[12px] font-medium text-fg-2">{t("charts.curves")}</div>
             <div className="flex flex-wrap gap-1.5" id="ch-curves">
               {CURVES.map((c) => (
-                <TagChip key={c} label={curveName(c)} on={prefs.curves.includes(c)} onClick={() => toggleCurve(c)} />
+                <TagChip key={c} label={curveName(c)} on={curves.includes(c)} onClick={() => toggleCurve(c)} />
               ))}
             </div>
           </div>
@@ -165,7 +199,7 @@ export function ChartsScreen() {
       )}
 
       {hasData && prefs.view === "split" &&
-        prefs.curves.map((c, i) => (
+        curves.map((c, i) => (
           <Reveal key={c} i={2 + i} className="mb-3">
             <Card className="gap-2 px-3 pb-2" data-curve={c}>
               <div className="flex items-center justify-between gap-2 px-1">
@@ -173,7 +207,7 @@ export function ChartsScreen() {
                 <span className="text-[11px] text-fg-3">{CURVE_DEFS[c].unit}</span>
               </div>
               {series[c].some((s) => s.points.length) ? (
-                <CurveChart series={series[c]} spaces={shown} events={events} curve={c} />
+                <CurveChart series={series[c]} spaces={shown} events={events} curve={c} name={curveName(c)} />
               ) : (
                 <p className="px-1 pb-2 text-[12.5px] text-fg-3">{t("charts.noData")}</p>
               )}
@@ -181,11 +215,27 @@ export function ChartsScreen() {
           </Reveal>
         ))}
 
-      {hasData && prefs.view === "overlay" && (
+      {hasData && prefs.view === "overlay" && overlaySpace && (
         <Reveal i={2} className="mb-3">
           <Card className="gap-2 px-3 pb-2">
             <Label className="px-1">{t("charts.overlayTitle")}</Label>
-            <OverlayChart series={prefs.curves.flatMap((c) => series[c])} spaces={shown} events={events} curveName={curveName} />
+            {shown.length > 1 && (
+              <>
+                <p className="px-1 text-[11.5px] text-fg-3">{t("charts.overlayOne")}</p>
+                <Seg<string>
+                  label={t("charts.overlaySpace")}
+                  value={overlaySpace.id}
+                  onChange={setOverlayId}
+                  options={shown.map((s) => ({ value: s.id, label: s.name }))}
+                />
+              </>
+            )}
+            <OverlayChart
+              series={curves.flatMap((c) => series[c].filter((x) => x.spaceId === overlaySpace.id))}
+              space={overlaySpace}
+              events={events.filter((e) => !e.spaceId || e.spaceId === overlaySpace.id)}
+              curveName={curveName}
+            />
             <p className="px-1 text-[11px] text-fg-3">{t("charts.overlayNote")}</p>
           </Card>
         </Reveal>
@@ -206,19 +256,36 @@ export function ChartsScreen() {
           </Card>
         </Reveal>
       )}
-      <p className="text-center text-[10.5px] text-fg-3">{t("charts.foot", { n: num(MAX_SPACES) })}</p>
+      <p className="text-center text-[10.5px] text-fg-3">
+        {t("charts.foot", { n: num(MAX_SPACES) })} {t("charts.gapNote", { n: GAP_DAYS })}
+      </p>
     </>
   )
 }
 
 const axisTick = { fontSize: 10.5 }
 
-function CurveChart({ series, spaces, events, curve }: { series: Series[]; spaces: Space[]; events: GrowEvent[]; curve: CurveId }) {
+/** Name and summary of a chart for screen readers (the drawing itself says nothing), lot 10d. */
+function useSummary() {
   const { t, num, dm } = useSettings()
+  return (s: Series, curve: string, space: string) => {
+    const st = seriesStats(s.points)
+    const def = CURVE_DEFS[s.curve]
+    if (!st) return t("charts.summaryNone", { curve, space })
+    const f = (v: number) => num(v, def.decimals)
+    return t("charts.summary", { curve, space, n: st.n, from: dm(st.from), to: dm(st.to), last: f(st.last), unit: def.unit, min: f(st.min), max: f(st.max) })
+  }
+}
+
+function CurveChart({ series, spaces, events, curve, name }: { series: Series[]; spaces: Space[]; events: GrowEvent[]; curve: CurveId; name: string }) {
+  const { t, num, dm } = useSettings()
+  const summary = useSummary()
   const rows = useMemo(() => chartRows(series), [series])
   const def = CURVE_DEFS[curve]
   const config = Object.fromEntries(spaces.map((s) => [`s:${s.id}`, { label: s.name, color: spaceColor(s.color) }]))
+  const label = series.map((s) => summary(s, name, spaces.find((x) => x.id === s.spaceId)?.name ?? "")).join(" ")
   return (
+    <div role="img" aria-label={label}>
     <ChartContainer config={config} className="aspect-auto h-[170px] w-full">
       <ComposedChart data={rows} margin={{ top: 6, right: 6, left: -12, bottom: 0 }}>
         <CartesianGrid vertical={false} strokeDasharray="3 5" stroke="var(--line)" />
@@ -228,9 +295,12 @@ function CurveChart({ series, spaces, events, curve }: { series: Series[]; space
         {events.map((e) => (
           <ReferenceLine key={e.id} x={e.date} stroke="var(--fg-3)" strokeDasharray="2 4" strokeOpacity={0.7} />
         ))}
-        {spaces.map((s) => (
-          <Line key={s.id} dataKey={`s:${s.id}`} name={s.name} type="monotone" stroke={spaceColor(s.color)} strokeWidth={2} dot={rows.length < 20 ? { r: 2.5 } : false} connectNulls isAnimationActive={false} />
-        ))}
+        {/* One line per piece: a gap of more than GAP_DAYS is left blank. */}
+        {spaces.flatMap((s) =>
+          pieceKeys(series.find((x) => x.spaceId === s.id)?.points ?? [], `s:${s.id}`).map((k) => (
+            <Line key={k} dataKey={k} name={s.name} type="monotone" stroke={spaceColor(s.color)} strokeWidth={2} dot={rows.length < 20 ? { r: 2.5 } : false} connectNulls isAnimationActive={false} />
+          )),
+        )}
         <ChartTooltip
           content={({ active, payload, label }) =>
             active && payload?.length ? (
@@ -255,79 +325,73 @@ function CurveChart({ series, spaces, events, curve }: { series: Series[]; space
         />
       </ComposedChart>
     </ChartContainer>
+    </div>
   )
 }
 
-function OverlayChart({ series, spaces, events, curveName }: { series: Series[]; spaces: Space[]; events: GrowEvent[]; curveName: (c: CurveId) => string }) {
+function OverlayChart({ series, space, events, curveName }: { series: Series[]; space: Space; events: GrowEvent[]; curveName: (c: CurveId) => string }) {
   const { num, dm } = useSettings()
+  const summary = useSummary()
   const norm = useMemo(() => normalize(series), [series])
-  const curves = [...new Set(series.map((s) => s.curve))]
-  const key = (s: Series) => `${s.curve}|${s.spaceId}`
-  const rows = useMemo(() => {
-    const m = new Map<string, Record<string, number | string>>()
-    for (const n of norm)
-      for (const p of n.series.points) {
-        let r = m.get(p.date)
-        if (!r) m.set(p.date, (r = { date: p.date }))
-        r[key(n.series)] = p.v
-      }
-    return [...m.values()].sort((a, b) => String(a.date).localeCompare(String(b.date)))
-  }, [norm])
+  const curves = series.map((s) => s.curve)
+  const rows = useMemo(() => chartRows(norm.map((n) => n.series), (s) => s.curve), [norm])
   const real = (s: Series, date: string) => s.points.find((p) => p.date === date)?.v
-  const colorOf = (s: Series) => (spaces.length > 1 ? spaceColor(spaces.find((x) => x.id === s.spaceId)?.color) : `var(--space-${PALETTE[curves.indexOf(s.curve) % PALETTE.length]})`)
-  const dashOf = (s: Series) => (spaces.length > 1 ? ["0", "6 4", "2 4", "10 4"][curves.indexOf(s.curve) % 4] : "0")
+  // One space: one distinct colour per curve, solid lines (dashes were unreadable).
+  const colorOf = (s: Series) => `var(--space-${PALETTE[curves.indexOf(s.curve) % PALETTE.length]})`
+  const label = series.map((s) => summary(s, curveName(s.curve), space.name)).join(" ")
   return (
     <>
-      <ChartContainer config={{}} className="aspect-auto h-[220px] w-full">
-        <ComposedChart data={rows} margin={{ top: 6, right: 6, left: 6, bottom: 0 }}>
-          <CartesianGrid vertical={false} strokeDasharray="3 5" stroke="var(--line)" />
-          <XAxis dataKey="date" tickFormatter={(d: string) => dm(d)} tick={axisTick} tickLine={false} axisLine={false} minTickGap={24} />
-          <YAxis hide domain={[0, 100]} />
-          {events.map((e) => (
-            <ReferenceLine key={e.id} x={e.date} stroke="var(--fg-3)" strokeDasharray="2 4" strokeOpacity={0.7} />
-          ))}
-          {series.map((s) => (
-            <Line key={key(s)} dataKey={key(s)} type="monotone" stroke={colorOf(s)} strokeDasharray={dashOf(s)} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
-          ))}
-          <ChartTooltip
-            content={({ active, label }) =>
-              active ? (
-                <div className="rounded-md border border-line bg-surface px-2.5 py-1.5 text-[11.5px] shadow-card">
-                  <div className="mb-0.5 font-semibold">{dm(String(label))}</div>
-                  {series.map((s) => {
-                    const v = real(s, String(label))
-                    return v == null ? null : (
-                      <div key={key(s)} className="flex items-center gap-1.5">
-                        <span className="h-[3px] w-3 rounded-full" style={{ background: colorOf(s) }} />
-                        {curveName(s.curve)}
-                        {spaces.length > 1 ? ` · ${spaces.find((x) => x.id === s.spaceId)?.name}` : ""} : <b className="tabular">{num(v, CURVE_DEFS[s.curve].decimals)}</b> {CURVE_DEFS[s.curve].unit}
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : null
-            }
-          />
-        </ComposedChart>
-      </ChartContainer>
-      <div className="flex flex-wrap gap-x-3 gap-y-1 px-1">
+      <div role="img" aria-label={label}>
+        <ChartContainer config={{}} className="aspect-auto h-[240px] w-full">
+          <ComposedChart data={rows} margin={{ top: 6, right: 6, left: 6, bottom: 0 }}>
+            <CartesianGrid vertical={false} strokeDasharray="3 5" stroke="var(--line)" />
+            <XAxis dataKey="date" tickFormatter={(d: string) => dm(d)} tick={axisTick} tickLine={false} axisLine={false} minTickGap={24} />
+            <YAxis hide domain={[0, 100]} />
+            {events.map((e) => (
+              <ReferenceLine key={e.id} x={e.date} stroke="var(--fg-3)" strokeDasharray="2 4" strokeOpacity={0.7} />
+            ))}
+            {norm.flatMap((n) =>
+              pieceKeys(n.series.points, n.series.curve).map((k) => (
+                <Line key={k} dataKey={k} type="monotone" stroke={colorOf(n.series)} strokeWidth={2.5} dot={rows.length < 20 ? { r: 3 } : false} connectNulls isAnimationActive={false} />
+              )),
+            )}
+            <ChartTooltip
+              content={({ active, label }) =>
+                active ? (
+                  <div className="rounded-md border border-line bg-surface px-2.5 py-1.5 text-[11.5px] shadow-card">
+                    <div className="mb-0.5 font-semibold">{dm(String(label))}</div>
+                    {series.map((s) => {
+                      const v = real(s, String(label))
+                      return v == null ? null : (
+                        <div key={s.curve} className="flex items-center gap-1.5">
+                          <span className="h-[3px] w-3 rounded-full" style={{ background: colorOf(s) }} />
+                          {curveName(s.curve)} : <b className="tabular">{num(v, CURVE_DEFS[s.curve].decimals)}</b> {CURVE_DEFS[s.curve].unit}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : null
+              }
+            />
+          </ComposedChart>
+        </ChartContainer>
+      </div>
+      <div className="flex flex-col gap-1 px-1">
         {series
           .filter((s) => s.points.length)
           .map((s) => {
-            const n = norm.find((x) => key(x.series) === key(s))!
+            const n = norm.find((x) => x.series.curve === s.curve)!
             return (
-              <span key={key(s)} className="flex items-center gap-1.5 text-[11px] text-fg-2">
-                <span className="h-[3px] w-3.5 rounded-full" style={{ background: colorOf(s) }} />
-                {curveName(s.curve)}
-                {spaces.length > 1 ? ` · ${spaces.find((x) => x.id === s.spaceId)?.name}` : ""}
+              <span key={s.curve} className="flex items-center gap-2 text-[12px] text-fg-2">
+                <span className="h-1 w-5 shrink-0 rounded-full" style={{ background: colorOf(s) }} />
+                <b className="font-semibold text-fg">{curveName(s.curve)}</b>
                 <span className="text-fg-3">
-                  ({num(n.min, CURVE_DEFS[s.curve].decimals)}–{num(n.max, CURVE_DEFS[s.curve].decimals)} {CURVE_DEFS[s.curve].unit})
+                  {num(n.min, CURVE_DEFS[s.curve].decimals)}–{num(n.max, CURVE_DEFS[s.curve].decimals)} {CURVE_DEFS[s.curve].unit}
                 </span>
               </span>
             )
           })}
       </div>
-      <Chip>{spaces.map((s) => s.name).join(" · ")}</Chip>
     </>
   )
 }

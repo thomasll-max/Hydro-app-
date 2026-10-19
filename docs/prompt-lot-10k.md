@@ -21,6 +21,10 @@ Constat de Thomas après 10j : « toujours un effet plein d'infos éparpillées,
 4. **Trois tailles de texte** par écran (titre Fraunces, texte, petit/mono). Plus d'espace entre les sections (≈ 30–36 px), presque plus de traits.
 5. **Pas de jargon dans les listes** : le jargon reste à l'intérieur des outils, avec le glossaire.
 6. **Lignes de graphique honnêtes** : segments droits, pas de lissage qui invente des creux.
+7. **Typographie droite** (retour de Thomas sur les planches : les grands titres en Fraunces « mous » ne lui plaisent pas, par exemple « Végé S6 ») :
+   - **Fraunces seulement dans le logo** « hydro. » (et l'écran de démarrage). Tous les titres d'écran, de section, de carte et « Bonjour Thomas. » passent en **Figtree 700**, droit, interlettrage −0,015 em (titre d'écran ≈ 26 px, titre de section ≈ 19 px, titre de carte ≈ 17 px) ;
+   - **JetBrains Mono seulement pour les chiffres** (valeurs, dates, heures). Les phrases et libellés (« 5 saisies · dryback … ») sont en Figtree ; seuls les nombres dedans sont en mono ;
+   - vérifier que rien d'autre n'utilise encore Fraunces (`font-display` ou équivalent) en dehors du logo.
 
 ---
 

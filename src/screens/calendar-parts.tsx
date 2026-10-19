@@ -3,7 +3,6 @@
 import { useMemo } from "react"
 import { Clock3 } from "lucide-react"
 import { toast } from "sonner"
-import { Card } from "@/components/ui/card"
 import { Label } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { CheckBox } from "@/components/hydro/form"
@@ -134,7 +133,7 @@ export function ItemRow({ i, showWhen = true, onOpen }: { i: CalItem; showWhen?:
   )
 }
 
-/** Today's "À venir": overdue + next 7 days, for the shown spaces. */
+/** Today's « À faire »: overdue + next 7 days, for the shown spaces. A section with its drawing, no frame (lot 10j). */
 export function UpcomingCard({ spaceIds, max = 4 }: { spaceIds: Set<string> | null; max?: number }) {
   const { t } = useSettings()
   const data = useCalendarData()
@@ -146,9 +145,11 @@ export function UpcomingCard({ spaceIds, max = 4 }: { spaceIds: Set<string> | nu
     [data, idsKey],
   )
   return (
-    <Card>
+    <section className="flex flex-col" id="upcoming">
       <div className="flex items-center justify-between gap-2">
-        <Label emoji="bell">{t("today.upcoming")}</Label>
+        <Label emoji="bell" mark>
+          {t("today.upcoming")}
+        </Label>
         <button
           type="button"
           onClick={() => ed.openReminder({ spaceId: spaceIds?.size === 1 ? [...spaceIds][0] : undefined })}
@@ -160,16 +161,16 @@ export function UpcomingCard({ spaceIds, max = 4 }: { spaceIds: Set<string> | nu
       {items.length === 0 ? (
         <p className="mt-2 text-[0.8125rem] text-fg-3">{t("today.noReminders")}</p>
       ) : (
-        <ul className="mt-1">
+        <ul className="mt-1.5 border-b border-line">
           {items.slice(0, max).map((i) => (
             <ItemRow key={i.id} i={i} />
           ))}
         </ul>
       )}
       {/* The Calendar has no tab since lot 10h: it opens from here, over Aujourd'hui. */}
-      <button type="button" onClick={() => navigate({ tab: "calendar" }, { push: true })} className={cn("self-start", tertiary)} id="all-calendar">
+      <button type="button" onClick={() => navigate({ tab: "calendar" }, { push: true })} className={cn("mt-2 self-start", tertiary)} id="all-calendar">
         {t("week.allCalendar")}
       </button>
-    </Card>
+    </section>
   )
 }

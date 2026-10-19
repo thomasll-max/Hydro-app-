@@ -1,7 +1,7 @@
 // Outils → Premiers pas (lot 8c) : ce qu'il faut rentrer (checklist cochée d'après les données, chaque ligne ouvre le
 // bon endroit), puis comment marche l'app au quotidien. A progress card on Today leads here until it is done or hidden.
 import { useMemo, useState } from "react"
-import { Check, ChevronRight, X } from "lucide-react"
+import { Check, ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Emoji } from "@/components/hydro/emoji"
@@ -19,7 +19,7 @@ import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { iconButton, tertiary } from "@/components/hydro/styles"
+import { tertiary } from "@/components/hydro/styles"
 
 export function useStartChecklist(): StartItem[] {
   const { spaces, cycles, equipment, assignments, all } = useGrow()
@@ -175,42 +175,5 @@ function StartToday({ cycleId }: { cycleId: string }) {
     <Button onClick={go} disabled={busy} className="mb-2.5 ml-9 h-11 px-4 text-[0.84375rem]" id="start-today">
       {t("start.startToday")}
     </Button>
-  )
-}
-
-/** Aujourd'hui : progress and the next thing to enter. Gone once everything is done, or when hidden. */
-export function StartCard() {
-  const { t } = useSettings()
-  const items = useStartChecklist()
-  const [hidden, setHidden] = useState(startHidden)
-  const { done, total, next } = startProgress(items)
-  if (hidden || !next) return null
-  return (
-    <Card framed className="mb-3 gap-2.5 px-4 py-3.5" id="start-card">
-      <div className="flex items-start gap-3">
-        <Emoji name="sprout" size={36} />
-        <div className="min-w-0 flex-1">
-          <b className="block text-[0.90625rem] font-semibold">{t("start.cardTitle", { done, total })}</b>
-          <span className="block text-[0.78125rem] leading-snug text-fg-2">{t("start.cardNext", { what: t(`start.i.${next.id}` as MessageKey) })}</span>
-        </div>
-        <button
-          type="button"
-          aria-label={t("start.hide")}
-          onClick={() => {
-            setStartHidden(true)
-            setHidden(true)
-          }}
-          className={cn("-mt-1 -mr-1.5", iconButton)}
-        >
-          <X className="size-4" />
-        </button>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-[3px] bg-track" aria-hidden="true">
-        <div className="h-full rounded-[3px] bg-leaf" style={{ width: `${(done / total) * 100}%` }} />
-      </div>
-      <a href="#tools/start" className={cn(tertiary, "self-start")}>
-        {t("start.open")}
-      </a>
-    </Card>
   )
 }

@@ -57,7 +57,9 @@ export function StepCard({ cycle }: { cycle: Cycle }) {
 
   return (
     <Card className="gap-2" id="step-card">
-      <Label emoji={step === "harvest" ? "blossom" : step === "flip" ? "bulb" : "herb"}>{t("step.next")}</Label>
+      <Label emoji={step === "harvest" ? "scissors" : step === "flip" ? "moon" : "herb"} mark>
+        {t("step.next")}
+      </Label>
       <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t(DESC[step])}</p>
       {expected && (
         <p className="text-[0.78125rem] font-medium text-fg-2" id="step-expected">
@@ -88,7 +90,9 @@ export function LastHarvest({ spaceId }: { spaceId?: string }) {
   if (!last || daysBetween(last.harvestDate!, todayIso()) > 30) return null
   return (
     <Card className="gap-2" id="last-harvest">
-      <Label emoji="blossom">{t("step.lastHarvest", { name: last.name, date: dm(last.harvestDate!) })}</Label>
+      <Label emoji="scissors" mark>
+        {t("step.lastHarvest", { name: last.name, date: dm(last.harvestDate!) })}
+      </Label>
       <Button variant="outline" className="h-11 self-start" onClick={() => ed.openCycle({ harvestOnly: true, cycleId: last.id })}>
         {t("step.harvestDetails")}
       </Button>

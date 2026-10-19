@@ -3,23 +3,29 @@ import { cn } from "@/lib/utils"
 import type { Status } from "@/lib/geometry"
 import type { EmojiName } from "@/assets/emoji"
 import { Emoji } from "./emoji"
+import { SpaceTile } from "./space-pill"
+import type { SpaceColor } from "@/model/grow"
 
 /**
  * Screen title. Since lot 10f2 there is no illustration next to it (the 3D emojis stay for the assistant, empty
- * states and rare moments): `emoji` is kept by the call sites but no longer drawn.
+ * states and rare moments): `emoji` is kept by the call sites but no longer drawn. A space's view shows its tinted
+ * square with the stage drawing (`tile`, lot 10j).
  */
 export function ScreenHero({
   eyebrow,
   title,
+  tile,
   children,
 }: {
   emoji?: EmojiName
   eyebrow?: string
   title: string
+  tile?: { color?: SpaceColor; emoji: EmojiName }
   children?: ReactNode
 }) {
   return (
     <div className="mt-2 mb-4 flex items-center gap-3.5">
+      {tile && <SpaceTile color={tile.color} emoji={tile.emoji} size={52} />}
       <div className="min-w-0">
         {eyebrow && <div className="eyebrow">{eyebrow}</div>}
         <h1 className="display mt-0.5 text-[1.75rem] leading-[1.1] [overflow-wrap:anywhere]">{title}</h1>
@@ -52,11 +58,37 @@ export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "prima
 }
 
 /**
- * Section title (lot 10h): Fraunces in normal case, no more small capitals with an icon. `emoji` is kept by the call
- * sites but no longer drawn.
+ * Section title (lot 10h): Fraunces in normal case, no small capitals. `emoji` is drawn only with `mark` (lot 10j: the
+ * small drawings come back as landmarks on Aujourd'hui and the main screens; Outils keeps plain titles).
  */
-export function Label({ children, className }: { emoji?: EmojiName; children: ReactNode; className?: string }) {
-  return <h2 className={cn("display text-[1.25rem] leading-tight font-semibold", className)}>{children}</h2>
+export function Label({ emoji, mark, children, className }: { emoji?: EmojiName; mark?: boolean; children: ReactNode; className?: string }) {
+  const title = <h2 className={cn("display text-[1.25rem] leading-tight font-semibold", className)}>{children}</h2>
+  if (!mark || !emoji) return title
+  return (
+    <div className="flex min-w-0 items-center gap-2.5">
+      <Emoji name={emoji} size={24} />
+      {title}
+    </div>
+  )
+}
+
+/**
+ * A pill that says a state (lot 10j): the stage of a space (« Végé », « Floraison », « Séchage », « Vide »). Outlined,
+ * the word in the stage's colour.
+ */
+export function StatePill({ tone = "neutral", children }: { tone?: "neutral" | "leaf" | "flower"; children: ReactNode }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-[26px] shrink-0 items-center rounded-full border px-2.5 text-[0.75rem] font-semibold whitespace-nowrap",
+        tone === "neutral" && "border-line text-fg-2",
+        tone === "leaf" && "border-[color-mix(in_oklab,var(--leaf-ink)_45%,transparent)] text-leaf-ink",
+        tone === "flower" && "border-[color-mix(in_oklab,var(--phase-3)_45%,transparent)] text-phase-3",
+      )}
+    >
+      {children}
+    </span>
+  )
 }
 
 /**

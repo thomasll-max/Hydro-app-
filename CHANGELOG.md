@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 10j1 — Aujourd'hui plus clair (19/10/2026)
+Constat de Thomas après 10h : « on a perdu fort en clarté ». Les petits dessins et les cadres reviennent là où ils aident.
+- **Le matin en lignes courtes** : « Bonjour Thomas. », une petite ligne « 3 espaces · dernière saisie hier », puis une ligne par idée avec un petit dessin (stade, arrosage, réservoir, climat, rappels) et la valeur à droite (« 2,3 L/pot », « ≈ 2 j », « VPD 0,96 »). Ce qui demande l'attention : seule la valeur passe en orange. Un espace vide tient en une ligne discrète. Mêmes informations qu'avant ; le texte envoyé par la tâche du matin ne change pas.
+- **Un cadre par espace** : chaque espace redevient une carte, sur un seul niveau, avec un carré teinté de sa couleur et le dessin de son stade (🌱 semis, 🌿 végé, 🌸 floraison, ✂️ séchage, 🪴 vide), son nom, « Cycle 2 · Végé S6 · J41 », la pilule du stade, quatre relevés avec leur petit dessin et la barre de cible, la dernière saisie et l'âge du bidon.
+- **Le bon ordre** : la semaine, une seule ligne fine pour « Premiers pas » et la sauvegarde (« Premiers pas 6/7 : ta première sauvegarde » · Sauvegarder · ×), Bonjour, À faire, Espaces. Le titre « Tous les espaces » disparaît : l'onglet actif le dit déjà.
+- Les titres de section d'Aujourd'hui retrouvent leur dessin (🔔 À faire, 🪴 Espaces, 📈 Relevés, 💧 Arrosage…). La vue d'un espace montre son carré teinté à côté du titre et suit le même ordre.
+- 328 tests ; `scripts/e2e-10j.py`.
+
 ## Lot 10i — Allemand (19/10/2026)
 - **Troisième langue** : l'app existe en allemand (tutoiement « du »), à côté du français et de l'anglais. Sélecteur FR / EN / DE dans la barre du haut, les Réglages et l'assistant de démarrage. Un téléphone réglé en allemand ouvre l'app en allemand au premier lancement.
 - Vocabulaire de culture courant (Blüte, Wachstum, Steckling, Runoff, Dryback…) ; les noms de produits (Pro Grow, Pro Bloom, Pro Core, Fade, Cleanse, Balance, IPW, Proper, Great White) et les sources (« Handbook p. 37 ») ne sont pas traduits.

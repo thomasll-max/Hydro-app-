@@ -5,6 +5,8 @@ import { status as statusOf, type Status } from "@/calc/advice"
 import type { Target } from "@/calc/targets"
 import { useSettings } from "@/app/settings-context"
 import { InfoTip, type Term } from "./info"
+import { Emoji } from "./emoji"
+import type { EmojiName } from "@/assets/emoji"
 
 /** Where the bar starts and ends: the target with as much room on each side, widened to today's value. */
 export function readingScale(value: number | undefined, target?: Pick<Target, "lo" | "hi">, max?: number): [number, number] | null {
@@ -39,6 +41,8 @@ export function Reading({
   note,
   children,
   id,
+  emoji,
+  compact,
 }: {
   label: string
   term?: Term
@@ -55,24 +59,29 @@ export function Reading({
   /** Shown instead of the number (temperature / RH). */
   children?: ReactNode
   id?: string
+  /** A small drawing before the label (lot 10j, the cards of the spaces). */
+  emoji?: EmojiName
+  /** The cards of the spaces (lot 10j): a smaller value, the bar kept, no line under it. */
+  compact?: boolean
 }) {
   const { t, num, range } = useSettings()
   const st: Status | undefined = value != null && target ? statusOf(value, target, metric) : undefined
   const scale = value != null || target ? readingScale(value, target, max) : null
   return (
     <div className="min-w-0" id={id} data-status={st}>
-      <div className="flex min-w-0 items-center gap-1 text-[0.75rem] text-fg-3">
+      <div className={cn("flex min-w-0 items-center gap-1 text-[0.75rem]", compact ? "text-fg-2" : "text-fg-3")}>
+        {emoji && <Emoji name={emoji} size={15} className="mr-0.5" />}
         <span className="min-w-0 truncate">{label}</span>
         {term && <InfoTip term={term} />}
       </div>
       <div className="mt-0.5 flex min-w-0 items-baseline gap-1">
-        <span className={cn("truncate font-mono text-[1.875rem] leading-none font-medium tracking-[-0.02em] tabular-nums", st === "warn" && "text-warn", st === "bad" && "text-bad", value == null && !children && "text-fg-3")}>
+        <span className={cn("truncate font-mono leading-none font-medium tracking-[-0.02em] tabular-nums", compact ? "text-[1.375rem]" : "text-[1.875rem]", st === "warn" && "text-warn", st === "bad" && "text-bad", value == null && !children && "text-fg-3")}>
           {children ?? (value != null ? num(value, decimals) : "—")}
         </span>
         {unit && value != null && <span className="font-mono text-[0.75rem] text-fg-3">{unit}</span>}
       </div>
       {scale && (
-        <div className="relative mt-2 h-1.5 rounded-[3px] bg-track" aria-hidden="true">
+        <div className={cn("relative h-1.5 rounded-[3px] bg-track", compact ? "mt-1.5" : "mt-2")} aria-hidden="true">
           {target && (
             <span
               data-zone
@@ -89,9 +98,11 @@ export function Reading({
           )}
         </div>
       )}
-      <div className="mt-1.5 truncate font-mono text-[0.75rem] text-fg-3">
-        {target ? `${t("today.target")} ${range(target.lo, target.hi, decimals)}${unit ? ` ${unit}` : ""}` : (note ?? "")}
-      </div>
+      {!compact && (
+        <div className="mt-1.5 truncate font-mono text-[0.75rem] text-fg-3">
+          {target ? `${t("today.target")} ${range(target.lo, target.hi, decimals)}${unit ? ` ${unit}` : ""}` : (note ?? "")}
+        </div>
+      )}
     </div>
   )
 }

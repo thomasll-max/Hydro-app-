@@ -52,8 +52,8 @@ describe("lot 10i — allemand", () => {
     expect(Object.keys(today.texts!).sort()).toEqual(["de", "en", "fr"])
     expect(today.texts!.fr).toBe(buildDailyDigest(data, "2026-10-19", "fr").text)
     expect(today.texts!.de).toMatch(/^Guten Morgen · 19\.10\./)
-    const line = buildDailyDigest(data, "2026-10-19", "de", "2026-10-19", { prose: true }).spaces.find((x) => x.spaceId === FLOWER_ID)!.lines[0]
+    const line = buildDailyDigest(data, "2026-10-19", "de", "2026-10-19", { rows: true }).spaces.find((x) => x.spaceId === FLOWER_ID)!.lines[0]
     expect(line.text).toMatch(/Blüte W9 · Reife/)
-    expect(line.prose).toMatch(/in Phase Blüte W9 · Reife$/)
+    expect(line.row?.note).toBe("Blüte W9 · Reife")
   })
 })

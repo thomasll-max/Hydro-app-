@@ -127,17 +127,16 @@ describe("lot 10h2 — écrans « instrument »", () => {
   const cycle = { ...s.cycles[0], spaceId: FLOWER_ID, germinationDate: "2026-07-01", vegDate: "2026-07-15", flipDate: "2026-08-24", flowerWeeks: 9 }
   const data = { grow: s.grow, spaces: s.spaces, cycles: [cycle], entries: [], mixes: [], events: [], equipment: s.equipment, assignments: s.assignments, customProducts: s.customProducts, reminders: [] }
 
-  it("carte du matin en phrases : mêmes informations, le texte envoyé par la tâche du matin ne change pas", () => {
+  it("carte du matin (en lignes depuis le lot 10j) : mêmes informations, le texte envoyé par la tâche du matin ne change pas", () => {
     const plain = buildDailyDigest(data, "2026-10-19", "fr")
-    const prose = buildDailyDigest(data, "2026-10-19", "fr", "2026-10-19", { prose: true })
-    expect(prose.text).toBe(plain.text)
-    expect(plain.spaces.flatMap((x) => x.lines).some((l) => l.prose)).toBe(false)
-    const lines = prose.spaces.find((x) => x.spaceId === FLOWER_ID)!.lines
-    expect(lines.every((l) => l.prose)).toBe(true)
+    const rows = buildDailyDigest(data, "2026-10-19", "fr", "2026-10-19", { rows: true })
+    expect(rows.text).toBe(plain.text)
+    expect(plain.spaces.flatMap((x) => x.lines).some((l) => l.row)).toBe(false)
+    const lines = rows.spaces.find((x) => x.spaceId === FLOWER_ID)!.lines
     expect(lines.map((l) => l.kind)).toEqual(plain.spaces.find((x) => x.spaceId === FLOWER_ID)!.lines.map((l) => l.kind))
-    expect(lines[0].prose).toMatch(/^Cycle 1 en floraison S9 · finition$/)
-    // The digest docs written for the morning task never carry the sentences.
-    expect(digestWeek(data, "2026-10-19", "fr").flatMap((d) => d.spaces.flatMap((x) => x.lines)).some((l) => l.prose)).toBe(false)
+    expect(lines[0].row).toMatchObject({ icon: "blossom", text: "Cycle 1", note: "Floraison S9 · finition" })
+    // The digest docs written for the morning task never carry the rows.
+    expect(digestWeek(data, "2026-10-19", "fr").flatMap((d) => d.spaces.flatMap((x) => x.lines)).some((l) => l.row)).toBe(false)
   })
 
   it("« Bonjour Thomas. » : le prénom des Réglages, sinon celui de « Grow de … », sinon « Bonjour. »", () => {
@@ -147,7 +146,7 @@ describe("lot 10h2 — écrans « instrument »", () => {
     expect(ownerName({ name: "Sam's grow" })).toBe("Sam")
     expect(ownerName({ name: "Mon grow", ownerName: " Léa " })).toBe("Léa")
     expect(ownerName({ name: "La tente du garage" })).toBeUndefined()
-    expect(translate("fr", "prose.hello", { name: "Thomas" })).toBe("Bonjour Thomas.")
+    expect(translate("fr", "row.hello", { name: "Thomas" })).toBe("Bonjour Thomas.")
     // Fraunces 500 is loaded for it (upright, Thomas's choice).
     expect(read("index.html")).toMatch(/Fraunces:opsz,wght,SOFT@9\.\.144,500\.\.700,100/)
   })
@@ -170,11 +169,11 @@ describe("lot 10h2 — écrans « instrument »", () => {
     ])
   })
 
-  it("sections sans cadre (trait fin et titre Fraunces), le cadre seulement pour « Premiers pas »", () => {
+  it("sections sans cadre (trait fin et titre Fraunces), le cadre pour ce qui est à part (lot 10j : les espaces)", () => {
     const card = read("src/components/ui/card.tsx")
     expect(card).toMatch(/border-t border-line pt-4/)
     expect(read("src/components/hydro/primitives.tsx")).toMatch(/<h2 className=\{cn\("display text-\[1\.25rem\]/)
-    expect(read("src/screens/tools/start.tsx")).toMatch(/<Card framed/)
+    expect(read("src/screens/today-spaces.tsx")).toMatch(/<Card framed/)
     expect(read("src/index.css")).not.toMatch(/text-transform: uppercase/)
   })
 })

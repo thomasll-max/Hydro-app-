@@ -10,18 +10,16 @@ import { Chip, Chips, Label, Notice, Reveal, ScreenHero, SourceNote } from "@/co
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
-import { stageLine } from "@/app/labels"
+import { stageEmoji, stageLine } from "@/app/labels"
 import { stageOn, todayIso } from "@/calc/stage"
 import { type DayTargets, type Target } from "@/calc/targets"
 import { oneCorrection } from "@/calc/advice"
 import { buildProgram, nextIndex, PHOTOPERIOD, steerStage } from "@/calc/program"
 import { PhaseTag, rowText } from "./tools/irrigation"
-import { UpcomingCard } from "./calendar-parts"
 import { cn } from "@/lib/utils"
 import type { Entry } from "@/model/types"
 import { drybackMethodOf } from "@/model/entry"
-import { BackupReminder } from "./backup-reminder"
-import { StartCard } from "./tools/start"
+import { GuideLine } from "./guide-line"
 import type { MessageKey } from "@/i18n/types"
 import { LastHarvest, StepCard } from "./cycle-steps"
 import { nextStep } from "@/calc/steps"
@@ -66,7 +64,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
   if (!cycle || !s || s.key === "harvested")
     return (
       <>
-        <ScreenHero emoji="sprout" eyebrow={space?.name} title={t("today.emptyTitle")} />
+        <ScreenHero eyebrow={space?.name} title={t("today.emptyTitle")} tile={space ? { color: space.color, emoji: "pottedPlant" } : undefined} />
         {extra}
         <Reveal>
           <Card className="gap-3">
@@ -78,9 +76,6 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
         </Reveal>
         <Reveal i={1} className="mt-3">
           <LastHarvest spaceId={space?.id} />
-        </Reveal>
-        <Reveal i={2} className="mt-3">
-          <UpcomingCard spaceIds={space ? new Set([space.id]) : null} />
         </Reveal>
       </>
     )
@@ -109,7 +104,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
 
   return (
     <>
-      <ScreenHero emoji={s.flowerWeek ? "blossom" : s.key === "seedling" || s.key === "notStarted" ? "sprout" : "herb"} eyebrow={`${space ? `${space.name} · ` : ""}${t("today.cycle", { name: cycle.name, cultivar: cycle.cultivars[0] ?? "" })}`} title={stageLine(t, s)}>
+      <ScreenHero tile={space ? { color: space.color, emoji: stageEmoji(s.key) } : undefined} eyebrow={`${space ? `${space.name} · ` : ""}${t("today.cycle", { name: cycle.name, cultivar: cycle.cultivars[0] ?? "" })}`} title={stageLine(t, s)}>
         <Chips>
           {tg?.steer && <Chip tone="leaf">{`${t(`stage.${s.key}`)} · ${t(`steerChip.${tg.steer}`)}`}</Chip>}
           {!tg?.steer && s.key !== "notStarted" && <Chip tone="leaf">{t(`stage.${s.key}`)}</Chip>}
@@ -157,7 +152,9 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
           {/* Readings (lot 10h): label, value in mono, a bar with the day's target zone and a tick at the value. */}
           <Card className="gap-3" id="readings">
             <div className="flex items-baseline justify-between gap-2">
-              <Label>{t("today.readings")}</Label>
+              <Label emoji="chart" mark>
+                {t("today.readings")}
+              </Label>
               <span className="truncate font-mono text-[0.75rem] text-fg-3">{last ? when : t("today.noEntryTitle")}</span>
             </div>
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
@@ -202,7 +199,9 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
 
         <Reveal i={4}>
           <Card>
-            <Label emoji="droplet">{t("today.program")}</Label>
+            <Label emoji="droplet" mark>
+              {t("today.program")}
+            </Label>
             {!ss && <p className="mt-2 text-[0.8125rem] text-fg-2">{t("irr.seedlingNote")}</p>}
             <ol className="mt-2.5 flex flex-col gap-0.5">
               {rows.map((r) => {
@@ -240,9 +239,6 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
           </Card>
         </Reveal>
 
-        <Reveal i={5}>
-          <UpcomingCard spaceIds={space ? new Set([space.id]) : null} />
-        </Reveal>
       </div>
 
       <SourceNote>{t("today.sources", { list: srcList.join(" · ") })}</SourceNote>
@@ -257,8 +253,7 @@ export function TodayScreen() {
   return (
     <>
       <WeekStrip />
-      <StartCard />
-      <BackupReminder />
+      <GuideLine />
       {selection.kind === "space" ? <SpaceToday space={selection.space} Culture={CultureToday} /> : <AllToday />}
     </>
   )

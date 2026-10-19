@@ -1,21 +1,21 @@
 // Aujourd'hui by space (spec §3): "Bonjour" card, "All" view (one card per space, grouped by room),
 // and the view of one space by type — culture, propagation, drying — with the reservoir autonomy.
 import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react"
-import { ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { LineIcon } from "@/components/hydro/line-icon"
+import { Emoji } from "@/components/hydro/emoji"
 import { Drop } from "@/components/hydro/wordmark"
-import { Chip, Label, Reveal, ScreenHero, Notice } from "@/components/hydro/primitives"
-import { SpaceDot } from "@/components/hydro/space-pill"
+import { Label, Reveal, ScreenHero, Notice, StatePill } from "@/components/hydro/primitives"
+import { Reading } from "@/components/hydro/reading"
+import { SpaceDot, SpaceTile } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
-import { stageLine } from "@/app/labels"
+import { stageEmoji, stageLine } from "@/app/labels"
 import { stageOn, todayIso, daysBetween } from "@/calc/stage"
-import { buildDailyDigest, changedDigestDocs, digestKey, digestWeek, spaceContext, type DigestData, type DigestLine } from "@/calc/digest"
-import { status } from "@/calc/advice"
+import { buildDailyDigest, changedDigestDocs, digestKey, digestWeek, dryingCycle, spaceContext, type DigestData, type DigestLine, type DigestRow } from "@/calc/digest"
 import { groupBySite } from "@/model/grow-ops"
-import type { Space } from "@/model/grow"
+import type { Space, SpaceColor } from "@/model/grow"
+import type { Cycle } from "@/model/types"
 import type { Autonomy } from "@/calc/reservoir"
 import { cn } from "@/lib/utils"
 import { UpcomingCard } from "./calendar-parts"
@@ -88,73 +88,109 @@ export function ownerName(grow?: { name?: string; ownerName?: string } | null): 
   return who && who.split(/\s+/).length <= 2 ? who : undefined
 }
 
-const GROUPS: DigestLine["kind"][][] = [
-  ["stage", "climate", "lastEntry"],
-  ["watering", "reservoir"],
-  ["reminder", "deadline"],
-]
-
-/** Lines of one space as 2–3 sentences: state, water, what is due. A line to watch keeps a small marker (lot 10h). */
-function Sentences({ lines }: { lines: DigestLine[] }) {
+/** One line of the morning summary (lot 10j): drawing, short text (a quieter note), the value on the right in mono. */
+function SummaryRow({ row, warn, dot }: { row: DigestRow; warn?: boolean; dot?: SpaceColor }) {
   const { t } = useSettings()
-  const sentences = GROUPS.map((kinds) => lines.filter((l) => kinds.includes(l.kind))).filter((g) => g.length)
   return (
-    <>
-      {sentences.map((g, i) => (
-        <span key={i}>
-          {g.map((l, j) => {
-            const text = l.prose ?? l.text
-            const frag = j === 0 ? text.charAt(0).toLocaleUpperCase() + text.slice(1) : text
-            return (
-              <span key={j}>
-                {j > 0 && t("prose.sep")}
-                {l.warn && <span aria-hidden="true" className="mr-1 mb-[2px] inline-block size-1.5 rounded-[2px] bg-warn align-middle" />}
-                {frag}
-              </span>
-            )
-          })}
-          {". "}
+    <li className={cn("flex min-h-11 items-center gap-3 border-t border-line py-1.5", row.muted && "text-fg-2")} data-warn={warn || undefined}>
+      <Emoji name={row.icon} size={24} />
+      <span className="min-w-0 flex-1 text-[0.90625rem] leading-[1.3]">
+        {dot && <SpaceDot color={dot} className="mr-1.5 mb-px align-middle" />}
+        {row.text}
+        {row.note && <span className="text-fg-2">{` · ${row.note}`}</span>}
+      </span>
+      {row.value && (
+        <span className={cn("shrink-0 font-mono text-[0.8125rem] whitespace-nowrap", warn ? "font-semibold text-warn" : "text-fg-2")}>
+          {row.value}
+          {warn && <span className="sr-only">{` (${t("today.alertTag")})`}</span>}
         </span>
-      ))}
-    </>
+      )}
+    </li>
   )
 }
 
-/** The morning card: « Bonjour Thomas. » in Fraunces, upright, then each space in a few sentences (lot 10h). */
+/** The rows of a group (a space, the whole grow); a line without `row` (a recent last entry) is in the header. */
+function SummaryRows({ lines }: { lines: DigestLine[] }) {
+  return (
+    <ul>
+      {lines.map((l, i) => l.row && <SummaryRow key={i} row={l.row} warn={l.warn} />)}
+    </ul>
+  )
+}
+
+/** « dernière saisie hier » of the summary's header: the latest entry of these spaces. */
+function useLastEntryWhen(spaceIds: string[]): string | null {
+  const { t, dm } = useSettings()
+  const { all } = useGrow()
+  const today = todayIso()
+  const last = all.entries.filter((e) => spaceIds.includes(e.spaceId) && e.date <= today).sort((a, b) => (a.date === b.date ? ((a.time ?? "") < (b.time ?? "") ? 1 : -1) : a.date < b.date ? 1 : -1))[0]
+  if (!last) return null
+  if (last.date === today) return last.time ? t("today.whenToday", { time: last.time }) : t("today.whenTodayNoTime")
+  if (daysBetween(last.date, today) === 1) return t("row.yesterday")
+  return t("today.whenDay", { date: dm(last.date) })
+}
+
+/**
+ * The morning summary (lot 10j, replaces the sentences of 10h2): « Bonjour Thomas. » in Fraunces, upright, a small line
+ * « 3 espaces · dernière saisie hier », then one short line per idea, grouped by space with its little square. An empty
+ * space is one quiet line. Same information as the digest of the morning task, whose text does not change.
+ */
 export function BonjourCard({ only }: { only?: string }) {
   const { t, settings } = useSettings()
   const { grow } = useGrow()
   const data = useDigestData()
-  const digest = useMemo(() => buildDailyDigest(data, todayIso(), settings.lang, todayIso(), { prose: true }), [data, settings.lang])
+  const today = todayIso()
+  const digest = useMemo(() => buildDailyDigest(data, today, settings.lang, today, { rows: true }), [data, settings.lang, today])
   usePersistDigest(data, settings.lang)
   const [open, setOpen] = useState(false)
   const spaces = only ? digest.spaces.filter((s) => s.spaceId === only) : digest.spaces
-  const shown = only || open ? spaces : spaces.slice(0, 2)
+  const isEmpty = (s: (typeof spaces)[number]) => s.lines.length === 1 && s.lines[0].kind === "stage" && !!s.lines[0].row?.muted
+  // Two spaces at first; an empty space is one quiet line and does not count.
+  const full = spaces.filter((s) => !isEmpty(s))
+  const shown = only || open || full.length <= 2 ? spaces : spaces.filter((s) => isEmpty(s) || full.indexOf(s) < 2)
+  const when = useLastEntryWhen(spaces.map((s) => s.spaceId))
   if (!spaces.length) return null
   const name = ownerName(grow)
+  const n = spaces.length
+  const sub = only ? (when ? t("row.subOne", { when }) : t("row.subOneNone")) : when ? t("row.sub", { n, when }) : t("row.subNone", { n })
+  const colorOf = (id: string) => data.spaces.find((x) => x.id === id)?.color
   return (
-    <section className="flex flex-col gap-2.5 border-t border-line pt-4 pb-1" id="bonjour">
-      <h2 className="font-[family-name:var(--font-display)] text-[1.875rem] leading-tight font-medium [font-variation-settings:'SOFT'_100] tracking-[-0.01em]">
-        {name ? t("prose.hello", { name }) : t("prose.helloNoName")}
+    <section className="flex flex-col" id="bonjour" aria-labelledby="bonjour-title">
+      <h2 id="bonjour-title" className="font-[family-name:var(--font-display)] text-[1.875rem] leading-tight font-medium [font-variation-settings:'SOFT'_100] tracking-[-0.01em]">
+        {name ? t("row.hello", { name }) : t("row.helloNoName")}
       </h2>
-      {!only && digest.general.length > 0 && (
-        <p className="text-[1rem] leading-[1.5] text-fg-2">
-          <b className="font-semibold text-fg">{t("digest.general")}</b> — <Sentences lines={digest.general} />
-        </p>
-      )}
-      {shown.map((s) => (
-        <p key={s.spaceId} className="text-[1rem] leading-[1.5] text-fg-2">
-          {!only && (
-            <b className="mr-1 inline-flex items-baseline gap-1.5 font-semibold text-fg">
-              <SpaceDot color={data.spaces.find((x) => x.id === s.spaceId)?.color} /> {s.name}
-            </b>
-          )}
-          {!only && "— "}
-          <Sentences lines={s.lines} />
-        </p>
-      ))}
-      {!only && spaces.length > 2 && (
-        <button onClick={() => setOpen((x) => !x)} className={cn("relative -mb-1 self-start", tertiary)}>
+      <p className="mt-0.5 mb-2.5 text-[0.8125rem] text-fg-2" id="bonjour-sub">
+        {sub}
+      </p>
+      <div className="flex flex-col border-b border-line">
+        {!only && digest.general.length > 0 && (
+          <section aria-label={t("digest.general")}>
+            <h3 className="mt-2 mb-1 text-[0.8125rem] font-semibold text-fg-2">{t("digest.general")}</h3>
+            <SummaryRows lines={digest.general} />
+          </section>
+        )}
+        {shown.map((s) => {
+          // One quiet line for an empty space (its name in it when there are several).
+          if (isEmpty(s) && !only)
+            return (
+              <ul key={s.spaceId} data-space={s.spaceId}>
+                <SummaryRow row={{ ...s.lines[0].row!, text: t("row.emptyOf", { space: s.name }) }} dot={colorOf(s.spaceId)} />
+              </ul>
+            )
+          return (
+            <section key={s.spaceId} data-space={s.spaceId} aria-label={only ? undefined : s.name}>
+              {!only && (
+                <h3 className="mt-3 mb-1 flex items-center gap-2 text-[0.8125rem] font-semibold text-fg-2">
+                  <SpaceDot color={colorOf(s.spaceId)} /> {s.name}
+                </h3>
+              )}
+              <SummaryRows lines={s.lines} />
+            </section>
+          )
+        })}
+      </div>
+      {!only && full.length > 2 && (
+        <button onClick={() => setOpen((x) => !x)} className={cn("relative mt-1.5 self-start", tertiary)}>
           {open ? t("digest.less") : t("digest.more")}
         </button>
       )}
@@ -162,109 +198,146 @@ export function BonjourCard({ only }: { only?: string }) {
   )
 }
 
-/** "All" (or one room): one card per space, grouped by room. Tapping a card opens that space. */
+/**
+ * "All" (or one room), lot 10j: the summary, À faire, then the spaces, one card each (grouped by room). No title: the
+ * active tab says it. Tapping a card opens that space.
+ */
 export function AllToday() {
   const { t, setSpace } = useSettings()
-  const { spaces, sites, selection, grow } = useGrow()
+  const { spaces, sites, selection } = useGrow()
   const ed = useEditors()
   const shown = selection.kind === "site" ? spaces.filter((s) => s.siteId === selection.site.id) : spaces
   const groups = groupBySite(shown, sites)
   return (
     <>
-      <ScreenHero emoji="pottedPlant" eyebrow={selection.kind === "site" ? selection.site.name : (grow?.name ?? "")} title={t("today.allTitle")}>
-        <p className="mt-1 text-[0.8125rem] text-fg-2">{t("today.allSub", { n: shown.length })}</p>
-      </ScreenHero>
-      <Reveal i={0} className="mb-3">
+      <Reveal i={0} className="mt-2 mb-7">
         <BonjourCard />
       </Reveal>
-      <Reveal i={1} className="mb-3">
+      <Reveal i={1} className="mb-7">
         <UpcomingCard spaceIds={selection.kind === "site" ? new Set(shown.map((s) => s.id)) : null} />
       </Reveal>
-      {groups.map((g, gi) => (
-        <section key={g.site?.id ?? "none"} className="mb-1">
-          {g.site && sites.length > 0 && <div className="eyebrow mt-1 mb-2 px-1">{g.site.name}</div>}
-          {g.spaces.map((s, i) => (
-            <Reveal key={s.id} i={gi + i + 1} className="mb-2.5">
-              <SpaceCard space={s} onOpen={() => setSpace(s.id)} />
-            </Reveal>
-          ))}
-        </section>
-      ))}
-      {!shown.length && (
-        <Card className="items-center text-center">
-          <p className="text-[0.8125rem] text-fg-2">{t("space.empty")}</p>
-          <button onClick={() => ed.openCycle({ cycleId: "new" })} className={tertiary}>
-            {t("today.emptyCta")}
-          </button>
-        </Card>
-      )}
+      <section id="spaces" aria-labelledby="spaces-title">
+        <div className="mb-3" id="spaces-title">
+          <Label emoji="pottedPlant" mark>
+            {t("today.spaces")}
+          </Label>
+        </div>
+        {groups.map((g, gi) => (
+          <div key={g.site?.id ?? "none"} className="mb-1">
+            {g.site && sites.length > 0 && <div className="eyebrow mt-1 mb-2 px-1">{g.site.name}</div>}
+            {g.spaces.map((s, i) => (
+              <Reveal key={s.id} i={gi + i + 1} className="mb-3">
+                <SpaceCard space={s} onOpen={() => setSpace(s.id)} />
+              </Reveal>
+            ))}
+          </div>
+        ))}
+        {!shown.length && (
+          <Card framed className="items-center gap-1 text-center">
+            <p className="text-[0.8125rem] text-fg-2">{t("space.empty")}</p>
+            <button onClick={() => ed.openCycle({ cycleId: "new" })} className={tertiary}>
+              {t("today.emptyCta")}
+            </button>
+          </Card>
+        )}
+      </section>
     </>
   )
 }
 
+/** State of a space for its square and its pill (lot 10j): stage of its cycle, drying, or empty. */
+export function spaceState(space: Space, ctx: Ctx, cycles: Cycle[], today: string) {
+  const st = ctx.cycle ? stageOn(ctx.cycle, today) : null
+  const drying = dryingCycle(space, cycles, today)
+  if (ctx.cycle && st && st.key !== "harvested") {
+    const flower = !!st.flowerWeek || ["stretch", "bulk", "finish", "flush"].includes(st.key)
+    const pill = st.key === "notStarted" ? "notStarted" : st.key === "seedling" ? "seedling" : st.key === "veg" ? "veg" : flower ? "flower" : "veg"
+    return { emoji: stageEmoji(st.key), pill, tone: pill === "flower" ? "flower" : pill === "notStarted" ? "neutral" : "leaf", st, drying: undefined } as const
+  }
+  if (drying) return { emoji: "scissors", pill: "drying", tone: "neutral", st: null, drying } as const
+  if (ctx.cycle && st?.key === "harvested") return { emoji: "scissors", pill: "harvested", tone: "neutral", st, drying: undefined } as const
+  return { emoji: "pottedPlant", pill: "empty", tone: "neutral", st: null, drying: undefined } as const
+}
+
+/**
+ * The card of a space (lot 10j): a frame of its own, one level, nothing framed inside. Its tinted square with the stage
+ * drawing, its name and « Cycle 2 · Végé S6 · J41 », the stage pill; up to 4 readings in 2 × 2 (the target bar when
+ * there is a target); the last entry and the age of the tank.
+ */
 function SpaceCard({ space, onOpen }: { space: Space; onOpen: () => void }) {
   const { t, num, dm } = useSettings()
   const data = useDigestData()
   const today = todayIso()
   const ctx = useMemo(() => spaceContext(space, data, today), [space, data, today])
   const { cycle, last, autonomy } = ctx
-  const st = cycle ? stageOn(cycle, today) : null
+  const state = spaceState(space, ctx, data.cycles, today)
   const tg = last?.targets
-  const pills: { k: string; v: string; s?: ReturnType<typeof status> }[] = []
-  if (space.modules.irrigation && last?.dryback != null) pills.push({ k: t("today.dryback"), v: `${num(last.dryback)} %`, s: tg?.dryback ? status(last.dryback, tg.dryback) : undefined })
-  if (space.modules.irrigation && last?.drybackSensor != null) pills.push({ k: t("today.drybackSensor"), v: `${num(last.drybackSensor)} %` })
-  if (space.modules.irrigation && last?.ecRunoff != null) pills.push({ k: t("today.ecRunoff"), v: num(last.ecRunoff, 1), s: tg?.ecRunoff ? status(last.ecRunoff, tg.ecRunoff) : undefined })
-  if (space.modules.climate && last?.tempDay != null) pills.push({ k: t("today.tempRh"), v: `${num(last.tempDay)}° / ${last.rh != null ? num(last.rh) : "—"}` })
-  if (space.modules.climate && last?.vpd != null) pills.push({ k: t("today.vpd"), v: num(last.vpd, 2), s: tg?.vpd ? status(last.vpd, tg.vpd) : undefined })
-  if (space.modules.propagation && last?.sownCount) pills.push({ k: t("today.germination"), v: `${last.germinatedCount ?? 0}/${last.sownCount}` })
+  const sub =
+    cycle && state.st && state.st.key !== "harvested"
+      ? `${cycle.name} · ${stageLine(t, state.st)}`
+      : state.drying?.harvestDate
+        ? (() => {
+            const v = { cycle: state.drying.name, day: daysBetween(state.drying.harvestDate, today) + 1, total: state.drying.plannedDryingDays ?? 0 }
+            return state.drying.plannedDryingDays ? t("digest.drying", v) : t("digest.dryingNoPlan", v)
+          })()
+        : cycle && state.st
+          ? `${cycle.name} · ${stageLine(t, state.st)}`
+          : t("space.noCycle")
+  type R = Omit<Parameters<typeof Reading>[0], "compact">
+  const reads: R[] = []
+  if (space.modules.irrigation && last?.dryback != null) reads.push({ label: t("today.dryback"), emoji: "sweat", value: last.dryback, unit: "%", decimals: 0, target: tg?.dryback })
+  if (space.modules.irrigation && last?.drybackSensor != null) reads.push({ label: t("today.drybackSensor"), emoji: "sweat", value: last.drybackSensor, unit: "%", decimals: 0 })
+  if (space.modules.irrigation && last?.ecRunoff != null) reads.push({ label: t("today.ecRunoff"), emoji: "testTube", value: last.ecRunoff, decimals: 1, target: tg?.ecRunoff })
+  if (space.modules.climate && last?.tempDay != null)
+    reads.push({
+      label: t("today.tempRh"),
+      emoji: "thermometer",
+      value: last.tempDay,
+      children: (
+        <>
+          {`${num(last.tempDay)}°`}
+          <span className="text-fg-3">{` / ${last.rh != null ? num(last.rh) : "—"}`}</span>
+        </>
+      ),
+    })
+  if (space.modules.climate && last?.vpd != null) reads.push({ label: t("today.vpd"), emoji: "droplet", value: last.vpd, decimals: 2, target: tg?.vpd })
+  if (space.modules.propagation && last?.sownCount) reads.push({ label: t("today.germination"), emoji: "sprout", value: last.germinatedCount ?? 0, children: `${last.germinatedCount ?? 0}/${last.sownCount}` })
+  const whenLast = last ? (last.date === today ? (last.time ? t("today.whenToday", { time: last.time }) : t("today.whenTodayNoTime")) : t("today.whenDay", { date: dm(last.date) })) : null
   return (
-    <button onClick={onOpen} className="block w-full text-left">
-      <Card className="gap-2.5">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <div className="display flex items-center gap-2 text-[1.1875rem] leading-tight">
-              <SpaceDot color={space.color} className="size-2.5" /> {space.name}
-            </div>
-            <div className="mt-0.5 truncate text-[0.78125rem] text-fg-2">
-              {cycle && st ? `${cycle.name} · ${stageLine(t, st)}` : t("space.noCycle")}
-            </div>
+    <button onClick={onOpen} className="block w-full rounded-[14px] text-left" data-space-card={space.id}>
+      <Card framed className="gap-3">
+        <div className="flex items-center gap-3">
+          <SpaceTile color={space.color} emoji={state.emoji} />
+          <div className="min-w-0 flex-1">
+            <div className="display truncate text-[1.25rem] leading-tight">{space.name}</div>
+            <div className="mt-0.5 truncate text-[0.78125rem] text-fg-2">{sub}</div>
           </div>
-          <div className="flex shrink-0 items-center gap-1">
-            <Chip>{t(`template.${space.template}`)}</Chip>
-            <ChevronRight className="size-4.5 text-fg-3" />
-          </div>
+          <StatePill tone={state.tone}>{t(`pill.${state.pill}`)}</StatePill>
         </div>
-        {pills.length > 0 && (
-          <div className="grid grid-cols-2 gap-x-5 gap-y-2">
-            {pills.slice(0, 4).map((p) => (
-              <div key={p.k} className="min-w-0">
-                <div className="truncate text-[0.75rem] text-fg-3">{p.k}</div>
-                <div className={cn("truncate font-mono text-[1.25rem] leading-tight font-medium tabular-nums", p.s === "warn" && "text-warn", p.s === "bad" && "text-bad")}>{p.v}</div>
-              </div>
+        {reads.length > 0 && (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            {reads.slice(0, 4).map((r) => (
+              <Reading key={r.label} {...r} compact />
             ))}
           </div>
         )}
-        <div className="flex items-center justify-between gap-2 text-[0.75rem] text-fg-3">
-          <span>{last ? t("today.lastEntry", { when: last.date === today ? (last.time ? t("today.whenToday", { time: last.time }) : t("today.whenTodayNoTime")) : t("today.whenDay", { date: dm(last.date) }) }) : t("today.noEntryTitle")}</span>
-          {autonomy && <AutonomyTag a={autonomy} />}
+        <div className="flex items-center justify-between gap-2 border-t border-line pt-2.5 text-[0.75rem] text-fg-2">
+          <span className="min-w-0 truncate">{whenLast ? t("today.lastEntry", { when: whenLast }) : t("today.noEntryTitle")}</span>
+          {autonomy?.mixAgeDays != null && (
+            <span className={cn("flex shrink-0 items-center gap-1", autonomy.tooOld && "font-semibold text-warn")}>
+              <Emoji name="bucket" size={16} /> {t("today.mixAge", { n: num(autonomy.mixAgeDays) })}
+            </span>
+          )}
         </div>
       </Card>
     </button>
   )
 }
 
-function AutonomyTag({ a }: { a: Autonomy }) {
-  const { t, num } = useSettings()
-  if (!a.days.ok) return <span className="font-semibold text-warn">{t("today.resMissingShort")}</span>
-  const d = Math.floor(a.days.value)
-  return (
-    <span className={cn("flex items-center gap-1 font-semibold", d <= 1 || a.tooOld ? "text-warn" : "text-fg-2")}>
-      <LineIcon name="bucket" size={16} /> {t("today.resDays", { n: num(d) })}
-    </span>
-  )
-}
-
-/** One space: Bonjour for it, then the view that fits its modules. */
+/**
+ * One space: its square and title, the summary for it, À faire, then the view that fits its modules (lot 10j: the same
+ * order as « Tous »).
+ */
 export function SpaceToday({ space, Culture }: { space: Space; Culture: ComponentType<{ extra?: ReactNode }> }) {
   const { t } = useSettings()
   const data = useDigestData()
@@ -274,8 +347,11 @@ export function SpaceToday({ space, Culture }: { space: Space; Culture: Componen
   const propagating = space.modules.propagation && (!ctx.cycle || st?.key === "seedling" || st?.key === "notStarted")
   const extra = (
     <>
-      <Reveal i={0} className="mb-3">
+      <Reveal i={0} className="mb-7">
         <BonjourCard only={space.id} />
+      </Reveal>
+      <Reveal i={1} className="mb-6">
+        <UpcomingCard spaceIds={new Set([space.id])} />
       </Reveal>
       {propagating && (
         <Reveal i={1} className="mb-3">
@@ -292,7 +368,7 @@ export function SpaceToday({ space, Culture }: { space: Space; Culture: Componen
   if (space.modules.drying && !space.modules.irrigation) {
     return (
       <>
-        <ScreenHero emoji="leaf" eyebrow={space.name} title={t("today.drying")} />
+        <ScreenHero eyebrow={space.name} title={t("today.drying")} tile={{ color: space.color, emoji: dryingCycle(space, data.cycles, today) ? "scissors" : "pottedPlant" }} />
         {extra}
         <Reveal i={3}>
           <DryingCard space={space} ctx={ctx} />
@@ -303,7 +379,7 @@ export function SpaceToday({ space, Culture }: { space: Space; Culture: Componen
   if (!ctx.cycle && propagating) {
     return (
       <>
-        <ScreenHero emoji="sprout" eyebrow={space.name} title={t("today.propagation")} />
+        <ScreenHero eyebrow={space.name} title={t("today.propagation")} tile={{ color: space.color, emoji: "sprout" }} />
         {extra}
       </>
     )
@@ -321,7 +397,9 @@ function PropagationCard({ ctx }: { ctx: Ctx }) {
   const since = ctx.cycle?.germinationDate ? daysBetween(ctx.cycle.germinationDate, todayIso()) + 1 : null
   return (
     <Card className="gap-2">
-      <Label emoji="sprout">{t("today.propagation")}</Label>
+      <Label emoji="sprout" mark>
+        {t("today.propagation")}
+      </Label>
       <div className="grid grid-cols-3 gap-2">
         <Tile k={t("today.germination")} v={sown ? `${germ ?? 0}/${sown}` : "—"} sub={sown ? `${num(((germ ?? 0) / sown) * 100)} %` : t("today.germinationHint")} />
         <Tile k={t("today.dome")} v={last?.domeOn == null ? "—" : last.domeOn ? t("today.domeOn") : t("today.domeOff")} />
@@ -338,7 +416,9 @@ function ReservoirCard({ a, name }: { a: Autonomy; name: string }) {
   return (
     <Card className="gap-2">
       <div className="flex items-center justify-between gap-2">
-        <Label emoji="bucket">{name}</Label>
+        <Label emoji="bucket" mark>
+          {name}
+        </Label>
         {a.source && <span className="text-[0.75rem] text-fg-3">{t(a.source === "reading" ? "today.resReading" : "today.resEstimate")}</span>}
       </div>
       <div className="flex items-end justify-between gap-3">
@@ -371,7 +451,9 @@ function DryingCard({ space, ctx }: { space: Space; ctx: Ctx }) {
   const last = ctx.last
   return (
     <Card className="gap-2">
-      <Label emoji="leaf">{drying ? `${drying.name} · ${drying.cultivars[0] ?? ""}` : t("today.drying")}</Label>
+      <Label emoji="scissors" mark>
+        {drying ? `${drying.name} · ${drying.cultivars[0] ?? ""}` : t("today.drying")}
+      </Label>
       <div className="grid grid-cols-2 gap-2">
         <Tile k={t("today.dryingDay")} v={day != null && day > 0 ? `J${day}` : "—"} sub={drying ? undefined : t("today.dryingNone")} />
         <Tile k={t("today.vpd")} v={last?.vpd != null ? `${num(last.vpd, 2)} kPa` : "—"} />

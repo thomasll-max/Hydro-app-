@@ -22,3 +22,11 @@ export function stageShort(t: T, s: StageInfo, lang: Lang = "fr"): string {
   if (s.key === "veg") return t("stage.lineVegShort", { week: s.week })
   return t("stage.lineSeedling", { day: s.day })
 }
+
+/** The drawing of a stage (lot 10j): semis 🌱, végé 🌿, floraison 🌸, récolté ✂️. */
+export function stageEmoji(key: StageInfo["key"]): "sprout" | "herb" | "blossom" | "scissors" {
+  if (key === "notStarted" || key === "seedling") return "sprout"
+  if (key === "veg") return "herb"
+  if (key === "harvested") return "scissors"
+  return "blossom"
+}

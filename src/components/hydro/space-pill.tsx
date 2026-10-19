@@ -5,6 +5,8 @@ import { useGrow } from "@/app/grow-context"
 import { groupBySite } from "@/model/grow-ops"
 import { SPACE_COLORS, type SpaceColor } from "@/model/grow"
 import { cn } from "@/lib/utils"
+import type { EmojiName } from "@/assets/emoji"
+import { Emoji } from "./emoji"
 
 /** Only the 8 known colours reach the CSS: anything else (an edited backup…) is shown as slate (lot 10a). */
 export const safeSpaceColor = (c?: string): SpaceColor => ((SPACE_COLORS as readonly string[]).includes(c ?? "") ? (c as SpaceColor) : "slate")
@@ -13,6 +15,20 @@ export const spaceColor = (c?: string) => `var(--space-${safeSpaceColor(c)})`
 export function SpaceDot({ color, className }: { color?: SpaceColor; className?: string }) {
   // A small square with rounded corners, 10 px (lot 10h).
   return <span aria-hidden="true" className={cn("inline-block size-2.5 shrink-0 rounded-[3px]", className)} style={{ background: spaceColor(color) }} />
+}
+
+/** The space's tinted square with the drawing of its stage (lot 10j): the main landmark of a space on Aujourd'hui. */
+export function SpaceTile({ color, emoji, size = 42 }: { color?: SpaceColor; emoji: EmojiName; size?: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      data-space-tile
+      className="grid shrink-0 place-items-center"
+      style={{ width: size, height: size, borderRadius: Math.round(size / 3.8), background: `color-mix(in oklab, ${spaceColor(color)} 22%, transparent)` }}
+    >
+      <Emoji name={emoji} size={Math.round((size * 2) / 3)} />
+    </span>
+  )
 }
 
 export function SpacePill() {

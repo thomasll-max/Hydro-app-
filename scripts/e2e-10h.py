@@ -8,7 +8,7 @@
 - reminders: a square check box (22 px, radius 6) that ticks and unticks;
 - keyboard focus: 2 px « eau » outline, 2 px away;
 10h2, with a cycle and entries seeded: readings (bar, target zone, tick in « à surveiller » / « alerte » out of target),
-« Bonjour Thomas. » in upright Fraunces then sentences (no list), sections without frames, space tabs underlined,
+« Bonjour Thomas. » in upright Fraunces then lines (sentences until lot 10j), sections without frames, space tabs underlined,
 the cycle step button with its consequence, the journal in one line per day with the plants under it;
 10h3: the tab bar anchored at the bottom (page ground, thin line, « + » 52 × 44 in the middle, four tabs), the week strip
 (7 days, ≤ 64 px, today underlined, a day opens the Calendar on it and back returns), the date of the top bar,
@@ -127,7 +127,8 @@ with sync_playwright() as p:
         c = {}
         c["bonjour"] = pg.evaluate("""() => { const h = document.querySelector('#bonjour h2'); const s = getComputedStyle(h); return { text: h.textContent, font: s.fontFamily.split(',')[0], style: s.fontStyle, weight: s.fontWeight, lists: document.querySelectorAll('#bonjour ul, #bonjour li').length, sentences: [...document.querySelectorAll('#bonjour p')].map((p) => p.textContent.trim()) } }""")
         bj = c["bonjour"]
-        if bj["text"] != "Bonjour Thomas." or "Fraunces" not in bj["font"] or bj["style"] != "normal" or bj["weight"] != "500" or bj["lists"] or not all(x.endswith(".") for x in bj["sentences"]): errors.append(f"{theme} bonjour {bj}")
+        # Lot 10j: the summary is in short lines (one per idea), no more sentences.
+        if bj["text"] != "Bonjour Thomas." or "Fraunces" not in bj["font"] or bj["style"] != "normal" or bj["weight"] != "500" or not bj["lists"]: errors.append(f"{theme} bonjour {bj}")
         c["tabs"] = pg.evaluate("""() => { const g = document.querySelector('[role=group][aria-label]'); const on = g.querySelector('[aria-pressed=true]'); const u = on.querySelector('span.absolute'); return { radius: getComputedStyle(g).borderRadius, line: u && getComputedStyle(u).backgroundColor, h: u && u.getBoundingClientRect().height } }""")
         if c["tabs"]["radius"] != "0px" or c["tabs"]["line"] != rgb(PALETTE[theme]["--water"]) or c["tabs"]["h"] != 2: errors.append(f"{theme} space tabs {c['tabs']}")
         pg.get_by_role("group").first.get_by_role("button", name="Floraison").click(); pg.wait_for_timeout(1500)

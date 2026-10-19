@@ -1,5 +1,12 @@
 # Changelog
 
+## Lot 10k2b — Pulvérisation : IPW ou ton propre mélange (19/10/2026)
+- L'outil IPW devient **Pulvérisation**, avec deux choix : **IPW Athena** (le protocole sourcé, inchangé) ou **Mon mélange**.
+- **Mon mélange** : un spray maison ou un stack que tu décris toi-même : son nom, tes produits avec leur dose par litre (telle que tu la saisis), sa fréquence, tes points à vérifier avant de pulvériser et des notes. Il est marqué « perso, non vérifié » : l'app ne propose aucune dose, elle calcule seulement les quantités pour ton pulvérisateur.
+- Tes produits perso peuvent être repris par leur nom (jamais leur dose, faite pour le bidon).
+- La pulvérisation s'enregistre comme pour l'IPW, avec sa checklist, et la prochaine arrive dans le calendrier et sur Aujourd'hui quand une fréquence est donnée.
+- 357 tests.
+
 ## Lot 10k2a — Outils en trois groupes (19/10/2026)
 - Outils se range en trois groupes : **Chaque jour** (Nutrition, Arrosage, pH, Calendrier), **Régler la pièce** (Lumière, Climat, Pulvérisation) et **Mon installation** (Équipement, Repères Athena, Sauvegarde).
 - Des mots simples sous chaque outil (« La recette du bidon », « Doses et horaires du jour », « Combien de Balance verser »…) ; le jargon reste dans l'outil.

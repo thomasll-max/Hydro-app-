@@ -9,6 +9,13 @@ import { translate } from "@/i18n/core"
 import { fr } from "@/i18n/fr"
 import { en } from "@/i18n/en"
 import { de } from "@/i18n/de"
+import { mixAmounts, mixFromDraft, nextMixSpray, validMixes } from "./spray"
+import { nextIpw } from "./ipw"
+import { parseNum } from "./formulas"
+import { deadlines } from "@/calendar/deadlines"
+import { deadlineTitle } from "@/calendar/labels"
+import { FLOWER_ID, thomasGrow } from "@/data/thomas-grow"
+import type { Spray, SprayMix } from "@/model/grow"
 
 const root = path.resolve(import.meta.dirname, "../..")
 const read = (f: string) => fs.readFileSync(path.join(root, f), "utf8")
@@ -187,5 +194,48 @@ describe("lot 10k2a — Outils en trois groupes", () => {
     expect([T("equipment"), T("equipmentD"), T("reperes"), T("reperesD"), T("data"), T("dataD")]).toEqual(["Équipement", "Lampes, réservoirs, pompes", "Repères Athena", "Les tableaux du Handbook", "Sauvegarde", "Exporter, importer"])
     expect([T("gDaily"), T("gRoom"), T("gSetup"), T("foot")]).toEqual(["Chaque jour", "Régler la pièce", "Mon installation", "Premiers pas et Réglages : dans l'engrenage en haut."])
     for (const l of ["en", "de"] as const) for (const k of ["gDaily", "gRoom", "gSetup", "foot"]) expect(translate(l, `tools.${k}` as never)).not.toMatch(/^tools\./)
+  })
+})
+
+describe("lot 10k2b — Pulvérisation générique : « Mon mélange »", () => {
+  const mix: SprayMix = { id: "mix-1", name: "Spray maison", items: [{ name: "Silice", dose: 0.5, unit: "mL" }, { name: "Prêle", unit: "g" }], everyDays: 5 }
+  const spray = (date: string, extra: Partial<Spray> = {}): Spray => ({ schemaVersion: 1, id: `s-${date}`, date, spaceIds: ["flo"], product: "mix", mixId: "mix-1", litres: 2, ...extra })
+  it("aucune dose proposée : les doses saisies × les litres, rien quand la dose n'est pas saisie", () => {
+    expect(mixAmounts(mix, 2)).toEqual([{ name: "Silice", unit: "mL", amount: 1 }, { name: "Prêle", unit: "g" }])
+    expect(mixAmounts(mix, 0)).toEqual([{ name: "Silice", unit: "mL" }, { name: "Prêle", unit: "g" }])
+    expect(mixAmounts({ items: [{ name: "X", dose: 1.25, unit: "mL" }] }, 3)).toEqual([{ name: "X", unit: "mL", amount: 3.8 }])
+    const src = read("src/screens/tools/spray.tsx") + read("src/calc/spray.ts")
+    expect(src).not.toMatch(/data\/nutrients|IPW\.|ipwMlPerL|dosePer10L|labelDose/)
+  })
+  it("prochaine pulvérisation : la dernière de ce mélange dans l'espace + sa fréquence ; sans fréquence ni première fois, rien", () => {
+    expect(nextMixSpray([spray("2026-02-01"), spray("2026-02-04")], mix, "flo")).toBe("2026-02-09")
+    expect(nextMixSpray([spray("2026-02-04")], { ...mix, everyDays: undefined }, "flo")).toBeNull()
+    expect(nextMixSpray([], mix, "flo")).toBeNull()
+    expect(nextMixSpray([spray("2026-02-04", { spaceIds: ["col"] })], mix, "flo")).toBeNull()
+    // IPW sprays never count for a mix (and a mix never for IPW: product "ipw" stays IPW's).
+    expect(nextMixSpray([spray("2026-02-04", { product: "ipw", mixId: undefined })], mix, "flo")).toBeNull()
+    expect(nextIpw([spray("2026-02-04", { mixId: "mix-1" })], "flo")).toBeNull()
+  })
+  it("formulaire : nom obligatoire, lignes vides retirées, dose et fréquence lues telles que saisies, checklist à toi", () => {
+    const d = { name: "  Stack  ", items: [{ name: "Silice", dose: "0,5", unit: "mL" as const }, { name: " ", dose: "3", unit: "mL" as const }, { name: "Prêle", dose: "", unit: "g" as const, productId: "p1" }], every: "4,6", checklist: "Lampes éteintes\n\n Secouer ", note: " " }
+    expect(mixFromDraft("m", d, parseNum)).toEqual({ id: "m", name: "Stack", items: [{ name: "Silice", unit: "mL", dose: 0.5 }, { name: "Prêle", unit: "g", productId: "p1" }], everyDays: 5, checklist: ["Lampes éteintes", "Secouer"] })
+    expect(mixFromDraft("m", { ...d, name: " " }, parseNum)).toBeNull()
+    expect(validMixes([mix, { id: 3 }, null, { id: "x", name: "Y", items: "no" }])).toEqual([mix])
+    expect(validMixes(undefined)).toEqual([])
+  })
+  it("le calendrier : « Pulvérisation Spray maison · Floraison », source « tes données » ; l'IPW garde ses identifiants", () => {
+    const s = thomasGrow("2026-10-18T06:00:00.000Z", "2026-06-01")
+    const cycle = { ...s.cycles[0], spaceId: FLOWER_ID, germinationDate: "2026-07-01", vegDate: "2026-07-15", flipDate: "2026-08-24", flowerWeeks: 9 }
+    const data = { grow: { ...s.grow, sprayMixes: [mix] }, spaces: s.spaces, cycles: [cycle], entries: [], mixes: [], events: [], equipment: s.equipment, assignments: s.assignments, sprays: [spray("2026-10-17", { spaceIds: [FLOWER_ID] })] }
+    const dl = deadlines(data, "2026-10-19").find((d) => d.kind === "spray")!
+    expect(dl).toMatchObject({ key: `spray_mix-1_${FLOWER_ID}_2026-10-22`, date: "2026-10-22", source: "user", spaceId: FLOWER_ID })
+    expect(deadlineTitle("fr", dl)).toBe("Pulvérisation Spray maison · Floraison")
+    for (const l of ["en", "de"] as const) expect(deadlineTitle(l, dl)).toMatch(/Spray maison · Floraison$/)
+    expect(read("src/calc/ipw.ts")).toMatch(/s\.product === "ipw"/)
+    expect(read("src/screens/tools/ipw.tsx")).toMatch(/product: "ipw",/)
+    expect(read("src/app/nav.ts")).toMatch(/"ipw"/)
+    expect(translate("fr", "tools.ipw")).toBe("Pulvérisation")
+    expect(translate("fr", "tools.ipwD")).toBe("IPW Athena ou ton propre mélange")
+    expect(translate("fr", "spray.mine")).toBe("perso, non vérifié")
   })
 })

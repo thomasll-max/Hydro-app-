@@ -12,8 +12,9 @@ import type { DigestData } from "@/calc/digest"
 import { openStocks, stockStatus } from "@/calc/concentrate"
 import { getCatalog, isOwnLine } from "@/data/nutrients"
 import { ipwLastDay, nextIpw } from "@/calc/ipw"
+import { nextMixSpray, validMixes } from "@/calc/spray"
 
-export const DEADLINE_KINDS = ["flip", "fade", "flush", "harvest", "tank", "propagationEnd", "greatWhite", "dryingEnd", "flowCheck", "concentrateLow", "ipw"] as const
+export const DEADLINE_KINDS = ["flip", "fade", "flush", "harvest", "tank", "propagationEnd", "greatWhite", "dryingEnd", "flowCheck", "concentrateLow", "ipw", "spray"] as const
 export type DeadlineKind = (typeof DEADLINE_KINDS)[number]
 export type DeadlineSource = "athena" | "user" | "estimate" | "label" | "spec"
 
@@ -72,6 +73,11 @@ export function deadlines(data: CalendarData, today: IsoDate): Deadline[] {
       if (nut.addons.includes("ipw")) {
         const next = nextIpw(data.sprays ?? [], space.id, ipwLastDay(c.flipDate))
         if (next) out.push({ key: `ipw_${space.id}_${next.date}`, kind: "ipw", date: next.date, ...base, vars: { ...vars, space: space.name }, source: "athena" })
+      }
+      // « Mon mélange » (lot 10k2b): its next spray, from the last one in this space and the frequency the user gave.
+      for (const mix of validMixes(data.grow?.sprayMixes)) {
+        const next = nextMixSpray(data.sprays ?? [], mix, space.id)
+        if (next) out.push({ key: `spray_${mix.id}_${space.id}_${next}`, kind: "spray", date: next, ...base, vars: { ...vars, space: space.name, mix: mix.name }, source: "user" })
       }
       const flush = flushStart(c)
       // Flush (plain water + Cleanse, EC < 0.1) is Athena's program: not for another brand (lot 10e).

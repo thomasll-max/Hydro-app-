@@ -179,7 +179,7 @@ export function IpwTool() {
                 <li key={s.id} className="flex items-center justify-between gap-2 border-t border-line py-2 text-[0.8125rem] first:border-t-0">
                   <span className="text-fg-2">{fmt(s.date)}</span>
                   <span className="tabular-nums">
-                    {t(`ipw.p.${s.protocol ?? "prevention"}`)} · {num(s.litres, s.litres % 1 ? 1 : 0)} L · {num(s.mlPerL * s.litres, 0)} mL
+                    {t(`ipw.p.${s.protocol ?? "prevention"}`)} · {num(s.litres, s.litres % 1 ? 1 : 0)} L{s.mlPerL != null && ` · ${num(s.mlPerL * s.litres, 0)} mL`}
                   </span>
                 </li>
               ))}

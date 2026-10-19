@@ -20,7 +20,7 @@ export const DIGEST_SCHEMA = 3
 export const DIGEST_DAYS = 7
 
 export type DigestData = {
-  grow?: (Pick<Grow, "name"> & Partial<Pick<Grow, "nutrition" | "timeZone">>) | null
+  grow?: (Pick<Grow, "name"> & Partial<Pick<Grow, "nutrition" | "timeZone" | "sprayMixes">>) | null
   spaces: Space[]
   sites?: Site[]
   cycles: Cycle[]

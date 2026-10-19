@@ -13,7 +13,7 @@ import { EquipmentTool } from "./tools/equipment"
 import { SettingsTool } from "./tools/settings"
 import { GuideScreen } from "./guide"
 import { PhBalanceTool } from "./tools/ph-balance"
-import { IpwTool } from "./tools/ipw"
+import { SprayTool } from "./tools/spray"
 import { LightTool } from "./tools/light"
 import { ClimateTool } from "./tools/climate"
 import { AskTool } from "./tools/ask"
@@ -90,7 +90,7 @@ export function ToolsScreen() {
         ) : open === "ph" ? (
           <PhBalanceTool />
         ) : open === "ipw" ? (
-          <IpwTool />
+          <SprayTool />
         ) : open === "light" ? (
           <LightTool />
         ) : open === "climate" ? (

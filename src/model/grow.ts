@@ -60,9 +60,28 @@ export type Grow = {
   /** IANA time zone of the grow (reminders, .ics). Absent = the device's. */
   timeZone?: string
   nutrition: NutritionSettings
+  /** « Mon mélange » of Pulvérisation (lot 10k2b): sprays of one's own, as the user describes them. */
+  sprayMixes?: SprayMix[]
   createdAt: string
   updatedAt: string
 }
+
+/**
+ * A spray of one's own (lot 10k2b): a home spray or a stack, described by the user (« perso, non vérifié »). The app
+ * proposes no dose: it only multiplies the doses typed here by the litres of the sprayer.
+ */
+export type SprayMix = {
+  id: string
+  name: string
+  /** Products and their dose per litre of sprayer, as typed (a dose may stay empty). */
+  items: SprayMixItem[]
+  /** Every N days (optional): the next spray then goes in the calendar. */
+  everyDays?: number
+  /** The user's own points to check before spraying (none is suggested). */
+  checklist?: string[]
+  note?: string
+}
+export type SprayMixItem = { name: string; dose?: number; unit: "mL" | "g"; /** Picked from « Mes produits » (only its name and unit). */ productId?: string }
 
 export type Site = { schemaVersion: number; id: string; name: string; order: number; archived?: boolean }
 
@@ -223,16 +242,21 @@ export type ConcentrateStock = {
   note?: string
   createdAt?: string
 }
-/** A foliar spray (IPW): never in the tank. */
+/** A foliar spray (IPW, or « Mon mélange » since lot 10k2b): never in the tank. */
 export type Spray = {
   schemaVersion: number
   id: string
   date: IsoDate
   spaceIds: string[]
   cycleId?: string
+  /** "ipw" (Athena), or "mix" (a mix of one's own, `mixId`). */
   product: string
-  mlPerL: number
+  /** IPW: the protocol's dose. Absent for a mix of one's own (its doses are in `mix`). */
+  mlPerL?: number
   litres: number
+  /** The mix of one's own, as it was on that day (its name and doses can change later). */
+  mixId?: string
+  mix?: { name: string; items: SprayMixItem[] }
   protocol?: "prevention" | "pressure" | "restoration"
   /** First day of the running protocol (the schedule counts from it). */
   protocolStart?: IsoDate

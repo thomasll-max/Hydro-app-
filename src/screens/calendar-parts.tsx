@@ -81,6 +81,7 @@ const DEADLINE_EMOJI: Record<DeadlineKind, EmojiName> = {
   flowCheck: "sweat",
   concentrateLow: "bucket",
   ipw: "sweat",
+  spray: "sweat",
 }
 
 export function itemEmoji(i: CalItem): EmojiName {

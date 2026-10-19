@@ -147,7 +147,7 @@ export function UpcomingCard({ spaceIds, max = 4 }: { spaceIds: Set<string> | nu
   return (
     <section className="flex flex-col" id="upcoming">
       <div className="flex items-center justify-between gap-2">
-        <Label emoji="bell" mark>
+        <Label>
           {t("today.upcoming")}
         </Label>
         <button

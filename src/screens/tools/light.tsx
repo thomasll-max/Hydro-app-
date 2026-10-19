@@ -80,7 +80,7 @@ export function LightTool() {
       <Reveal i={0}>
         <Card className="gap-2.5" id="lgt-ppfd">
           <div className="flex items-center justify-between gap-2">
-            <Label emoji="bulb">{t("lgt.now")}</Label>
+            <Label>{t("lgt.now")}</Label>
             {ppfdUsed && <Chip tone={ppfdUsed.src === "measured" ? "primary" : "neutral"}>{ppfdUsed.src === "measured" ? t("lgt.measured") : t("nut.estimate")}</Chip>}
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -104,7 +104,7 @@ export function LightTool() {
 
       <Reveal i={1}>
         <Card className="gap-3">
-          <Label emoji="gear">{t("lgt.settings")}</Label>
+          <Label>{t("lgt.settings")}</Label>
           <SettingsLink
             summary={[
               space.light?.photoperiodH ? t("lgt.sumHours", { h: num(h) }) : t("lgt.sumHoursStage", { h: num(h) }),
@@ -133,7 +133,7 @@ export function LightTool() {
 
       <Reveal i={2}>
         <Card className="gap-3" id="lgt-inverse">
-          <Label emoji="sun">{t("lgt.inverse")}</Label>
+          <Label>{t("lgt.inverse")}</Label>
           <Grid>
             <NumField id="l-dli" label={t("lgt.dliTarget")} hint={tg?.dli ? t("lgt.dliHint", { r: range(tg.dli.lo, tg.dli.hi) }) : undefined} value={dliTarget} onChange={setDliTarget} />
             <div className="border-t border-line pt-2">
@@ -150,7 +150,7 @@ export function LightTool() {
       <Reveal i={3}>
         <Card className="gap-3" id="lgt-schema">
           <div className="flex items-center justify-between gap-2">
-            <Label emoji="compass">{t("lgt.schema")}</Label>
+            <Label>{t("lgt.schema")}</Label>
             {space.dimensionsCm?.l && space.dimensionsCm?.w && <Chip>{`${num(space.dimensionsCm.l)} × ${num(space.dimensionsCm.w)} cm`}</Chip>}
           </div>
           {schema ? (

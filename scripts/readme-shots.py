@@ -40,9 +40,12 @@ def shoot(theme, screens):
             pg.goto(f"file://{page_file}{hash_}"); pg.reload(); pg.wait_for_timeout(2200)
             # The preview build stores on the device and says so: not part of the app's real look.
             pg.evaluate("() => [...document.querySelectorAll('p')].filter((p) => p.textContent.includes('sur ce téléphone uniquement')).forEach((p) => p.parentElement.remove())")
+            # Aujourd'hui « calme » (lot 10k1) is the « Tous » view; the other screens keep Floraison.
+            if name == "today": pg.get_by_role("group").first.get_by_role("button", name="Tous").click(); pg.wait_for_timeout(1200)
             pg.wait_for_timeout(200)
             f = tmp / f"readme-{name}-{theme}.png"
             pg.screenshot(path=str(f))
+            if name == "today": pg.get_by_role("group").first.get_by_role("button", name="Floraison").click(); pg.wait_for_timeout(800)
             files.append(f)
         b.close()
     return files

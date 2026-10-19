@@ -58,7 +58,7 @@ export function SettingsTool() {
       <Reveal i={0} className="mb-3">
         <Card className="gap-3">
           <div className="flex items-center justify-between">
-            <Label emoji="gear" mark>
+            <Label>
               {t("growSet.display")}
             </Label>
             {saveState !== "idle" && (
@@ -79,7 +79,7 @@ export function SettingsTool() {
 
       <Reveal i={1} className="mb-3">
         <Card className="gap-2.5">
-          <Label emoji="pottedPlant" mark>
+          <Label>
             {t("growSet.grow")}
           </Label>
           <div onBlur={() => name.trim() && name !== g.grow?.name && saveGrow({ name: name.trim() })}>
@@ -96,7 +96,7 @@ export function SettingsTool() {
 
       <Reveal i={2} className="mb-3">
         <Card className="gap-2.5">
-          <Label emoji="testTube" mark>
+          <Label>
             {t("growSet.nutrition")}
           </Label>
           <NutritionFields value={g.grow?.nutrition ?? g.nutrition} onChange={(n) => saveGrow({ nutrition: n })} idPrefix="g" />
@@ -106,7 +106,7 @@ export function SettingsTool() {
       <Reveal i={3} className="mb-3">
         <Card className="gap-1.5">
           <div className="flex items-center justify-between">
-            <Label emoji="herb" mark>
+            <Label>
               {t("growSet.spaces")}
             </Label>
             <AddBtn onClick={() => setSpaceSheet({ open: true })}>{t("space.add")}</AddBtn>
@@ -160,7 +160,7 @@ export function SettingsTool() {
       <Reveal i={4} className="mb-3">
         <Card className="gap-1.5">
           <div className="flex items-center justify-between">
-            <Label emoji="compass" mark>
+            <Label>
               {t("site.title")}
             </Label>
             <AddBtn onClick={() => setSiteSheet({ open: true })}>{t("site.add")}</AddBtn>
@@ -185,7 +185,7 @@ export function SettingsTool() {
       <Reveal i={5} className="mb-3">
         <Card className="gap-1.5">
           <div className="flex items-center justify-between">
-            <Label emoji="sprout" mark>
+            <Label>
               {t("growSet.cycles")}
             </Label>
             <AddBtn onClick={() => ed.openCycle({ cycleId: "new" })}>{t("growSet.newCycle")}</AddBtn>

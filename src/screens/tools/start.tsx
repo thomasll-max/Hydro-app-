@@ -40,7 +40,7 @@ export function useStartChecklist(): StartItem[] {
 }
 
 /** What a checklist line opens. */
-function useStartAction() {
+export function useStartAction() {
   const ed = useEditors()
   const { spaces } = useGrow()
   return (item: StartItem) => {
@@ -88,7 +88,7 @@ export function StartTool() {
       <Reveal i={0}>
         <Card className="gap-1" id="start-list">
           <div className="flex items-center justify-between gap-2">
-            <Label emoji="pottedPlant">{t("start.enter")}</Label>
+            <Label>{t("start.enter")}</Label>
             <span className="text-[0.75rem] font-semibold text-fg-2 tabular-nums" id="start-count">
               {done} / {total}
             </span>
@@ -124,7 +124,7 @@ export function StartTool() {
       <Reveal i={1}>
         <Card id="start-how">
           <div className="px-0.5 pt-3">
-            <Label emoji="compass">{t("start.how")}</Label>
+            <Label>{t("start.how")}</Label>
           </div>
           <Accordion type="single" collapsible defaultValue="day">
             {HOW.filter((h) => !h.local || TARGET === "local").map((h) => (

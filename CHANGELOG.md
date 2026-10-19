@@ -1,5 +1,16 @@
 # Changelog
 
+## Lot 10k1b — Aujourd'hui calme (19/10/2026)
+Constat de Thomas : « plein d'infos éparpillées, ça donne mal à la tête ». Aujourd'hui suit maintenant la planche validée : un seul endroit où poser le regard.
+- **« Bonjour Thomas. »** devient le titre de l'écran.
+- **Maintenant** : un seul bloc encadré, avec le seul bouton plein. Il dit la chose la plus importante, dans cet ordre : une valeur hors cible dans la saisie d'hier ou d'aujourd'hui (avec la correction de l'app), la saisie du jour pas encore faite (après l'allumage), une échéance du jour ou en retard, sinon « Tout est à jour ». En dessous : « Ensuite : passer en 12/12 · dans 2 j ».
+- **À faire** : trois tâches au plus, puis « + 2 autres · Tout le calendrier → ».
+- **Espaces** : une ligne par espace, avec son carré de couleur, son stade et un seul état (« dans la cible », « bidon ≈ 1 j », « 19° · 61 % », « pas de cycle »…). Toucher la ligne ouvre l'espace.
+- **Premiers pas** : un bandeau fin tout en haut, fermable, avec une barre de progression et « Y aller » qui ouvre l'étape suivante. La sauvegarde devient une ligne de « À faire » quand elle est due.
+- **Retirés** : la bande de la semaine (le calendrier s'ouvre par la date en haut et « Tout le calendrier → »), le résumé en lignes, les cartes d'espace à quatre relevés (ils sont dans la page de l'espace). Le résumé du matin envoyé à 9 h ne change pas.
+- **Petits dessins** seulement sur les espaces, « Maintenant » et le bandeau : plus sur les titres de section (Journal, Graphiques, Réglages, Calendrier) ni sur les relevés.
+- 350 tests.
+
 ## Lot 10k1a — Typographie droite (19/10/2026)
 Retour de Thomas : les titres en Fraunces « mous » ne lui plaisent pas, et les chiffres en police code s'intègrent mal (chasse trop large, « 38  % » espacé, deux familles mélangées).
 - **Titres** en Geologica 700, droits et serrés (choix de Thomas parmi cinq polices) : titres d'écran, de section, de carte, « Bonjour Thomas. ».

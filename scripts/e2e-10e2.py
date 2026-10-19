@@ -21,7 +21,8 @@ with sync_playwright() as p:
     pg.on("pageerror", lambda e: errors.append(f"PAGEERROR {e}"))
     pg.goto(f"file://{page_file}"); pg.wait_for_timeout(2500)
     body = pg.inner_text("body")
-    checks["plural"] = "2 espaces" in body and "(s)" not in body
+    # No « (s) » anywhere (the plural rules are unit-tested; « 2 espaces » of the summary left Aujourd'hui in lot 10k1).
+    checks["plural"] = "(s)" not in body and "Espaces" in body
     checks["tabCurrent"] = pg.locator("[role=tab][aria-current=page]").inner_text().strip()
     checks["displayName"] = pg.locator("#display-menu").get_attribute("aria-label")
     # Entry sheet: the (i) of VPD.

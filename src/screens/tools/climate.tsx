@@ -46,7 +46,7 @@ export function ClimateTool() {
       <Reveal i={0}>
         <Card className="gap-3" id="clim-vpd">
           <div className="flex items-center justify-between gap-2">
-            <Label emoji="thermometer">{t("clim.vpd")}</Label>
+            <Label>{t("clim.vpd")}</Label>
             {last && <Chip>{t("clim.fromEntry", { date: last.date.slice(8, 10) + "/" + last.date.slice(5, 7) })}</Chip>}
           </div>
           <Grid cols={3}>
@@ -84,7 +84,7 @@ export function ClimateTool() {
 
       <Reveal i={1}>
         <Card className="gap-2.5" id="clim-air">
-          <Label emoji="cyclone">{t("clim.air")}</Label>
+          <Label>{t("clim.air")}</Label>
           {!air ? (
             <Notice>{t("clim.noExtractor")}</Notice>
           ) : (

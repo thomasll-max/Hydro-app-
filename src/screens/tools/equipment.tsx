@@ -105,7 +105,7 @@ export function EquipmentTool() {
           <Reveal i={shown.length + 1} className="mb-3">
             <Card data-drop="stock" className={cn("gap-2 transition-colors", over === "stock" && "border-water")}>
               <div className="flex items-center justify-between">
-                <Label emoji="toolbox">{t("equip.stock")}</Label>
+                <Label>{t("equip.stock")}</Label>
                 <span className="text-[0.75rem] text-fg-3">{t("equip.stockD")}</span>
               </div>
               {inStock.length ? (
@@ -124,7 +124,7 @@ export function EquipmentTool() {
         EQUIPMENT_TYPES.filter((ty) => inventory.some((e) => e.type === ty)).map((ty, i) => (
           <Reveal key={ty} i={i + 1} className="mb-3">
             <Card className="gap-1.5">
-              <Label emoji={TYPE_EMOJI[ty]}>{t(`equip.types.${ty}`)}</Label>
+              <Label>{t(`equip.types.${ty}`)}</Label>
               <ul>
                 {inventory
                   .filter((e) => e.type === ty)
@@ -161,7 +161,7 @@ export function EquipmentTool() {
       <Reveal i={spaces.length + 3} className="mb-3">
         <Card className="gap-2">
           <div className="flex items-center justify-between gap-2">
-            <Label emoji="bulb">{t("equip.library")}</Label>
+            <Label>{t("equip.library")}</Label>
             <button onClick={() => open({ type: "lamp", library: true })} className={tertiary}>
               <Plus className="size-4" /> {t("common.add")}
             </button>

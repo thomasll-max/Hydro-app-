@@ -40,7 +40,6 @@ import type { MessageKey } from "@/i18n/types"
 import type { Space } from "@/model/grow"
 import type { GrowEvent } from "@/model/types"
 import { joined, segmentItem, toggle } from "@/components/hydro/styles"
-import type { EmojiName } from "@/assets/emoji"
 
 const STORE = "hydro.charts"
 /** `curves` null: never chosen, the defaults follow the spaces shown (sensor or weighing). */
@@ -64,28 +63,6 @@ function savePrefs(p: Prefs) {
 
 /** Curve colours in the overlay view when one space is shown (the 8 accessible space colours). */
 const PALETTE = ["emerald", "sky", "violet", "amber", "rose", "teal", "orange", "slate"] as const
-
-/** The drawing of each chart's title (lot 10j): the same landmarks as on Aujourd'hui. */
-const CURVE_EMOJI: Record<CurveId, EmojiName> = {
-  dryback: "sweat",
-  drybackSensor: "sweat",
-  ecIn: "testTube",
-  ecRunoff: "testTube",
-  phIn: "testTube",
-  phRunoff: "testTube",
-  balance: "jar",
-  volume: "droplet",
-  runoffPct: "droplet",
-  temp: "thermometer",
-  rh: "wind",
-  vpd: "droplet",
-  ppfd: "sun",
-  dli: "sun",
-  height: "herb",
-  germination: "sprout",
-  use: "bucket",
-  reservoir: "bucket",
-}
 
 export function ChartsScreen() {
   const { t, num, dm } = useSettings()
@@ -232,7 +209,7 @@ export function ChartsScreen() {
           <Reveal key={c} i={2 + i} className="mb-3">
             <Card className="gap-2" data-curve={c}>
               <div className="flex items-center justify-between gap-2 px-1">
-                <Label emoji={CURVE_EMOJI[c]} mark>
+                <Label>
                   {curveName(c)}
                 </Label>
                 <span className="text-[0.75rem] text-fg-3">{CURVE_DEFS[c].unit}</span>
@@ -250,7 +227,7 @@ export function ChartsScreen() {
         <Reveal i={2} className="mb-3">
           <Card className="gap-2">
             <div className="px-1">
-              <Label emoji="chart" mark>
+              <Label>
                 {t("charts.overlayTitle")}
               </Label>
             </div>
@@ -287,7 +264,7 @@ export function ChartsScreen() {
       {hasData && events.length > 0 && (
         <Reveal i={3} className="mb-3">
           <Card className="gap-1">
-            <Label emoji="calendar" mark>
+            <Label>
               {t("charts.events")}
             </Label>
             <ul className="mt-1">

@@ -72,7 +72,7 @@ with sync_playwright() as p:
     checks["cycleDone"] = pg.get_attribute("#start-cycle", "data-done")
     pg.screenshot(path=str(out / "07-start-today.png"), full_page=True)
     pg.goto(f"file://{page_file}#today"); pg.wait_for_timeout(2500)
-    bonjour = pg.locator("#bonjour").first.inner_text()  # lot 10h: « Bonjour Thomas. » and sentences
+    bonjour = pg.locator("#hello").inner_text() + "\n" + pg.locator("#now").inner_text()  # lot 10k1: the title and « Maintenant »
     checks["bonjour"] = [l for l in bonjour.split("\n") if l.strip()][:12]
     pg.screenshot(path=str(out / "08-bonjour.png"), full_page=True)
     ctx.close()

@@ -58,19 +58,11 @@ export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "prima
 }
 
 /**
- * Section title (lot 10h; Geologica 700 since lot 10k): normal case, no small capitals. `emoji` is drawn only with `mark` (lot 10j: the
- * small drawings come back as landmarks on Aujourd'hui and the main screens; Outils keeps plain titles).
+ * Section title (lot 10h; Geologica 700 since lot 10k): normal case, no small capitals, and no drawing (règle « calme »
+ * 3 of lot 10k: the 3D drawings stay on the spaces, « Maintenant » and the Premiers pas banner).
  */
-export function Label({ emoji, mark, children, className }: { emoji?: EmojiName; mark?: boolean; children: ReactNode; className?: string }) {
-  const title = <h2 className={cn("display min-w-0 text-[1.1875rem] leading-tight", className)}>{children}</h2>
-  if (!mark || !emoji) return title
-  // Very narrow screens (zoom 200 %): the drawing steps aside, the words keep the room.
-  return (
-    <div className="flex min-w-0 items-center gap-2.5">
-      <Emoji name={emoji} size={24} className="max-[260px]:hidden" />
-      {title}
-    </div>
-  )
+export function Label({ children, className }: { children: ReactNode; className?: string }) {
+  return <h2 className={cn("display min-w-0 text-[1.1875rem] leading-tight", className)}>{children}</h2>
 }
 
 /**

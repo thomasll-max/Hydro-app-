@@ -120,7 +120,7 @@ export function OwnRecipeTool() {
       <Reveal i={0}>
         <Card className="gap-3" id="own-tank">
           <div className="flex items-center justify-between gap-2">
-            <Label emoji="testTube">{t("own.title")}</Label>
+            <Label>{t("own.title")}</Label>
             <Chip>{t("growSet.ownLine")}</Chip>
           </div>
           <p className="text-[0.8125rem] leading-[1.45] text-fg-2">{t("own.desc")}</p>
@@ -131,7 +131,7 @@ export function OwnRecipeTool() {
               <p className="text-[0.8125rem] leading-[1.45]">{last.recipe}</p>
             </div>
           )}
-          {st?.key === "flush" && <Notice>{t("row.wateringFlushOwn")}</Notice>}
+          {st?.key === "flush" && <Notice>{t("digest.wateringFlushOwn")}</Notice>}
           <div>
             <div className="mb-1 flex items-center justify-between gap-2">
               <span className="text-[0.75rem] font-medium text-fg-2">{t("own.phase")}</span>
@@ -254,7 +254,7 @@ function OwnLineCard() {
     <Reveal i={1}>
       <Card className="gap-2.5" id="own-line">
         <div className="flex items-center justify-between gap-2">
-          <Label emoji="testTube">{t("own.line")}</Label>
+          <Label>{t("own.line")}</Label>
           <button type="button" onClick={() => setLabel(true)} className={secondary} id="own-from-label">
             {t("own.fromLabel")}
           </button>

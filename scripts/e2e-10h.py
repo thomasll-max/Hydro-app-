@@ -8,10 +8,10 @@
 - reminders: a square check box (22 px, radius 6) that ticks and unticks;
 - keyboard focus: 2 px « eau » outline, 2 px away;
 10h2, with a cycle and entries seeded: readings (bar, target zone, tick in « à surveiller » / « alerte » out of target),
-« Bonjour Thomas. » upright (Geologica 700 since lot 10k) then lines (sentences until lot 10j), sections without frames, space tabs underlined,
+« Bonjour Thomas. » upright (Geologica 700 since lot 10k, the title of the screen since lot 10k1), sections without frames, space tabs underlined,
 the cycle step button with its consequence, the journal in one line per day with the plants under it;
-10h3: the tab bar anchored at the bottom (page ground, thin line, « + » 52 × 44 in the middle, four tabs), the week strip
-(7 days, ≤ 64 px, today underlined, a day opens the Calendar on it and back returns), the date of the top bar,
+10h3: the tab bar anchored at the bottom (page ground, thin line, « + » 52 × 44 in the middle, four tabs), no week strip
+(removed in lot 10k1), the date of the top bar,
 « Tout le calendrier → », the Calendar at the top of Outils, « Tous les réglages → » of the display menu (back returns
 to the Journal), tapping Aujourd'hui again goes back to the top, no screen motion with reduced motion.
 Usage: npm run preview:build && PYTHONPATH=scripts python3 scripts/e2e-10h.py dist-preview/index.html <out dir>"""
@@ -60,23 +60,24 @@ with sync_playwright() as p:
         c["spaceDot"] = pg.evaluate("""() => { const d = [...document.querySelectorAll('span[aria-hidden=true]')].find((s) => (s.getAttribute('style') || '').includes('--space-')); const r = d.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height), getComputedStyle(d).borderRadius] }""")
         if c["spaceDot"] != [10, 10, "3px"]: errors.append(f"{theme} space dot {c['spaceDot']}")
 
-        # Reminders of « À venir »: a square check box.
+        # A square check box (« Fait »). Since lot 10k1 Aujourd'hui may hold the only item of the day in « Maintenant »
+        # (« C'est fait »): the box is taken from the day sheet of the calendar.
+        pg.goto(f"file://{page_file}#calendar"); pg.wait_for_timeout(1500)
+        pg.locator("button[aria-current=date]").first.click(); pg.wait_for_timeout(800)
         box = pg.get_by_role("checkbox", name="Fait").first
         c["check"] = box.evaluate("(el) => { const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return [Math.round(r.width), s.borderRadius, el.getAttribute('aria-checked')] }")
         if c["check"][:2] != [22, "6px"]: errors.append(f"{theme} check box {c['check']}")
         if theme == "light":
             box.click(); pg.wait_for_selector("text=C'est noté", timeout=8000); pg.wait_for_timeout(800)
-            # The day sheet of the calendar keeps done items: ticked in « plante », and a second tap unticks.
-            pg.goto(f"file://{page_file}#calendar"); pg.wait_for_timeout(1500)
-            pg.locator("button[aria-current=date]").first.click(); pg.wait_for_timeout(800)
+            # The day sheet keeps done items: ticked in « plante », and a second tap unticks.
             c["ticked"] = pg.evaluate("() => [...document.querySelectorAll('[role=checkbox][aria-checked=true]')].map((el) => getComputedStyle(el).backgroundColor)")
             if not c["ticked"] or c["ticked"][0] != rgb(PALETTE[theme]["--leaf"]): errors.append(f"ticked {c['ticked']}")
             pg.screenshot(path=str(out / "day-sheet-ticked.png"))
             pg.locator("[role=checkbox][aria-checked=true]").first.click(); pg.wait_for_timeout(1200)
             c["unticked"] = pg.locator("[role=checkbox][aria-checked=true]").count()
             if c["unticked"]: errors.append("untick failed")
-            pg.keyboard.press("Escape"); pg.wait_for_timeout(500)
-            pg.goto(f"file://{page_file}"); pg.wait_for_timeout(1500)
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(500)
+        pg.goto(f"file://{page_file}"); pg.wait_for_timeout(1500)
 
         # Keyboard focus on a button.
         pg.locator("#display-menu").focus(); pg.keyboard.press("Shift+Tab"); pg.keyboard.press("Tab"); pg.wait_for_timeout(200)
@@ -125,10 +126,10 @@ with sync_playwright() as p:
         pg.evaluate("""(docs) => new Promise((res, rej) => { const r = indexedDB.open('hydro', 1); r.onsuccess = () => { const tx = r.result.transaction('docs', 'readwrite'); const s = tx.objectStore('docs'); for (const [k, v] of Object.entries(docs)) s.put(v, k); tx.oncomplete = () => res(true); tx.onerror = () => rej(tx.error) } })""", docs)
         pg.reload(); pg.wait_for_timeout(2500)
         c = {}
-        c["bonjour"] = pg.evaluate("""() => { const h = document.querySelector('#bonjour h2'); const s = getComputedStyle(h); return { text: h.textContent, font: s.fontFamily.split(',')[0], style: s.fontStyle, weight: s.fontWeight, lists: document.querySelectorAll('#bonjour ul, #bonjour li').length, sentences: [...document.querySelectorAll('#bonjour p')].map((p) => p.textContent.trim()) } }""")
+        c["bonjour"] = pg.evaluate("""() => { const h = document.querySelector('#hello'); const s = getComputedStyle(h); return { text: h.textContent, font: s.fontFamily.split(',')[0], style: s.fontStyle, weight: s.fontWeight, now: !!document.querySelector('#now') } }""")
         bj = c["bonjour"]
-        # Lot 10j: the summary is in short lines (one per idea), no more sentences.
-        if bj["text"] != "Bonjour Thomas." or "Geologica" not in bj["font"] or bj["style"] != "normal" or bj["weight"] != "700" or not bj["lists"]: errors.append(f"{theme} bonjour {bj}")
+        # Lot 10k1: « Bonjour Thomas. » is the title of the screen, « Maintenant » under it (the summary in lines is gone).
+        if bj["text"] != "Bonjour Thomas." or "Geologica" not in bj["font"] or bj["style"] != "normal" or bj["weight"] != "700" or not bj["now"]: errors.append(f"{theme} bonjour {bj}")
         c["tabs"] = pg.evaluate("""() => { const g = document.querySelector('[role=group][aria-label]'); const on = g.querySelector('[aria-pressed=true]'); const u = on.querySelector('span.absolute'); return { radius: getComputedStyle(g).borderRadius, line: u && getComputedStyle(u).backgroundColor, h: u && u.getBoundingClientRect().height } }""")
         if c["tabs"]["radius"] != "0px" or c["tabs"]["line"] != rgb(PALETTE[theme]["--water"]) or c["tabs"]["h"] != 2: errors.append(f"{theme} space tabs {c['tabs']}")
         pg.get_by_role("group").first.get_by_role("button", name="Floraison").click(); pg.wait_for_timeout(1500)
@@ -162,17 +163,9 @@ with sync_playwright() as p:
     c["bar"] = pg.evaluate("""() => { const n = document.querySelector('nav[aria-label]'); const r = n.getBoundingClientRect(); const s = getComputedStyle(n); const plus = n.querySelector('button[aria-label="Saisie du jour"]'); const p = plus.getBoundingClientRect(); return { bottom: Math.round(r.bottom), left: r.left, width: Math.round(r.width), bg: s.backgroundColor, top: s.borderTopWidth, tabs: [...n.querySelectorAll('[role=tab]')].map((x) => x.textContent.trim()), plus: [Math.round(p.width), Math.round(p.height), getComputedStyle(plus).borderRadius, getComputedStyle(plus).backgroundColor, Math.round(p.left + p.width / 2)] } }""")
     bar = c["bar"]
     if bar["bottom"] != 844 or bar["left"] != 0 or bar["width"] != 390 or bar["bg"] != rgb(PALETTE["dark"]["--page"]) or bar["top"] != "1px" or bar["tabs"] != ["Aujourd'hui", "Journal", "Graphiques", "Outils"] or bar["plus"] != [52, 44, "12px", rgb(PALETTE["dark"]["--water"]), 195]: errors.append(f"tab bar {bar}")
-    c["week"] = pg.evaluate("""() => { const w = document.querySelector('#week-strip'); const days = [...w.querySelectorAll('.grid > button')]; const t = w.querySelector('[aria-current=date]'); return { h: Math.round(w.getBoundingClientRect().height), n: days.length, today: t && t.getAttribute('aria-label'), line: t && getComputedStyle(t.children[1]).textDecorationColor, first: days[0].children[0].textContent } }""")
-    wk = c["week"]
-    if wk["n"] != 7 or wk["h"] > 64 or not wk["today"] or "prévu" not in wk["today"] or wk["line"] != rgb(PALETTE["dark"]["--water"]) or not wk["first"].startswith("lun"): errors.append(f"week strip {wk}")
-    day = pg.locator("#week-strip .grid > button").nth(6)
-    day.click(); pg.wait_for_timeout(1500)
-    c["weekDay"] = [h(), pg.locator("[data-slot=drawer-content]").count()]
-    if not c["weekDay"][0].startswith("#calendar/") or not c["weekDay"][1]: errors.append(f"week day {c['weekDay']}")
-    pg.screenshot(path=str(out / "week-day.png"))
-    pg.go_back(); pg.wait_for_timeout(800); pg.go_back(); pg.wait_for_timeout(1200)
-    c["weekBack"] = [h(), pg.locator("[role=tab][aria-current=page]").inner_text().strip()]
-    if c["weekBack"] != ["", "Aujourd'hui"]: errors.append(f"back from the week strip {c['weekBack']}")
+    # Lot 10k1: the week strip left Aujourd'hui (the date of the top bar and « Tout le calendrier → » open the Calendar).
+    c["week"] = pg.locator("#week-strip").count()
+    if c["week"]: errors.append("week strip still on Aujourd'hui")
     pg.click("#today-date"); pg.wait_for_timeout(1200)
     c["dateBtn"] = h()
     pg.click("#cal-back"); pg.wait_for_timeout(1200)

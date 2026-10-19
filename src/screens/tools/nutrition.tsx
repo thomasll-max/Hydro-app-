@@ -234,7 +234,7 @@ function LineNutrition() {
       <Reveal i={0}>
         <Card className="gap-3">
           <div className="flex items-center justify-between gap-2">
-            <Label emoji="testTube">{t("nut.recipe")}</Label>
+            <Label>{t("nut.recipe")}</Label>
             <Chip>{`${t("nut.line")} · ${cat.name}`}</Chip>
           </div>
           <div className="flex items-center justify-between gap-2">
@@ -308,7 +308,7 @@ function LineNutrition() {
 
       <Reveal i={1}>
         <Card>
-          <Label emoji="testTube" className="px-3.5">
+          <Label className="px-3.5">
             {t("nut.order")}
           </Label>
           <ol className="mt-2" id="nut-order">
@@ -374,7 +374,7 @@ function LineNutrition() {
 
       <Reveal i={3}>
         <Card className="gap-3" id="nut-tank">
-          <Label emoji="bucket">{t("nut.tank")}</Label>
+          <Label>{t("nut.tank")}</Label>
           {feedable.length > 1 && (
             <div>
               <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.tankFor")}</div>

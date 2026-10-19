@@ -453,7 +453,7 @@ function ExportCard() {
   }
   return (
     <Card className="gap-2">
-      <Label emoji="calendar">{t("cal.export")}</Label>
+      <Label>{t("cal.export")}</Label>
       <p className="text-[0.78125rem] leading-[1.45] text-fg-2">
         {t("cal.exportHint")}
         {TARGET !== "local" && ` ${t("cal.exportZip")}`}

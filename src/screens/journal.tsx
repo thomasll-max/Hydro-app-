@@ -110,7 +110,7 @@ export function JournalScreen() {
         {/* The cycle is an object apart: it keeps a frame (lot 10j). */}
         <Card framed className="gap-3" id="journal-cycle">
           <div className="flex items-center justify-between">
-            <Label emoji="sprout" mark>
+            <Label>
               {t("journal.cycle")}
             </Label>
             <Button variant="link" size="sm" className="px-0" onClick={() => ed.openCycle()}>
@@ -138,7 +138,7 @@ export function JournalScreen() {
       {showCycle && space?.modules.plants && (
       <Reveal i={1} className="mb-3">
         <Card>
-          <Label emoji="pottedPlant" mark>
+          <Label>
             {t("journal.plants")}
           </Label>
           <div className="mt-2.5 grid grid-cols-4 gap-2">
@@ -180,7 +180,7 @@ export function JournalScreen() {
       <Reveal i={3} className="mb-3">
         <Card>
           <div className="flex items-center justify-between">
-            <Label emoji="book" mark>
+            <Label>
               {t("journal.history")}
             </Label>
             <span className="font-num text-[0.75rem] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
@@ -289,7 +289,7 @@ export function JournalScreen() {
           <Accordion type="multiple">
             <AccordionItem value="events" className="border-line">
               <AccordionTrigger className="py-3.5 hover:no-underline">
-                <Label emoji="calendar" mark>{`${t("journal.events")} · ${events.length}`}</Label>
+                <Label>{`${t("journal.events")} · ${events.length}`}</Label>
               </AccordionTrigger>
               <AccordionContent>
                 {events.length === 0 ? (
@@ -313,7 +313,7 @@ export function JournalScreen() {
             </AccordionItem>
             <AccordionItem value="mixes" className="border-line">
               <AccordionTrigger className="py-3.5 hover:no-underline">
-                <Label emoji="testTube" mark>{`${t("journal.mixes")} · ${mixes.length}`}</Label>
+                <Label>{`${t("journal.mixes")} · ${mixes.length}`}</Label>
               </AccordionTrigger>
               <AccordionContent>
                 {mixes.length === 0 ? (
@@ -339,7 +339,7 @@ export function JournalScreen() {
             {cycle && (
             <AccordionItem value="harvest" className="border-0">
               <AccordionTrigger className="py-3.5 hover:no-underline">
-                <Label emoji="jar" mark>
+                <Label>
                   {t("journal.harvest")}
                 </Label>
               </AccordionTrigger>

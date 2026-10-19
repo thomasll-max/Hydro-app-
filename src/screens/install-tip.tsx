@@ -16,7 +16,7 @@ export function InstallTip() {
   if (installed()) return null
   return (
     <Card className="gap-2" id="install-tip">
-      <Label emoji="pottedPlant">{t("install.title")}</Label>
+      <Label>{t("install.title")}</Label>
       <ul className="flex flex-col gap-1.5 text-[0.78125rem] leading-[1.45] text-fg-2">
         <li>
           <span className="font-semibold text-fg">iPhone</span> · {t("install.ios")}

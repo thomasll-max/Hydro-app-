@@ -33,7 +33,7 @@ export function SpaceTile({ color, emoji, size = 42 }: { color?: SpaceColor; emo
 
 export function SpacePill() {
   const { t, settings, setSpace } = useSettings()
-  const { spaces, sites } = useGrow()
+  const { spaces, sites, selection } = useGrow()
   const ref = useRef<HTMLDivElement>(null)
   const value = settings.space ?? "all"
   useEffect(() => {
@@ -41,7 +41,8 @@ export function SpacePill() {
     const el = ref.current?.querySelector<HTMLElement>("[aria-pressed='true']")
     if (el && typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "nearest", inline: "nearest" })
   }, [value])
-  if (spaces.length < 2 && !sites.length) return null
+  // One space: no tabs, except while that space is open (lot 10k1: its line on Aujourd'hui opens it), to come back to « Tous ».
+  if (spaces.length < 2 && !sites.length && selection.kind !== "space") return null
 
   const groups = groupBySite(spaces, sites)
   const item = (id: string, label: string, color?: SpaceColor, site?: boolean) => {

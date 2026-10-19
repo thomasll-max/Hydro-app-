@@ -99,7 +99,7 @@ export function IpwTool() {
       <Reveal i={1}>
         <Card className="gap-2.5" id="ipw-window">
           <div className="flex items-center justify-between gap-2">
-            <Label emoji="sweat">{t("ipw.window")}</Label>
+            <Label>{t("ipw.window")}</Label>
             <Chip tone={allowed.ok ? "primary" : "warn"}>{allowed.ok ? t("ipw.allowed") : t("ipw.blocked")}</Chip>
           </div>
           {allowed.ok ? (
@@ -113,7 +113,7 @@ export function IpwTool() {
 
       <Reveal i={2}>
         <Card className="gap-3">
-          <Label emoji="testTube">{t("ipw.protocol")}</Label>
+          <Label>{t("ipw.protocol")}</Label>
           <Seg<IpwProtocol> label={t("ipw.protocol")} value={protocol} onChange={setProtocol} options={IPW_PROTOCOLS.map((p) => ({ value: p, label: t(`ipw.p.${p}`) }))} />
           <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t(`ipw.pd.${protocol}`)}</p>
           <div className="grid grid-cols-[1fr_1fr] items-end gap-2.5">
@@ -140,7 +140,7 @@ export function IpwTool() {
 
       <Reveal i={3}>
         <Card className="gap-1">
-          <Label emoji="book">{t("ipw.checklist")}</Label>
+          <Label>{t("ipw.checklist")}</Label>
           <ul className="mt-1.5 flex flex-col" id="ipw-checklist">
             {IPW_CHECKLIST.map((c) => {
               const on = checked.includes(c)
@@ -169,7 +169,7 @@ export function IpwTool() {
 
       <Reveal i={4}>
         <Card className="gap-1.5">
-          <Label emoji="calendar">{t("ipw.history")}</Label>
+          <Label>{t("ipw.history")}</Label>
           {running && enabled && <p className="text-[0.78125rem] font-medium text-primary">{t("ipw.next", { date: fmt(running.date) })}</p>}
           {mine.length === 0 ? (
             <p className="text-[0.78125rem] text-fg-3">{t("ipw.none")}</p>

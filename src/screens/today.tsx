@@ -1,7 +1,8 @@
 import { Reading } from "@/components/hydro/reading"
 import { Loading } from "@/components/hydro/wordmark"
-import { useEffect, useMemo, useState } from "react"
-import { SpaceToday, AllToday } from "./today-spaces"
+import { useMemo, useState } from "react"
+import { SpaceToday, DigestKeeper } from "./today-spaces"
+import { CalmToday, useAdviceText, useNowMinutes } from "./today-calm"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Spark } from "@/components/hydro/spark"
@@ -20,30 +21,16 @@ import { cn } from "@/lib/utils"
 import type { Entry } from "@/model/types"
 import { drybackMethodOf } from "@/model/entry"
 import { GuideLine } from "./guide-line"
-import type { MessageKey } from "@/i18n/types"
 import { LastHarvest, StepCard } from "./cycle-steps"
 import { nextStep } from "@/calc/steps"
 import { tertiary } from "@/components/hydro/styles"
-import { WeekStrip } from "./week-strip"
 import { lowerWord } from "@/i18n/core"
-
-function useNowMinutes() {
-  const now = () => {
-    const d = new Date()
-    return d.getHours() * 60 + d.getMinutes()
-  }
-  const [m, setM] = useState(now)
-  useEffect(() => {
-    const id = setInterval(() => setM(now()), 30_000)
-    return () => clearInterval(id)
-  }, [])
-  return m
-}
 
 /** Culture view of one space (stage, targets, program, last entry, one correction). `extra` goes under the hero. */
 function CultureToday({ extra }: { extra?: React.ReactNode }) {
-  const { t, num, range, dm, settings } = useSettings()
+  const { t, num, dm, settings } = useSettings()
   const { ready, cycle, entries, space, targetsFor } = useGrow()
+  const adviceText = useAdviceText()
   const ed = useEditors()
   const nowMin = useNowMinutes()
   const [allRows, setAllRows] = useState(false)
@@ -124,15 +111,11 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
           )}
           <div className="min-w-0 flex-1">
             <b className="block text-[0.9375rem] font-semibold">
-              {advice ? t(`${advice.key}.title` as MessageKey) : last ? t("today.allGood") : t("today.noEntryTitle")}
+              {advice ? adviceText(advice).title : last ? t("today.allGood") : t("today.noEntryTitle")}
             </b>
             <p className="mt-0.5 text-[0.875rem] leading-[1.45] text-fg-2">
               {advice
-                ? t(advice.bodyKey as MessageKey, {
-                    value: num(advice.vars.value, advice.metric.startsWith("ph") || advice.metric.startsWith("ec") || advice.metric === "dli" ? 1 : advice.metric === "vpd" ? 2 : 0),
-                    aim: num(advice.vars.aim, 1),
-                    range: t("advice.range", { range: range(advice.vars.lo, advice.vars.hi, advice.metric.startsWith("ph") || advice.metric.startsWith("ec") || advice.metric === "vpd" ? 1 : 0) }),
-                  })
+                ? adviceText(advice).body
                 : last
                   ? t("today.allGoodBody")
                   : t("today.noEntryBody")}
@@ -153,7 +136,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
           {/* Readings (lot 10h): label, value in mono, a bar with the day's target zone and a tick at the value. */}
           <Card className="gap-3" id="readings">
             <div className="flex items-baseline justify-between gap-2">
-              <Label emoji="chart" mark>
+              <Label>
                 {t("today.readings")}
               </Label>
               <span className="truncate font-num text-[0.75rem] text-fg-3">{last ? when : t("today.noEntryTitle")}</span>
@@ -200,7 +183,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
 
         <Reveal i={4}>
           <Card>
-            <Label emoji="droplet" mark>
+            <Label>
               {t("today.program")}
             </Label>
             {!ss && <p className="mt-2 text-[0.8125rem] text-fg-2">{t("irr.seedlingNote")}</p>}
@@ -253,9 +236,9 @@ export function TodayScreen() {
   if (!ready) return <Loading label={t("app.loading")} />
   return (
     <>
-      <WeekStrip />
+      <DigestKeeper />
       <GuideLine />
-      {selection.kind === "space" ? <SpaceToday space={selection.space} Culture={CultureToday} /> : <AllToday />}
+      {selection.kind === "space" ? <SpaceToday space={selection.space} Culture={CultureToday} /> : <CalmToday />}
     </>
   )
 }

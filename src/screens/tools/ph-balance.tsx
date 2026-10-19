@@ -94,7 +94,7 @@ function BalanceTool() {
       <Reveal i={0}>
         <Card className="gap-2.5">
           <div className="flex items-center justify-between gap-2">
-            <Label emoji="scales">{t("phb.target")}</Label>
+            <Label>{t("phb.target")}</Label>
             <Chip tone="primary">{srcText}</Chip>
           </div>
           <div className="text-[2.125rem] leading-none font-semibold tabular" id="phb-target">
@@ -107,7 +107,7 @@ function BalanceTool() {
 
       <Reveal i={1}>
         <Card className="gap-3">
-          <Label emoji="testTube">{t("phb.titration")}</Label>
+          <Label>{t("phb.titration")}</Label>
           <Grid>
             <NumField id="b-vol" label={t("phb.volume")} hint={last ? t("phb.volumeHint", { v: num(last.volumeL) }) : undefined} value={vol} onChange={setVol} />
             <NumField id="b-before" label={t("phb.before")} value={phBefore} onChange={setPhBefore} />
@@ -187,7 +187,7 @@ function BalanceTool() {
 
       <Reveal i={2}>
         <Card className="gap-1.5">
-          <Label emoji="book">{t("phb.how")}</Label>
+          <Label>{t("phb.how")}</Label>
           <ul className="flex list-disc flex-col gap-1 pl-5 text-[0.78125rem] leading-[1.45] text-fg-2">
             <li>{t("phb.how1")}</li>
             <li>{t("phb.how2")}</li>

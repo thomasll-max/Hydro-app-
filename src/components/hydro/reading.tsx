@@ -5,9 +5,7 @@ import { status as statusOf, type Status } from "@/calc/advice"
 import type { Target } from "@/calc/targets"
 import { useSettings } from "@/app/settings-context"
 import { InfoTip, type Term } from "./info"
-import { Emoji } from "./emoji"
 import { Value } from "./value"
-import type { EmojiName } from "@/assets/emoji"
 
 /** Where the bar starts and ends: the target with as much room on each side, widened to today's value. */
 export function readingScale(value: number | undefined, target?: Pick<Target, "lo" | "hi">, max?: number): [number, number] | null {
@@ -42,7 +40,6 @@ export function Reading({
   note,
   children,
   id,
-  emoji,
   compact,
 }: {
   label: string
@@ -60,8 +57,6 @@ export function Reading({
   /** Shown instead of the number (temperature / RH). */
   children?: ReactNode
   id?: string
-  /** A small drawing before the label (lot 10j, the cards of the spaces). */
-  emoji?: EmojiName
   /** The cards of the spaces (lot 10j): a smaller value, the bar kept, no line under it. */
   compact?: boolean
 }) {
@@ -71,7 +66,6 @@ export function Reading({
   return (
     <div className="min-w-0" id={id} data-status={st}>
       <div className={cn("flex min-w-0 items-center gap-1 text-[0.75rem]", compact ? "text-fg-2" : "text-fg-3")}>
-        {emoji && <Emoji name={emoji} size={15} className="mr-0.5" />}
         <span className="min-w-0 truncate">{label}</span>
         {term && <InfoTip term={term} />}
       </div>

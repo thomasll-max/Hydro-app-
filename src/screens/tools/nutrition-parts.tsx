@@ -40,7 +40,7 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
     <Reveal i={i}>
       <Card className="gap-2.5" id="nut-stocks">
         <div className="flex items-center justify-between gap-2">
-          <Label emoji="bucket">{t("nut.stocks")}</Label>
+          <Label>{t("nut.stocks")}</Label>
           {conc > 0 && (
             <button type="button" onClick={() => setOpen(true)} className={secondary}>
               {t("nut.stockAdd")}
@@ -180,7 +180,7 @@ export function CustomProductsCard({ i }: { i: number }) {
     <Reveal i={i}>
       <Card className="gap-2.5" id="nut-custom">
         <div className="flex items-center justify-between gap-2">
-          <Label emoji="testTube">{t("nut.custom")}</Label>
+          <Label>{t("nut.custom")}</Label>
           <button type="button" onClick={() => openFor(null)} className={secondary}>
             {t("nut.customAdd")}
           </button>

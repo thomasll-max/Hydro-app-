@@ -144,7 +144,7 @@ export function DataTool() {
     <div className="flex flex-col gap-3">
       <Reveal i={0}>
         <Card className="gap-2.5">
-          <Label emoji="bucket">{t("data.export")}</Label>
+          <Label>{t("data.export")}</Label>
           <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("data.exportD")}</p>
           <Button onClick={exportJson} disabled={busy} className="h-12" id="data-export">
             {t("data.exportBtn")}
@@ -172,7 +172,7 @@ export function DataTool() {
 
       <Reveal i={1}>
         <Card className="gap-2.5" id="data-import">
-          <Label emoji="notebook">{t("data.import")}</Label>
+          <Label>{t("data.import")}</Label>
           <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("data.importD")}</p>
           <input ref={file} type="file" accept=".json,application/json" className="hidden" id="data-file" onChange={(e) => pick(e.target.files?.[0])} />
           <Button variant="outline" onClick={() => file.current?.click()} disabled={busy} className="h-11">

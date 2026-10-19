@@ -347,7 +347,7 @@ function ImportCard() {
   }
   return (
     <Card className="mt-2 gap-2.5" id="onb-import">
-      <Label emoji="notebook">{t("onb.importTitle")}</Label>
+      <Label>{t("onb.importTitle")}</Label>
       <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("onb.importD")}</p>
       {pending ? (
         <>
@@ -578,7 +578,7 @@ function Recap({ draft }: { draft: Draft }) {
   ]
   return (
     <Card className="gap-1" id="onb-recap">
-      <Label emoji="notebook">{t("onb.recap")}</Label>
+      <Label>{t("onb.recap")}</Label>
       <dl className="mt-1">
         {rows.map(([k, v]) => (
           <div key={k} className="flex justify-between gap-3 border-t border-line py-2 text-[0.8125rem] first:border-t-0">

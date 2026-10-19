@@ -56,7 +56,7 @@ export function AskTool() {
     <div className="flex flex-col gap-3">
       <Reveal i={0}>
         <Card className="gap-2.5">
-          <Label emoji="book">{t("ask.title", { space: space.name })}</Label>
+          <Label>{t("ask.title", { space: space.name })}</Label>
           <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("ask.desc")}</p>
           {turns.length === 0 && live == null && (
             <div className="flex flex-wrap gap-1.5">

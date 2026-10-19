@@ -114,7 +114,7 @@ export function IrrigationTool() {
     <div className="flex flex-col gap-3">
       <Reveal i={0}>
         <Card className="gap-2.5" id="irr-equipment">
-          <Label emoji="droplet">{t("irr.method")}</Label>
+          <Label>{t("irr.method")}</Label>
           <p className="text-[0.78125rem] leading-[1.45] text-fg-2">
             {prec ? t("irr.methodPrec") : mode === "manual" && substrate === "coco" ? t("irr.methodManualCoco") : t("irr.methodManual")}
           </p>
@@ -126,7 +126,7 @@ export function IrrigationTool() {
       <Reveal i={1}>
         <Card className="gap-3">
           <div className="flex items-center justify-between">
-            <Label emoji="sprout">{t("irr.stage")}</Label>
+            <Label>{t("irr.stage")}</Label>
             {cycleStage && <Chip tone="primary">{t(stages.find((s) => s.v === cycleStage)!.k)}</Chip>}
           </div>
           <div className={joined()} role="radiogroup" aria-label={t("irr.stage")}>
@@ -149,7 +149,7 @@ export function IrrigationTool() {
       {tg && stage !== "inst" && (
         <Reveal i={3}>
           <Card>
-            <Label emoji="chart">{t("irr.targets")}</Label>
+            <Label>{t("irr.targets")}</Label>
             <div className="mt-2.5 grid grid-cols-2 gap-2">
               <Tile k={t("irr.steer")} v={tg.steer ? t(`steer.${tg.steer}`) : "—"} />
               <Tile
@@ -173,7 +173,7 @@ export function IrrigationTool() {
       <Reveal i={4}>
         <Card>
           <span className="flex items-center gap-1.5">
-            <Label emoji="droplet">{t("irr.program")}</Label>
+            <Label>{t("irr.program")}</Label>
             <InfoTip term="phases" />
           </span>
           {mode === "auto" && !input.flowMlPerMin && <Notice className="mt-2">{t("irr.noFlow")}</Notice>}
@@ -203,7 +203,7 @@ export function IrrigationTool() {
       {mode === "auto" && (
         <Reveal i={5}>
           <Card className="gap-3">
-            <Label emoji="scales">{t("irr.sensor")}</Label>
+            <Label>{t("irr.sensor")}</Label>
             <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("irr.sensorD")}</p>
             <Seg<SensorPhase>
               label={t("irr.sensor")}
@@ -261,7 +261,7 @@ function ManualTable({ rows, current, line }: { rows: ManualPhase[]; current: Ma
   const page = rows[0]?.src.kind === "athena" ? rows[0].src.page : undefined
   return (
     <Card className="gap-2" id="irr-manual">
-      <Label emoji="droplet">{t("irr.manualTable", { line })}</Label>
+      <Label>{t("irr.manualTable", { line })}</Label>
       <div className="grid grid-cols-[1.2fr_0.8fr_1fr_1fr] gap-x-2 px-1 text-[0.75rem] font-semibold text-fg-3 uppercase">
         <span>{t("irr.mStage")}</span>
         <span>{t("irr.mEc")}</span>

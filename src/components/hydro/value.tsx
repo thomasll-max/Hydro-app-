@@ -32,3 +32,16 @@ export function Value({ children, unit, size = "sm", className, tone }: { childr
     </span>
   )
 }
+
+/**
+ * A short phrase whose numbers take the number font (lot 10k: « bidon ≈ 2 j », « dernière saisie hier à 07:24 »): a
+ * number in Geologica 600 at the size of the text, a date or a time (« 07/02 », « 11:20 ») in Geologica 500.
+ */
+export function NumText({ children, quiet }: { children: string; /** A quiet line (a stage under a name): every number in 500. */ quiet?: boolean }) {
+  const parts = children.split(/(\d+(?:[.,:/]\d+)*)/)
+  return (
+    <>
+      {parts.map((p, i) => (i % 2 ? <span key={i} className={cn("font-num", quiet || /[:/]/.test(p) ? "font-medium" : "font-semibold")}>{p}</span> : p))}
+    </>
+  )
+}

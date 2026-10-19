@@ -82,6 +82,7 @@ Consigne de Thomas : que l'app ne fasse plus « générée par une IA ». On rem
      - En bas de la section « À faire », un lien texte « Tout le calendrier → ».
    - Le Calendrier n'a plus d'onglet propre : il s'ouvre depuis ces accès et depuis Outils (en haut de la liste). Ses liens profonds (`#calendar`) restent valides. Le retour depuis le Calendrier ramène à l'écran d'où on venait.
    - Les rappels du jour et à venir restent sur Aujourd'hui, dans la section « À faire ».
+   - **Raccourci Réglages dans le menu d'affichage** (demande de Thomas) : dans le menu qui s'ouvre depuis l'engrenage de la barre du haut (`DisplayMenu`, `src/components/hydro/top-bar.tsx`), sous Langue et Thème, un trait fin puis une ligne « Tous les réglages → » (lien tertiaire, 44 px de haut). Elle ferme le menu et ouvre `#tools/settings`. Le retour ramène à l'écran d'où on venait. Libellé traduit (FR/EN, puis DE au lot 10i).
 
 7. **Mouvement** : seulement les transitions d'écran courtes et les retours d'action (appui, case cochée, toast). `prefers-reduced-motion` est respecté.
 

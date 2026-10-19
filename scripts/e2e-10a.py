@@ -33,8 +33,8 @@ with sync_playwright() as p:
     pg.on("console", lambda m: m.type == "error" and errors.append(m.text))
     pg.on("pageerror", lambda e: errors.append(f"PAGEERROR {e}"))
     pg.goto(f"file://{page_file}"); pg.wait_for_timeout(2500)
-    pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_timeout(600)
-    # Several spaces and "Tous" selected: the quick sheet opens first; its link opens the full entry.
+    pg.click("#tab-plus"); pg.click("#add-quick"); pg.wait_for_timeout(600)
+    # Several spaces and "Tous" selected: the quick entry (from the « + » sheet since lot 10k3); its link opens the full entry.
     pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-date")
     pg.wait_for_timeout(400)
     pg.get_by_role("button", name="Enregistrer", exact=True).click(); pg.wait_for_timeout(600)

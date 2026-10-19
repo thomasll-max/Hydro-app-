@@ -23,7 +23,7 @@ with sync_playwright() as p:
     pg.get_by_role("button", name="Colonne").first.click()
     pg.wait_for_timeout(800)
     t0 = time.time()
-    pg.get_by_role("button", name="Saisie du jour").click()
+    pg.click("#tab-plus"); pg.click("#add-entry")
     pg.wait_for_selector("#e-tempDay")
     for sel, val in [("#e-tempDay", "25,5"), ("#e-tempNight", "21"), ("#e-rh", "68"), ("#e-sownCount", "4"), ("#e-germinatedCount", "3"),
                      ("#e-weightMorningKg", "1,2"), ("#e-weightPeakKg", "1,5"), ("#e-heightCm", "4")]:
@@ -41,7 +41,7 @@ with sync_playwright() as p:
     # Quick multi-space entry from "Tous".
     pg.get_by_role("button", name="Tous").first.click()
     pg.wait_for_timeout(600)
-    pg.get_by_role("button", name="Saisie du jour").click()
+    pg.click("#tab-plus"); pg.click("#add-quick")
     pg.wait_for_selector("#q-floraison-t")
     pg.fill("#q-floraison-t", "26")
     pg.fill("#q-floraison-rh", "60")

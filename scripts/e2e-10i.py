@@ -78,7 +78,7 @@ with sync_playwright() as p:
                     if checks["settingsLangs"] != ["FR", "EN", "DE"]: errors.append(f"settings languages {checks['settingsLangs']}")
             # The entry and reminder sheets, the display menu.
             pg.goto(f"file://{page_file}"); pg.reload(); pg.wait_for_timeout(1800)
-            pg.get_by_role("button", name="Tageseintrag").click(); pg.wait_for_timeout(700)
+            pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_timeout(700)
             full = pg.locator("[data-slot=drawer-content] button", has_text="Vollständiger Eintrag")
             if full.count(): full.first.click()
             pg.wait_for_selector("#e-date"); pg.wait_for_timeout(900)

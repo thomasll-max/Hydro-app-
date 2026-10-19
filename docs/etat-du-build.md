@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1 ; 38 = lot 10f2 ; 39 = lot 10g ; 40 = lot 10h1 ; 41 = lot 10h2 ; 42 = lot 10h3 ; 43 = lot 10i ; 44 = lot 10j1 ; 45 = lot 10j2 ; 46 = lot 7a ; 47 = lot 7b ; 48 = lot 10k1a ; 49 = lot 10k1b ; 50 = lot 10k2a ; 51 = lot 10k2b)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1 ; 38 = lot 10f2 ; 39 = lot 10g ; 40 = lot 10h1 ; 41 = lot 10h2 ; 42 = lot 10h3 ; 43 = lot 10i ; 44 = lot 10j1 ; 45 = lot 10j2 ; 46 = lot 7a ; 47 = lot 7b ; 48 = lot 10k1a ; 49 = lot 10k1b ; 50 = lot 10k2a ; 51 = lot 10k2b ; 52 = lot 10k3a)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -32,7 +32,9 @@
   - [x] Lot 10k1b : Aujourd'hui calme (bandeau Premiers pas, bloc « Maintenant », À faire, une ligne par espace) (350 tests, artefact v49)
   - [x] Lot 10k2a : Outils en trois groupes (353 tests, artefact v50)
   - [x] Lot 10k2b : Pulvérisation générique (IPW Athena ou mon mélange) (357 tests, artefact v51)
-  - [ ] Lot 10k3 : Journal par semaines, page d'une semaine, menu du « + »
+  - [x] Lot 10k3a : menu du « + » (Saisie du jour, Saisie rapide, Nouveau bidon, Événement), plus de gros boutons dans le Journal (359 tests, artefact v52)
+  - [ ] Lot 10k3b : Journal par semaines (cartes, bande des 7 jours, cycle, loupe, filtres)
+  - [ ] Lot 10k3c : page d'une semaine (verdict, valeurs clés, carte par jour)
   - [ ] Lot 10k4 : Graphiques (vues prêtes, segments droits)
 - [ ] Lot 10l : page d'un espace et saisie du jour, version calme (prompt `docs/prompt-lot-10l.md`, juste après 10k)
   - [ ] Lot 10l1 : page d'un espace
@@ -131,6 +133,13 @@ Constat de Thomas après 10j : « toujours un effet plein d'infos éparpillées,
 5. Pas de jargon dans les listes (il reste dans les outils, avec le glossaire).
 6. Lignes de graphique honnêtes : segments droits.
 7. Typographie droite : Fraunces seulement dans le logo et l'écran de démarrage ; titres en Geologica 700 (−0,02 em) ; texte en Figtree ; tous les chiffres en Geologica à chasse fixe (plus de JetBrains Mono) ; liens de titre de section petits (≈ 13 px, Figtree 600).
+
+## Lot 10k3a — notes
+- **Découpage** : 10k3 est coupé en 10k3a (le « + »), 10k3b (Journal par semaines) et 10k3c (page d'une semaine).
+- **« + »** (`screens/add-sheet.tsx`, `#tab-plus`, libellé « Ajouter ») : une petite feuille sans barre du bas (`Sheet` accepte maintenant `footer` absent) : Saisie du jour (l'espace de l'onglet, sinon celui du cycle actif), Saisie rapide (seulement s'il y a plusieurs espaces), Nouveau bidon, Événement ; icônes au trait « eau » / « plante ». Choisir une ligne ferme la feuille et ouvre l'autre dans le même geste (un seul pas d'historique : retour ferme la nouvelle). Sans espace, le « + » ouvre toujours le cycle d'abord. **Changement de comportement** : en vue « Tous », le « + » n'ouvre plus directement la saisie rapide (elle est dans la feuille).
+- **Journal** : les trois gros boutons du haut (Saisie rapide, Événement, Nouveau bidon) sont retirés (clés `journal.addEvent`, `journal.addMix`, `quick.open` supprimées).
+- Accessibilité : l'interrupteur des lignes à bascule (`SwitchRow`, ex. dôme de la saisie) est marqué `hit` (sa ligne de 44 px est la zone de toucher), relevé par `e2e-10e.py` maintenant que le « + » ouvre la saisie de l'espace du cycle actif.
+- Scripts : `e2e-10k3.py` (nouveau : la feuille en FR/EN/DE clair/sombre, chaque ligne ouvre sa feuille et retour la ferme, plus de gros boutons, un seul espace sans « Saisie rapide ») ; les scripts qui ouvraient la saisie par le « + » passent par `#tab-plus` puis `#add-entry` ou `#add-quick` (2b, 8d, 8e, 10a, 10d, 10e, 10e2, 10h, 10i, e2e.py). 359 tests.
 
 ## Lot 10k2b — notes
 - **Pulvérisation** (`screens/tools/spray.tsx`, route `#tools/ipw` gardée) : un choix en haut, « IPW Athena » ou « Mon mélange » (retenu sur le téléphone, clé `hydro.sprayKind` ; sans choix : IPW si l'add-on est activé ou s'il n'y a aucun mélange). **IPW Athena** = l'écran du lot 5, inchangé (protocoles, fenêtre, checklist, `product: "ipw"`, rappel `ipw_*`).

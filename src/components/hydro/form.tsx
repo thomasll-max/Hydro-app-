@@ -35,7 +35,8 @@ export function Sheet({
   title: string
   description?: string
   children: ReactNode
-  footer: ReactNode
+  /** Absent: a sheet without a bar at the bottom (a menu, lot 10k3). */
+  footer?: ReactNode
   /** Unsaved changes. By default: something was typed or picked since the sheet opened. */
   dirty?: boolean
 }) {
@@ -101,9 +102,11 @@ export function Sheet({
             </button>
           </DrawerHeader>
           <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4">{children}</div>
-          <DrawerFooter className="border-t border-line bg-background pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
-            {footer}
-          </DrawerFooter>
+          {footer ? (
+            <DrawerFooter className="border-t border-line bg-background pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">{footer}</DrawerFooter>
+          ) : (
+            <div aria-hidden="true" className="h-[env(safe-area-inset-bottom,0px)] shrink-0" />
+          )}
         </DrawerContent>
       </Drawer>
       <AlertDialog open={asking} onOpenChange={setAsking}>

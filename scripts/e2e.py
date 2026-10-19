@@ -21,7 +21,7 @@ DAYS = [  # date, tempDay, rh, morning, peak, runoffMl, ecRO, phRO, height
 
 def fill_entry(pg, d):
     date, temp, rh, morning, peak, ro, ec, ph, h = d
-    pg.get_by_role("button", name="Saisie du jour").click()
+    pg.click("#tab-plus"); pg.click("#add-entry")
     pg.wait_for_selector("#e-date")
     pg.fill("#e-date", date)
     pg.wait_for_timeout(150)
@@ -58,7 +58,7 @@ with sync_playwright() as p:
 
     # Entries (first one also sets the carried settings)
     pg.get_by_role("tab", name="Aujourd'hui").click(); pg.wait_for_timeout(300)
-    pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_selector("#e-date")
+    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-date")
     pg.fill("#e-date", DAYS[0][0]); pg.wait_for_timeout(150)
     pg.get_by_role("button", name="Réglages repris de la veille").click()
     for sel, v in [("#e-volumePerPotMl", "2700"), ("#e-ecIn", "2,4"), ("#e-phIn", "5,9"), ("#e-lightPct", "80"), ("#e-ppfd", "850"), ("#e-photoperiodH", "12")]:
@@ -71,7 +71,7 @@ with sync_playwright() as p:
     for d in DAYS[1:-1]:
         fill_entry(pg, d)
     # Last one: check prefill and time it
-    pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_selector("#e-date")
+    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-date")
     pg.fill("#e-date", DAYS[-1][0]); pg.wait_for_timeout(200)
     prefill = pg.evaluate("['e-volumePerPotMl','e-ecIn','e-phIn','e-ppfd'].map(id => document.getElementById(id)?.value ?? '(closed)')")
     placeholder = pg.get_attribute("#e-tempDay", "placeholder")

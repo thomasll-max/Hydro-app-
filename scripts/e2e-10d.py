@@ -48,7 +48,7 @@ with sync_playwright() as p:
 
     # 2. Quick entry: empty refused; values follow into the full entry.
     pg.goto(start); pg.wait_for_timeout(2000)
-    pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_timeout(700)
+    pg.click("#tab-plus"); pg.click("#add-quick"); pg.wait_for_timeout(700)
     pg.get_by_role("button", name="Enregistrer", exact=True).click(); pg.wait_for_timeout(500)
     checks["quickEmptyRefused"] = pg.locator("text=Rien à enregistrer").count() > 0
     first = pg.locator("input[id^=q-][id$=-t]").first
@@ -79,12 +79,12 @@ with sync_playwright() as p:
     checks["afterCloseUrl"] = pg.url.startswith(start)
 
     # 6. Untouched sheet: back closes it at once.
-    pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_timeout(600)
+    pg.click("#tab-plus"); pg.click("#add-quick"); pg.wait_for_timeout(600)
     pg.go_back(); pg.wait_for_timeout(700)
     checks["backCloses"] = [pg.locator("text=Saisie rapide").count() == 0, pg.url.startswith(start)]
 
     # 7. « Reprendre hier » in a full entry: an entry the day before, then today's.
-    pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_timeout(600)
+    pg.click("#tab-plus"); pg.click("#add-quick"); pg.wait_for_timeout(600)
     pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-date"); pg.wait_for_timeout(500)
     today = pg.input_value("#e-date")
     yday = pg.evaluate("(d) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() - 1); return x.toISOString().slice(0, 10) }", today)
@@ -93,7 +93,7 @@ with sync_playwright() as p:
     pg.get_by_role("button", name="Enregistrer", exact=True).click()
     pg.wait_for_selector("#e-date", state="detached", timeout=5000); pg.wait_for_timeout(600)
     checks["noDialogAfterSave"] = pg.locator("text=Abandonner la saisie ?").count() == 0
-    pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_timeout(600)
+    pg.click("#tab-plus"); pg.click("#add-quick"); pg.wait_for_timeout(600)
     pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-date"); pg.wait_for_timeout(500)
     resume = pg.get_by_role("button", name="Copier les valeurs d'hier")
     checks["resumeShown"] = resume.count() > 0

@@ -239,3 +239,21 @@ describe("lot 10k2b — Pulvérisation générique : « Mon mélange »", () => 
     expect(translate("fr", "spray.mine")).toBe("perso, non vérifié")
   })
 })
+
+describe("lot 10k3a — le « + » ouvre une petite feuille", () => {
+  it("Saisie du jour, Saisie rapide (plusieurs espaces), Nouveau bidon, Événement ; sans espace, le cycle d'abord", () => {
+    const app = read("src/App.tsx")
+    expect(app).toMatch(/if \(!spaces\.length\) ed\.openCycle\(\)\n\s*else setAdding\(true\)/)
+    expect(app).toMatch(/<AddSheet open=\{adding\} onOpenChange=\{setAdding\} \/>/)
+    const add = read("src/screens/add-sheet.tsx")
+    expect([...add.matchAll(/\{ id: "(\w+)"/g)].map((m) => m[1])).toEqual(["entry", "quick", "mix", "event"])
+    expect(add).toMatch(/spaces\.length > 1 \? \[\{ id: "quick"/)
+    expect(read("src/components/hydro/tab-bar.tsx")).toMatch(/id="tab-plus"/)
+    expect(translate("fr", "fab.label")).toBe("Ajouter")
+    expect([translate("fr", "add.entry"), translate("fr", "add.quick"), translate("fr", "add.mix"), translate("fr", "add.event")]).toEqual(["Saisie du jour", "Saisie rapide", "Nouveau bidon", "Événement"])
+  })
+  it("les trois gros boutons du haut du Journal disparaissent", () => {
+    const j = read("src/screens/journal.tsx")
+    expect(j).not.toMatch(/openQuick|ed\.openEvent\(\)|ed\.openMix\(\)/)
+  })
+})

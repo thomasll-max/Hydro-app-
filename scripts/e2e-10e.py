@@ -58,7 +58,7 @@ with sync_playwright() as p:
         for tab in TABS + ["entry"]:
             if tab == "entry":
                 pg.get_by_role("tab", name="Aujourd'hui").click(); pg.wait_for_timeout(500)
-                pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_timeout(600)
+                pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_timeout(600)
                 if pg.get_by_role("button", name="Saisie complète").count():
                     pg.get_by_role("button", name="Saisie complète").first.click()
                 pg.wait_for_selector("#e-date"); pg.wait_for_timeout(1500)
@@ -86,10 +86,10 @@ with sync_playwright() as p:
         go(pg, tab); pg.wait_for_timeout(1200)
         zoom[tab] = pg.evaluate("document.documentElement.scrollWidth")
     pg.get_by_role("tab", name="Aujourd'hui").click(); pg.wait_for_timeout(600)
-    bars = pg.evaluate("""() => { const nav = document.querySelector('nav[aria-label]').getBoundingClientRect(); const fab = [...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Saisie du jour').getBoundingClientRect(); return Math.round(((innerHeight - Math.min(nav.top, fab.top)) / innerHeight) * 100) }""")
+    bars = pg.evaluate("""() => { const nav = document.querySelector('nav[aria-label]').getBoundingClientRect(); const fab = [...document.querySelectorAll('button')].find((b) => b.id === 'tab-plus').getBoundingClientRect(); return Math.round(((innerHeight - Math.min(nav.top, fab.top)) / innerHeight) * 100) }""")
     zoom["barsPct"] = bars
     pg.screenshot(path=str(out / "zoom-today.png"))
-    pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_timeout(600)
+    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_timeout(600)
     if pg.get_by_role("button", name="Saisie complète").count():
         pg.get_by_role("button", name="Saisie complète").first.click()
     pg.wait_for_selector("#e-date"); pg.wait_for_timeout(800)

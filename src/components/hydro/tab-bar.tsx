@@ -15,8 +15,8 @@ export const TABS: { id: TabId; label: MessageKey; Icon: typeof House }[] = [
 
 /**
  * Bottom bar anchored to the screen (lot 10h): full width, page ground, a thin line on top, the phone's safe area.
- * Aujourd'hui, Journal, « + », Graphiques, Outils: the « + » of the day's entry sits in the middle, filled « eau »
- * (no floating button over the content). Tapping the tab already open goes back to the top of the screen.
+ * Aujourd'hui, Journal, « + », Graphiques, Outils: the « + » sits in the middle, filled « eau » (no floating button over
+ * the content); since lot 10k3 it opens a small sheet (entry, quick entry, tank, event). Tapping the tab already open goes back to the top of the screen.
  */
 export function TabBar({ active, onChange, onPlus }: { active: TabId; onChange: (t: TabId) => void; onPlus: () => void }) {
   const { t } = useSettings()
@@ -59,6 +59,8 @@ export function TabBar({ active, onChange, onPlus }: { active: TabId; onChange: 
           <button
             type="button"
             onClick={onPlus}
+            id="tab-plus"
+            aria-haspopup="dialog"
             aria-label={t("fab.label")}
             title={t("fab.label")}
             className="pointer-events-auto flex h-11 w-[52px] items-center justify-center rounded-[12px] bg-primary text-primary-foreground shadow-[inset_0_-2px_0_rgba(0,0,0,0.25)] transition-transform active:translate-y-px active:shadow-[inset_0_2px_0_rgba(0,0,0,0.25)] short:h-9"

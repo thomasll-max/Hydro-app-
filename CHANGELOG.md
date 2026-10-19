@@ -1,5 +1,10 @@
 # Changelog
 
+## Lot 10k3a — Le « + » ouvre un petit menu (19/10/2026)
+- Le « + » de la barre du bas ouvre une petite feuille : **Saisie du jour**, **Saisie rapide** (tous les espaces), **Nouveau bidon**, **Événement**.
+- Les trois gros boutons du haut du Journal disparaissent.
+- 359 tests.
+
 ## Lot 10k2b — Pulvérisation : IPW ou ton propre mélange (19/10/2026)
 - L'outil IPW devient **Pulvérisation**, avec deux choix : **IPW Athena** (le protocole sourcé, inchangé) ou **Mon mélange**.
 - **Mon mélange** : un spray maison ou un stack que tu décris toi-même : son nom, tes produits avec leur dose par litre (telle que tu la saisis), sa fréquence, tes points à vérifier avant de pulvériser et des notes. Il est marqué « perso, non vérifié » : l'app ne propose aucune dose, elle calcule seulement les quantités pour ton pulvérisateur.

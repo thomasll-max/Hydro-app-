@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react"
 import { Loading } from "@/components/hydro/wordmark"
-import { CalendarPlus, ChevronRight, FlaskConical, Layers, Pencil, Plus, SlidersHorizontal } from "lucide-react"
+import { ChevronRight, Pencil, Plus, SlidersHorizontal } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -161,20 +161,6 @@ export function JournalScreen() {
         </Card>
       </Reveal>
       )}
-
-      <Reveal i={2} className="fold-2 mb-3 grid gap-2.5">
-        {spaces.length > 1 && (
-          <Button variant="outline" className="col-span-full h-auto min-h-12 text-[0.875rem] whitespace-normal" onClick={() => ed.openQuick()}>
-            <Layers /> {t("quick.open")}
-          </Button>
-        )}
-        <Button variant="outline" className="h-auto min-h-12 text-[0.84375rem] whitespace-normal" onClick={() => ed.openEvent()}>
-          <CalendarPlus /> {t("journal.addEvent")}
-        </Button>
-        <Button variant="outline" className="h-auto min-h-12 text-[0.84375rem] whitespace-normal" onClick={() => ed.openMix()}>
-          <FlaskConical /> {t("journal.addMix")}
-        </Button>
-      </Reveal>
 
       {/* History */}
       <Reveal i={3} className="mb-3">

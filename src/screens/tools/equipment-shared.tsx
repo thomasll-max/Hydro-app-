@@ -65,7 +65,7 @@ export function SwitchRow({ id, label, hint, checked, onChange }: { id: string; 
         <span className="block text-[0.875rem] font-medium">{label}</span>
         {hint && <span className="block text-[0.75rem] leading-snug text-fg-3">{hint}</span>}
       </span>
-      <Switch id={id} checked={checked} onCheckedChange={onChange} className="data-[size=default]:h-6 data-[size=default]:w-11 [&_[data-slot=switch-thumb]]:size-5! [&_[data-slot=switch-thumb]]:data-[state=checked]:translate-x-[calc(100%-0px)]" />
+      <Switch id={id} checked={checked} onCheckedChange={onChange} className="hit data-[size=default]:h-6 data-[size=default]:w-11 [&_[data-slot=switch-thumb]]:size-5! [&_[data-slot=switch-thumb]]:data-[state=checked]:translate-x-[calc(100%-0px)]" />
     </label>
   )
 }

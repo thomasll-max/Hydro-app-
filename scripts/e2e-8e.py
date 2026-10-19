@@ -52,7 +52,10 @@ with sync_playwright() as p:
     pg.screenshot(path=str(out / "02-banner.png"))
 
     # A form open: no update offered meanwhile.
-    pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_timeout(800)
+    # The « + » opens its sheet (lot 10k3), or the cycle when there is no space yet: a form either way.
+    pg.click("#tab-plus"); pg.wait_for_timeout(600)
+    if pg.locator("#add-entry").count(): pg.click("#add-entry")
+    pg.wait_for_timeout(800)
     checks["bannerWhileForm"] = pg.locator("#update-banner").count()
     pg.keyboard.press("Escape"); pg.wait_for_timeout(700)
     checks["bannerAfterForm"] = pg.locator("#update-banner").count()

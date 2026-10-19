@@ -1,11 +1,10 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { Toaster } from "sonner"
 import { SettingsProvider, useSettings } from "@/app/settings-context"
 import { GrowProvider, useGrow } from "@/app/grow-context"
 import { EditorsProvider, useEditors } from "@/app/editors"
 import { TARGET } from "@/store"
-import { todayIso } from "@/calc/stage"
 import { TopBar } from "@/components/hydro/top-bar"
 import { TabBar } from "@/components/hydro/tab-bar"
 import { navigate, useRoute, type TabId } from "@/app/nav"
@@ -14,6 +13,7 @@ import { JournalScreen } from "@/screens/journal"
 import { ChartsScreen } from "@/screens/charts"
 import { ToolsScreen } from "@/screens/tools"
 import { CalendarScreen } from "@/screens/calendar"
+import { AddSheet } from "@/screens/add-sheet"
 import { Onboarding } from "@/screens/onboarding"
 import { UpdateBanner } from "@/app/update"
 import { OwnerOnly, ProblemScreen } from "@/app/status"
@@ -31,8 +31,9 @@ const SCREENS: Record<TabId, () => React.ReactElement> = {
 
 function Shell() {
   const { t } = useSettings()
-  const { cycle, storeKind, spaces, selection, needsSetup, problem, retry, owner, volatile, grow, ready } = useGrow()
+  const { storeKind, spaces, needsSetup, problem, retry, owner, volatile, grow, ready } = useGrow()
   const ed = useEditors()
+  const [adding, setAdding] = useState(false)
   // Tabs and tools are routes in the history (lot 10d): the back gesture walks back through them.
   const { tab } = useRoute()
   const Screen = SCREENS[tab]
@@ -94,11 +95,12 @@ function Shell() {
         active={tab}
         onChange={(id) => navigate({ tab: id })}
         onPlus={() => {
+          // No space yet: the cycle first. Otherwise a small sheet: entry, quick entry, tank, event (lot 10k3).
           if (!spaces.length) ed.openCycle()
-          else if (selection.kind !== "space" && spaces.length > 1) ed.openQuick()
-          else ed.openEntry({ date: todayIso(), spaceId: selection.kind === "space" ? selection.space.id : (cycle?.spaceId ?? spaces[0].id) })
+          else setAdding(true)
         }}
       />
+      <AddSheet open={adding} onOpenChange={setAdding} />
       <AppToaster />
     </div>
   )

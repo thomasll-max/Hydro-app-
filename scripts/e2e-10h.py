@@ -34,7 +34,7 @@ def ui(theme, lang):
 
 
 def open_entry(pg, lang="fr"):
-    pg.get_by_role("button", name="Saisie du jour" if lang == "fr" else "Today's entry").click(); pg.wait_for_timeout(600)
+    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_timeout(600)  # the « + » opens a small sheet since lot 10k3
     full = pg.get_by_role("button", name="Saisie complète" if lang == "fr" else "Full entry")
     if full.count(): full.first.click()
     pg.wait_for_selector("#e-date"); pg.wait_for_timeout(800)
@@ -160,7 +160,7 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}"); pg.wait_for_timeout(2500)
     h = lambda: pg.evaluate("location.hash")
     c = {}
-    c["bar"] = pg.evaluate("""() => { const n = document.querySelector('nav[aria-label]'); const r = n.getBoundingClientRect(); const s = getComputedStyle(n); const plus = n.querySelector('button[aria-label="Saisie du jour"]'); const p = plus.getBoundingClientRect(); return { bottom: Math.round(r.bottom), left: r.left, width: Math.round(r.width), bg: s.backgroundColor, top: s.borderTopWidth, tabs: [...n.querySelectorAll('[role=tab]')].map((x) => x.textContent.trim()), plus: [Math.round(p.width), Math.round(p.height), getComputedStyle(plus).borderRadius, getComputedStyle(plus).backgroundColor, Math.round(p.left + p.width / 2)] } }""")
+    c["bar"] = pg.evaluate("""() => { const n = document.querySelector('nav[aria-label]'); const r = n.getBoundingClientRect(); const s = getComputedStyle(n); const plus = n.querySelector('#tab-plus'); const p = plus.getBoundingClientRect(); return { bottom: Math.round(r.bottom), left: r.left, width: Math.round(r.width), bg: s.backgroundColor, top: s.borderTopWidth, tabs: [...n.querySelectorAll('[role=tab]')].map((x) => x.textContent.trim()), plus: [Math.round(p.width), Math.round(p.height), getComputedStyle(plus).borderRadius, getComputedStyle(plus).backgroundColor, Math.round(p.left + p.width / 2)] } }""")
     bar = c["bar"]
     if bar["bottom"] != 844 or bar["left"] != 0 or bar["width"] != 390 or bar["bg"] != rgb(PALETTE["dark"]["--page"]) or bar["top"] != "1px" or bar["tabs"] != ["Aujourd'hui", "Journal", "Graphiques", "Outils"] or bar["plus"] != [52, 44, "12px", rgb(PALETTE["dark"]["--water"]), 195]: errors.append(f"tab bar {bar}")
     # Lot 10k1: the week strip left Aujourd'hui (the date of the top bar and « Tout le calendrier → » open the Calendar).

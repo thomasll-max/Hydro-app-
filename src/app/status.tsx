@@ -18,7 +18,7 @@ function Frame({ id, title, children }: { id: string; title: string; children: R
   return (
     <div className="relative min-h-full" id={id}>
       <main className="mx-auto flex max-w-[480px] flex-col gap-3 px-4 pt-[calc(env(safe-area-inset-top,0px)+40px)] pb-10">
-        <h1 className="text-[1.375rem] font-bold tracking-[-0.4px]">{title}</h1>
+        <h1 className="display text-[1.5rem] leading-tight">{title}</h1>
         {children}
       </main>
     </div>

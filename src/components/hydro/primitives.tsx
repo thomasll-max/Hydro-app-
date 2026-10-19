@@ -22,7 +22,7 @@ export function ScreenHero({
       <Emoji name={emoji} size={64} className="float-y drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)] max-[20rem]:hidden" />
       <div className="min-w-0">
         {eyebrow && <div className="eyebrow">{eyebrow}</div>}
-        <h1 className="mt-0.5 text-[1.625rem] leading-[1.1] font-semibold tracking-[-0.6px] [overflow-wrap:anywhere]">{title}</h1>
+        <h1 className="display mt-0.5 text-[1.75rem] leading-[1.1] [overflow-wrap:anywhere]">{title}</h1>
         {children}
       </div>
     </BlurFade>
@@ -93,7 +93,7 @@ export function ComingSoon({ emoji, title, lot, body, foot }: { emoji: EmojiName
       <div className="relative mt-3 inline-flex">
         <Chip tone="primary">{lot}</Chip>
       </div>
-      <h2 className="relative mt-2.5 text-[1.1875rem] leading-tight font-semibold tracking-[-0.3px]">{title}</h2>
+      <h2 className="display relative mt-2.5 text-[1.25rem] leading-tight">{title}</h2>
       <p className="relative mx-auto mt-1.5 max-w-[34ch] text-[0.8125rem] leading-[1.5] text-fg-2">{body}</p>
       {foot && <p className="relative mx-auto mt-3 max-w-[36ch] text-[0.75rem] leading-[1.45] text-fg-3">{foot}</p>}
     </div>

@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 10f1 — Identité « hydro. » : police, logo, icône (19/10/2026)
+Le nom reste Hydro ; le logo s'écrit « hydro. ». Lot 10f coupé en 10f1 (police, logo, icône) et 10f2 (direction visuelle).
+- **Fraunces** (direction « Serre ») pour le logo et ce qui se lit comme un titre : titres d'écran, noms des stades, titres des feuilles, « Bonjour » de la carte du matin, noms d'espaces sur les cartes. Figtree reste pour le texte, JetBrains Mono pour les chiffres ; les valeurs principales des cartes sont un cran plus grosses.
+- **Logo « hydro. »** dans la barre du haut et sur l'écran de bienvenue : le « o » est une goutte qui contient une feuille, le point final est vert feuille.
+- **Nouvelle icône d'app** : la goutte et sa feuille sur fond vert-noir, avec une version « maskable » pour Android et une icône d'onglet.
+- Calendrier : en anglais à 200 %, le bouton « Rappel » ne déborde plus.
+- 291 tests ; `scripts/e2e-10f.py`.
+
 ## Lot 10e3 — « Autre marque / je dose moi-même » et simulation finale (19/10/2026)
 Décision de Thomas (hors des 84 points), en attendant le lot 7 multi-marques. Fin de la passe de corrections 10a → 10e.
 - **Nouvelle gamme « Autre marque / je dose moi-même »** dans les réglages et l'assistant : pas de recette, pas de dose, pas d'add-on.

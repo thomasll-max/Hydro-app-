@@ -25,6 +25,9 @@
   --bad: #b8281f;
   --info: #1f6fc2;
   --phase-3: #7c55e0;
+  /* Identity (lot 10f): water green (the drop) and leaf green (the dot). Graphics ≥ 3:1 on the page. */
+  --water: #1f9e68;
+  --leaf: #4f9a2a;
   --track: #eceeed;
   --glow: rgba(36, 180, 126, 0.14);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 28px -16px rgba(0, 0, 0, 0.22);
@@ -45,6 +48,8 @@
   --r-lg: 16px;
   --r-xl: 22px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Display face (lot 10f, « Serre »): logo, screen and sheet titles, space names, the morning card, stage names. */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
 
   /* shadcn semantic aliases — every library component goes through these */
   --background: var(--page);
@@ -85,6 +90,8 @@
     --bad: #ff5a4e;
     --info: #5aa9ff;
     --phase-3: #b38cff;
+    --water: #3ecf8e;
+    --leaf: #8bd450;
     --track: rgba(255, 255, 255, 0.07);
     --glow: rgba(62, 207, 142, 0.18);
     --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 10px 30px -12px rgba(0, 0, 0, 0.7);
@@ -118,6 +125,8 @@
   --bad: #ff5a4e;
   --info: #5aa9ff;
   --phase-3: #b38cff;
+  --water: #3ecf8e;
+  --leaf: #8bd450;
   --track: rgba(255, 255, 255, 0.07);
   --glow: rgba(62, 207, 142, 0.18);
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 10px 30px -12px rgba(0, 0, 0, 0.7);
@@ -246,6 +255,14 @@ body {
 }
 
 @layer utilities {
+  /* Fraunces with the SOFT axis at 100; opsz stays automatic (font-optical-sizing). */
+  .display {
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 100;
+    font-optical-sizing: auto;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
   .tabular {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;

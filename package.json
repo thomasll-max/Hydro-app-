@@ -33,6 +33,7 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
+    "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource/figtree": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@lobehub/fluent-emoji-3d": "^1.1.0",

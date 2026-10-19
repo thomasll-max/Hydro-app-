@@ -1,7 +1,7 @@
 // Hydro (version locale) : hors ligne. Réseau d'abord pour toujours recevoir la dernière version quand on est connecté,
 // cache ensuite quand il n'y a pas de réseau ou qu'il ne répond pas en 3 s. Tout est sur le même site (polices et images incluses dans la page).
 const CACHE = "hydro-v2"
-const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"]
+const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./icon-maskable-512.png", "./favicon.svg", "./favicon-32.png"]
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()))

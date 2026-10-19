@@ -89,7 +89,7 @@ export function BonjourCard({ only }: { only?: string }) {
       <div aria-hidden="true" className="pointer-events-none absolute -top-10 -right-8 size-36 rounded-full bg-[radial-gradient(closest-side,rgba(245,165,36,0.22),transparent)]" />
       <div className="relative flex items-center gap-2.5">
         <Emoji name="sun" size={34} className="float-y" />
-        <b className="text-[1rem] font-semibold tracking-[-0.2px]">{digest.title}</b>
+        <b className="display text-[1.1875rem] leading-tight">{digest.title}</b>
       </div>
       <div className="relative flex flex-col gap-2.5">
         {shown.map((s) => (
@@ -179,7 +179,7 @@ function SpaceCard({ space, onOpen }: { space: Space; onOpen: () => void }) {
       <Card className="gap-2.5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[1rem] font-semibold">
+            <div className="display flex items-center gap-2 text-[1.1875rem] leading-tight">
               <SpaceDot color={space.color} className="size-2.5" /> {space.name}
             </div>
             <div className="mt-0.5 truncate text-[0.78125rem] text-fg-2">
@@ -198,7 +198,7 @@ function SpaceCard({ space, onOpen }: { space: Space; onOpen: () => void }) {
                 <div className="flex items-center gap-1.5 text-[0.75rem] text-fg-3">
                   {p.s ? <Dot status={p.s} /> : <span className="inline-block size-[7px] rounded-full bg-track" aria-hidden="true" />} {p.k}
                 </div>
-                <div className="text-[0.9375rem] font-semibold tabular">{p.v}</div>
+                <div className="truncate text-[1.125rem] leading-tight font-medium tabular">{p.v}</div>
               </div>
             ))}
           </div>
@@ -343,7 +343,7 @@ function Tile({ k, v, sub }: { k: string; v: string; sub?: string }) {
   return (
     <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2.5 py-2">
       <div className="truncate text-[0.75rem] text-fg-3">{k}</div>
-      <div className="mt-0.5 truncate text-[1.0625rem] font-semibold tabular">{v}</div>
+      <div className="mt-0.5 truncate text-[1.25rem] leading-tight font-medium tabular">{v}</div>
       {sub && <div className="truncate text-[0.75rem] text-fg-3">{sub}</div>}
     </div>
   )

@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -42,6 +42,10 @@
   - [x] Lot 10e1 : points 71–75, accessibilité visuelle (281 tests, artefact v34)
   - [x] Lot 10e2 : points 76–84, textes, assistant, ARIA (286 tests, artefact v35)
   - [x] Lot 10e3 : option « Autre marque / je dose moi-même », simulation finale (288 tests, artefact v36)
+- [ ] Lot 10f : identité hydro.
+  - [x] Lot 10f1 : police Fraunces, logo « hydro. », icône d'app (291 tests, artefact v37)
+  - [ ] Lot 10f2 : direction visuelle (point 5)
+- [ ] Lot 10g : motif goutte et écran de démarrage
 - [ ] Lot 10f/10g : en cours (session planifiée, 2026-10-19 13:17 UTC)
 
 ## Lot 10 : passe de corrections (19/10/2026)
@@ -97,6 +101,16 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 - Premiers pas : pots demandés seulement si l'arrosage de l'espace est automatique (cycle en automatique, sinon pompe dans l'espace) ; lampe cochée avec ses watts (`StartItem.canStart` pour « Démarrer aujourd'hui »).
 - Carte Bonjour : un cycle « automatique » dans un espace sans pompe (quand le grow liste ses pompes) est traité comme arrosé à la main. Pas de dose ni de programme inventés pour le rinçage (eau osmosée, EC < 0,1 : fiche Athena).
 - **Simulation d'un an (fin de 10b, 19/10)** : 479 saisies vérifiées, 28/28 anomalies signalées, **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 0 plantage, 364 matins rejoués ; **4 échéances traînent** (12 avant) : toutes « mesurer le débit » (11 matins chacune), car le simulateur ne remesure la pompe qu'aux transferts (71 jours) alors que la règle du cahier des charges est 60 jours. Je n'ai pas changé ce comportement du simulateur : le rappel est juste. Passage navigateur (`browse.py`, 9 dates × 13 écrans) : aucune erreur console, aucun débordement (le seul « Infinity » relevé est la marque AC Infinity).
+
+## Lot 10f1 — notes
+- Session planifiée du 19/10 (Thomas absent). Lot 10f coupé en **10f1** (points 1 à 4 : police, logo, icône) et **10f2** (point 5 : direction visuelle), comme le permet le prompt.
+- **Fraunces** : token `--font-display` et utilitaire `.display` (`font-variation-settings: "SOFT" 100`, opsz automatique, graisse 650). Utilisé pour les titres d'écran (`ScreenHero`, donc aussi le nom du stade « Floraison S6 »), les titres des feuilles (`Sheet`), le « Bonjour » de la carte du matin, les noms d'espaces des cartes d'Aujourd'hui, les titres de l'assistant et des écrans d'erreur, `ComingSoon`.
+  - Artefact : Fraunces ajoutée au lien Google Fonts (`opsz,wght,SOFT@9..144,600..700,100`). Version locale : `@fontsource-variable/fraunces`, fichier `latin-full` (seul sous-ensemble qui a opsz **et** SOFT, 121 Ko). `scripts/fonts.py` sert aussi Fraunces aux captures.
+  - Valeurs principales des cartes d'Aujourd'hui un cran plus grosses (JetBrains Mono 500, 1,25 rem ; 1,125 rem dans les pastilles des cartes d'espace).
+- **Logo** : `components/hydro/wordmark.tsx` (`Wordmark`, `Drop`, chemins `DROP_PATH` / `LEAF_PATH` / `VEIN_PATH`). **Décision prise seule** : le prompt dit « hauteur de l'œil d'un o », la planche « identité finale » dessine une goutte de 0,633 em ; j'ai suivi la planche (référence visuelle), posée sur la ligne de base, 1 px de chaque côté. La feuille prend `--background` (prop `bg` si le logo est posé sur une autre surface). Tokens `--water` (goutte : #3ecf8e sombre, #1f9e68 clair, 3,1:1 sur le fond) et `--leaf` (point : #8bd450 / #4f9a2a). Barre du haut (à la place de l'emoji) et écran de bienvenue de l'assistant.
+- **Icône** : `pwa/icon.svg` → `scripts/gen-icons.py` (Playwright) → `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` (goutte à 58 %), `icon-maskable-512.png` (48 %, déclarée `maskable`), `favicon.svg`, `favicon-32.png`. Le service worker met aussi ces fichiers en cache (nom du cache inchangé, `hydro-v2`).
+- Corrigé en passant : à 200 % en anglais, le bouton « Rappel » du Calendrier débordait (la ligne passe à la ligne).
+- `scripts/e2e-10f.py` (Fraunces + SOFT sur les titres, logo, tokens, aucun débordement à 360 px et à 200 %, FR/EN, clair/sombre) ; 291 tests (3 nouveaux, `calc/lot10f.test.ts`).
 
 ## Lot 10e3 — notes
 - **« Autre marque / je dose moi-même »** (décision de Thomas, en attendant le lot 7) : `OWN_LINE = "own"` et `isOwnLine` dans `data/nutrients/index.ts`. Ce n'est **jamais** un catalogue : `getCatalog("own")` retombe sur la Pro Line, donc chaque usage teste `isOwnLine` d'abord.
@@ -224,7 +238,7 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1, 281 au lot 10d2, 286 au lot 10e2, 288 au lot 10e3
+npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1, 281 au lot 10d2, 286 au lot 10e2, 288 au lot 10e3, 291 au lot 10f1
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale

@@ -301,7 +301,7 @@ function Metric({ k, status: st, target, children, term }: { k: string; status?:
         <span className="min-w-0 truncate">{k}</span>
         {term && <InfoTip term={term} />}
       </div>
-      <div className="mt-[3px] truncate text-[1.0625rem] font-semibold tabular">{children}</div>
+      <div className="mt-[3px] truncate text-[1.25rem] leading-tight font-medium tabular">{children}</div>
       <div className="mt-px truncate text-[0.75rem] text-fg-3">{target}</div>
     </div>
   )

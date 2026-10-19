@@ -89,8 +89,8 @@ export function CalendarScreen() {
   return (
     <>
       <ScreenHero emoji="calendar" eyebrow={eyebrow} title={t("nav.calendar")} />
-      <Reveal i={0} className="mb-2.5 flex items-center gap-2">
-        <Seg<View> className="flex-1" label={t("cal.view")} value={view} onChange={setView} options={[{ value: "month", label: t("cal.month") }, { value: "agenda", label: t("cal.agenda") }]} />
+      <Reveal i={0} className="mb-2.5 flex flex-wrap items-center gap-2">
+        <Seg<View> className="min-w-[9.5rem] flex-1" label={t("cal.view")} value={view} onChange={setView} options={[{ value: "month", label: t("cal.month") }, { value: "agenda", label: t("cal.agenda") }]} />
         <Button onClick={() => ed.openReminder({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 shrink-0 rounded-full px-4 text-[0.875rem] font-bold" aria-label={t("cal.add")}>
           <Plus className="size-4.5" strokeWidth={2.6} /> {t("cal.addShort")}
         </Button>

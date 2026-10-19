@@ -86,7 +86,7 @@ export function Sheet({
         >
           <DrawerHeader className="flex-row items-start gap-2 pb-2 text-left! md:text-left">
             <div className="min-w-0 flex-1">
-              <DrawerTitle className="text-[1.25rem] tracking-[-0.4px]">{title}</DrawerTitle>
+              <DrawerTitle className="display text-[1.3125rem] leading-tight">{title}</DrawerTitle>
               {description ? <DrawerDescription>{description}</DrawerDescription> : <DrawerDescription className="sr-only">{title}</DrawerDescription>}
             </div>
             <button

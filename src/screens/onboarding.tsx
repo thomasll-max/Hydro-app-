@@ -7,7 +7,7 @@ import { ChevronLeft, Copy, Plus, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AreaField, Grid, NumField, Seg, TextField } from "@/components/hydro/form"
-import { Emoji } from "@/components/hydro/emoji"
+import { Wordmark } from "@/components/hydro/wordmark"
 import { Label, Reveal } from "@/components/hydro/primitives"
 import { LangSwitch } from "@/components/hydro/top-bar"
 import { spaceColor } from "@/components/hydro/space-pill"
@@ -155,7 +155,7 @@ export function Onboarding() {
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
                 <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${(step / STEPS.length) * 100}%` }} />
               </div>
-              <h1 className="mt-3 text-[1.5rem] leading-[1.15] font-semibold tracking-[-0.5px]" id="onb-title">
+              <h1 className="display mt-3 text-[1.625rem] leading-[1.15]" id="onb-title">
                 {t(`onb.s.${key}` as MessageKey)}
               </h1>
               <p className="mt-1 text-[0.8125rem] leading-[1.45] text-fg-2">{t(`onb.d.${key}` as MessageKey)}</p>
@@ -283,8 +283,8 @@ function Welcome({ onStart, onSkip, busy }: { onStart: () => void; onSkip: () =>
     <div className="flex flex-col gap-3">
       <Reveal i={0}>
         <div className="mt-6 mb-2 flex flex-col items-center text-center">
-          <Emoji name="pottedPlant" size={88} className="float-y drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)]" />
-          <h1 className="mt-3 text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.6px]" id="onb-welcome">
+          <Wordmark size={56} />
+          <h1 className="display mt-4 text-[1.75rem] leading-[1.1]" id="onb-welcome">
             {t("onb.welcome")}
           </h1>
           <p className="mt-2 max-w-[320px] text-[0.875rem] leading-[1.45] text-fg-2">{t("onb.welcomeD", { n: STEPS.length })}</p>

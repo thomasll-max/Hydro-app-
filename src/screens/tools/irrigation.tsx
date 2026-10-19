@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Grid, NumField, Seg } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { badNums, parseNum } from "@/calc/formulas"
@@ -20,6 +20,7 @@ import { manualRow } from "@/calc/targets"
 import type { Cycle, StageKey, Substrate, WaterMode } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
+import { joined, segment } from "@/components/hydro/styles"
 
 const STEER_TO_STAGE: Record<SteerStage, StageKey> = { inst: "veg", veg: "veg", str: "stretch", mas: "bulk", fin: "finish" }
 
@@ -128,14 +129,14 @@ export function IrrigationTool() {
             <Label emoji="sprout">{t("irr.stage")}</Label>
             {cycleStage && <Chip tone="primary">{t(stages.find((s) => s.v === cycleStage)!.k)}</Chip>}
           </div>
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("irr.stage")}>
+          <div className={joined()} role="radiogroup" aria-label={t("irr.stage")}>
             {stages.map((s) => (
               <button
                 key={s.v}
                 role="radio"
                 aria-checked={stage === s.v}
                 onClick={() => setStage(s.v)}
-                className={cn("h-11 rounded-full border px-3.5 text-[0.8125rem] font-semibold", stage === s.v ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2")}
+                className={segment(stage === s.v)}
               >
                 {t(s.k)}
               </button>
@@ -175,7 +176,7 @@ export function IrrigationTool() {
             <Label emoji="droplet">{t("irr.program")}</Label>
             <InfoTip term="phases" />
           </span>
-          {mode === "auto" && !input.flowMlPerMin && <p className="mt-2 rounded-md bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn">{t("irr.noFlow")}</p>}
+          {mode === "auto" && !input.flowMlPerMin && <Notice className="mt-2">{t("irr.noFlow")}</Notice>}
           <ol className="mt-2 flex flex-col">
             {rows.map((r, i) => (
               <ProgramLine key={i} r={r} showMl={potOk} />
@@ -228,13 +229,13 @@ export function IrrigationTool() {
               <Tile k={t("irr.sShots")} v={SENSOR[sPhase].shots} />
               <Tile k={t("irr.sRunoff")} v={`${SENSOR[sPhase].runoff} %`} />
             </div>
-            {sensor.tooShort && <p className="rounded-md bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn">{t("irr.tooShort")}</p>}
+            {sensor.tooShort && <Notice>{t("irr.tooShort")}</Notice>}
             <ol className="flex flex-col">
               {sensor.rows.map((r, i) => (
                 <ProgramLine key={i} r={r} trigger={sensor.trigger} showMl={potOk} />
               ))}
             </ol>
-            <Button variant="outline" onClick={saveSensor} disabled={!cycle} className="h-11 rounded-full">
+            <Button variant="outline" onClick={saveSensor} disabled={!cycle} className="h-11">
               {t("irr.sensorSave")}
             </Button>
             <ul className="flex flex-col gap-1.5 text-[0.75rem] leading-[1.45] text-fg-3">
@@ -272,7 +273,7 @@ function ManualTable({ rows, current, line }: { rows: ManualPhase[]; current: Ma
           <li
             key={i}
             data-current={m === current || undefined}
-            className={cn("grid grid-cols-[1.2fr_0.8fr_1fr_1fr] items-center gap-x-2 rounded-md px-1 py-2 text-[0.8125rem] tabular-nums", m === current ? "bg-primary/12 font-semibold text-fg" : "text-fg-2")}
+            className={cn("grid grid-cols-[1.2fr_0.8fr_1fr_1fr] items-center gap-x-2 rounded-md px-1 py-2 text-[0.8125rem] tabular-nums", m === current ? "bg-surface-2 font-semibold text-fg shadow-[inset_2px_0_0_var(--water)]" : "text-fg-2")}
           >
             <span>{label(m)}</span>
             <span>{r1(m.ecIn)}</span>
@@ -338,11 +339,11 @@ export function PhaseTag({ phase }: { phase: ProgramRow["phase"] }) {
   return (
     <span
       className={cn(
-        "rounded-[6px] py-[3px] text-center text-[0.75rem] font-bold",
-        (phase === "P0" || phase === "OFF") && "bg-surface-2 text-fg-2",
-        (phase === "P1" || phase === "MAN" || phase === "INST") && "bg-info/14 text-info",
-        phase === "P2" && "bg-primary/14 text-primary",
-        phase === "P3" && "bg-phase-3/14 text-phase-3",
+        "rounded-[6px] border border-line py-[2px] text-center font-mono text-[0.75rem] font-bold",
+        (phase === "P0" || phase === "OFF") && "text-fg-2",
+        (phase === "P1" || phase === "MAN" || phase === "INST") && "text-info",
+        phase === "P2" && "text-water-ink",
+        phase === "P3" && "text-phase-3",
       )}
       aria-label={phase}
     >

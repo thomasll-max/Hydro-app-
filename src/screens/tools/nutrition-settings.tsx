@@ -4,7 +4,7 @@ import { useSettings } from "@/app/settings-context"
 import { TARGET } from "@/store"
 import { ADDONS as ADDON_DEFS, getCatalog, isOwnLine, OWN_LINE, visibleCatalogs, type AddonId } from "@/data/nutrients"
 import type { DosingMethod, NutritionSettings } from "@/model/grow"
-import { cn } from "@/lib/utils"
+import { toggle } from "@/components/hydro/styles"
 
 export const ADDON_NAMES: Record<AddonId, string> = Object.fromEntries(Object.values(ADDON_DEFS).map((a) => [a.id, a.name])) as Record<AddonId, string>
 
@@ -48,7 +48,7 @@ export function NutritionFields({ value, onChange, idPrefix }: { value: Nutritio
                 type="button"
                 aria-pressed={on}
                 onClick={() => onChange({ ...value, addons: on ? value.addons.filter((x) => x !== a) : [...value.addons, a] })}
-                className={cn("h-11 rounded-full border px-4 text-[0.8125rem] font-semibold", on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2")}
+                className={toggle(on, "px-4")}
               >
                 {ADDON_NAMES[a]}
               </button>

@@ -7,6 +7,7 @@ import type { Equipment, EquipmentAssignment, EquipmentType, Space } from "@/mod
 import { airRenewalSeconds, areaM2, DEFAULT_LOSS_FACTOR, equipmentAt, extractorM3h, shotSeconds, spaceLight, volumeM3, type Calc } from "@/equipment/calc"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
+import { secondary } from "@/components/hydro/styles"
 
 export const TYPE_EMOJI: Record<EquipmentType, EmojiName> = {
   lamp: "bulb",
@@ -36,7 +37,10 @@ export function CalcValue({ c, fmt, className }: { c: Calc; fmt: (v: number) => 
   const list = c.missing.map((m) => t(`equip.miss.${m}` as MessageKey)).join(", ")
   return (
     <span className="inline-flex flex-col items-end text-right">
-      <span className="rounded-full border border-warn/35 bg-warn/10 px-2 py-0.5 text-[0.75rem] font-semibold whitespace-nowrap text-warn">{t("equip.missing")}</span>
+      <span className="inline-flex items-center gap-1 text-[0.75rem] font-semibold whitespace-nowrap text-warn">
+        <span className="size-1.5 rounded-[2px] bg-warn" aria-hidden="true" />
+        {t("equip.missing")}
+      </span>
       <span className="mt-0.5 text-[0.75rem] text-fg-3">{t("equip.c.missingList", { list })}</span>
     </span>
   )
@@ -85,9 +89,9 @@ export function spaceSummary(space: Space, date: string, equipment: Equipment[],
 /** Summary of a space's settings in a tool, with the way to change them (Réglages de l'espace). */
 export function SettingsLink({ summary, onOpen, label }: { summary: ReactNode; onOpen: () => void; label: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-line bg-surface-2 px-3 py-2.5" data-settings-link>
+    <div className="flex items-center justify-between gap-3 border-t border-line pt-2.5" data-settings-link>
       <span className="min-w-0 text-[0.78125rem] leading-[1.45] text-fg-2">{summary}</span>
-      <button type="button" onClick={onOpen} className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[0.75rem] font-semibold text-primary">
+      <button type="button" onClick={onOpen} className={secondary}>
         {label}
       </button>
     </div>

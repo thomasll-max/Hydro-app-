@@ -45,7 +45,7 @@ function localTarget(): Plugin {
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-    <meta name="theme-color" content="#0f1512" />
+    <meta name="theme-color" content="#0d1310" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Hydro" />`,
           ),

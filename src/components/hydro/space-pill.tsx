@@ -11,7 +11,8 @@ export const safeSpaceColor = (c?: string): SpaceColor => ((SPACE_COLORS as read
 export const spaceColor = (c?: string) => `var(--space-${safeSpaceColor(c)})`
 
 export function SpaceDot({ color, className }: { color?: SpaceColor; className?: string }) {
-  return <span aria-hidden="true" className={cn("inline-block size-2 shrink-0 rounded-full", className)} style={{ background: spaceColor(color) }} />
+  // A small square with rounded corners, 10 px (lot 10h).
+  return <span aria-hidden="true" className={cn("inline-block size-2.5 shrink-0 rounded-[3px]", className)} style={{ background: spaceColor(color) }} />
 }
 
 export function SpacePill() {

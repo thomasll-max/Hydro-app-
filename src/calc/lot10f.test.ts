@@ -47,12 +47,12 @@ describe("lot 10f2 — direction visuelle", () => {
     expect(read("src/components/hydro/fab.tsx")).not.toMatch(/color-mix\(in_srgb,var\(--primary\)/)
   })
 
-  it("fonds teintés : vert-noir en sombre, blanc cassé verdâtre en clair", () => {
+  it("fonds teintés : vert-noir en sombre, blanc cassé verdâtre en clair (valeurs de la palette du lot 10h)", () => {
     const css = read("src/index.css")
-    expect(css).toMatch(/--page: #f4f6f4;/)
-    expect(css.match(/--page: #0f1512;/g)?.length).toBe(2)
-    expect(css.match(/--surface: #18201c;/g)?.length).toBe(2)
-    expect(css.match(/--line: #26302b;/g)?.length).toBe(2)
+    expect(css).toMatch(/--page: #f2f6f4;/)
+    expect(css.match(/--page: #0d1310;/g)?.length).toBe(2)
+    expect(css.match(/--surface: #131c18;/g)?.length).toBe(2)
+    expect(css.match(/--line: #28302c;/g)?.length).toBe(2)
   })
 })
 

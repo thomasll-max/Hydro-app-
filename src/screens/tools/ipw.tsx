@@ -15,6 +15,7 @@ import { IPW_CHECKLIST, IPW_PROTOCOLS, ipwAllowed, ipwDoseMl, ipwLastDay, ipwMlP
 import { GROW_SCHEMA } from "@/model/grow"
 import { cn } from "@/lib/utils"
 import { useEditors } from "@/app/editors"
+import { secondary } from "@/components/hydro/styles"
 
 export function IpwTool() {
   const { t, num, settings } = useSettings()
@@ -86,7 +87,7 @@ export function IpwTool() {
           <Card className="gap-2 border-warn/35" id="ipw-off">
             <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("ipw.off")}</p>
             {space && (
-              <button type="button" onClick={() => ed.openSpace(space.id, "nutrition")} className="self-start rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[0.78125rem] font-semibold text-primary">
+              <button type="button" onClick={() => ed.openSpace(space.id, "nutrition")} className={cn(secondary, "self-start")}>
                 {t("ipw.enableInSettings")}
               </button>
             )}
@@ -148,8 +149,8 @@ export function IpwTool() {
                     onClick={() => setChecked((x) => (on ? x.filter((y) => y !== c) : [...x, c]))}
                     className="flex min-h-11 w-full items-center gap-3 border-t border-line py-2 text-left first:border-t-0"
                   >
-                    <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px]", on ? "border-primary bg-primary text-primary-foreground" : "border-line-strong")}>
-                      {on && <Check className="size-4" />}
+                    <span className={cn("flex size-[22px] shrink-0 items-center justify-center rounded-[6px] border-[1.5px]", on ? "border-leaf bg-leaf text-background" : "border-line-strong")}>
+                      {on && <Check className="size-3.5" strokeWidth={3} />}
                     </span>
                     <span className="text-[0.84375rem] leading-snug">{t(`ipw.c.${c}`)}</span>
                   </button>
@@ -157,7 +158,7 @@ export function IpwTool() {
               )
             })}
           </ul>
-          <Button onClick={save} disabled={!allowed.ok || !L || !space || busy} className="mt-2 h-12 rounded-full text-[0.9375rem] font-bold">
+          <Button onClick={save} disabled={!allowed.ok || !L || !space || busy} className="mt-2 h-12">
             {allChecked ? t("ipw.save") : t("ipw.saveUnchecked", { n: checked.length, total: IPW_CHECKLIST.length })}
           </Button>
         </Card>

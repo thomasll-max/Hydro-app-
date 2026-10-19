@@ -9,7 +9,7 @@ import { NumberTicker } from "@/components/magicui/number-ticker"
 import { ArcGauge } from "@/components/hydro/arc-gauge"
 import { Spark } from "@/components/hydro/spark"
 import { LineIcon } from "@/components/hydro/line-icon"
-import { Chip, Chips, Dot, Label, Reveal, ScreenHero, SourceNote } from "@/components/hydro/primitives"
+import { Chip, Chips, Dot, Label, Notice, Reveal, ScreenHero, SourceNote } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
@@ -29,6 +29,7 @@ import { StartCard } from "./tools/start"
 import type { MessageKey } from "@/i18n/types"
 import { LastHarvest, StepCard } from "./cycle-steps"
 import { nextStep } from "@/calc/steps"
+import { tertiary } from "@/components/hydro/styles"
 
 function useNowMinutes() {
   const now = () => {
@@ -72,7 +73,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
         <Reveal>
           <Card className="gap-3 px-4 py-4">
             <p className="text-[0.84375rem] leading-[1.5] text-fg-2">{t("today.emptyBody")}</p>
-            <Button onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })} className="h-12 rounded-full text-[0.9375rem] font-bold">
+            <Button onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })} className="h-12">
               {t("today.emptyCta")}
             </Button>
           </Card>
@@ -236,8 +237,8 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
                     aria-current={isNext ? "step" : undefined}
                     className={cn("relative grid grid-cols-[48px_38px_1fr_auto] items-center gap-2 rounded-md px-2 py-[9px] text-[0.84375rem]", done && !isNext && "opacity-40")}
                   >
-                    {isNext && <motion.span layoutId="next-row" className="absolute inset-0 rounded-md bg-primary/9 outline outline-1 outline-primary/30" />}
-                    <span className={cn("relative tabular", isNext ? "font-semibold text-primary" : "text-fg-2")}>{r.time}</span>
+                    {isNext && <motion.span layoutId="next-row" className="absolute inset-0 rounded-[10px] bg-surface-2 shadow-[inset_2px_0_0_var(--water)]" />}
+                    <span className={cn("relative tabular", isNext ? "font-semibold text-fg" : "text-fg-2")}>{r.time}</span>
                     <PhaseTag phase={r.phase} />
                     <span className="relative min-w-0 truncate">{text}</span>
                     <span className="relative text-[0.78125rem] text-fg-3 tabular">{r.seconds != null ? `${num(r.seconds)} s` : r.ml && cycle.waterMode === "auto" ? "?" : "—"}</span>
@@ -246,12 +247,14 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
               })}
             </ol>
             {cycle.waterMode === "auto" && !cycle.flowMlPerMin && (
-              <button onClick={() => ed.openCycle()} className="mt-1 w-full rounded-md bg-warn/10 px-3 py-2 text-left text-[0.75rem] font-medium text-warn">
-                {t("today.flowUnknown")} · {t("cycleForm.flowHint")}
+              <button onClick={() => ed.openCycle()} className="mt-1 w-full text-left">
+                <Notice as="span" className="text-[0.75rem]">
+                  {t("today.flowUnknown")} · {t("cycleForm.flowHint")}
+                </Notice>
               </button>
             )}
             {program.length > 5 && (
-              <button className="mt-1 w-full rounded-md p-2 text-center text-[0.78125rem] font-semibold text-primary hover:bg-primary/8" onClick={() => setAllRows((x) => !x)}>
+              <button className={cn("mt-1 self-center", tertiary)} onClick={() => setAllRows((x) => !x)}>
                 {allRows ? t("common.less") : t("common.more")}
               </button>
             )}

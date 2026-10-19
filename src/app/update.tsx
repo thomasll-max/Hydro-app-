@@ -54,9 +54,9 @@ export function UpdateBanner() {
   }
   return (
     <div className="fixed inset-x-0 top-[calc(env(safe-area-inset-top,0px)+60px)] z-30 px-4" role="status" id="update-banner">
-      <div className="mx-auto flex max-w-[448px] items-center gap-3 rounded-full border border-primary/40 bg-surface py-1.5 pr-1.5 pl-4 shadow-[0_2px_6px_rgba(0,0,0,0.2)]">
+      <div className="mx-auto flex max-w-[448px] items-center gap-3 rounded-[14px] border border-line-strong bg-surface py-1.5 pr-1.5 pl-4">
         <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-semibold">{t("update.available")}</span>
-        <button type="button" onClick={update} className="flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-primary px-3.5 text-[0.8125rem] font-bold text-primary-foreground" id="update-now">
+        <button type="button" onClick={update} className="flex h-11 shrink-0 items-center gap-1.5 rounded-[10px] bg-primary px-3.5 text-[0.8125rem] font-semibold text-primary-foreground shadow-[inset_0_-2px_0_rgba(0,0,0,0.25)] active:translate-y-px active:shadow-[inset_0_2px_0_rgba(0,0,0,0.25)]" id="update-now">
           <RefreshCw className="size-3.5" /> {t("update.now")}
         </button>
       </div>

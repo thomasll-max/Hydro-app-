@@ -17,6 +17,7 @@ import { PLANT_IDS, type Entry, type StageKey } from "@/model/types"
 import { PhotoThumb } from "./entry-sheet"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { cn } from "@/lib/utils"
+import { tertiary } from "@/components/hydro/styles"
 
 const PAGE = 12
 
@@ -83,7 +84,7 @@ export function JournalScreen() {
         <Reveal i={0} className="mb-3">
           <Card className="flex-row items-center gap-3 px-4 py-3.5">
             <p className="min-w-0 flex-1 text-[0.8125rem] leading-snug text-fg-2">{t("journal.noCycleHere")}</p>
-            <Button variant="outline" className="h-11 shrink-0 rounded-full border-line-strong text-[0.8125rem] font-semibold" onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })}>
+            <Button variant="outline" className="h-11 shrink-0 text-[0.8125rem] font-semibold" onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })}>
               <Plus /> {t("growSet.newCycle")}
             </Button>
           </Card>
@@ -96,7 +97,7 @@ export function JournalScreen() {
         <Card className="gap-3">
           <div className="flex items-center justify-between">
             <Label emoji="sprout">{t("journal.cycle")}</Label>
-            <Button variant="ghost" size="sm" className="h-11 rounded-full text-primary" onClick={() => ed.openCycle()}>
+            <Button variant="link" size="sm" className="px-0" onClick={() => ed.openCycle()}>
               <Pencil /> {t("common.edit")}
             </Button>
           </div>
@@ -145,14 +146,14 @@ export function JournalScreen() {
 
       <Reveal i={2} className="fold-2 mb-3 grid gap-2.5">
         {spaces.length > 1 && (
-          <Button className="col-span-full h-auto min-h-12 rounded-full text-[0.875rem] font-bold whitespace-normal" onClick={() => ed.openQuick()}>
+          <Button className="col-span-full h-auto min-h-12 text-[0.875rem] whitespace-normal" onClick={() => ed.openQuick()}>
             <Layers /> {t("quick.open")}
           </Button>
         )}
-        <Button variant="outline" className="h-auto min-h-12 rounded-full border-line-strong bg-surface text-[0.84375rem] font-semibold whitespace-normal" onClick={() => ed.openEvent()}>
+        <Button variant="outline" className="h-auto min-h-12 bg-surface text-[0.84375rem] font-semibold whitespace-normal" onClick={() => ed.openEvent()}>
           <CalendarPlus /> {t("journal.addEvent")}
         </Button>
-        <Button variant="outline" className="h-auto min-h-12 rounded-full border-line-strong bg-surface text-[0.84375rem] font-semibold whitespace-normal" onClick={() => ed.openMix()}>
+        <Button variant="outline" className="h-auto min-h-12 bg-surface text-[0.84375rem] font-semibold whitespace-normal" onClick={() => ed.openMix()}>
           <FlaskConical /> {t("journal.addMix")}
         </Button>
       </Reveal>
@@ -205,14 +206,14 @@ export function JournalScreen() {
             <div className="flex flex-col items-center gap-2 px-3.5 py-6 text-center">
               <p className="text-[0.8125rem] text-fg-3">{filtered ? t("journal.historyEmpty") : t("journal.historyNone")}</p>
               {filtered && (
-                <button className="h-11 rounded-full px-3 text-[0.8125rem] font-semibold text-primary" onClick={() => setFilter(NO_FILTER)}>
+                <button className={tertiary} onClick={() => setFilter(NO_FILTER)}>
                   {t("journal.clearFilters")}
                 </button>
               )}
             </div>
           )}
           {list.length > shown && (
-            <button className="w-full p-2.5 text-[0.78125rem] font-semibold text-primary" onClick={() => setShown((n) => n + PAGE)}>
+            <button className={cn("self-center", tertiary)} onClick={() => setShown((n) => n + PAGE)}>
               {t("common.more")}
             </button>
           )}
@@ -285,7 +286,7 @@ export function JournalScreen() {
                     <Fact k={t("cycleForm.jarRh")} v={h.jarRh != null ? `${num(h.jarRh)} %` : undefined} />
                   </dl>
                 )}
-                <Button variant="outline" className="h-11 rounded-full border-line-strong" onClick={() => ed.openCycle({ harvestOnly: true })}>
+                <Button variant="outline" className="h-11" onClick={() => ed.openCycle({ harvestOnly: true })}>
                   {t("journal.editHarvest")}
                 </Button>
               </AccordionContent>
@@ -320,8 +321,9 @@ function FilterRow({ label, value, onChange, options }: { label: string; value: 
           aria-checked={value === o.v}
           onClick={() => onChange(o.v)}
           className={cn(
-            "h-11 shrink-0 rounded-full border px-3 text-[0.75rem] font-semibold whitespace-nowrap",
-            value === o.v ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2",
+            // The pill shape is kept for the Journal filters only (lot 10h); the active one is filled.
+            "hit h-9 shrink-0 rounded-full border px-3 text-[0.75rem] font-semibold whitespace-nowrap",
+            value === o.v ? "border-fg bg-fg text-background" : "border-line-strong text-fg-2",
           )}
         >
           {o.l}
@@ -356,7 +358,7 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
               <SpaceDot color={space.color} /> {space.name}
             </span>
           )}
-          {e.plantId && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[0.75rem] font-semibold text-fg-2">{e.plantId}</span>}
+          {e.plantId && <span className="rounded-[6px] border border-line px-1.5 py-0.5 font-mono text-[0.75rem] font-semibold text-fg-2">{e.plantId}</span>}
           {tg && <span className="text-[0.75rem] text-fg-3">{t(`stage.${tg.stage}`)}</span>}
           <ChevronRight className="ml-auto size-4 text-fg-3" />
         </div>
@@ -394,13 +396,13 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
         {!!(e.observations?.length || e.actions?.length) && (
           <div className="flex flex-wrap gap-1">
             {e.observations?.map((o) => (
-              <span key={o.tag} className={cn("rounded-full px-2 py-0.5 text-[0.75rem] font-semibold", o.severity >= 3 ? "bg-bad/12 text-bad" : o.severity === 2 ? "bg-warn/12 text-warn" : "bg-surface-2 text-fg-2")}>
+              <span key={o.tag} className={cn("rounded-[6px] border border-line px-2 py-0.5 text-[0.75rem] font-semibold", o.severity >= 3 ? "text-bad" : o.severity === 2 ? "text-warn" : "text-fg-2")}>
                 {t(`obs.${o.tag}`)}
                 <span className="sr-only"> ({t("entry.severity", { n: o.severity })})</span>
               </span>
             ))}
             {e.actions?.map((a) => (
-              <span key={a} className="rounded-full bg-primary/10 px-2 py-0.5 text-[0.75rem] font-semibold text-primary">
+              <span key={a} className="rounded-[6px] border border-line px-2 py-0.5 text-[0.75rem] font-semibold text-fg-2">
                 {t(`action.${a}`)}
               </span>
             ))}

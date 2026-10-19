@@ -8,48 +8,52 @@
 
 :root {
   /* light (bare :root = complete palette) */
-  /* Tinted grounds (lot 10f2): off-white with a hint of green rather than pure white. */
-  --page: #f4f6f4;
-  --surface: #fcfdfc;
-  --surface-2: #eff2f0;
-  --glass: #fcfdfc;
-  --line: #e3e8e4;
-  --line-strong: #d3dad5;
-  --fg: #141a17;
-  --fg-2: #4a524e;
-  /* Text colours ≥ 4.5:1 on page, surface and surface-2, and on their own 12 % tint (lot 10e). */
-  --fg-3: #5c6560;
-  --primary: #0c7049;
-  --primary-deep: #24b47e;
+  /* Harmonised palette (lot 10h): computed in OKLCH, one lightness and chroma per family.
+     Text ≥ 4.5:1 and graphics ≥ 3:1 on page, surface and surface-2 (test lot10h). */
+  --page: #f2f6f4;
+  --surface: #ffffff;
+  --surface-2: #eaf0ed;
+  --glass: #ffffff;
+  --line: #d5dcd8;
+  /* « Trait renforcé »: input underlines, outlines of secondary buttons and check boxes, ≥ 3:1. */
+  --line-strong: #838a87;
+  --fg: #141d19;
+  --fg-2: #36403b;
+  /* « Discret » */
+  --fg-3: #56605b;
+  /* The main button is « eau ». */
+  --primary: #007653;
   --on-primary: #ffffff;
-  --warn: #8a5700;
-  --bad: #b8281f;
-  --info: #1f6fc2;
-  --phase-3: #7c55e0;
-  /* Identity (lot 10f): water green (the drop) and leaf green (the dot). Graphics ≥ 3:1 on the page. */
-  --water: #1a9462;
-  --leaf: #4f9a2a;
-  /* The same two greens as text (≥ 4.5:1 on page, surface and surface-2). */
-  --water-ink: #0c7049;
-  --leaf-ink: #3a7a1d;
-  --track: #eceeed;
-  --shadow: 0 1px 2px rgba(20, 26, 23, 0.05);
-  /* 8 space colours, ≥ 4.5:1 on the light surface */
-  --space-emerald: #13845a;
-  --space-sky: #1f6fc2;
-  --space-violet: #6c45d1;
-  --space-amber: #9a6200;
-  --space-rose: #c42f55;
-  --space-teal: #0b7f80;
-  --space-orange: #b65310;
-  --space-slate: #556074;
+  /* « À surveiller » and « alerte »: a word or a small marker, never a whole sentence. */
+  --warn: #a15b00;
+  --bad: #b2392b;
+  --info: #1f689d;
+  --phase-3: #714ca6;
+  /* « Eau » (watering, runoff, reservoir, EC / pH of the solution) and « plante » (stage, growth, harvest, ticks). */
+  --water: #007653;
+  --leaf: #4f7715;
+  --water-ink: #007653;
+  --leaf-ink: #4f7715;
+  --track: #e0e6e3;
+  --shadow: none;
+  /* 8 earthy space colours, no green (never mistaken for « eau » or « plante »). The ids stay those stored in the
+     data since lot 1: emerald = brique, sky = cuivre, violet = ocre, amber = lagune, rose = ardoise, teal = lavande,
+     orange = prune, slate = rose (same order as before, so no space loses or swaps its colour). */
+  --space-emerald: #8b5050;
+  --space-sky: #865634;
+  --space-violet: #785f28;
+  --space-amber: #157079;
+  --space-rose: #34698c;
+  --space-teal: #565f91;
+  --space-orange: #715685;
+  --space-slate: #84506e;
   color-scheme: light;
 
-  /* geometry + motion (maquette) */
+  /* geometry + motion (maquette; lot 10h: 10 px for buttons and fields, 14 px for the rare framed blocks) */
   --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 16px;
-  --r-xl: 22px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 14px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   /* Display face (lot 10f, « Serre »): logo, screen and sheet titles, space names, the morning card, stage names. */
   --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
@@ -71,79 +75,79 @@
   --destructive: var(--bad);
   --border: var(--line);
   --input: var(--line-strong);
-  --ring: var(--primary);
+  --ring: var(--water);
   --radius: var(--r-md);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-app-theme="light"]) {
-    --page: #0f1512;
-    --surface: #18201c;
-    --surface-2: #1e2823;
-    --glass: #18201c;
-    --line: #26302b;
-    --line-strong: #33403a;
-    --fg: #eef2ef;
-    --fg-2: #c2cdc7;
-    --fg-3: #a7b3ad;
-    --primary: #3ecf8e;
-    --on-primary: #0f1512;
-    --primary-deep: #24b47e;
-    --warn: #f5a524;
-    --bad: #ff5a4e;
-    --info: #5aa9ff;
-    --phase-3: #b38cff;
-    --water: #3ecf8e;
-    --leaf: #8bd450;
-    --water-ink: #3ecf8e;
-    --leaf-ink: #8bd450;
-    --track: rgba(255, 255, 255, 0.07);
+    --page: #0d1310;
+    --surface: #131c18;
+    --surface-2: #1d2622;
+    --glass: #131c18;
+    --line: #28302c;
+    --line-strong: #676f6b;
+    --fg: #eaf0ed;
+    --fg-2: #c1cac5;
+    --fg-3: #9ca8a2;
+    --primary: #56d1a3;
+    --on-primary: #0d1310;
+    --warn: #eeb154;
+    --bad: #ed7761;
+    --info: #70b6e7;
+    --phase-3: #ba9cef;
+    --water: #56d1a3;
+    --leaf: #aad56e;
+    --water-ink: #56d1a3;
+    --leaf-ink: #aad56e;
+    --track: #1d2621;
     --shadow: none;
     --picker-filter: invert(1);
-    --space-emerald: #3ecf8e;
-    --space-sky: #5aa9ff;
-    --space-violet: #b38cff;
-    --space-amber: #f5b941;
-    --space-rose: #ff7a9a;
-    --space-teal: #3fd1cf;
-    --space-orange: #ff9a52;
-    --space-slate: #a3adbf;
+    --space-emerald: #d49a99;
+    --space-sky: #cea081;
+    --space-violet: #bfa878;
+    --space-amber: #74b8c0;
+    --space-rose: #82b1d3;
+    --space-teal: #9da8d8;
+    --space-orange: #b89fcc;
+    --space-slate: #cc99b5;
     color-scheme: dark;
   }
 }
+/* .theme-dark: the start screen of the local version is always dark (lot 10g). */
 :root[data-theme="dark"]:not([data-app-theme="light"]),
-:root[data-app-theme="dark"] {
-  --page: #0f1512;
-  --surface: #18201c;
-  --surface-2: #1e2823;
-  --glass: #18201c;
-  --line: #26302b;
-  --line-strong: #33403a;
-  --fg: #eef2ef;
-  --fg-2: #c2cdc7;
-  --fg-3: #a7b3ad;
-  --primary: #3ecf8e;
-  --on-primary: #0f1512;
-  --primary-deep: #24b47e;
-  --warn: #f5a524;
-  --bad: #ff5a4e;
-  --info: #5aa9ff;
-  --phase-3: #b38cff;
-  --water: #3ecf8e;
-  --leaf: #8bd450;
-  --water-ink: #3ecf8e;
-  --leaf-ink: #8bd450;
-  --track: rgba(255, 255, 255, 0.07);
+:root[data-app-theme="dark"],
+.theme-dark {
+  --page: #0d1310;
+  --surface: #131c18;
+  --surface-2: #1d2622;
+  --glass: #131c18;
+  --line: #28302c;
+  --line-strong: #676f6b;
+  --fg: #eaf0ed;
+  --fg-2: #c1cac5;
+  --fg-3: #9ca8a2;
+  --primary: #56d1a3;
+  --on-primary: #0d1310;
+  --warn: #eeb154;
+  --bad: #ed7761;
+  --info: #70b6e7;
+  --phase-3: #ba9cef;
+  --water: #56d1a3;
+  --leaf: #aad56e;
+  --water-ink: #56d1a3;
+  --leaf-ink: #aad56e;
+  --track: #1d2621;
   --shadow: none;
   --picker-filter: invert(1);
-  --space-emerald: #3ecf8e;
-  --space-sky: #5aa9ff;
-  --space-violet: #b38cff;
-  --space-amber: #f5b941;
-  --space-rose: #ff7a9a;
-  --space-teal: #3fd1cf;
-  --space-orange: #ff9a52;
-  --space-slate: #a3adbf;
+  --space-emerald: #d49a99;
+  --space-sky: #cea081;
+  --space-violet: #bfa878;
+  --space-amber: #74b8c0;
+  --space-rose: #82b1d3;
+  --space-teal: #9da8d8;
+  --space-orange: #b89fcc;
+  --space-slate: #cc99b5;
   color-scheme: dark;
 }
 
@@ -234,10 +238,6 @@ body {
   h3 {
     text-wrap: balance;
   }
-  :focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
   /* Form controls don't inherit text color by default: on dark theme they were black on black. */
   input,
   textarea,
@@ -261,6 +261,17 @@ body {
   input[type="number"] {
     -moz-appearance: textfield;
   }
+}
+
+/* Keyboard focus (lot 10h): a 2 px « eau » outline, 2 px away, on every interactive element. Unlayered so that it
+   wins over the library's `outline-none` / focus rings. Text fields show it with their underline instead. */
+:focus-visible {
+  outline: 2px solid var(--water);
+  outline-offset: 2px;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus-visible,
+textarea:focus-visible {
+  outline: none;
 }
 
 /* Thin line icons (lot 10f2): every Lucide icon left at its default weight is drawn at 1.5, like the leaf's vein. */

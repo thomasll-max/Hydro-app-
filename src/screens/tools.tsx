@@ -55,7 +55,7 @@ export function ToolsScreen() {
     const tool = TOOLS.find((x) => x.id === open)!
     return (
       <>
-        <button onClick={() => setOpen(null)} className="-ml-1 mb-1 flex h-11 items-center gap-1 rounded-full pr-3 text-[0.875rem] font-semibold text-primary">
+        <button onClick={() => setOpen(null)} className="-ml-1 mb-1 flex h-11 items-center gap-1 rounded-[10px] pr-3 text-[0.875rem] font-semibold text-fg-2 hover:text-fg">
           <ChevronLeft className="size-5" /> {t("tools.back")}
         </button>
         <ScreenHero emoji={tool.emoji} title={t(tool.title)}>

@@ -1,12 +1,14 @@
 // Calendar pieces shared by the Calendar tab, Today's "À venir" and the day sheet:
 // data hook, "Fait" / "Reporter" actions, one item row, the upcoming card.
 import { useMemo } from "react"
-import { Check, Clock3, RotateCcw } from "lucide-react"
+import { Clock3 } from "lucide-react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { LineIcon } from "@/components/hydro/line-icon"
 import { Label } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
+import { CheckBox } from "@/components/hydro/form"
+import { iconButton, tertiary } from "@/components/hydro/styles"
 import { useSettings } from "@/app/settings-context"
 import { useGrow, type Selection } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
@@ -107,49 +109,26 @@ export function ItemRow({ i, showWhen = true, onOpen }: { i: CalItem; showWhen?:
   const open = onOpen ?? (i.type === "reminder" ? () => ed.openReminder({ reminder: i.occ.reminder }) : undefined)
   const sub = [showWhen ? when(i) : i.time, space?.name, i.type === "deadline" ? t(`cal.src.${i.deadline.source}`) : null, i.snoozed ? t("cal.snoozed") : null].filter(Boolean).join(" · ")
   return (
-    <li className={cn("flex items-center gap-2.5 border-t border-line py-2 first:border-t-0", i.done && "opacity-55")}>
-      <button type="button" onClick={open} disabled={!open} className="flex min-w-0 flex-1 items-center gap-2.5 py-1 text-left disabled:cursor-default">
+    <li className="flex min-h-12 items-center gap-3 border-t border-line py-1 first:border-t-0">
+      {/* « Fait » is a square check box (lot 10h): ticking it again undoes it. */}
+      <CheckBox instant checked={!!i.done} label={t("cal.done")} onChange={(on) => act.done(i, on)} />
+      <button type="button" onClick={open} disabled={!open} className={cn("flex min-w-0 flex-1 items-center gap-2.5 py-1 text-left disabled:cursor-default", i.done && "opacity-60")}>
         <LineIcon name={itemEmoji(i)} size={22} />
         <span className="min-w-0">
           <span className={cn("block truncate text-[0.84375rem] font-medium", i.done && "line-through decoration-fg-3")}>{itemTitle(settings.lang, i)}</span>
-          <span className={cn("flex items-center gap-1.5 truncate text-[0.75rem]", i.overdue || (i.type === "reminder" && i.late) ? "font-semibold text-warn" : "text-fg-3")}>
+          <span className="flex items-center gap-1.5 truncate text-[0.75rem] text-fg-3">
             {space && <SpaceDot color={space.color} />}
+            {i.overdue || (i.type === "reminder" && i.late) ? <span className="size-1.5 shrink-0 rounded-[2px] bg-warn" aria-hidden="true" /> : null}
             {sub}
           </span>
         </span>
       </button>
-      {i.done ? (
-        <IconBtn label={t("cal.undo")} onClick={() => act.done(i, false)}>
-          <RotateCcw className="size-4" />
-        </IconBtn>
-      ) : (
-        <>
-          <IconBtn label={t("cal.snooze")} onClick={() => act.snooze(i)}>
-            <Clock3 className="size-4" />
-          </IconBtn>
-          <IconBtn label={t("cal.done")} primary onClick={() => act.done(i)}>
-            <Check className="size-4.5" strokeWidth={2.6} />
-          </IconBtn>
-        </>
+      {!i.done && (
+        <button type="button" onClick={() => act.snooze(i)} aria-label={t("cal.snooze")} title={t("cal.snooze")} className={iconButton}>
+          <Clock3 className="size-4" />
+        </button>
       )}
     </li>
-  )
-}
-
-function IconBtn({ label, onClick, primary, children }: { label: string; onClick: () => void; primary?: boolean; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className={cn(
-        "flex size-11 shrink-0 items-center justify-center rounded-full border transition-transform active:scale-95",
-        primary ? "border-primary/35 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2",
-      )}
-    >
-      {children}
-    </button>
   )
 }
 
@@ -171,7 +150,7 @@ export function UpcomingCard({ spaceIds, max = 4 }: { spaceIds: Set<string> | nu
         <button
           type="button"
           onClick={() => ed.openReminder({ spaceId: spaceIds?.size === 1 ? [...spaceIds][0] : undefined })}
-          className="-my-2 h-11 rounded-full px-2 text-[0.78125rem] font-semibold text-primary"
+          className={cn("-my-2", tertiary)}
         >
           + {t("cal.addShort")}
         </button>

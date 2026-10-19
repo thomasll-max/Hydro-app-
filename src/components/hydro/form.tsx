@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode, type SyntheticEvent } from "react"
-import { X } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Check, X } from "lucide-react"
 import { Label as UiLabel } from "@/components/ui/label"
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -9,6 +8,7 @@ import { isBadNum } from "@/calc/formulas"
 import { useSettings } from "@/app/settings-context"
 import { addLayer } from "@/app/nav"
 import { InfoTip, type Term } from "./info"
+import { iconButton, joined, segmentItem, toggle } from "./styles"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,13 +68,15 @@ export function Sheet({
   }, [open])
   const touch = (e: SyntheticEvent) => {
     const el = e.target as HTMLElement
+    // A check box that acts at once (« Fait » on a reminder) is not a form field: nothing to lose.
+    if (el.closest?.("[data-instant]")) return
     if (e.type === "input" || el.closest?.("[role=radio],[role=switch],[role=checkbox],[aria-pressed]")) setTouched(true)
   }
   return (
     <>
       <Drawer open={open} onOpenChange={(o) => (o ? onOpenChange(true) : tryClose())} dismissible={!unsaved} repositionInputs={false}>
         <DrawerContent
-          className="mx-auto max-h-[94dvh]! max-w-[520px] rounded-t-[24px]! border-line-strong bg-background"
+          className="mx-auto max-h-[94dvh]! max-w-[520px] rounded-t-[14px]! border-line-strong bg-background"
           onInputCapture={touch}
           onClickCapture={touch}
           onPointerDownOutside={() => {
@@ -93,26 +95,26 @@ export function Sheet({
               type="button"
               onClick={tryClose}
               aria-label={t("common.close")}
-              className="-mt-1 -mr-1 flex size-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-surface-2"
+              className={cn("-mt-1 -mr-1", iconButton)}
             >
               <X className="size-5" />
             </button>
           </DrawerHeader>
           <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4">{children}</div>
-          <DrawerFooter className="border-t border-line bg-background/90 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] backdrop-blur">
+          <DrawerFooter className="border-t border-line bg-background pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
             {footer}
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
       <AlertDialog open={asking} onOpenChange={setAsking}>
-        <AlertDialogContent className="max-w-[340px] rounded-xl border-line-strong bg-surface">
+        <AlertDialogContent className="max-w-[340px] rounded-[14px] border-line-strong bg-surface">
           <AlertDialogHeader>
             <AlertDialogTitle>{t("common.discardTitle")}</AlertDialogTitle>
             <AlertDialogDescription>{t("common.discardBody")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row gap-2">
-            <AlertDialogCancel className="h-11 flex-1 rounded-full">{t("common.keepEditing")}</AlertDialogCancel>
-            <AlertDialogAction className="h-11 flex-1 rounded-full bg-bad text-white hover:bg-bad/90" onClick={() => onOpenChange(false)}>
+            <AlertDialogCancel className="h-11 flex-1">{t("common.keepEditing")}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" className="h-11 flex-1" onClick={() => onOpenChange(false)}>
               {t("common.discard")}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -139,8 +141,18 @@ export function Grid({ cols = 2, children }: { cols?: 2 | 3; children: ReactNode
   return <div className={cn("grid gap-2.5", cols === 3 ? "fold-3" : "fold-2")}>{children}</div>
 }
 
-const inputCls =
-  "h-12 rounded-md border-line-strong bg-surface text-fg text-[1.0625rem] font-medium shadow-none tabular-nums placeholder:font-normal placeholder:text-fg-3 focus-visible:ring-2"
+// « Instrument » fields (lot 10h): label above, no box, a 1.5 px underline that turns « eau » on focus and
+// « à surveiller » on a typo (message under it); the value in big mono, the unit inside on the right.
+const line = "flex min-w-0 items-baseline gap-1 shadow-[inset_0_-1.5px_0_var(--line-strong)] transition-shadow focus-within:shadow-[inset_0_-2px_0_var(--water)]"
+const lineBad = "shadow-[inset_0_-2px_0_var(--warn)] focus-within:shadow-[inset_0_-2px_0_var(--warn)]"
+const labelCls = "truncate text-[0.8125rem] text-fg-3"
+const fieldCls = "w-full min-w-0 bg-transparent text-fg outline-none placeholder:font-normal placeholder:text-fg-3"
+/** A unit written at the end of a label, « T° jour (°C) », goes inside the field. */
+const UNIT = /^(.*\S)\s*\((°C|%|kg|g|mL|L|cm|mm|W|h|min|mS\/cm|µmol\/J|µmol\/s|mL\/min|m³\/h|mol\/m²\/[jd])\)$/
+export const splitUnit = (label: string): [string, string | undefined] => {
+  const m = UNIT.exec(label)
+  return m ? [m[1], m[2]] : [label, undefined]
+}
 
 /** Numeric field: decimal keyboard, accepts "2,4" or "2.4". Value is kept as typed (string). */
 export function NumField({
@@ -151,6 +163,8 @@ export function NumField({
   placeholder,
   hint,
   integer,
+  unit,
+  hintMono,
   className,
 }: {
   id: string
@@ -159,36 +173,50 @@ export function NumField({
   onChange: (v: string) => void
   placeholder?: string
   hint?: string
+  /** The hint is a value (« hier 25,3 »): written in mono. */
+  hintMono?: boolean
   integer?: boolean
+  /** Shown inside the field; by default taken from the end of the label. */
+  unit?: string
   className?: string
 }) {
   const { t } = useSettings()
   // A typo is flagged right away; forms refuse to save while one is left (lot 10a).
   const bad = isBadNum(value)
+  const [text, fromLabel] = splitUnit(label)
+  const u = unit ?? fromLabel
   return (
-    <div className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <UiLabel htmlFor={id} className="truncate text-[0.75rem] font-medium text-fg-2">
-        {label}
+    <div className={cn("flex min-w-0 flex-col gap-0.5", className)}>
+      <UiLabel htmlFor={id} className={labelCls}>
+        {text}
+        {u && <span className="sr-only"> ({u})</span>}
       </UiLabel>
-      <Input
-        id={id}
-        type="text"
-        inputMode={integer ? "numeric" : "decimal"}
-        autoComplete="off"
-        enterKeyHint="next"
-        value={value}
-        placeholder={placeholder}
-        aria-invalid={bad || undefined}
-        aria-describedby={bad ? `${id}-err` : undefined}
-        onChange={(e) => onChange(e.target.value.replace(/[^\d.,-]/g, ""))}
-        className={cn(inputCls, bad && "border-bad ring-2 ring-bad/30")}
-      />
+      <div className={cn(line, bad && lineBad)}>
+        <input
+          id={id}
+          type="text"
+          inputMode={integer ? "numeric" : "decimal"}
+          autoComplete="off"
+          enterKeyHint="next"
+          value={value}
+          placeholder={placeholder}
+          aria-invalid={bad || undefined}
+          aria-describedby={bad ? `${id}-err` : undefined}
+          onChange={(e) => onChange(e.target.value.replace(/[^\d.,-]/g, ""))}
+          className={cn(fieldCls, "h-12 font-mono text-[1.625rem] font-medium tabular-nums")}
+        />
+        {u && (
+          <span aria-hidden="true" className="shrink-0 font-mono text-[0.8125rem] text-fg-3">
+            {u}
+          </span>
+        )}
+      </div>
       {bad ? (
-        <span id={`${id}-err`} className="truncate text-[0.75rem] font-semibold text-bad">
+        <span id={`${id}-err`} className="truncate text-[0.75rem] font-semibold text-warn">
           {t("safe.badNumber")}
         </span>
       ) : (
-        hint && <span className="truncate text-[0.75rem] text-fg-3">{hint}</span>
+        hint && <span className={cn("truncate text-[0.75rem] text-fg-3", hintMono && "font-mono")}>{hint}</span>
       )}
     </div>
   )
@@ -214,11 +242,20 @@ export function TextField({
   className?: string
 }) {
   return (
-    <div className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <UiLabel htmlFor={id} className="truncate text-[0.75rem] font-medium text-fg-2">
+    <div className={cn("flex min-w-0 flex-col gap-0.5", className)}>
+      <UiLabel htmlFor={id} className={labelCls}>
         {label}
       </UiLabel>
-      <Input id={id} type={type} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} className={cn(inputCls, "text-[1rem]")} />
+      <div className={line}>
+        <input
+          id={id}
+          type={type}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className={cn(fieldCls, "h-12 text-[1.0625rem]", type !== "text" && "font-mono text-[1rem] tabular-nums")}
+        />
+      </div>
       {hint && <span className="truncate text-[0.75rem] text-fg-3">{hint}</span>}
     </div>
   )
@@ -226,23 +263,18 @@ export function TextField({
 
 export function AreaField({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
-    <div className="flex flex-col gap-1">
-      <UiLabel htmlFor={id} className="text-[0.75rem] font-medium text-fg-2">
+    <div className="flex flex-col gap-0.5">
+      <UiLabel htmlFor={id} className={labelCls}>
         {label}
       </UiLabel>
-      <textarea
-        id={id}
-        rows={3}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-line-strong bg-surface text-fg px-3 py-2.5 text-[1rem] outline-none placeholder:text-fg-3 focus-visible:ring-2 focus-visible:ring-ring/50"
-      />
+      <div className={line}>
+        <textarea id={id} rows={3} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} className={cn(fieldCls, "resize-none py-2 text-[1rem]")} />
+      </div>
     </div>
   )
 }
 
-/** Segmented choice (shadcn ToggleGroup), same pill as the top bar. */
+/** Segmented choice (shadcn ToggleGroup, radios): joined boxes, the active one inverted (lot 10h). */
 export function Seg<T extends string>({
   value,
   onChange,
@@ -257,18 +289,12 @@ export function Seg<T extends string>({
   className?: string
 }) {
   return (
-    <ToggleGroup
-      type="single"
-      value={value ?? ""}
-      onValueChange={(v) => v && onChange(v as T)}
-      aria-label={label}
-      className={cn("flex w-full flex-wrap gap-0 rounded-full border border-line bg-surface-2 p-[3px]", className)}
-    >
+    <ToggleGroup type="single" value={value ?? ""} onValueChange={(v) => v && onChange(v as T)} aria-label={label} className={joined(undefined, cn("w-full gap-0", className))}>
       {options.map((o) => (
         <ToggleGroupItem
           key={o.value}
           value={o.value}
-          className="min-h-11 min-w-0 flex-1 rounded-full! px-2 py-1 text-center text-[0.8125rem] leading-tight font-semibold whitespace-normal text-fg-3 hover:bg-transparent hover:text-fg data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
+          className={segmentItem}
         >
           {o.label}
         </ToggleGroupItem>
@@ -277,31 +303,52 @@ export function Seg<T extends string>({
   )
 }
 
-/** Tappable chip. `level` 1–3 shows a severity dot count. */
-export function TagChip({ label, on, level, onClick }: { label: string; on: boolean; level?: number; onClick: () => void }) {
-  const { t } = useSettings()
+/** Square check box (lot 10h): 22 px, radius 6, « plante » when ticked, with a 44 px tap area. */
+export function CheckBox({
+  checked,
+  onChange,
+  label,
+  instant,
+  className,
+}: {
+  checked: boolean
+  onChange: (on: boolean) => void
+  label: string
+  /** Saved at once (not part of a form): ticking it does not count as an unsaved change of the sheet around it. */
+  instant?: boolean
+  className?: string
+}) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      aria-pressed={on}
+      role="checkbox"
+      data-instant={instant || undefined}
+      aria-checked={checked}
+      aria-label={label}
+      title={label}
+      onClick={() => onChange(!checked)}
       className={cn(
-        "flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] font-semibold transition-colors",
-        on
-          ? level && level >= 3
-            ? "border-bad/40 bg-bad/12 text-bad"
-            : level === 2
-              ? "border-warn/40 bg-warn/12 text-warn"
-              : "border-primary/40 bg-primary/12 text-primary"
-          : "border-line bg-surface-2 text-fg-2",
+        "hit-sq flex size-[22px] shrink-0 items-center justify-center rounded-[6px] border-[1.5px] transition-[background-color,border-color,transform] duration-150 active:scale-90",
+        checked ? "border-leaf bg-leaf text-background" : "border-line-strong hover:border-leaf",
+        className,
       )}
     >
+      {checked && <Check className="size-3.5" strokeWidth={3} aria-hidden="true" />}
+    </button>
+  )
+}
+
+/** Tappable chip (an outlined box, filled when on). `level` 1–3 shows a severity dot count. */
+export function TagChip({ label, on, level, onClick }: { label: string; on: boolean; level?: number; onClick: () => void }) {
+  const { t } = useSettings()
+  return (
+    <button type="button" onClick={onClick} aria-pressed={on} className={toggle(on)}>
       {label}
       {on && level ? (
         <span className="flex gap-0.5">
           <span className="sr-only">{t("entry.severity", { n: level })}</span>
           {[1, 2, 3].map((i) => (
-            <span key={i} aria-hidden="true" className={cn("size-1.5 rounded-full", i <= level ? "bg-current" : "bg-current/25")} />
+            <span key={i} aria-hidden="true" className={cn("size-1.5 rounded-[2px]", i <= level ? "bg-current" : "bg-current/30")} />
           ))}
         </span>
       ) : null}

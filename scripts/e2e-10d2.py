@@ -86,8 +86,8 @@ with sync_playwright() as p:
 
     # Aujourd'hui: one line for the daily reminder.
     pg.get_by_role("tab", name="Aujourd'hui").click(); pg.wait_for_timeout(1500)
-    # « À venir » rows carry a « Fait » button (the Bonjour card has its own « Rappel » line).
-    checks["reminderLines"] = pg.locator("li", has_text="Arroser à la main").filter(has=pg.get_by_role("button", name="Fait")).count()
+    # « À venir » rows carry a « Fait » check box (lot 10h) (the Bonjour card has its own « Rappel » line).
+    checks["reminderLines"] = pg.locator("li", has_text="Arroser à la main").filter(has=pg.get_by_role("checkbox", name="Fait")).count()
     checks["reminderLate"] = pg.locator("li", has_text="heure passée").count()
     pg.screenshot(path=str(out / "04-today.png"), full_page=True)
 

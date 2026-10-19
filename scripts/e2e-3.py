@@ -57,11 +57,11 @@ with sync_playwright() as p:
 
     # Day sheet of today: the flow check → Fait.
     label = pg.locator("button[aria-label]").filter(has_text=str(today.day)).first
-    pg.locator(".outline-primary\\/40").first.click()
+    pg.locator("button[aria-current=date]").first.click()
     pg.wait_for_timeout(800)
     pg.screenshot(path=str(out / "04-day-sheet.png"))
     checks["day_has_flow"] = pg.locator("text=Mesurer le débit").count() > 0
-    pg.get_by_role("button", name="Fait").first.click()
+    pg.get_by_role("checkbox", name="Fait").first.click()
     pg.wait_for_selector("text=C'est noté", timeout=10000)
     pg.wait_for_timeout(600)
     pg.screenshot(path=str(out / "05-day-sheet-done.png"))

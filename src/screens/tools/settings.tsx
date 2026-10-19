@@ -25,6 +25,7 @@ import { ResetCard } from "./reset-card"
 import { InstallTip } from "@/screens/install-tip"
 import { TARGET } from "@/store"
 import { CURRENT_BUILD, formatVersion } from "@/lib/version"
+import { secondary, tertiary, toggle } from "@/components/hydro/styles"
 
 export function SettingsTool() {
   const { t, dm, saveState, locale } = useSettings()
@@ -194,7 +195,7 @@ export function SettingsTool() {
                     </span>
                   </button>
                   {!c.harvestDate && g.spaces.length > 1 && (
-                    <button onClick={() => setTransfer({ open: true, cycle: c })} className="flex h-11 shrink-0 items-center gap-1 rounded-full border border-line px-3 text-[0.78125rem] font-semibold text-fg-2" aria-label={t("growSet.transfer")}>
+                    <button onClick={() => setTransfer({ open: true, cycle: c })} className={secondary} aria-label={t("growSet.transfer")}>
                       <ArrowRightLeft className="size-3.5" /> {t("growSet.transfer")}
                     </button>
                   )}
@@ -232,7 +233,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 
 function AddBtn({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
-    <button onClick={onClick} className="flex h-11 items-center gap-1 rounded-full px-2 text-[0.8125rem] font-semibold text-primary">
+    <button onClick={onClick} className={tertiary}>
       <Plus className="size-4" /> {children}
     </button>
   )
@@ -347,7 +348,7 @@ function TransferSheet({ open, onOpenChange, cycle }: { open: boolean; onOpenCha
           {labels.map((p) => {
             const on = plants.includes(p)
             return (
-              <button key={p} type="button" aria-pressed={on} onClick={() => setPlants((x) => (on ? x.filter((y) => y !== p) : [...x, p]))} className={cn("h-11 min-w-12 rounded-full border px-3 text-[0.8125rem] font-semibold", on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2")}>
+              <button key={p} type="button" aria-pressed={on} onClick={() => setPlants((x) => (on ? x.filter((y) => y !== p) : [...x, p]))} className={toggle(on, "min-w-12 justify-center px-3")}>
                 {p}
               </button>
             )

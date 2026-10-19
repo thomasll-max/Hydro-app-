@@ -19,14 +19,14 @@ export function ConfirmDelete({ trigger, onConfirm }: { trigger: ReactNode; onCo
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
-      <AlertDialogContent className="max-w-[340px] rounded-xl border-line-strong bg-surface">
+      <AlertDialogContent className="max-w-[340px] rounded-[14px] border-line-strong bg-surface">
         <AlertDialogHeader>
           <AlertDialogTitle>{t("common.confirmTitle")}</AlertDialogTitle>
           <AlertDialogDescription>{t("common.confirmBody")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-row gap-2">
-          <AlertDialogCancel className="h-11 flex-1 rounded-full">{t("common.cancel")}</AlertDialogCancel>
-          <AlertDialogAction className="h-11 flex-1 rounded-full bg-bad text-white hover:bg-bad/90" onClick={async () => {
+          <AlertDialogCancel className="h-11 flex-1">{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" className="h-11 flex-1" onClick={async () => {
               try {
                 await onConfirm()
               } catch (e) {

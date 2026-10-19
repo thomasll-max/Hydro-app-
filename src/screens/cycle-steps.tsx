@@ -61,7 +61,7 @@ export function StepCard({ cycle }: { cycle: Cycle }) {
           {t("cycleForm.expectedHarvest", { date: dm(expected) })} <span className="font-normal text-fg-3">· {t("cycleForm.expectedHarvestD", { weeks: cycle.flowerWeeks })}</span>
         </p>
       )}
-      <Button onClick={go} disabled={busy} variant={early ? "outline" : "default"} className="h-12 rounded-full text-[0.9375rem] font-bold" id={`step-${step}`}>
+      <Button onClick={go} disabled={busy} variant={early ? "outline" : "default"} className="h-12" id={`step-${step}`}>
         {t(`step.${step}`)}
       </Button>
     </Card>
@@ -78,7 +78,7 @@ export function LastHarvest({ spaceId }: { spaceId?: string }) {
   return (
     <Card className="gap-2" id="last-harvest">
       <Label emoji="blossom">{t("step.lastHarvest", { name: last.name, date: dm(last.harvestDate!) })}</Label>
-      <Button variant="outline" className="h-11 self-start rounded-full" onClick={() => ed.openCycle({ harvestOnly: true, cycleId: last.id })}>
+      <Button variant="outline" className="h-11 self-start" onClick={() => ed.openCycle({ harvestOnly: true, cycleId: last.id })}>
         {t("step.harvestDetails")}
       </Button>
     </Card>

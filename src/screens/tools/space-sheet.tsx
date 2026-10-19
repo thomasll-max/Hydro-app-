@@ -22,6 +22,7 @@ import { SwitchRow } from "./equipment-shared"
 
 export type SpaceSection = "general" | "nutrition" | "irrigation" | "light" | "air"
 import { NutritionFields } from "./nutrition-settings"
+import { joined, secondary, segment } from "@/components/hydro/styles"
 
 export function SpaceSheet({ open, onOpenChange, space, section }: { open: boolean; onOpenChange: (o: boolean) => void; space?: Space; section?: SpaceSection }) {
   const { t, num, settings } = useSettings()
@@ -155,7 +156,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title={space ? t("space.settingsOf", { name: space.name }) : t("space.new")} footer={<SaveBar busy={busy} onSave={save} />}>
       {!all && (
-        <button type="button" onClick={() => setAll(true)} className="mb-1 h-11 rounded-full border border-line bg-surface-2 px-3 text-[0.78125rem] font-semibold text-fg-2" id="sp-all">
+        <button type="button" onClick={() => setAll(true)} className={cn(secondary, "mb-1")} id="sp-all">
           {t("space.showAll")}
         </button>
       )}
@@ -165,14 +166,14 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
         <TextField id="sp-name" label={`${t("space.name")} · ${t("common.required")}`} value={s.name} onChange={(v) => setS((x) => ({ ...x, name: v }))} />
       </Group>
       <Group title={t("space.template")}>
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className={joined(3)}>
           {TEMPLATES.map((tp) => (
             <button
               key={tp}
               type="button"
               aria-pressed={s.template === tp}
               onClick={() => setS((x) => ({ ...x, template: tp as TemplateId, modules: space ? x.modules : modulesFor(tp) }))}
-              className={cn("h-11 rounded-md border text-[0.8125rem] font-semibold", s.template === tp ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
+              className={segment(s.template === tp)}
             >
               {t(`template.${tp}`)}
             </button>
@@ -188,9 +189,10 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
               type="button"
               role="radio"
               aria-checked={s.color === c}
-              aria-label={c}
+              aria-label={t(`space.colorNames.${c}`)}
+              title={t(`space.colorNames.${c}`)}
               onClick={() => setS((x) => ({ ...x, color: c }))}
-              className={cn("size-11 rounded-full border-2 transition-transform", s.color === c ? "scale-105 border-fg" : "border-transparent")}
+              className={cn("size-11 rounded-[10px] outline-offset-2", s.color === c ? "outline-2 outline-fg outline-solid" : "")}
               style={{ background: spaceColor(c) }}
             />
           ))}
@@ -252,14 +254,14 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
           <div className="flex flex-col gap-2.5">
             <div id="sp-dryback">
               <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("space.drybackMethod")}</div>
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className={joined(2)}>
                 {DRYBACK_METHODS.map((m) => (
                   <button
                     key={m}
                     type="button"
                     aria-pressed={drybackMethodOf(s) === m}
                     onClick={() => setS((x) => ({ ...x, irrigation: { ...x.irrigation, drybackMethod: m } }))}
-                    className={cn("min-h-11 rounded-md border px-2 text-[0.8125rem] leading-tight font-semibold", drybackMethodOf(s) === m ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
+                    className={segment(drybackMethodOf(s) === m)}
                   >
                     {t(`space.dm.${m}`)}
                   </button>
@@ -331,10 +333,10 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
       )}
       {space && all && (
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button variant="outline" onClick={duplicate} disabled={busy} className="h-11 rounded-full border-line-strong text-[0.84375rem] font-semibold">
+          <Button variant="outline" onClick={duplicate} disabled={busy} className="h-11 text-[0.84375rem] font-semibold">
             <Copy className="size-4" /> {t("space.duplicate")}
           </Button>
-          <Button variant="outline" onClick={archive} disabled={busy} className="h-11 rounded-full border-line-strong text-[0.84375rem] font-semibold">
+          <Button variant="outline" onClick={archive} disabled={busy} className="h-11 text-[0.84375rem] font-semibold">
             {s.archived ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />} {s.archived ? t("space.unarchive") : t("space.archive")}
           </Button>
         </div>

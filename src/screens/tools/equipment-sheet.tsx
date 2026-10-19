@@ -16,6 +16,7 @@ import { SCHEMA } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
 import { SwitchRow, TYPE_EMOJI } from "./equipment-shared"
+import { joined, secondary, segment, toggle } from "@/components/hydro/styles"
 
 type Field = { k: string; label: MessageKey; kind: "num" | "int" | "text" | "bool"; hint?: MessageKey }
 type SpecKey = "lamp" | "reservoir" | "pump" | "container" | "extractor" | "capacity"
@@ -221,17 +222,14 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
       } />}
     >
       <Group title={t("equip.type")}>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className={joined(4)}>
           {EQUIPMENT_TYPES.map((ty) => (
             <button
               key={ty}
               type="button"
               aria-pressed={e.type === ty}
               onClick={() => setType(ty)}
-              className={cn(
-                "flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-md border px-1 py-1.5 text-center text-[0.75rem] leading-tight font-semibold",
-                e.type === ty ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2",
-              )}
+              className={segment(e.type === ty, "min-h-[64px] flex-col gap-1 px-1 text-[0.75rem]")}
             >
               <LineIcon name={TYPE_EMOJI[ty]} size={20} />
               <span className="line-clamp-2">{t(`equip.types.${ty}`)}</span>
@@ -244,7 +242,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
         <Group title={t("equip.fromLibrary")}>
           <div className="flex flex-wrap gap-1.5">
             {library.map((m) => (
-              <button key={m.id} type="button" onClick={() => fromModel(m)} className="flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3.5 text-[0.8125rem] font-semibold text-fg-2">
+              <button key={m.id} type="button" onClick={() => fromModel(m)} className={secondary}>
                 <LineIcon name="bulb" size={17} /> {m.name}
               </button>
             ))}
@@ -336,13 +334,13 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
                   type="button"
                   aria-pressed={on}
                   onClick={() => setWhere((w) => (w.has(s.id) ? new Set([...w].filter((x) => x !== s.id)) : new Set([...w, s.id])))}
-                  className={cn("flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] font-semibold", on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2")}
+                  className={toggle(on)}
                 >
                   <SpaceDot color={s.color} /> {s.name}
                 </button>
               )
             })}
-            <span className={cn("flex h-10 items-center rounded-full border border-dashed px-3.5 text-[0.8125rem] font-semibold", where.size ? "border-line text-fg-3" : "border-primary/45 text-fg")}>{t("equip.stock")}</span>
+            <span className={cn("flex h-11 items-center rounded-[10px] border border-dashed px-3.5 text-[0.8125rem] font-semibold", where.size ? "border-line text-fg-3" : "border-fg text-fg")}>{t("equip.stock")}</span>
           </div>
           {editing && (
             <div className="mt-2.5">
@@ -379,7 +377,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
       )}
 
       {editing && (
-        <Button variant="outline" onClick={duplicate} disabled={busy} className="mt-4 h-11 w-full rounded-full border-line-strong text-[0.875rem] font-semibold">
+        <Button variant="outline" onClick={duplicate} disabled={busy} className="mt-4 h-11 w-full text-[0.875rem] font-semibold">
           <Copy className="size-4" /> {t("equip.duplicate")}
         </Button>
       )}

@@ -199,7 +199,7 @@ export function LightTool() {
               {t("lgt.stats", { mean: num(stats.mean), min: num(stats.min), max: num(stats.max), u: num(stats.uniformity, 2), n: stats.measured })}
             </p>
           )}
-          <Button variant="outline" className="h-11 self-start rounded-full" onClick={saveMap} disabled={!stats}>
+          <Button variant="outline" className="h-11 self-start" onClick={saveMap} disabled={!stats}>
             {t("lgt.mapSave")}
           </Button>
           {space.lightMap && <p className="text-[0.75rem] text-fg-3">{t("lgt.mapDate", { date: space.lightMap.date.slice(8, 10) + "/" + space.lightMap.date.slice(5, 7) })}</p>}

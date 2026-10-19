@@ -158,7 +158,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   }
   const nf = (k: NumKey, label: MessageKey, opts: { integer?: boolean } = {}) => {
     if ((HINTED as readonly string[]).includes(k) && prev?.[k] != null) greyed.push(k as (typeof HINTED)[number])
-    return <NumField id={`e-${k}`} label={t(label)} value={f[k] ?? ""} onChange={set(k)} placeholder={(HINTED as readonly string[]).includes(k) ? show(prev?.[k] as number | undefined) : undefined} hint={(HINTED as readonly string[]).includes(k) ? hint(k) : undefined} integer={opts.integer} />
+    return <NumField id={`e-${k}`} label={t(label)} value={f[k] ?? ""} onChange={set(k)} placeholder={(HINTED as readonly string[]).includes(k) ? show(prev?.[k] as number | undefined) : undefined} hint={(HINTED as readonly string[]).includes(k) ? hint(k) : undefined} hintMono integer={opts.integer} unit={k === "ecIn" || k === "ecRunoff" ? "mS/cm" : undefined} />
   }
 
   const cycleObs = (tag: ObsTag) => {
@@ -421,7 +421,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
                 onOpenChange(false)
               }}
               trigger={
-                <Button variant="outline" size="icon-lg" className="size-12 rounded-full border-line-strong" aria-label={t("entry.deleteEntry")}>
+                <Button variant="outline" size="icon-lg" className="size-12" aria-label={t("entry.deleteEntry")}>
                   <Trash2 className="size-5 text-bad" />
                 </Button>
               }
@@ -431,12 +431,12 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
             variant="outline"
             onClick={() => save(true)}
             disabled={busy || !date || uploading > 0}
-            className="h-12 rounded-full border-line-strong px-4 text-[0.875rem] font-semibold short:w-12 short:px-0"
+            className="h-12 px-4 text-[0.875rem] font-semibold short:w-12 short:px-0"
             aria-label={`${t("common.save")} + ${t("cal.addShort")}`}
           >
             <AlarmClockPlus className="size-4.5" /> <span className="short:sr-only">{t("cal.addShort")}</span>
           </Button>
-          <Button onClick={() => save()} disabled={busy || !date || uploading > 0} className="h-12 min-w-[6rem] flex-1 rounded-full text-[0.9375rem] font-bold">
+          <Button onClick={() => save()} disabled={busy || !date || uploading > 0} className="h-12 min-w-[6rem] flex-1">
             {busy && <Loader2 className="animate-spin" />}
             {t("common.save")}
           </Button>
@@ -476,9 +476,9 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       )}
 
       {greyed.length > 0 && (
-        <div className="mt-2.5 flex items-center gap-2 rounded-md border border-line bg-surface px-3 py-2">
+        <div className="mt-2.5 flex items-center gap-3">
           <p className="min-w-0 flex-1 text-[0.75rem] leading-snug text-fg-3">{t("entry.resumeHint")}</p>
-          <Button type="button" variant="outline" onClick={resume} className="h-11 shrink-0 rounded-full border-primary/40 px-3.5 text-[0.8125rem] font-semibold text-primary">
+          <Button type="button" variant="link" size="sm" onClick={resume} className="shrink-0 px-0 text-[0.8125rem]">
             {t("entry.resume")}
           </Button>
         </div>

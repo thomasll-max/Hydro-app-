@@ -39,6 +39,7 @@ import { drybackMethodOf } from "@/model/entry"
 import type { MessageKey } from "@/i18n/types"
 import type { Space } from "@/model/grow"
 import type { GrowEvent } from "@/model/types"
+import { joined, segmentItem, toggle } from "@/components/hydro/styles"
 
 const STORE = "hydro.charts"
 /** `curves` null: never chosen, the defaults follow the spaces shown (sensor or weighing). */
@@ -129,7 +130,7 @@ export function ChartsScreen() {
           value={prefs.period}
           onValueChange={(v) => v && setPrefs({ period: v as Period })}
           aria-label={t("charts.period")}
-          className="grid w-full grid-cols-4 rounded-full border border-line bg-surface-2 p-[3px]"
+          className={joined(4, "w-full gap-0")}
         >
           {(
             [
@@ -142,7 +143,7 @@ export function ChartsScreen() {
             <ToggleGroupItem
               key={v}
               value={v}
-              className="h-9 hit rounded-full! text-[0.8125rem] font-semibold text-fg-3 hover:bg-transparent data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
+              className={segmentItem}
             >
               {t(k)}
             </ToggleGroupItem>
@@ -165,7 +166,7 @@ export function ChartsScreen() {
                       type="button"
                       aria-pressed={on}
                       onClick={() => togglePick(s.id)}
-                      className={on ? "flex h-11 items-center gap-1.5 rounded-full border border-primary/45 bg-primary/12 px-3 text-[0.78125rem] font-semibold" : "flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 text-[0.78125rem] font-semibold text-fg-2"}
+                      className={toggle(on, "px-3")}
                     >
                       <SpaceDot color={s.color} /> {s.name}
                     </button>
@@ -344,7 +345,7 @@ function CurveChart({ series, spaces, events, tanks, curve, name }: { series: Se
                   .filter((p) => String(p.dataKey).startsWith("s:"))
                   .map((p) => (
                     <div key={String(p.dataKey)} className="flex items-center gap-1.5">
-                      <span className="size-2 rounded-full" style={{ background: p.color }} />
+                      <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: p.color }} />
                       {p.name}
                       {t("common.colon")}
                       <b className="tabular">{num(Number(p.value), def.decimals)}</b> {def.unit}

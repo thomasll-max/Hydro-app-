@@ -67,7 +67,8 @@ export function Drop({
 }
 
 /**
- * The « hydro. » logo: the word in Fraunces 700 (SOFT 100), the « o » replaced by the drop, a real full stop in leaf green.
+ * The « hydro. » logo: the word in Fraunces 700 (SOFT 100), the « o » replaced by the drop (« eau » of the theme), a real
+ * full stop in the colour of the text (lot 10h).
  * `size` is the font size in px; `bg` is the colour behind the logo (the leaf is cut out of the drop in it).
  */
 export function Wordmark({ size = 24, bg = "var(--background)", className }: { size?: number; bg?: string; className?: string }) {
@@ -81,9 +82,7 @@ export function Wordmark({ size = 24, bg = "var(--background)", className }: { s
       <span aria-hidden="true">hydr</span>
       {/* Board « identité finale »: the drop is 0.633 em tall, on the baseline, 1 px each side. */}
       <Drop height="0.633em" bg={bg} style={{ marginInline: 1, alignSelf: "baseline" }} />
-      <span aria-hidden="true" style={{ color: "var(--leaf)" }}>
-        .
-      </span>
+      <span aria-hidden="true">.</span>
     </span>
   )
 }
@@ -99,7 +98,7 @@ export function Loading({ label, className }: { label: string; className?: strin
       <svg viewBox="0 0 100 125" className="h-12 w-[38px] overflow-visible" aria-hidden="true" focusable="false">
         <defs>
           <mask id={`lm${id}`} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="130">
-            <rect className="drop-fill" x="0" y="0" width="100" height="130" fill="#fff" />
+            <rect className="drop-fill" x="0" y="0" width="100" height="130" fill="white" />
           </mask>
         </defs>
         <path d={DROP_PATH} fill="none" stroke="var(--water)" strokeWidth="5" strokeOpacity="0.45" />
@@ -112,14 +111,18 @@ export function Loading({ label, className }: { label: string; className?: strin
 
 /**
  * Start screen of the installed local version (lot 10g): dark ground, the drop with its leaf, « hydro. » under it.
- * Shown only while the data load; no artificial delay.
+ * Shown only while the data load; no artificial delay. Always in the dark palette (.theme-dark, lot 10h).
  */
 export function Splash({ label }: { label: string }) {
-  const dark = { "--water": "#3ecf8e", "--leaf": "#8bd450", "--background": "#0f1512", color: "#eef2ef", background: "#0f1512" } as CSSProperties
   return (
-    <div role="status" aria-label={label} id="splash" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5" style={dark}>
-      <Drop height={96} />
-      <Wordmark size={34} />
+    <div
+      role="status"
+      aria-label={label}
+      id="splash"
+      className="theme-dark fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-[var(--page)] text-[var(--fg)]"
+    >
+      <Drop height={96} bg="var(--page)" />
+      <Wordmark size={34} bg="var(--page)" />
     </div>
   )
 }

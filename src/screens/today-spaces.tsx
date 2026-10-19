@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { LineIcon } from "@/components/hydro/line-icon"
 import { Drop } from "@/components/hydro/wordmark"
-import { Chip, Dot, Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
+import { Chip, Dot, Label, Reveal, ScreenHero, Notice } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
@@ -19,6 +19,7 @@ import type { Space } from "@/model/grow"
 import type { Autonomy } from "@/calc/reservoir"
 import { cn } from "@/lib/utils"
 import { UpcomingCard } from "./calendar-parts"
+import { tertiary } from "@/components/hydro/styles"
 
 function useDigestData(): DigestData {
   const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks, sprays } = useGrow()
@@ -111,7 +112,7 @@ export function BonjourCard({ only }: { only?: string }) {
         ))}
       </div>
       {!only && spaces.length > 2 && (
-        <button onClick={() => setOpen((x) => !x)} className="relative -mb-1 h-11 self-start text-[0.78125rem] font-semibold text-primary">
+        <button onClick={() => setOpen((x) => !x)} className={cn("relative -mb-1 self-start", tertiary)}>
           {open ? t("digest.less") : t("digest.more")}
         </button>
       )}
@@ -150,7 +151,7 @@ export function AllToday() {
       {!shown.length && (
         <Card className="items-center px-4 py-6 text-center">
           <p className="text-[0.8125rem] text-fg-2">{t("space.empty")}</p>
-          <button onClick={() => ed.openCycle({ cycleId: "new" })} className="h-11 text-[0.8125rem] font-semibold text-primary">
+          <button onClick={() => ed.openCycle({ cycleId: "new" })} className={tertiary}>
             {t("today.emptyCta")}
           </button>
         </Card>
@@ -316,7 +317,7 @@ function ReservoirCard({ a, name }: { a: Autonomy; name: string }) {
           </div>
         )}
       </div>
-      {a.tooOld && <p className="rounded-md bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn">{t("digest.tooOld", { days: num(a.mixAgeDays ?? 0) })}</p>}
+      {a.tooOld && <Notice className="text-[0.75rem]">{t("digest.tooOld", { days: num(a.mixAgeDays ?? 0) })}</Notice>}
       {!a.days.ok && <p className="text-[0.75rem] text-fg-3">{t("today.resHow")}</p>}
     </Card>
   )

@@ -108,7 +108,7 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
               <ul className="flex flex-col gap-2 text-[0.8125rem] leading-[1.45] text-fg-2">
                 {(["note1", "note2", "note3", "note4"] as const).map((n) => (
                   <li key={n} className="flex gap-2">
-                    <span className="mt-[7px] size-[5px] shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                    <span className="mt-[7px] size-[5px] shrink-0 rounded-[2px] bg-fg-3" aria-hidden="true" />
                     {t(`guide.${n}`)}
                   </li>
                 ))}
@@ -166,7 +166,7 @@ function Table({ head, rows, highlight }: { head: ReactNode[]; rows: ReactNode[]
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i} className={cn("border-t border-line", highlight?.(i) && "bg-primary/8")}>
+            <tr key={i} className={cn("border-t border-line", highlight?.(i) && "bg-surface-2 font-semibold")}>
               {r.map((c, j) => (
                 <td key={j} className={cn("px-1 py-2", j ? "text-right tabular" : "text-left")}>
                   {c}

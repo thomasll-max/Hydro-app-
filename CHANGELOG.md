@@ -1,5 +1,18 @@
 # Changelog
 
+## Lot 10h1 — Palette harmonisée et composants « instrument » (19/10/2026)
+Consigne de Thomas : que l'app ne fasse plus « générée par une IA ». Lot 10h coupé en trois : 10h1 (palette et composants), 10h2 (écrans), 10h3 (barre d'onglets et accès au calendrier).
+- **Palette harmonisée** (calculée en OKLCH) dans les deux thèmes : fond, surface, trait, texte, discret, « eau », « plante », « à surveiller », « alerte ». Contrastes vérifiés : texte ≥ 4,5:1, graphismes ≥ 3:1.
+- **Couleurs des espaces** : 8 teintes terreuses sans vert (brique, cuivre, ocre, lagune, ardoise, lavande, prune, rose). Les espaces existants gardent leur couleur enregistrée, rien à migrer. Le repère d'espace devient un petit carré.
+- **Logo** : le point de « hydro. » prend la couleur du texte ; la goutte prend la couleur « eau » du thème.
+- **Boutons** : un bouton principal plein « eau » qui s'enfonce à l'appui ; boutons secondaires à contour ; boutons tertiaires en texte souligné (« Continuer le guide ») ; suppression en texte souligné rouge. Plus de boutons vert pâle ni de pilules (sauf les filtres du Journal).
+- **Cases à cocher carrées** pour « Fait » : un second appui annule.
+- **Champs « instrument »** : libellé au-dessus, un trait dessous (« eau » quand on tape, orange en cas d'erreur), valeur en grand chiffres, unité dans le champ, « hier 25,3 » dessous. Le bouton devient « Copier les valeurs d'hier ».
+- **Choix exclusifs** en cases jointes (le choix actif est inversé).
+- Les messages à surveiller sont du texte normal avec un petit repère, plus des phrases entières en orange.
+- Focus clavier : contour « eau » de 2 px partout.
+- 305 tests ; `scripts/e2e-10h.py`.
+
 ## Lot 9 validé (19/10/2026)
 - Thomas valide le lot 9 (tâche du matin). Vérifié : la tâche « Hydro — résumé du matin » est active et a réussi le 19/10, le résumé du 20/10 est déjà prêt dans la base. Aucun changement de code ; le lot 7 (nutrition multi-marques) peut démarrer à la demande de Thomas.
 

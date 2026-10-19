@@ -14,6 +14,7 @@ import { bagLitres, openStocks, startWaterL, stockStatus } from "@/calc/concentr
 import { GROW_SCHEMA, type ConcentrateStock, type CustomProduct } from "@/model/grow"
 import type { NutrientCatalog } from "@/data/nutrients"
 import { cn } from "@/lib/utils"
+import { secondary, tertiary } from "@/components/hydro/styles"
 
 // ---------- Concentrates ----------
 export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: number; i: number }) {
@@ -38,7 +39,7 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
         <div className="flex items-center justify-between gap-2">
           <Label emoji="bucket">{t("nut.stocks")}</Label>
           {conc > 0 && (
-            <button type="button" onClick={() => setOpen(true)} className="h-11 rounded-full border border-primary/40 bg-primary/10 px-3 text-[0.78125rem] font-semibold text-primary">
+            <button type="button" onClick={() => setOpen(true)} className={secondary}>
               {t("nut.stockAdd")}
             </button>
           )}
@@ -57,8 +58,8 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
                 </b>
                 {st.empty ? <Chip tone="warn">{t("nut.stockEmpty")}</Chip> : st.low ? <Chip tone="warn">{t("nut.stockLow")}</Chip> : null}
               </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-line" aria-hidden="true">
-                <div className={cn("h-full rounded-full", st.low ? "bg-warn" : "bg-primary")} style={{ width: `${pct * 100}%` }} />
+              <div className="mt-2 h-1.5 overflow-hidden rounded-[3px] bg-track" aria-hidden="true">
+                <div className={cn("h-full rounded-[3px]", st.low ? "bg-warn" : "bg-water")} style={{ width: `${pct * 100}%` }} />
               </div>
               <div className="mt-1.5 flex items-center justify-between gap-2 text-[0.75rem] text-fg-3">
                 <span className="tabular">
@@ -66,7 +67,7 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
                 </span>
                 <span>{t("nut.stockMade", { date: date(s.madeOn) })}</span>
               </div>
-              <button type="button" onClick={() => finish(s)} className="mt-1.5 h-11 text-[0.75rem] font-semibold text-primary">
+              <button type="button" onClick={() => finish(s)} className={cn("mt-1.5", tertiary, "text-[0.75rem]")}>
                 {t("nut.stockFinish")}
               </button>
             </div>
@@ -171,7 +172,7 @@ export function CustomProductsCard({ i }: { i: number }) {
       <Card className="gap-2.5" id="nut-custom">
         <div className="flex items-center justify-between gap-2">
           <Label emoji="testTube">{t("nut.custom")}</Label>
-          <button type="button" onClick={() => openFor(null)} className="h-11 rounded-full border border-line bg-surface-2 px-3 text-[0.78125rem] font-semibold text-fg-2">
+          <button type="button" onClick={() => openFor(null)} className={secondary}>
             {t("nut.customAdd")}
           </button>
         </div>
@@ -199,7 +200,7 @@ export function CustomProductsCard({ i }: { i: number }) {
                 </span>
                 <span className="block text-[0.75rem] text-fg-3">{t("nut.srcLabel")}</span>
               </span>
-              <span className="shrink-0 text-[0.75rem] font-semibold text-primary">{t("nut.customEdit")}</span>
+              <span className="shrink-0 text-[0.75rem] font-semibold underline decoration-water decoration-[1.5px] underline-offset-4">{t("nut.customEdit")}</span>
             </button>
           )
         })}

@@ -20,6 +20,7 @@ import { extractorM3h } from "@/equipment/calc"
 import { cn } from "@/lib/utils"
 import { CalcRow, CalcValue, spaceSummary, TYPE_EMOJI } from "./equipment-shared"
 import { EquipmentSheet, type EquipInit } from "./equipment-sheet"
+import { tertiary } from "@/components/hydro/styles"
 
 type View = "space" | "type"
 
@@ -78,7 +79,7 @@ export function EquipmentTool() {
               { value: "type", label: t("equip.byType") },
             ]}
           />
-          <Button onClick={() => open({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 rounded-full px-4 text-[0.875rem] font-bold">
+          <Button onClick={() => open({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 px-4 text-[0.875rem]">
             <Plus className="size-4" /> {t("equip.add")}
           </Button>
         </div>
@@ -102,7 +103,7 @@ export function EquipmentTool() {
             </Reveal>
           ))}
           <Reveal i={shown.length + 1} className="mb-3">
-            <Card data-drop="stock" className={cn("gap-2 transition-colors", over === "stock" && "border-primary/50 bg-primary/5")}>
+            <Card data-drop="stock" className={cn("gap-2 transition-colors", over === "stock" && "border-water")}>
               <div className="flex items-center justify-between">
                 <Label emoji="toolbox">{t("equip.stock")}</Label>
                 <span className="text-[0.75rem] text-fg-3">{t("equip.stockD")}</span>
@@ -139,7 +140,7 @@ export function EquipmentTool() {
                           <span className="flex shrink-0 flex-wrap justify-end gap-1">
                             {where.length ? (
                               where.map((s) => (
-                                <span key={s.id} className="flex items-center gap-1 rounded-full border border-line bg-surface-2 px-2 py-0.5 text-[0.75rem] font-semibold text-fg-2">
+                                <span key={s.id} className="flex items-center gap-1 rounded-[6px] border border-line px-2 py-0.5 text-[0.75rem] font-semibold text-fg-2">
                                   <SpaceDot color={s.color} /> {s.name}
                                 </span>
                               ))
@@ -161,7 +162,7 @@ export function EquipmentTool() {
         <Card className="gap-2">
           <div className="flex items-center justify-between gap-2">
             <Label emoji="bulb">{t("equip.library")}</Label>
-            <button onClick={() => open({ type: "lamp", library: true })} className="flex h-11 items-center gap-1 rounded-full px-2 text-[0.8125rem] font-semibold text-primary">
+            <button onClick={() => open({ type: "lamp", library: true })} className={tertiary}>
               <Plus className="size-4" /> {t("common.add")}
             </button>
           </div>
@@ -200,7 +201,7 @@ function SpaceCard({ space, over, ...drag }: { space: Space; over: boolean } & D
   const d = space.dimensionsCm
   const f0 = (v: number) => num(v, 0)
   return (
-    <Card data-drop={space.id} className={cn("gap-2 transition-colors", over && "border-primary/50 bg-primary/5")}>
+    <Card data-drop={space.id} className={cn("gap-2 transition-colors", over && "border-water")}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-[1rem] font-semibold">
@@ -257,7 +258,7 @@ function SpaceCard({ space, over, ...drag }: { space: Space; over: boolean } & D
       ) : (
         <p className="py-1 text-[0.78125rem] text-fg-3">{over ? t("equip.drop") : t("equip.emptySpace")}</p>
       )}
-      <button onClick={() => drag.onOpen({ spaceId: space.id })} className="-mb-1 flex h-11 items-center gap-1 self-start rounded-full text-[0.8125rem] font-semibold text-primary">
+      <button onClick={() => drag.onOpen({ spaceId: space.id })} className={cn("-mb-1 self-start", tertiary)}>
         <Plus className="size-4" /> {t("equip.add")}
       </button>
     </Card>
@@ -276,7 +277,7 @@ function ItemRow({ item, assignment, onOpen, onDrag, onDrop, dropAt }: { item: E
       dragMomentum={false}
       dragListener={false}
       dragControls={controls}
-      className={cn("relative border-t border-line first:border-t-0", dragging && "z-50 rounded-md border border-primary/50 bg-surface shadow-card")}
+      className={cn("relative border-t border-line first:border-t-0", dragging && "z-50 rounded-[10px] border border-water bg-surface shadow-card")}
       onDragStart={() => setDragging(true)}
       onDrag={(_, info) => {
         const d = dropAt(info.point.x - window.scrollX, info.point.y - window.scrollY)

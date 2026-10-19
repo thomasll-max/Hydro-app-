@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Grid, NumField } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
@@ -12,6 +12,7 @@ import { AIR_REF_SECONDS, leafVpd, rhRangeForVpd, spaceAir, vpdStatus } from "@/
 import { CalcRow, CalcValue, SettingsLink } from "./equipment-shared"
 import { useEditors } from "@/app/editors"
 import { cn } from "@/lib/utils"
+import { tertiary } from "@/components/hydro/styles"
 
 export function ClimateTool() {
   const { t, num, range, show } = useSettings()
@@ -68,9 +69,9 @@ export function ClimateTool() {
             </div>
           </div>
           {res && status !== "none" && (
-            <p className={cn("rounded-md px-3 py-2 text-[0.78125rem] font-medium", status === "ok" ? "bg-primary/10 text-primary" : "bg-warn/10 text-warn")} id="clim-status">
+            <Notice tone={status === "ok" ? "ok" : "warn"} id="clim-status">
               {status === "ok" ? t("clim.ok") : status === "low" ? t("clim.low") : t("clim.high")}
-            </p>
+            </Notice>
           )}
           {rhAim && T != null && (
             <p className="text-[0.78125rem] text-fg-2" id="clim-rh-aim">
@@ -108,7 +109,7 @@ export function ClimateTool() {
               {air.status && air.status !== "ok" && <p className="text-[0.75rem] text-warn">{air.status === "slow" ? t("clim.slow") : t("clim.fast")}</p>}
               {air.carbonFilter && <p className="text-[0.75rem] text-fg-3">{t("equip.c.carbonWarn")}</p>}
               {air.m3h == null && (
-                <a href="#tools/equipment" className="text-[0.78125rem] font-semibold text-primary">
+                <a href="#tools/equipment" className={cn(tertiary, "self-start")}>
                   {t("irr.openEquipment")}
                 </a>
               )}

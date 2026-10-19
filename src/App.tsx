@@ -20,6 +20,7 @@ import { UpdateBanner } from "@/app/update"
 import { OwnerOnly, ProblemScreen } from "@/app/status"
 import { askPersist } from "@/lib/persist"
 import { Splash } from "@/components/hydro/wordmark"
+import { Notice } from "@/components/hydro/primitives"
 
 const SCREENS: Record<TabId, () => React.ReactElement> = {
   today: TodayScreen,
@@ -65,14 +66,14 @@ function Shell() {
       <UpdateBanner />
       {TARGET === "artifact" && storeKind === "local" && (
         <div className="relative mx-auto max-w-[480px] px-4">
-          <p className="rounded-md border border-warn/30 bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn">{t("app.localOnly")}</p>
+          <Notice className="py-1 text-[0.75rem]">{t("app.localOnly")}</Notice>
         </div>
       )}
       {volatile && (
         <div className="relative mx-auto max-w-[480px] px-4">
-          <p className="rounded-md border border-bad/30 bg-bad/10 px-3 py-2 text-[0.78125rem] font-medium text-bad" id="volatile-warning" role="alert">
+          <Notice tone="bad" className="py-1" id="volatile-warning" role="alert">
             {t("safe.volatile")}
-          </p>
+          </Notice>
         </div>
       )}
       <main id="main-panel" role="tabpanel" className="relative mx-auto max-w-[480px] pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+170px)] short:pb-[calc(env(safe-area-inset-bottom,0px)+130px)] pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">

@@ -25,6 +25,7 @@ import { useEditors } from "@/app/editors"
 import { ConcentrateCard, CustomProductsCard } from "./nutrition-parts"
 import { equipmentAt } from "@/equipment/calc"
 import type { Equipment, EquipmentAssignment } from "@/model/grow"
+import { joined, segment, tertiary, toggle } from "@/components/hydro/styles"
 
 function reservoirOf(spaceId: string, equipment: Equipment[], assignments: EquipmentAssignment[]): number | undefined {
   const here = equipmentAt(spaceId, todayIso(), assignments).map((a) => equipment.find((e) => e.id === a.equipmentId))
@@ -130,18 +131,18 @@ function OwnTankTool() {
             <NumField id="own-ec" label={t("nut.ecMeasured")} value={f.ec ?? ""} onChange={set("ec")} />
             <NumField id="own-ph" label={t("nut.phTank")} value={f.ph ?? ""} onChange={set("ph")} />
           </Grid>
-          <Button onClick={save} disabled={busy || volumeL <= 0} className="h-12 rounded-full text-[0.9375rem] font-bold">
+          <Button onClick={save} disabled={busy || volumeL <= 0} className="h-12">
             {t("nut.save")}
           </Button>
           {last && (
-            <div id="nut-last" className={cn("flex items-center gap-2 rounded-md border px-3 py-2", last.id === justSaved ? "border-primary/40 bg-primary/8" : "border-line bg-surface-2")}>
+            <div id="nut-last" className="flex items-center gap-2 border-t border-line pt-2">
               <p className="min-w-0 flex-1 text-[0.78125rem] leading-snug text-fg-2">
                 {t("nut.lastTank", { date: dm(last.date), volume: num(last.volumeL) })}
                 {last.ec != null && ` · EC ${num(last.ec, 1)}`}
                 {last.ph != null && ` · pH ${num(last.ph, 1)}`}
-                {last.id === justSaved && <b className="ml-1 font-semibold text-primary">· {t("nut.lastTankJust")}</b>}
+                {last.id === justSaved && <b className="ml-1 font-semibold text-fg">· {t("nut.lastTankJust")}</b>}
               </p>
-              <button type="button" onClick={() => ed.openMix(last)} className="h-11 shrink-0 rounded-full px-3 text-[0.78125rem] font-semibold text-primary">
+              <button type="button" onClick={() => ed.openMix(last)} className={tertiary}>
                 {t("nut.openTank")}
               </button>
             </div>
@@ -333,14 +334,14 @@ function LineNutrition() {
             <span className="text-[0.75rem] font-medium text-fg-2">{t("nut.phase")}</span>
             {pos && <span className="text-[0.75rem] text-fg-3">{`${t("nut.fromCycle")}${t("common.colon")}${phaseLabel(cyclePhase)}`}</span>}
           </div>
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("nut.phase")} id="nut-phases">
+          <div className={joined()} role="radiogroup" aria-label={t("nut.phase")} id="nut-phases">
             {cat.program.map((p) => (
               <button
                 key={p.id}
                 role="radio"
                 aria-checked={phase.id === p.id}
                 onClick={() => pickPhase(p.id)}
-                className={cn("h-11 rounded-full border px-3.5 text-[0.8125rem] font-semibold", phase.id === p.id ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2")}
+                className={segment(phase.id === p.id)}
               >
                 {phaseLabel(p)}
               </button>
@@ -406,7 +407,7 @@ function LineNutrition() {
           <ol className="mt-2" id="nut-order">
             {items.map((i, idx) => (
               <li key={i.id} data-item={i.id} className={cn("grid grid-cols-[28px_1fr_auto] items-center gap-2.5 border-t border-line px-3.5 py-3", i.qty == null && "opacity-85")}>
-                <span className="flex size-6 items-center justify-center rounded-full border-[1.5px] border-info text-[0.75rem] font-semibold text-info tabular-nums">{idx + 1}</span>
+                <span className="flex size-6 items-center justify-center rounded-[6px] border-[1.5px] border-info text-[0.75rem] font-semibold text-info tabular-nums">{idx + 1}</span>
                 <span className="min-w-0">
                   <span className="block text-[0.875rem] font-semibold">{i.name || t(i.kind === "roWater" ? "nut.roWater" : "nut.water")}</span>
                   <span className={cn("block text-[0.75rem] leading-snug", i.note === "labelMissing" ? "text-warn" : "text-fg-3")}>
@@ -474,11 +475,7 @@ function LineNutrition() {
                       disabled={other}
                       aria-pressed={on}
                       onClick={() => setShared((x) => (on ? x.filter((y) => y !== s.id) : [...x, s.id]))}
-                      className={cn(
-                        "flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] font-semibold",
-                        on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2",
-                        other && "opacity-50",
-                      )}
+                      className={toggle(on, other ? "opacity-50" : undefined)}
                     >
                       <SpaceDot color={s.color} /> {s.name}
                       {other && <span className="text-[0.75rem] font-normal">· {t("nut.otherLine")}</span>}
@@ -497,18 +494,18 @@ function LineNutrition() {
             <NumField id="n-ecm" label={t("nut.ecMeasured")} value={f.ecMeasured ?? ""} onChange={set("ecMeasured")} />
           </Grid>
           {balanceOn && balAfter != null && parseNum(f.balAdded) != null && <p className="text-[0.75rem] text-primary">{t("nut.nextBalance", { v: num(balAfter, 2) })}</p>}
-          <Button onClick={save} disabled={volumeL <= 0 || busy} className="h-12 rounded-full text-[0.9375rem] font-bold">
+          <Button onClick={save} disabled={volumeL <= 0 || busy} className="h-12">
             {t("nut.save")}
           </Button>
           {last && (
-            <div id="nut-last" className={cn("flex items-center gap-2 rounded-md border px-3 py-2", last.id === justSaved ? "border-primary/40 bg-primary/8" : "border-line bg-surface-2")}>
+            <div id="nut-last" className="flex items-center gap-2 border-t border-line pt-2">
               <p className="min-w-0 flex-1 text-[0.78125rem] leading-snug text-fg-2">
                 {t("nut.lastTank", { date: dm(last.date), volume: num(last.volumeL) })}
                 {last.ec != null && ` · EC ${num(last.ec, 1)}`}
                 {last.ph != null && ` · pH ${num(last.ph, 1)}`}
-                {last.id === justSaved && <b className="ml-1 font-semibold text-primary">· {t("nut.lastTankJust")}</b>}
+                {last.id === justSaved && <b className="ml-1 font-semibold text-fg">· {t("nut.lastTankJust")}</b>}
               </p>
-              <button type="button" onClick={() => ed.openMix(last)} className="h-11 shrink-0 rounded-full px-3 text-[0.78125rem] font-semibold text-primary">
+              <button type="button" onClick={() => ed.openMix(last)} className={tertiary}>
                 {t("nut.openTank")}
               </button>
             </div>

@@ -11,6 +11,7 @@ import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { RootProductsField, useRootProducts } from "./root-products"
 import { EVENT_TYPES, SCHEMA, type Cycle, type EventType, type GrowEvent, type Mix, type Plant, type PlantId } from "@/model/types"
+import { joined, segment } from "@/components/hydro/styles"
 
 /**
  * Defaults of a new cycle, each one sourced (Athena or the spec). Nothing about pots, pump or lamps: those come from
@@ -49,13 +50,13 @@ export function SaveBar({ busy, onSave, onDelete }: { busy: boolean; onSave: () 
         <ConfirmDelete
           onConfirm={onDelete}
           trigger={
-            <Button variant="outline" size="icon-lg" className="size-12 rounded-full border-line-strong" aria-label={t("common.delete")}>
+            <Button variant="outline" size="icon-lg" className="size-12" aria-label={t("common.delete")}>
               <Trash2 className="size-5 text-bad" />
             </Button>
           }
         />
       )}
-      <Button onClick={onSave} disabled={busy} className="h-12 min-w-[6rem] flex-1 rounded-full text-[0.9375rem] font-bold">
+      <Button onClick={onSave} disabled={busy} className="h-12 min-w-[6rem] flex-1">
         {busy && <Loader2 className="animate-spin" />}
         {t("common.save")}
       </Button>
@@ -132,7 +133,7 @@ export function EventSheet({ open, onOpenChange, event }: { open: boolean; onOpe
     >
       <div className="flex flex-col gap-2.5">
         <TextField id="ev-date" type="date" label={t("event.date")} value={e.date} onChange={(v) => setE((x) => ({ ...x, date: v }))} />
-        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("event.type")}>
+        <div className={joined()} role="radiogroup" aria-label={t("event.type")}>
           {EVENT_TYPES.map((ty: EventType) => (
             <button
               key={ty}
@@ -140,7 +141,7 @@ export function EventSheet({ open, onOpenChange, event }: { open: boolean; onOpe
               role="radio"
               aria-checked={e.type === ty}
               onClick={() => setE((x) => ({ ...x, type: ty }))}
-              className={`h-11 rounded-full border px-3.5 text-[0.8125rem] font-semibold ${e.type === ty ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2"}`}
+              className={segment(e.type === ty)}
             >
               {t(`event.${ty}`)}
             </button>

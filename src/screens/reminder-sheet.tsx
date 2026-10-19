@@ -10,7 +10,7 @@ import { addDays, todayIso } from "@/calc/stage"
 import { growTimeZone } from "@/calendar/agenda"
 import { formatRRule, parseRRule, seriesDates, WEEKDAYS, weekdayIndex, type Rule, type Weekday } from "@/calendar/rrule"
 import type { Reminder } from "@/model/grow"
-import { cn } from "@/lib/utils"
+import { joined, segment } from "@/components/hydro/styles"
 
 export type ReminderInit = { reminder?: Reminder; date?: string; spaceId?: string; title?: string }
 
@@ -179,7 +179,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
         {f.repeat === "weekly" && (
           <div className="mt-2.5" role="group" aria-label={t("remForm.weekdays")}>
             <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("remForm.weekdays")}</div>
-            <div className="grid grid-cols-7 gap-1">
+            <div className={joined(7)}>
               {WEEKDAYS.map((d, i) => {
                 const on = f.byDay.includes(d)
                 return (
@@ -188,7 +188,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
                     type="button"
                     aria-pressed={on}
                     onClick={() => set("byDay")(on ? f.byDay.filter((x) => x !== d) : WEEKDAYS.filter((x) => x === d || f.byDay.includes(x)))}
-                    className={cn("h-11 rounded-full border text-[0.75rem] font-semibold capitalize", on ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2")}
+                    className={segment(on, "px-0 text-[0.75rem] capitalize")}
                   >
                     {dayNames[i]}
                   </button>

@@ -74,7 +74,11 @@ export const TEMPLATE_MODULES: Record<TemplateId, ModuleId[]> = {
   custom: [],
 }
 
-/** 8 space colours, checked for contrast on both themes (tokens --space-1 … --space-8). */
+/**
+ * 8 space colours, checked for contrast on both themes (tokens --space-<id>). Since lot 10h they are earthy hues with
+ * no green; the ids are the ones stored in the data since lot 1, in the same order: emerald = brique, sky = cuivre,
+ * violet = ocre, amber = lagune, rose = ardoise, teal = lavande, orange = prune, slate = rose. No migration needed.
+ */
 export const SPACE_COLORS = ["emerald", "sky", "violet", "amber", "rose", "teal", "orange", "slate"] as const
 export type SpaceColor = (typeof SPACE_COLORS)[number]
 

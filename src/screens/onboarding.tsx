@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AreaField, Grid, NumField, Seg, TextField } from "@/components/hydro/form"
 import { Wordmark } from "@/components/hydro/wordmark"
-import { Label, Reveal } from "@/components/hydro/primitives"
+import { Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { LangSwitch } from "@/components/hydro/top-bar"
 import { spaceColor } from "@/components/hydro/space-pill"
 import { navigate } from "@/app/nav"
@@ -43,7 +43,7 @@ import {
 import { NutritionFields } from "./tools/nutrition-settings"
 import { SwitchRow } from "./tools/equipment-shared"
 import { InstallTip } from "./install-tip"
-import { cn } from "@/lib/utils"
+import { joined, secondary, segment } from "@/components/hydro/styles"
 
 /** Collections the assistant writes before grow/main (cleared if an earlier attempt was cut short). */
 const SETUP_COLLECTIONS = ["spaces", "equipment", "equipmentAssignments", "cycles"] as const
@@ -151,8 +151,8 @@ export function Onboarding() {
                   {t("onb.skip")}
                 </button>
               </div>
-              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
-                <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${(step / STEPS.length) * 100}%` }} />
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-[3px] bg-track" aria-hidden="true">
+                <div className="h-full rounded-[3px] bg-fg transition-[width] duration-300" style={{ width: `${(step / STEPS.length) * 100}%` }} />
               </div>
               <h1 className="display mt-3 text-[1.625rem] leading-[1.15]" id="onb-title">
                 {t(`onb.s.${key}` as MessageKey)}
@@ -175,7 +175,7 @@ export function Onboarding() {
                   type="button"
                   id="onb-add-space"
                   onClick={() => setDraft((d) => ({ ...d, spaces: [...d.spaces, draftSpace(newId("k"), t("onb.spaceN", { n: d.spaces.length + 1 }), "veg", freeColor(d.spaces.map((x) => x.color)))] }))}
-                  className="flex h-12 items-center justify-center gap-1.5 rounded-full border border-dashed border-line-strong text-[0.875rem] font-semibold text-primary"
+                  className="flex h-12 items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-line-strong text-[0.875rem] font-semibold text-fg"
                 >
                   <Plus className="size-4" /> {t("space.add")}
                 </button>
@@ -250,15 +250,15 @@ export function Onboarding() {
               </p>
             )}
             <div className="flex gap-2">
-              <Button variant="outline" className="h-12 rounded-full px-4" onClick={() => setStep((n) => n - 1)} disabled={busy} aria-label={t("onb.back")}>
+              <Button variant="outline" className="h-12 px-4" onClick={() => setStep((n) => n - 1)} disabled={busy} aria-label={t("onb.back")}>
                 <ChevronLeft className="size-4.5" />
               </Button>
               {step < STEPS.length ? (
-                <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" id="onb-next" onClick={next(() => setStep((n) => n + 1))}>
+                <Button className="h-12 flex-1" id="onb-next" onClick={next(() => setStep((n) => n + 1))}>
                   {key === "equipment" || key === "cycle" ? (stepEmpty(draft, key) ? t("onb.later") : t("onb.next")) : t("onb.next")}
                 </Button>
               ) : (
-                <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" id="onb-finish" disabled={busy} onClick={next(() => void finish())}>
+                <Button className="h-12 flex-1" id="onb-finish" disabled={busy} onClick={next(() => void finish())}>
                   {busy ? t("onb.writing") : t("onb.finish")}
                 </Button>
               )}
@@ -295,7 +295,7 @@ function Welcome({ onStart, onSkip, busy }: { onStart: () => void; onSkip: () =>
         </div>
       </Reveal>
       <Reveal i={2}>
-        <Button className="mt-2 h-13 w-full rounded-full text-[1rem] font-bold" id="onb-start" onClick={onStart}>
+        <Button className="mt-2 h-13 w-full text-[1rem]" id="onb-start" onClick={onStart}>
           {t("onb.start")}
         </Button>
       </Reveal>
@@ -342,24 +342,24 @@ function ImportCard() {
       <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("onb.importD")}</p>
       {pending ? (
         <>
-          <p className="rounded-md bg-primary/10 px-3 py-2 text-[0.78125rem] font-medium text-primary" id="onb-import-summary">
+          <Notice tone="ok" id="onb-import-summary">
             {t("onb.importSummary", { name: pending.name, n: pending.total, date: pending.backup.exportedAt ? dmy(pending.backup.exportedAt) : "?" })}
-          </p>
+          </Notice>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={() => setPending(null)} disabled={!!busy}>
+            <Button variant="outline" className="h-11 flex-1" onClick={() => setPending(null)} disabled={!!busy}>
               {t("common.cancel")}
             </Button>
-            <Button className="h-11 flex-1 rounded-full font-bold" onClick={run} disabled={!!busy} id="onb-import-run">
+            <Button className="h-11 flex-1" onClick={run} disabled={!!busy} id="onb-import-run">
               {busy ? t("onb.importing", { p: busy }) : t("onb.importRun")}
             </Button>
           </div>
         </>
       ) : paste == null ? (
         <div className="flex gap-2">
-          <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={() => file.current?.click()}>
+          <Button variant="outline" className="h-11 flex-1" onClick={() => file.current?.click()}>
             {t("onb.importFile")}
           </Button>
-          <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={() => setPaste("")} id="onb-paste-open">
+          <Button variant="outline" className="h-11 flex-1" onClick={() => setPaste("")} id="onb-paste-open">
             {t("data.paste")}
           </Button>
         </div>
@@ -367,10 +367,10 @@ function ImportCard() {
         <>
           <AreaField id="onb-paste" label={t("data.pasteLabel")} value={paste} onChange={setPaste} placeholder='{"format":"hydro-backup",…}' />
           <div className="flex gap-2">
-            <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={() => setPaste(null)}>
+            <Button variant="outline" className="h-11 flex-1" onClick={() => setPaste(null)}>
               {t("common.cancel")}
             </Button>
-            <Button className="h-11 flex-1 rounded-full font-bold" onClick={() => read(paste, t("data.pasted"))} disabled={!paste.trim()} id="onb-paste-read">
+            <Button className="h-11 flex-1" onClick={() => read(paste, t("data.pasted"))} disabled={!paste.trim()} id="onb-paste-read">
               {t("data.pasteRead")}
             </Button>
           </div>
@@ -403,7 +403,7 @@ function SpaceTitle({ s, i, aside }: { s: DraftSpace; i: number; aside?: ReactNo
   return (
     <div className="flex items-center justify-between gap-2">
       <span className="flex min-w-0 items-center gap-2">
-        <span className="size-3 shrink-0 rounded-full" style={{ background: spaceColor(s.color ?? SPACE_COLORS[i % SPACE_COLORS.length]) }} />
+        <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: spaceColor(s.color ?? SPACE_COLORS[i % SPACE_COLORS.length]) }} />
         <span className="truncate text-[0.9375rem] font-semibold">{s.name.trim() || t("onb.unnamed")}</span>
         {t(`template.${s.template}`) !== s.name.trim() && <span className="shrink-0 text-[0.75rem] text-fg-3">{t(`template.${s.template}`)}</span>}
       </span>
@@ -438,14 +438,14 @@ function SpaceCard({ s, i, canRemove, onChange, onDuplicate, onRemove }: { s: Dr
       <TextField id={`onb-sp-name-${i}`} label={t("space.name")} value={s.name} onChange={(v) => onChange({ name: v })} />
       <div>
         <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("space.template")}</div>
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className={joined(3)}>
           {TEMPLATES.map((tp) => (
             <button
               key={tp}
               type="button"
               aria-pressed={s.template === tp}
               onClick={() => onChange(setTemplate(s, tp as TemplateId))}
-              className={cn("h-11 rounded-md border text-[0.8125rem] font-semibold", s.template === tp ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
+              className={segment(s.template === tp)}
             >
               {t(`template.${tp}`)}
             </button>
@@ -584,7 +584,7 @@ function Recap({ draft }: { draft: Draft }) {
 
 function SmallBtn({ onClick, id, children }: { onClick: () => void; id?: string; children: ReactNode }) {
   return (
-    <button type="button" id={id} onClick={onClick} className="flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 text-[0.78125rem] font-semibold text-fg-2">
+    <button type="button" id={id} onClick={onClick} className={secondary}>
       {children}
     </button>
   )

@@ -38,12 +38,13 @@ export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "prima
   return (
     <span
       className={cn(
-        "rounded-full border px-2.5 py-1 text-[0.75rem] font-semibold whitespace-nowrap",
-        tone === "neutral" && "border-line bg-surface-2 text-fg-2",
-        tone === "primary" && "border-primary/35 bg-primary/10 text-primary",
-        tone === "warn" && "border-warn/35 bg-warn/10 text-warn",
-        tone === "water" && "border-water/40 bg-water/10 text-water-ink",
-        tone === "leaf" && "border-leaf/45 bg-leaf/10 text-leaf-ink",
+        // A small outlined tag (lot 10h): no tinted fill; only the word takes the colour.
+        "rounded-[6px] border px-2 py-0.5 text-[0.75rem] font-semibold whitespace-nowrap",
+        tone === "neutral" && "border-line text-fg-2",
+        tone === "primary" && "border-line text-water-ink",
+        tone === "warn" && "border-line text-warn",
+        tone === "water" && "border-line text-water-ink",
+        tone === "leaf" && "border-line text-leaf-ink",
       )}
     >
       {children}
@@ -60,13 +61,49 @@ export function Label({ emoji, children, className }: { emoji?: EmojiName; child
   )
 }
 
+/**
+ * A message that needs a look (lot 10h): normal text with a small marker. « À surveiller » and « alerte » colour a
+ * word or a marker, never a whole sentence.
+ */
+export function Notice({
+  tone = "warn",
+  id,
+  role,
+  as: Tag = "p",
+  className,
+  children,
+}: {
+  tone?: "ok" | "warn" | "bad" | "info"
+  id?: string
+  role?: string
+  as?: "p" | "span"
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <Tag id={id} role={role} className={cn("flex gap-2 text-[0.78125rem] leading-[1.45] text-fg-2", className)}>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "mt-[6px] size-1.5 shrink-0 rounded-[2px]",
+          tone === "ok" && "bg-water",
+          tone === "warn" && "bg-warn",
+          tone === "bad" && "bg-bad",
+          tone === "info" && "bg-info",
+        )}
+      />
+      <span className="min-w-0">{children}</span>
+    </Tag>
+  )
+}
+
 export function Dot({ status }: { status: Status }) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        "inline-block size-[7px] shrink-0 rounded-full",
-        status === "ok" && "bg-primary",
+        "inline-block size-[7px] shrink-0 rounded-[2px]",
+        status === "ok" && "bg-water",
         status === "warn" && "bg-warn",
         status === "bad" && "bg-bad",
       )}

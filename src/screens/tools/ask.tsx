@@ -61,7 +61,7 @@ export function AskTool() {
           {turns.length === 0 && live == null && (
             <div className="flex flex-wrap gap-1.5">
               {ASK_SUGGESTIONS.map((k) => (
-                <button key={k} type="button" onClick={() => ask(t(k))} disabled={blocked} className="rounded-full border border-line bg-surface-2 px-3 py-2 text-left text-[0.78125rem] font-medium text-fg-2">
+                <button key={k} type="button" onClick={() => ask(t(k))} disabled={blocked} className="min-h-11 rounded-[10px] border border-line-strong px-3 py-2 text-left text-[0.78125rem] font-medium text-fg-2 hover:text-fg">
                   {t(k)}
                 </button>
               ))}
@@ -78,7 +78,7 @@ export function AskTool() {
             ))}
             {live != null && <Bubble me={false} text={live || t("ask.thinking")} pending />}
             {live != null && (
-              <Button variant="outline" className="h-11 self-start rounded-full" onClick={() => stop.current?.abort()}>
+              <Button variant="outline" className="h-11 self-start" onClick={() => stop.current?.abort()}>
                 {t("ask.stop")}
               </Button>
             )}
@@ -92,11 +92,11 @@ export function AskTool() {
           {err && <p className="text-[0.78125rem] font-medium text-warn">{err}</p>}
           <div className="flex gap-2">
             {turns.length > 0 && (
-              <Button variant="outline" className="h-12 rounded-full" onClick={() => setTurns([])} disabled={live != null}>
+              <Button variant="outline" className="h-12" onClick={() => setTurns([])} disabled={live != null}>
                 {t("ask.new")}
               </Button>
             )}
-            <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" onClick={() => ask(q)} disabled={!q.trim() || live != null || blocked}>
+            <Button className="h-12 flex-1" onClick={() => ask(q)} disabled={!q.trim() || live != null || blocked}>
               {t("ask.send")}
             </Button>
           </div>
@@ -109,7 +109,7 @@ export function AskTool() {
 
 function Bubble({ me, text, pending }: { me: boolean; text: string; pending?: boolean }) {
   return (
-    <div className={cn("max-w-[92%] rounded-[16px] px-3.5 py-2.5 text-[0.84375rem] leading-[1.5] whitespace-pre-wrap", me ? "self-end bg-primary/14 text-fg" : "self-start border border-line bg-surface-2 text-fg", pending && "opacity-90")}>
+    <div className={cn("max-w-[92%] rounded-[14px] px-3.5 py-2.5 text-[0.84375rem] leading-[1.5] whitespace-pre-wrap", me ? "self-end bg-surface-2 text-fg" : "self-start border border-line text-fg", pending && "opacity-90")}>
       {text}
     </div>
   )

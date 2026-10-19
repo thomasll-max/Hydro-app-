@@ -28,6 +28,7 @@ import { ItemRow, selectedSpaceIds, useCalendarData } from "./calendar-parts"
 import type { Entry, GrowEvent, IsoDate, Mix } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
+import { iconButton, tertiary } from "@/components/hydro/styles"
 
 type View = "month" | "agenda"
 type Filter = "all" | "reminders" | "deadlines" | "journal"
@@ -93,7 +94,7 @@ export function CalendarScreen() {
       <ScreenHero emoji="calendar" eyebrow={eyebrow} title={t("nav.calendar")} />
       <Reveal i={0} className="mb-2.5 flex flex-wrap items-center gap-2">
         <Seg<View> className="min-w-[9.5rem] flex-1" label={t("cal.view")} value={view} onChange={setView} options={[{ value: "month", label: t("cal.month") }, { value: "agenda", label: t("cal.agenda") }]} />
-        <Button onClick={() => ed.openReminder({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 shrink-0 rounded-full px-4 text-[0.875rem] font-bold" aria-label={t("cal.add")}>
+        <Button onClick={() => ed.openReminder({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 shrink-0 px-4 text-[0.875rem]" aria-label={t("cal.add")}>
           <Plus className="size-4.5" strokeWidth={2.6} /> {t("cal.addShort")}
         </Button>
       </Reveal>
@@ -139,18 +140,18 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
       <Reveal i={2}>
         <Card className="gap-2 px-3 pt-3 pb-3.5">
           <div className="flex items-center justify-between gap-1">
-            <button type="button" onClick={() => setFirst(shiftMonth(first, -1))} className="flex size-11 items-center justify-center rounded-full text-fg-2 hover:bg-surface-2" aria-label={t("cal.prev")}>
+            <button type="button" onClick={() => setFirst(shiftMonth(first, -1))} className={iconButton} aria-label={t("cal.prev")}>
               <ChevronLeft className="size-5" />
             </button>
             <div className="flex flex-col items-center">
               <b className="text-[1rem] font-semibold capitalize">{title}</b>
               {first !== monthStart(today) && (
-                <button type="button" onClick={() => setFirst(monthStart(today))} className="text-[0.75rem] font-semibold text-primary">
+                <button type="button" onClick={() => setFirst(monthStart(today))} className={cn(tertiary, "hit min-h-0 text-[0.75rem]")}>
                   {t("cal.backToday")}
                 </button>
               )}
             </div>
-            <button type="button" onClick={() => setFirst(shiftMonth(first, 1))} className="flex size-11 items-center justify-center rounded-full text-fg-2 hover:bg-surface-2" aria-label={t("cal.next")}>
+            <button type="button" onClick={() => setFirst(shiftMonth(first, 1))} className={iconButton} aria-label={t("cal.next")}>
               <ChevronRight className="size-5" />
             </button>
           </div>
@@ -188,23 +189,23 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
                   aria-label={said}
                   aria-current={isToday ? "date" : undefined}
                   className={cn(
-                    "relative flex aspect-square min-h-11 flex-col items-center justify-center rounded-md text-[0.875rem] font-semibold tabular transition-colors",
+                    "relative flex aspect-square min-h-11 flex-col items-center justify-center rounded-[10px] text-[0.875rem] font-semibold tabular transition-colors hover:bg-surface-2",
                     inMonth(d) ? "text-fg" : "text-fg-3",
-                    isToday ? "bg-primary/14 text-primary outline outline-1 outline-primary/40" : "hover:bg-surface-2",
                   )}
                 >
-                  {Number(d.slice(8))}
+                  {/* Today: underlined in « eau » (lot 10h). */}
+                  <span className={cn(isToday && "font-bold underline decoration-water decoration-2 underline-offset-4")}>{Number(d.slice(8))}</span>
                   <span className="mt-0.5 flex h-[5px] gap-[3px]" aria-hidden="true">
-                    {hasJ && <span className="size-[5px] rounded-full bg-primary" />}
-                    {hasDl && <span className={cn("size-[5px] rounded-full", late ? "bg-bad" : "bg-warn")} />}
-                    {hasRem && <span className={cn("size-[5px] rounded-full", late ? "bg-bad" : "bg-info")} />}
+                    {hasJ && <span className="size-[5px] rounded-[2px] bg-fg-3" />}
+                    {hasDl && <span className={cn("size-[5px] rounded-[2px]", late ? "bg-bad" : "bg-warn")} />}
+                    {hasRem && <span className={cn("size-[5px] rounded-[2px]", late ? "bg-bad" : "bg-info")} />}
                   </span>
                 </button>
               )
             })}
           </motion.div>
           <div className="mt-0.5 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[0.75rem] text-fg-3">
-            <Legend cls="bg-primary" label={t("cal.fJournal")} />
+            <Legend cls="bg-fg-3" label={t("cal.fJournal")} />
             <Legend cls="bg-warn" label={t("cal.fDeadlines")} />
             <Legend cls="bg-info" label={t("cal.fReminders")} />
             <Legend cls="bg-bad" label={t("cal.overdue")} />
@@ -224,7 +225,7 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
 function Legend({ cls, label }: { cls: string; label: string }) {
   return (
     <span className="flex items-center gap-1">
-      <span className={cn("size-[6px] rounded-full", cls)} aria-hidden="true" />
+      <span className={cn("size-[6px] rounded-[2px]", cls)} aria-hidden="true" />
       {label}
     </span>
   )
@@ -368,11 +369,11 @@ function DaySheet({ date, filter, onClose }: { date: IsoDate | null; filter: Fil
       title={label(d, "long")}
       footer={
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => ed.openReminder({ date: d, spaceId })} className="h-12 flex-1 rounded-full border-line-strong text-[0.875rem] font-semibold">
+          <Button variant="outline" onClick={() => ed.openReminder({ date: d, spaceId })} className="h-12 flex-1 text-[0.875rem] font-semibold">
             <Plus className="size-4.5" /> {t("cal.addShort")}
           </Button>
           {spaces.length > 0 && d <= todayIso() && (
-            <Button onClick={() => ed.openEntry({ date: d, spaceId: spaceId ?? spaces[0].id })} className="h-12 flex-1 rounded-full text-[0.875rem] font-bold">
+            <Button onClick={() => ed.openEntry({ date: d, spaceId: spaceId ?? spaces[0].id })} className="h-12 flex-1 text-[0.875rem]">
               {t("cal.openEntry")}
             </Button>
           )}
@@ -445,11 +446,11 @@ function ExportCard() {
         {t("cal.exportHint")}
         {TARGET !== "local" && ` ${t("cal.exportZip")}`}
       </p>
-      <div className="flex gap-2">
-        <Button onClick={download} disabled={busy} className="h-11 flex-1 rounded-full text-[0.875rem] font-bold">
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={download} disabled={busy} className="h-11 min-w-[8rem] flex-1 px-3 text-[0.875rem]">
           <Download className="size-4.5" /> {TARGET === "local" ? "hydro.ics" : "hydro.zip"}
         </Button>
-        <Button variant="outline" onClick={copy} className="h-11 rounded-full border-line-strong px-4 text-[0.875rem] font-semibold" aria-label={t("cal.copy")}>
+        <Button variant="outline" size="icon" onClick={copy} aria-label={t("cal.copy")}>
           <Copy className="size-4.5" />
         </Button>
       </div>

@@ -12,7 +12,7 @@ import { todayIso } from "@/calc/stage"
 /** Works outside the providers too (error boundary): the language comes from <html lang>. */
 const tr = (key: MessageKey, vars?: Record<string, string | number>) => translate((document.documentElement.lang === "en" ? "en" : "fr") as Lang, key, vars)
 
-const btn = "h-12 rounded-full px-5 text-[0.9375rem] font-bold"
+const btn = "h-12 rounded-[10px] px-5 text-[0.9375rem] font-semibold"
 
 function Frame({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
@@ -74,7 +74,7 @@ export function RescueActions() {
       setState("idle")
     }
   }
-  const base = { marginTop: 8, padding: "10px 16px", borderRadius: 999, marginRight: 8 } as const
+  const base = { marginTop: 8, padding: "10px 16px", borderRadius: 10, marginRight: 8 } as const
   return (
     <div style={{ marginTop: 8 }}>
       <p style={{ fontSize: 13, opacity: 0.75 }}>{tr("safe.rescueHint")}</p>
@@ -82,7 +82,7 @@ export function RescueActions() {
         {tr("safe.exportRaw")}
       </button>
       {state === "confirm" ? (
-        <button type="button" style={{ ...base, background: "#b42318", color: "#fff" }} onClick={reset} id="rescue-reset-confirm">
+        <button type="button" style={{ ...base, background: "var(--bad, #b2392b)", color: "var(--background, #ffffff)" }} onClick={reset} id="rescue-reset-confirm">
           {tr("safe.resetConfirm")}
         </button>
       ) : (

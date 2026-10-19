@@ -1,6 +1,6 @@
 """Lot 10g in the browser, local build over HTTP with the one-year simulation data (scripts/sim):
 - start screen (#splash, dark ground, drop + « hydro. ») shown while the data load, gone once they are read;
-- manifest background_color / theme_color #0f1512;
+- manifest background_color / theme_color #0d1310;
 - loading drop: with prefers-reduced-motion the text « Chargement… » is visible;
 - reservoir gauge (drop filled to the share of litres left, the number next to it) on a space with a tank;
 - charts: a water drop at the foot of the chart on the days of a tank, with its legend.
@@ -41,13 +41,13 @@ with sync_playwright() as p:
     pg.evaluate(LOAD, backup)
     m = pg.evaluate("fetch('manifest.webmanifest').then((r) => r.json())")
     checks["manifest"] = [m["background_color"], m["theme_color"]]
-    if checks["manifest"] != ["#0f1512", "#0f1512"]: errors.append(f"manifest {checks['manifest']}")
+    if checks["manifest"] != ["#0d1310", "#0d1310"]: errors.append(f"manifest {checks['manifest']}")
     # Slow down IndexedDB opening to catch the start screen.
     pg.add_init_script("const o = indexedDB.open.bind(indexedDB); indexedDB.open = (...a) => { const r = o(...a); const h = {}; return new Proxy(r, { set(t, k, v) { if (k === 'onsuccess') { t.onsuccess = (e) => setTimeout(() => v.call(t, e), 600); return true } t[k] = v; return true }, get(t, k) { const v = t[k]; return typeof v === 'function' ? v.bind(t) : v } }) }")
     pg.reload(); pg.wait_for_timeout(150)
     sp = pg.evaluate("(() => { const s = document.querySelector('#splash'); return s ? { bg: getComputedStyle(s).backgroundColor, logo: !!s.querySelector('[aria-label=Hydro]'), drop: s.querySelectorAll('svg').length } : null })()")
     checks["splash"] = sp
-    if not sp or sp["bg"] != "rgb(15, 21, 18)" or not sp["logo"]: errors.append(f"splash {sp}")
+    if not sp or sp["bg"] != "rgb(13, 19, 16)" or not sp["logo"]: errors.append(f"splash {sp}")
     pg.screenshot(path=str(out / "splash.png"))
     pg.wait_for_selector("#splash", state="detached", timeout=8000)
     checks["splashGone"] = True

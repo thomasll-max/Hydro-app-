@@ -6,7 +6,7 @@ import { Minus, Plus, RotateCcw } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Grid, NumField } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
@@ -113,11 +113,11 @@ function BalanceTool() {
             <NumField id="b-before" label={t("phb.before")} value={phBefore} onChange={setPhBefore} />
           </Grid>
           {before != null && before >= target.lo ? (
-            <p className="rounded-md border border-line bg-surface-2 px-3 py-2.5 text-[0.78125rem] font-medium text-fg-2" id="phb-noneed">
+            <p className="border-t border-line pt-2.5 text-[0.78125rem] font-medium text-fg-2" id="phb-noneed">
               {t(before > target.hi ? "phb.noNeedHigh" : "phb.noNeed")}
             </p>
           ) : pred ? (
-            <div className="rounded-md border border-primary/30 bg-primary/8 px-3 py-2.5" id="phb-pred">
+            <div className="border-t border-line pt-2.5" id="phb-pred">
               <div className="text-[0.75rem] text-fg-2">
                 {t(pred.basis === "perPh" ? "phb.predPerPh" : "phb.predPer10", { n: pred.tanks, rate: num(pred.rate, pred.basis === "perPh" ? 1 : 2) })}
               </div>
@@ -140,19 +140,19 @@ function BalanceTool() {
               {t("phb.detail", { start: n1(startMl), steps, step: n1(stepMl) })}
             </div>
             <div className="mt-4 grid grid-cols-[48px_1fr_48px] gap-2">
-              <Button variant="outline" size="icon-lg" className="size-12 rounded-full" onClick={undo} disabled={!steps && !startMl} aria-label={t("phb.undo")}>
+              <Button variant="outline" size="icon-lg" className="size-12" onClick={undo} disabled={!steps && !startMl} aria-label={t("phb.undo")}>
                 <Minus className="size-5" />
               </Button>
               {pred && pred.startMl > 0 && !startMl && !steps ? (
-                <Button className="h-12 rounded-full text-[0.9375rem] font-bold" onClick={() => setStartMl(pred.startMl)} disabled={volumeL <= 0}>
+                <Button className="h-12" onClick={() => setStartMl(pred.startMl)} disabled={volumeL <= 0}>
                   {t("phb.pourStart", { v: n1(pred.startMl) })}
                 </Button>
               ) : (
-                <Button className="h-12 rounded-full text-[0.9375rem] font-bold" onClick={() => setSteps((s) => s + 1)} disabled={volumeL <= 0 || status === "ok" || status === "over"} id="phb-step">
+                <Button className="h-12" onClick={() => setSteps((s) => s + 1)} disabled={volumeL <= 0 || status === "ok" || status === "over"} id="phb-step">
                   <Plus className="size-5" /> {t("phb.step", { v: num(stepMl, stepMl % 1 ? 1 : 0) })}
                 </Button>
               )}
-              <Button variant="outline" size="icon-lg" className="size-12 rounded-full" onClick={reset} aria-label={t("phb.reset")}>
+              <Button variant="outline" size="icon-lg" className="size-12" onClick={reset} aria-label={t("phb.reset")}>
                 <RotateCcw className="size-5" />
               </Button>
             </div>
@@ -160,7 +160,7 @@ function BalanceTool() {
 
           <div className="grid grid-cols-[1fr_auto] items-end gap-2">
             <NumField id="b-ph" label={t("phb.reading")} hint={t("phb.readingHint")} value={phNow} onChange={setPhNow} />
-            <Button variant="outline" className="mb-[18px] h-12 rounded-full px-5" onClick={note} disabled={parseNum(phNow) == null}>
+            <Button variant="outline" className="mb-[18px] h-12 px-5" onClick={note} disabled={parseNum(phNow) == null}>
               {t("phb.note")}
             </Button>
           </div>
@@ -175,19 +175,11 @@ function BalanceTool() {
             </ol>
           )}
           {status !== "unknown" && (
-            <p
-              id="phb-status"
-              className={cn(
-                "rounded-md px-3 py-2 text-[0.78125rem] leading-[1.45] font-medium",
-                status === "ok" && "bg-primary/10 text-primary",
-                status === "low" && "bg-info/10 text-info",
-                status === "over" && "bg-bad/10 text-bad",
-              )}
-            >
+            <Notice id="phb-status" tone={status === "ok" ? "ok" : status === "low" ? "info" : "bad"}>
               {status === "ok" ? t("phb.ok") : status === "low" ? t("phb.low", { step: num(stepMl, stepMl % 1 ? 1 : 0) }) : t("phb.over")}
-            </p>
+            </Notice>
           )}
-          <Button onClick={save} disabled={!last || totalMl <= 0} className="h-12 rounded-full text-[0.9375rem] font-bold">
+          <Button onClick={save} disabled={!last || totalMl <= 0} className="h-12">
             {last ? t("phb.save", { litres: num(last.volumeL), date: last.date.slice(8, 10) + "/" + last.date.slice(5, 7) }) : t("phb.noTank")}
           </Button>
         </Card>

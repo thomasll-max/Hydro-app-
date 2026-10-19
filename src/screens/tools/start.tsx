@@ -19,6 +19,7 @@ import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { iconButton, tertiary } from "@/components/hydro/styles"
 
 export function useStartChecklist(): StartItem[] {
   const { spaces, cycles, equipment, assignments, all } = useGrow()
@@ -99,8 +100,8 @@ export function StartTool() {
               return (
                 <li key={it.id} className="border-t border-line first:border-t-0">
                   <button type="button" onClick={() => act(it)} className="flex min-h-16 w-full items-start gap-3 py-2.5 text-left" id={`start-${it.id}`} data-done={it.done}>
-                    <span className={cn("mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px]", it.done ? "border-primary bg-primary text-primary-foreground" : "border-line-strong")}>
-                      {it.done && <Check className="size-4" />}
+                    <span className={cn("mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-[6px] border-[1.5px]", it.done ? "border-leaf bg-leaf text-background" : "border-line-strong")}>
+                      {it.done && <Check className="size-3.5" strokeWidth={3} />}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className={cn("block text-[0.875rem] font-semibold", it.done && "text-fg-3 line-through decoration-1")}>
@@ -116,7 +117,7 @@ export function StartTool() {
               )
             })}
           </ol>
-          {done === total && <p className="mt-1 rounded-md bg-primary/10 px-3 py-2 text-[0.78125rem] font-medium text-primary">{t("start.allDone")}</p>}
+          {done === total && <p className="mt-1 border-t border-line pt-2 text-[0.78125rem] font-medium text-leaf-ink">{t("start.allDone")}</p>}
         </Card>
       </Reveal>
 
@@ -144,7 +145,7 @@ export function StartTool() {
       </Reveal>
 
       {hidden && (
-        <button type="button" onClick={() => (setStartHidden(false), setHidden(false))} className="mx-auto h-11 px-2 text-[0.78125rem] font-semibold text-primary">
+        <button type="button" onClick={() => (setStartHidden(false), setHidden(false))} className={cn("mx-auto", tertiary)}>
           {t("start.showCard")}
         </button>
       )}
@@ -171,7 +172,7 @@ function StartToday({ cycleId }: { cycleId: string }) {
     }
   }
   return (
-    <Button onClick={go} disabled={busy} className="mb-2.5 ml-9 h-11 rounded-full px-4 text-[0.84375rem] font-bold" id="start-today">
+    <Button onClick={go} disabled={busy} className="mb-2.5 ml-9 h-11 px-4 text-[0.84375rem]" id="start-today">
       {t("start.startToday")}
     </Button>
   )
@@ -199,15 +200,15 @@ export function StartCard() {
             setStartHidden(true)
             setHidden(true)
           }}
-          className="-mt-1 -mr-1.5 flex size-11 shrink-0 items-center justify-center rounded-full text-fg-3"
+          className={cn("-mt-1 -mr-1.5", iconButton)}
         >
           <X className="size-4" />
         </button>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
-        <div className="h-full rounded-full bg-primary" style={{ width: `${(done / total) * 100}%` }} />
+      <div className="h-1.5 overflow-hidden rounded-[3px] bg-track" aria-hidden="true">
+        <div className="h-full rounded-[3px] bg-leaf" style={{ width: `${(done / total) * 100}%` }} />
       </div>
-      <a href="#tools/start" className="inline-flex min-h-11 items-center self-start rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[0.78125rem] font-semibold text-primary">
+      <a href="#tools/start" className={cn(tertiary, "self-start")}>
         {t("start.open")}
       </a>
     </Card>

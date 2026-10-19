@@ -95,7 +95,7 @@ with sync_playwright() as p:
     checks["noDialogAfterSave"] = pg.locator("text=Abandonner la saisie ?").count() == 0
     pg.get_by_role("button", name="Saisie du jour").click(); pg.wait_for_timeout(600)
     pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-date"); pg.wait_for_timeout(500)
-    resume = pg.get_by_role("button", name="Reprendre hier")
+    resume = pg.get_by_role("button", name="Copier les valeurs d'hier")
     checks["resumeShown"] = resume.count() > 0
     if resume.count():
         before = pg.input_value("#e-tempDay")

@@ -36,10 +36,10 @@ describe("lot 10g — la goutte comme motif", () => {
     expect(read("src/components/hydro/wordmark.tsx")).toMatch(/motion-reduce:not-sr-only/)
   })
 
-  it("écran de démarrage : fond #0f1512 dans le manifeste et la balise theme-color", () => {
+  it("écran de démarrage : fond #0d1310 (lot 10h) dans le manifeste et la balise theme-color", () => {
     const m = JSON.parse(read("pwa/manifest.webmanifest"))
-    expect([m.background_color, m.theme_color]).toEqual(["#0f1512", "#0f1512"])
-    expect(read("vite.config.ts")).toContain('<meta name="theme-color" content="#0f1512" />')
+    expect([m.background_color, m.theme_color]).toEqual(["#0d1310", "#0d1310"])
+    expect(read("vite.config.ts")).toContain('<meta name="theme-color" content="#0d1310" />')
     expect(read("src/App.tsx")).toMatch(/TARGET === "local" && !ready && !needsSetup\) return <Splash/)
   })
 })

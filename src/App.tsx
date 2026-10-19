@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { Toaster } from "sonner"
 import { SettingsProvider, useSettings } from "@/app/settings-context"
 import { GrowProvider, useGrow } from "@/app/grow-context"
@@ -9,7 +9,6 @@ import { todayIso } from "@/calc/stage"
 import { TopBar } from "@/components/hydro/top-bar"
 import { TabBar } from "@/components/hydro/tab-bar"
 import { navigate, useRoute, type TabId } from "@/app/nav"
-import { Fab } from "@/components/hydro/fab"
 import { TodayScreen } from "@/screens/today"
 import { JournalScreen } from "@/screens/journal"
 import { ChartsScreen } from "@/screens/charts"
@@ -37,6 +36,8 @@ function Shell() {
   // Tabs and tools are routes in the history (lot 10d): the back gesture walks back through them.
   const { tab } = useRoute()
   const Screen = SCREENS[tab]
+  // Motion (lot 10h): a short screen transition only, none with reduced motion.
+  const still = useReducedMotion()
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -76,28 +77,28 @@ function Shell() {
           </Notice>
         </div>
       )}
-      <main id="main-panel" role="tabpanel" className="relative mx-auto max-w-[480px] pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+170px)] short:pb-[calc(env(safe-area-inset-bottom,0px)+130px)] pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
+      <main id="main-panel" role="tabpanel" className="relative mx-auto max-w-[480px] pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+96px)] short:pb-[calc(env(safe-area-inset-bottom,0px)+64px)] pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={tab}
-            initial={{ opacity: 0, y: 6 }}
+            initial={still ? false : { opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18 }}
+            exit={still ? undefined : { opacity: 0, y: -4 }}
+            transition={{ duration: still ? 0 : 0.16 }}
           >
             <Screen />
           </motion.div>
         </AnimatePresence>
       </main>
-      <Fab
-        label={t("fab.label")}
-        onClick={() => {
+      <TabBar
+        active={tab}
+        onChange={(id) => navigate({ tab: id })}
+        onPlus={() => {
           if (!spaces.length) ed.openCycle()
           else if (selection.kind !== "space" && spaces.length > 1) ed.openQuick()
           else ed.openEntry({ date: todayIso(), spaceId: selection.kind === "space" ? selection.space.id : (cycle?.spaceId ?? spaces[0].id) })
         }}
       />
-      <TabBar active={tab} onChange={(id) => navigate({ tab: id })} />
       <AppToaster />
     </div>
   )

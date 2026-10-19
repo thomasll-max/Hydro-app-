@@ -26,16 +26,16 @@ Journal en une minute · Crop steering · Nutrition · Calendrier · Graphiques 
 
 | | |
 |---|---|
-| ☀️ **Aujourd'hui** | Une carte « Bonjour » chaque matin (climat, arrosages prévus, rappels, ce qui est à surveiller), l'état de chaque espace et **une seule correction à faire** quand quelque chose sort de la cible. |
+| ☀️ **Aujourd'hui** | « Bonjour Thomas. » puis quelques phrases chaque matin (stade, climat, arrosages prévus, réservoir, rappels), la semaine en une bande, les **relevés** comme sur un instrument (valeur, zone cible, trait du jour), **une seule correction à faire** quand quelque chose sort de la cible, et la liste « À faire » à cocher. |
 | 📓 **Journal** | Une saisie en moins d'une minute, préremplie depuis la veille. Dryback, % de runoff, VPD et DLI calculés automatiquement. Saisie rapide de tous les espaces d'un coup. |
 | 🏠 **Espaces modulables** | Tentes, rooms, serres de germination, séchoir… en nombre illimité. Chaque espace n'active que ses modules (climat, lumière, arrosage, nutrition, propagation, séchage). Plusieurs cycles en parallèle, transferts même partiels. |
 | 🔌 **Équipement** | Lampes, réservoirs, pompes, extracteurs, contenants. Ils alimentent les calculs : PPFD estimé, W/m², hauteur libre, durée des doses, autonomie du réservoir, renouvellement d'air, g/W. |
 | 💧 **Arrosage et crop steering** | Programme P0 → P3 ou méthode manuelle, durée de pompe à partir du débit mesuré, mode capteur. Dryback mesuré par **pesée** ou par **capteur** (échelles séparées). |
 | 🧪 **Nutrition** | Catalogue de gammes (Athena Pro Line, Blended…), poudre ou **concentré** (113 / 226 / 282 g/L), add-ons, produits perso, ordre de mélange, stocks de concentré, bidons partagés entre espaces. |
 | ⚖️ **pH / Balance** | pH cible selon le stade, titrage guidé, et une prédiction qui apprend de tes bidons précédents. |
-| 📅 **Calendrier** | Rappels récurrents, échéances automatiques (12/12, Fade, rinçage, récolte, bidon à refaire…) et export vers le calendrier du téléphone (.ics). |
+| 📅 **Calendrier** | Rappels récurrents, échéances automatiques (12/12, Fade, rinçage, récolte, bidon à refaire…) et export vers le calendrier du téléphone (.ics). Il s'ouvre depuis la bande de la semaine, la date en haut de l'écran ou Outils. |
 | 📈 **Graphiques** | Courbes avec les zones cibles en fond, événements sur la frise, comparaison de jusqu'à 4 espaces. |
-| 🌍 **Partout** | Français / anglais, thème clair / sombre, conçu pour une main et un écran de téléphone. |
+| 🌍 **Partout** | Français / anglais, thème clair / sombre, conçu pour une main et un écran de téléphone : quatre onglets en bas (Aujourd'hui, Journal, Graphiques, Outils) avec le « + » de la saisie du jour au milieu. |
 
 <div align="center">
 <img src="docs/screenshots/today-clair.png" width="31%" alt="Aujourd'hui, thème clair">&nbsp;

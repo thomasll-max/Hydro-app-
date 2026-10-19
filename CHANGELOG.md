@@ -1,5 +1,17 @@
 # Changelog
 
+## Lot 10h3 — Barre d'onglets ancrée et accès au calendrier (19/10/2026)
+- **Barre d'onglets** ancrée en bas de l'écran, pleine largeur, sur le fond de la page : Aujourd'hui, Journal, « + », Graphiques, Outils. Le « + » de la saisie du jour est au milieu de la barre ; plus de bouton flottant sur le contenu.
+- **Calendrier** sans onglet, toujours à portée depuis l'écran d'accueil :
+  - une **bande de la semaine** en haut d'Aujourd'hui (lundi → dimanche, aujourd'hui souligné, un petit repère par rappel, échéance ou bidon) : toucher un jour ouvre le calendrier sur ce jour ; flèches ou balayage pour changer de semaine ;
+  - la **date** en haut de l'écran (« lun. 19 oct. ») ouvre le calendrier ;
+  - « Tout le calendrier → » en bas de « À faire », et le Calendrier en tête d'Outils.
+  Le retour ramène à l'écran d'où on venait ; les liens `#calendar` marchent toujours.
+- **Tous les réglages →** dans le menu de l'engrenage (demande de Thomas).
+- Retoucher l'onglet ouvert remonte en haut de l'écran.
+- **Mouvement** : seulement la transition d'écran (courte) et les retours d'appui ; rien avec les animations réduites.
+- Outils en liste ; README et ses captures refaits. 313 tests.
+
 ## Lot 10h2 — Écrans « instrument » (19/10/2026)
 - **Relevés** : les tuiles et les jauges d'Aujourd'hui deviennent des lectures d'instrument : la valeur en grands chiffres, une barre fine avec la zone cible et un trait à la valeur du jour, la cible écrite dessous. Hors cible, le chiffre et le trait passent en orange ou en rouge. Les cibles sont celles du jour, rien d'inventé.
 - **Plus de cartes dans des cartes** : les sections sont séparées par un trait fin et un titre en Fraunces, en casse normale (« À faire », « Relevés », « Arrosage du jour »…). Seul le guide « Premiers pas » garde un cadre.

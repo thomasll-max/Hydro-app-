@@ -1,8 +1,7 @@
 import { useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Card } from "@/components/ui/card"
 import { LineIcon } from "@/components/hydro/line-icon"
-import { Chip, ComingSoon, Reveal, ScreenHero } from "@/components/hydro/primitives"
+import { Chip, ComingSoon, ScreenHero } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
@@ -39,7 +38,9 @@ const TOOLS: Tool[] = [
   { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD", wide: true },
 ]
 
-/** Bento grid of tools; a tool opens in place with a back link. Route: #tools/irrigation… (old links #irrigation still work). */
+const row = "flex min-h-16 w-full items-center gap-3.5 border-b border-line py-3 text-left"
+
+/** List of tools; a tool opens in place with a back link. Route: #tools/irrigation… (old links #irrigation still work). */
 export function ToolsScreen() {
   const { t } = useSettings()
   const { space } = useGrow()
@@ -102,28 +103,34 @@ export function ToolsScreen() {
       <ScreenHero emoji="toolbox" title={t("tools.title")}>
         <p className="mt-1 text-[0.8125rem] leading-snug text-fg-2">{t("tools.subtitle")}</p>
       </ScreenHero>
-      <div className="grid grid-cols-2 gap-2.5">
-        {TOOLS.filter((tool) => !tool.needsSample || sample).map((tool, i) => {
+      {/* One list of rows (lot 10h); the Calendar first, now that it has no tab. */}
+      <ul className="border-t border-line" id="tools-list">
+        <li>
+          <button onClick={() => navigate({ tab: "calendar" }, { push: true })} className={row} id="tool-calendar">
+            <LineIcon name="calendar" size={26} />
+            <span className="min-w-0 flex-1">
+              <b className="block text-[0.9375rem] font-semibold">{t("tools.calendar")}</b>
+              <span className="block text-[0.78125rem] leading-snug text-fg-3">{t("tools.calendarD")}</span>
+            </span>
+            <ChevronRight className="size-5 shrink-0 text-fg-3" />
+          </button>
+        </li>
+        {TOOLS.filter((tool) => !tool.needsSample || sample).map((tool) => {
           const ready = !tool.lot
           return (
-            <Reveal key={tool.id} i={i} className={tool.wide ? "col-span-2" : undefined}>
-              <button onClick={() => setOpen(tool.id)} className="block h-full w-full text-left">
-                <Card className={tool.wide ? "h-full flex-row items-center gap-3.5 px-4 py-4" : "h-full gap-2 px-3.5 py-3.5"}>
-                  <LineIcon name={tool.emoji} size={tool.wide ? 30 : 26} className={ready ? undefined : "opacity-70"} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <b className="text-[0.9375rem] font-semibold">{t(tool.title)}</b>
-                      {tool.wide && (ready ? <ChevronRight className="size-5 text-fg-3" /> : <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>)}
-                    </div>
-                    <p className="mt-0.5 text-[0.78125rem] leading-snug text-fg-3">{t(tool.desc)}</p>
-                    {!tool.wide && <div className="mt-2">{ready ? <ChevronRight className="size-5 text-fg-3" /> : <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>}</div>}
-                  </div>
-                </Card>
+            <li key={tool.id}>
+              <button onClick={() => setOpen(tool.id)} className={row}>
+                <LineIcon name={tool.emoji} size={26} className={ready ? undefined : "opacity-70"} />
+                <span className="min-w-0 flex-1">
+                  <b className="block text-[0.9375rem] font-semibold">{t(tool.title)}</b>
+                  <span className="block text-[0.78125rem] leading-snug text-fg-3">{t(tool.desc)}</span>
+                </span>
+                {ready ? <ChevronRight className="size-5 shrink-0 text-fg-3" /> : <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>}
               </button>
-            </Reveal>
+            </li>
           )
         })}
-      </div>
+      </ul>
     </>
   )
 }

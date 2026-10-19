@@ -44,7 +44,8 @@ describe("lot 10f2 — direction visuelle", () => {
     expect(css).not.toMatch(/backdrop-filter/)
     expect(read("src/App.tsx")).not.toMatch(/radial-gradient/)
     expect(read("src/components/hydro/tab-bar.tsx")).not.toMatch(/\bglass\b|shadow-card/)
-    expect(read("src/components/hydro/fab.tsx")).not.toMatch(/color-mix\(in_srgb,var\(--primary\)/)
+    // The floating button became the « + » of the tab bar (lot 10h).
+    expect(read("src/components/hydro/tab-bar.tsx")).not.toMatch(/color-mix\(in_srgb,var\(--primary\)/)
   })
 
   it("fonds teintés : vert-noir en sombre, blanc cassé verdâtre en clair (valeurs de la palette du lot 10h)", () => {

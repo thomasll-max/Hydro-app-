@@ -16,6 +16,15 @@ axe = pathlib.Path(sys.argv[3]).read_text() if len(sys.argv) > 3 else None
 errors, checks = [], {}
 TABS = ["Aujourd'hui", "Journal", "Calendrier", "Graphiques", "Outils"]
 
+
+def go(pg, tab):
+    """A tab of the bar; the Calendar has no tab since lot 10h: « Tout le calendrier → » of Aujourd'hui."""
+    if tab == "Calendrier":
+        pg.get_by_role("tab", name="Aujourd'hui").click(); pg.wait_for_timeout(600)
+        pg.click("#all-calendar")
+    else:
+        pg.get_by_role("tab", name=tab).click()
+
 SMALL = """() => {
   const vis = (el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none' && !el.closest('[aria-hidden=true], .sr-only') }
   const fonts = []
@@ -54,7 +63,7 @@ with sync_playwright() as p:
                     pg.get_by_role("button", name="Saisie complète").first.click()
                 pg.wait_for_selector("#e-date"); pg.wait_for_timeout(1500)
             else:
-                pg.get_by_role("tab", name=tab).click(); pg.wait_for_timeout(1800)
+                go(pg, tab); pg.wait_for_timeout(1800)
             r = {}
             if axe:
                 pg.add_script_tag(content=axe)
@@ -74,7 +83,7 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}"); pg.wait_for_timeout(2500)
     zoom = {}
     for tab in TABS:
-        pg.get_by_role("tab", name=tab).click(); pg.wait_for_timeout(1200)
+        go(pg, tab); pg.wait_for_timeout(1200)
         zoom[tab] = pg.evaluate("document.documentElement.scrollWidth")
     pg.get_by_role("tab", name="Aujourd'hui").click(); pg.wait_for_timeout(600)
     bars = pg.evaluate("""() => { const nav = document.querySelector('nav[aria-label]').getBoundingClientRect(); const fab = [...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Saisie du jour').getBoundingClientRect(); return Math.round(((innerHeight - Math.min(nav.top, fab.top)) / innerHeight) * 100) }""")

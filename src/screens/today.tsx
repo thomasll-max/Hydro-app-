@@ -2,7 +2,6 @@ import { Reading } from "@/components/hydro/reading"
 import { Loading } from "@/components/hydro/wordmark"
 import { useEffect, useMemo, useState } from "react"
 import { SpaceToday, AllToday } from "./today-spaces"
-import { motion } from "motion/react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Spark } from "@/components/hydro/spark"
@@ -27,6 +26,7 @@ import type { MessageKey } from "@/i18n/types"
 import { LastHarvest, StepCard } from "./cycle-steps"
 import { nextStep } from "@/calc/steps"
 import { tertiary } from "@/components/hydro/styles"
+import { WeekStrip } from "./week-strip"
 
 function useNowMinutes() {
   const now = () => {
@@ -215,7 +215,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
                     aria-current={isNext ? "step" : undefined}
                     className={cn("relative grid grid-cols-[48px_38px_1fr_auto] items-center gap-2 rounded-md px-2 py-[9px] text-[0.84375rem]", done && !isNext && "opacity-40")}
                   >
-                    {isNext && <motion.span layoutId="next-row" className="absolute inset-0 rounded-[10px] bg-surface-2 shadow-[inset_2px_0_0_var(--water)]" />}
+                    {isNext && <span className="absolute inset-0 rounded-[10px] bg-surface-2 shadow-[inset_2px_0_0_var(--water)]" />}
                     <span className={cn("relative tabular", isNext ? "font-semibold text-fg" : "text-fg-2")}>{r.time}</span>
                     <PhaseTag phase={r.phase} />
                     <span className="relative min-w-0 truncate">{text}</span>
@@ -255,6 +255,7 @@ export function TodayScreen() {
   if (!ready) return <Loading label={t("app.loading")} />
   return (
     <>
+      <WeekStrip />
       <StartCard />
       <BackupReminder />
       {selection.kind === "space" ? <SpaceToday space={selection.space} Culture={CultureToday} /> : <AllToday />}

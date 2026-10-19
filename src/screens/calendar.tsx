@@ -4,7 +4,6 @@ import { Loading } from "@/components/hydro/wordmark"
 import { useMemo, useState } from "react"
 import { ChevronLeft, ChevronRight, Copy, Download, Plus } from "lucide-react"
 import { toast } from "sonner"
-import { motion } from "motion/react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Emoji } from "@/components/hydro/emoji"
@@ -29,6 +28,7 @@ import type { Entry, GrowEvent, IsoDate, Mix } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
 import { iconButton, tertiary } from "@/components/hydro/styles"
+import { goBack, useRoute } from "@/app/nav"
 
 type View = "month" | "agenda"
 type Filter = "all" | "reminders" | "deadlines" | "journal"
@@ -80,7 +80,14 @@ export function CalendarScreen() {
   const ed = useEditors()
   const [view, setView] = useState<View>("month")
   const [filter, setFilter] = useState<Filter>("all")
-  const [day, setDay] = useState<IsoDate | null>(null)
+  // Opened on a day from the week strip of Aujourd'hui (#calendar/2026-10-21, lot 10h): its sheet opens at once.
+  const routeDay = useRoute().day ?? null
+  const [day, setDay] = useState<IsoDate | null>(routeDay)
+  const [seen, setSeen] = useState(routeDay)
+  if (routeDay !== seen) {
+    setSeen(routeDay)
+    if (routeDay) setDay(routeDay)
+  }
   if (!ready) return <Loading label={t("app.loading")} />
   const eyebrow = selection.kind === "space" ? selection.space.name : selection.kind === "site" ? selection.site.name : (grow?.name ?? "")
   const filters: { v: Filter; k: MessageKey }[] = [
@@ -91,6 +98,10 @@ export function CalendarScreen() {
   ]
   return (
     <>
+      {/* No tab of its own since lot 10h: back to the screen it was opened from. */}
+      <button onClick={goBack} className="-ml-1 mb-1 flex h-11 items-center gap-1 rounded-[10px] pr-3 text-[0.875rem] font-semibold text-fg-2 hover:text-fg" id="cal-back">
+        <ChevronLeft className="size-5" /> {t("cal.back")}
+      </button>
       <ScreenHero emoji="calendar" eyebrow={eyebrow} title={t("nav.calendar")} />
       <Reveal i={0} className="mb-2.5 flex flex-wrap items-center gap-2">
         <Seg<View> className="min-w-[9.5rem] flex-1" label={t("cal.view")} value={view} onChange={setView} options={[{ value: "month", label: t("cal.month") }, { value: "agenda", label: t("cal.agenda") }]} />
@@ -105,7 +116,7 @@ export function CalendarScreen() {
           ))}
         </div>
       </Reveal>
-      {view === "month" ? <MonthView filter={filter} onDay={setDay} /> : <AgendaView filter={filter} onDay={setDay} />}
+      {view === "month" ? <MonthView key={routeDay ?? ""} filter={filter} onDay={setDay} start={routeDay ?? undefined} /> : <AgendaView filter={filter} onDay={setDay} />}
       <Reveal i={5} className="mt-3">
         <ExportCard />
       </Reveal>
@@ -115,10 +126,10 @@ export function CalendarScreen() {
   )
 }
 
-function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => void }) {
+function MonthView({ filter, onDay, start }: { filter: Filter; onDay: (d: IsoDate) => void; start?: IsoDate }) {
   const { t, settings } = useSettings()
   const today = todayIso()
-  const [first, setFirst] = useState(monthStart(today))
+  const [first, setFirst] = useState(monthStart(start ?? today))
   const gridFrom = addDays(first, -weekdayIndex(first))
   const last = monthEnd(first)
   const gridTo = addDays(last, 6 - weekdayIndex(last))
@@ -160,7 +171,7 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
               <span key={i}>{wd.format(new Date(Date.UTC(2026, 9, 19 + i)))}</span>
             ))}
           </div>
-          <motion.div key={first} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.22 }} className="grid grid-cols-7 gap-1">
+          <div key={first} className="grid grid-cols-7 gap-1 animate-in fade-in slide-in-from-right-2 duration-200">
             {days.map((d) => {
               const x = r.byDay.get(d)
               const open = x?.items.filter((i) => !i.done) ?? []
@@ -203,7 +214,7 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
                 </button>
               )
             })}
-          </motion.div>
+          </div>
           <div className="mt-0.5 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[0.75rem] text-fg-3">
             <Legend cls="bg-fg-3" label={t("cal.fJournal")} />
             <Legend cls="bg-warn" label={t("cal.fDeadlines")} />

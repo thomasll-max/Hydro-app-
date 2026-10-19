@@ -39,7 +39,7 @@ with sync_playwright() as p:
     checks["glossaryTerms"] = pg.locator("#glossary dt").count()
     pg.screenshot(path=str(out / "02-glossary.png"))
     # Calendar: a day with something due is described.
-    pg.get_by_role("tab", name="Calendrier").click(); pg.wait_for_timeout(1200)
+    pg.goto(f"file://{page_file}#calendar"); pg.wait_for_timeout(1500)  # no Calendar tab since lot 10h
     checks["todayCell"] = pg.locator("button[aria-current=date]").get_attribute("aria-label")
     checks["describedDays"] = pg.locator("button[aria-label*='échéance'], button[aria-label*='rappel']").count()
     # Reminder sheet: one « Note », a titled repeat end.

@@ -20,6 +20,7 @@ import { snoozeOne, toggleDone } from "@/calendar/rrule"
 import type { EmojiName } from "@/assets/emoji"
 import type { Space } from "@/model/grow"
 import { cn } from "@/lib/utils"
+import { navigate } from "@/app/nav"
 
 export function useCalendarData(): CalendarData & { tz: string } {
   const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks, sprays } = useGrow()
@@ -165,6 +166,10 @@ export function UpcomingCard({ spaceIds, max = 4 }: { spaceIds: Set<string> | nu
           ))}
         </ul>
       )}
+      {/* The Calendar has no tab since lot 10h: it opens from here, over Aujourd'hui. */}
+      <button type="button" onClick={() => navigate({ tab: "calendar" }, { push: true })} className={cn("self-start", tertiary)} id="all-calendar">
+        {t("week.allCalendar")}
+      </button>
     </Card>
   )
 }

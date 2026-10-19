@@ -570,6 +570,16 @@ export const fr = {
     reminder: "rappel à {time} : {title}",
     deadline: "à faire : {title}",
   },
+  /** Week strip of Aujourd'hui and the Calendar shortcuts (lot 10h). */
+  week: {
+    label: "Cette semaine",
+    prev: "Semaine précédente",
+    next: "Semaine suivante",
+    day: "{date} · {n} {n|élément prévu|éléments prévus}",
+    openCalendar: "Ouvrir le calendrier, aujourd'hui {date}",
+    allCalendar: "Tout le calendrier →",
+    allSettings: "Tous les réglages →",
+  },
   quick: {
     open: "Saisie rapide, tous les espaces",
     title: "Saisie rapide",
@@ -876,6 +886,8 @@ export const fr = {
   },
 
   tools: {
+    calendar: "Calendrier",
+    calendarD: "Rappels et échéances, vues mois et agenda, export .ics",
     start: "Premiers pas",
     startD: "Ce qu'il faut rentrer, puis comment marche l'app",
     settingsBtn: "Réglages",
@@ -1650,6 +1662,7 @@ export const fr = {
     agenda: "Agenda",
     prev: "Mois précédent",
     next: "Mois suivant",
+    back: "Retour",
     backToday: "Aujourd'hui",
     view: "Affichage",
     filter: "Afficher",

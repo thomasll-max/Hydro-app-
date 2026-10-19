@@ -570,6 +570,16 @@ export const en: Messages = {
     reminder: "reminder at {time}: {title}",
     deadline: "to do: {title}",
   },
+  /** Week strip of Today and the Calendar shortcuts (lot 10h). */
+  week: {
+    label: "This week",
+    prev: "Previous week",
+    next: "Next week",
+    day: "{date} · {n} {n|item due|items due}",
+    openCalendar: "Open the calendar, today {date}",
+    allCalendar: "Full calendar →",
+    allSettings: "All settings →",
+  },
   quick: {
     open: "Quick entry, all spaces",
     title: "Quick entry",
@@ -876,6 +886,8 @@ export const en: Messages = {
   },
 
   tools: {
+    calendar: "Calendar",
+    calendarD: "Reminders and deadlines, month and agenda views, .ics export",
     start: "Getting started",
     startD: "What to enter, then how the app works",
     settingsBtn: "Settings",
@@ -1650,6 +1662,7 @@ export const en: Messages = {
     agenda: "Agenda",
     prev: "Previous month",
     next: "Next month",
+    back: "Back",
     backToday: "Today",
     view: "View",
     filter: "Show",

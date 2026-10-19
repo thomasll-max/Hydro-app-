@@ -50,7 +50,7 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}#today"); pg.wait_for_timeout(1500)
 
     pg.get_by_role("button", name="Tous").first.click()
-    pg.get_by_role("tab", name="Calendrier").click()
+    pg.click("#all-calendar")  # no Calendar tab since lot 10h
     pg.wait_for_timeout(1500)
     pg.screenshot(path=str(out / "03-calendar-month.png"), full_page=True)
     checks["month_dots"] = pg.locator("button[aria-label] span span").count()

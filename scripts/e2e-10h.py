@@ -9,7 +9,11 @@
 - keyboard focus: 2 px « eau » outline, 2 px away;
 10h2, with a cycle and entries seeded: readings (bar, target zone, tick in « à surveiller » / « alerte » out of target),
 « Bonjour Thomas. » in upright Fraunces then sentences (no list), sections without frames, space tabs underlined,
-the cycle step button with its consequence, the journal in one line per day with the plants under it.
+the cycle step button with its consequence, the journal in one line per day with the plants under it;
+10h3: the tab bar anchored at the bottom (page ground, thin line, « + » 52 × 44 in the middle, four tabs), the week strip
+(7 days, ≤ 64 px, today underlined, a day opens the Calendar on it and back returns), the date of the top bar,
+« Tout le calendrier → », the Calendar at the top of Outils, « Tous les réglages → » of the display menu (back returns
+to the Journal), tapping Aujourd'hui again goes back to the top, no screen motion with reduced motion.
 Usage: npm run preview:build && PYTHONPATH=scripts python3 scripts/e2e-10h.py dist-preview/index.html <out dir>"""
 import sys, json, pathlib, datetime, subprocess
 from playwright.sync_api import sync_playwright
@@ -144,6 +148,64 @@ with sync_playwright() as p:
         pg.screenshot(path=str(out / f"journal-{theme}.png"), full_page=True)
         checks[f"10h2-{theme}"] = c
         ctx.close()
+
+    # 10h3: navigation.
+    ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, color_scheme="dark")
+    ctx.add_init_script(ui("dark", "fr"))
+    serve_fonts(ctx)
+    pg = ctx.new_page()
+    pg.on("pageerror", lambda e: errors.append(f"PAGEERROR {e}"))
+    pg.goto(f"file://{page_file}"); pg.wait_for_timeout(2500)
+    h = lambda: pg.evaluate("location.hash")
+    c = {}
+    c["bar"] = pg.evaluate("""() => { const n = document.querySelector('nav[aria-label]'); const r = n.getBoundingClientRect(); const s = getComputedStyle(n); const plus = n.querySelector('button[aria-label="Saisie du jour"]'); const p = plus.getBoundingClientRect(); return { bottom: Math.round(r.bottom), left: r.left, width: Math.round(r.width), bg: s.backgroundColor, top: s.borderTopWidth, tabs: [...n.querySelectorAll('[role=tab]')].map((x) => x.textContent.trim()), plus: [Math.round(p.width), Math.round(p.height), getComputedStyle(plus).borderRadius, getComputedStyle(plus).backgroundColor, Math.round(p.left + p.width / 2)] } }""")
+    bar = c["bar"]
+    if bar["bottom"] != 844 or bar["left"] != 0 or bar["width"] != 390 or bar["bg"] != rgb(PALETTE["dark"]["--page"]) or bar["top"] != "1px" or bar["tabs"] != ["Aujourd'hui", "Journal", "Graphiques", "Outils"] or bar["plus"] != [52, 44, "12px", rgb(PALETTE["dark"]["--water"]), 195]: errors.append(f"tab bar {bar}")
+    c["week"] = pg.evaluate("""() => { const w = document.querySelector('#week-strip'); const days = [...w.querySelectorAll('.grid > button')]; const t = w.querySelector('[aria-current=date]'); return { h: Math.round(w.getBoundingClientRect().height), n: days.length, today: t && t.getAttribute('aria-label'), line: t && getComputedStyle(t.children[1]).textDecorationColor, first: days[0].children[0].textContent } }""")
+    wk = c["week"]
+    if wk["n"] != 7 or wk["h"] > 64 or not wk["today"] or "prévu" not in wk["today"] or wk["line"] != rgb(PALETTE["dark"]["--water"]) or not wk["first"].startswith("lun"): errors.append(f"week strip {wk}")
+    day = pg.locator("#week-strip .grid > button").nth(6)
+    day.click(); pg.wait_for_timeout(1500)
+    c["weekDay"] = [h(), pg.locator("[data-slot=drawer-content]").count()]
+    if not c["weekDay"][0].startswith("#calendar/") or not c["weekDay"][1]: errors.append(f"week day {c['weekDay']}")
+    pg.screenshot(path=str(out / "week-day.png"))
+    pg.go_back(); pg.wait_for_timeout(800); pg.go_back(); pg.wait_for_timeout(1200)
+    c["weekBack"] = [h(), pg.locator("[role=tab][aria-current=page]").inner_text().strip()]
+    if c["weekBack"] != ["", "Aujourd'hui"]: errors.append(f"back from the week strip {c['weekBack']}")
+    pg.click("#today-date"); pg.wait_for_timeout(1200)
+    c["dateBtn"] = h()
+    pg.click("#cal-back"); pg.wait_for_timeout(1200)
+    c["dateBack"] = h()
+    if c["dateBtn"] != "#calendar" or c["dateBack"] != "": errors.append(f"date of the top bar {c['dateBtn']} → {c['dateBack']}")
+    pg.click("#all-calendar"); pg.wait_for_timeout(1200)
+    c["allCal"] = h(); pg.go_back(); pg.wait_for_timeout(1000)
+    pg.get_by_role("tab", name="Outils").click(); pg.wait_for_timeout(1000)
+    c["toolsFirst"] = pg.locator("#tools-list button").first.inner_text().split("\n")[0]
+    pg.click("#tool-calendar"); pg.wait_for_timeout(1200)
+    c["fromTools"] = h(); pg.go_back(); pg.wait_for_timeout(1000); c["backTools"] = h()
+    if c["allCal"] != "#calendar" or c["toolsFirst"] != "Calendrier" or c["fromTools"] != "#calendar" or c["backTools"] != "#tools": errors.append(f"calendar accesses {c}")
+    pg.get_by_role("tab", name="Journal").click(); pg.wait_for_timeout(1000)
+    pg.click("#display-menu"); pg.wait_for_timeout(500)
+    pg.click("#all-settings"); pg.wait_for_timeout(1200)
+    c["settings"] = [h(), pg.locator("#display-menu[data-state=open]").count()]
+    pg.go_back(); pg.wait_for_timeout(1000); c["settingsBack"] = h()
+    if c["settings"] != ["#tools/settings", 0] or c["settingsBack"] != "#journal": errors.append(f"all settings {c['settings']} → {c['settingsBack']}")
+    pg.get_by_role("tab", name="Aujourd'hui").click(); pg.wait_for_timeout(1000)
+    pg.evaluate("window.scrollTo(0, 600)"); pg.wait_for_timeout(300)
+    pg.get_by_role("tab", name="Aujourd'hui").click(); pg.wait_for_timeout(1200)
+    c["retapTop"] = pg.evaluate("window.scrollY")
+    if c["retapTop"] != 0: errors.append(f"tapping Aujourd'hui again: scrollY {c['retapTop']}")
+    pg.screenshot(path=str(out / "nav-today-dark.png"))
+    checks["10h3"] = c
+    ctx.close()
+    ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, color_scheme="light", reduced_motion="reduce")
+    serve_fonts(ctx)
+    pg = ctx.new_page()
+    pg.goto(f"file://{page_file}"); pg.wait_for_timeout(2500)
+    pg.get_by_role("tab", name="Journal").click(); pg.wait_for_timeout(60)
+    checks["reducedMotion"] = pg.evaluate("getComputedStyle(document.querySelector('#main-panel > div')).opacity")
+    if checks["reducedMotion"] != "1": errors.append(f"reduced motion: opacity {checks['reducedMotion']} right after a tab change")
+    ctx.close()
 
     # Captures: FR / EN, light / dark, 390 and 360 px; zoom 200 % on the entry.
     for lang in ["fr", "en"]:

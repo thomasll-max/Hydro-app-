@@ -11,6 +11,8 @@ import { dayGroups } from "@/screens/journal"
 import { buildDailyDigest, digestWeek } from "./digest"
 import { FLOWER_ID, thomasGrow } from "@/data/thomas-grow"
 import type { Entry } from "@/model/types"
+import { TABS } from "@/components/hydro/tab-bar"
+import { parseHash, planNav, routeHash } from "@/app/nav"
 
 const root = path.resolve(import.meta.dirname, "../..")
 const read = (f: string) => fs.readFileSync(path.join(root, f), "utf8")
@@ -174,5 +176,40 @@ describe("lot 10h2 — écrans « instrument »", () => {
     expect(read("src/components/hydro/primitives.tsx")).toMatch(/<h2 className=\{cn\("display text-\[1\.25rem\]/)
     expect(read("src/screens/tools/start.tsx")).toMatch(/<Card framed/)
     expect(read("src/index.css")).not.toMatch(/text-transform: uppercase/)
+  })
+})
+
+describe("lot 10h3 — barre d'onglets ancrée, accès au calendrier", () => {
+  it("quatre onglets autour du « + » ; le Calendrier n'a plus d'onglet mais garde ses liens", () => {
+    expect(TABS.map((x) => x.id)).toEqual(["today", "journal", "charts", "tools"])
+    const bar = read("src/components/hydro/tab-bar.tsx")
+    expect(bar).toMatch(/aria-label=\{t\("fab\.label"\)\}/)
+    expect(bar).toMatch(/h-11 w-\[52px\][^"]*rounded-\[12px\] bg-primary/)
+    expect(bar).not.toMatch(/layoutId|rounded-\[24px\]/)
+    expect(fs.existsSync(path.join(root, "src/components/hydro/fab.tsx"))).toBe(false)
+    expect(parseHash("#calendar")).toEqual({ tab: "calendar" })
+    expect(parseHash("#calendar/2026-10-21")).toEqual({ tab: "calendar", day: "2026-10-21" })
+    expect(parseHash("#calendar/demain")).toEqual({ tab: "calendar" })
+    expect(routeHash({ tab: "calendar", day: "2026-10-21" })).toBe("#calendar/2026-10-21")
+  })
+
+  it("le Calendrier s'ouvre par-dessus l'écran d'où on vient : le retour y ramène", () => {
+    const journal = { tab: "journal" } as const
+    // A tab switch replaces the entry; opening the Calendar keeps the Journal under it.
+    expect(planNav(journal, { tab: "charts" }, { depth: 1, prev: "" })).toEqual({ kind: "replace", hash: "#charts" })
+    expect(planNav(journal, { tab: "calendar" }, { depth: 1, prev: "" }, true)).toEqual({ kind: "push", hash: "#calendar" })
+    expect(planNav({ tab: "tools", tool: "irrigation" }, { tab: "calendar", day: "2026-10-21" }, { depth: 2, prev: "#tools" }, true)).toEqual({ kind: "push", hash: "#calendar/2026-10-21" })
+    // From the Calendar, the screen below is a step back.
+    expect(planNav({ tab: "calendar" }, journal, { depth: 2, prev: "#journal" })).toEqual({ kind: "back" })
+    // « Tous les réglages » of the display menu: the same.
+    expect(planNav(journal, { tab: "tools", tool: "settings" }, { depth: 1, prev: "" }, true)).toEqual({ kind: "push", hash: "#tools/settings" })
+  })
+
+  it("mouvement : une transition d'écran courte, aucune avec les animations réduites", () => {
+    const app = read("src/App.tsx")
+    expect(app).toMatch(/useReducedMotion/)
+    expect(app).toMatch(/duration: still \? 0 : 0\.16/)
+    expect(read("src/screens/today.tsx")).not.toMatch(/layoutId/)
+    expect(read("src/screens/calendar.tsx")).not.toMatch(/motion\./)
   })
 })

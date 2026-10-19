@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Monitor, Moon, Settings, Sun } from "lucide-react"
 import { Popover } from "radix-ui"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -7,7 +8,8 @@ import type { Lang } from "@/i18n/types"
 import { Wordmark } from "./wordmark"
 import { SpacePill } from "./space-pill"
 import { cn } from "@/lib/utils"
-import { joined, segmentItem } from "@/components/hydro/styles"
+import { joined, segmentItem, tertiary } from "@/components/hydro/styles"
+import { navigate } from "@/app/nav"
 
 // Joined boxes (lot 10h), the active one inverted.
 const compact = "inline-grid grid-flow-col auto-cols-fr [grid-template-columns:none] gap-0"
@@ -63,19 +65,42 @@ export function TopBar() {
     <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 bg-background short:static">
       <div className="mx-auto flex max-w-[480px] items-center justify-between gap-2 py-2.5 pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
         <Wordmark size={26} />
-        <DisplayMenu />
+        <div className="flex items-center gap-1">
+          <TodayButton />
+          <DisplayMenu />
+        </div>
       </div>
       <SpacePill />
     </header>
   )
 }
 
+/** The date of the day (« lun. 19 oct. »): a button that opens the Calendar on today (lot 10h). */
+function TodayButton() {
+  const { t, settings } = useSettings()
+  const now = new Date()
+  const date = new Intl.DateTimeFormat(settings.lang === "fr" ? "fr-FR" : "en-US", { weekday: "short", day: "numeric", month: "short" }).format(now)
+  const long = new Intl.DateTimeFormat(settings.lang === "fr" ? "fr-FR" : "en-US", { weekday: "long", day: "numeric", month: "long" }).format(now)
+  return (
+    <button
+      type="button"
+      onClick={() => navigate({ tab: "calendar" }, { push: true })}
+      aria-label={t("week.openCalendar", { date: long })}
+      id="today-date"
+      className="flex h-11 items-center rounded-[10px] px-2 font-mono text-[0.8125rem] whitespace-nowrap text-fg-3 hover:text-fg max-[340px]:hidden"
+    >
+      {date}
+    </button>
+  )
+}
+
 /** Small gear pill in the top bar: language and theme in a popover (they used to take the whole right side). */
 export function DisplayMenu() {
   const { settings, t } = useSettings()
+  const [open, setOpen] = useState(false)
   const ThemeIcon = settings.theme === "light" ? Sun : settings.theme === "dark" ? Moon : Monitor
   return (
-    <Popover.Root>
+    <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
           type="button"
@@ -102,6 +127,20 @@ export function DisplayMenu() {
           <div className="flex flex-col gap-1.5">
             <span className="text-[0.75rem] font-semibold text-fg-3">{t("controls.theme")}</span>
             <ThemeSwitch wide />
+          </div>
+          {/* Shortcut to Réglages (Thomas's request, lot 10h): the menu closes, back returns here. */}
+          <div className="-mb-1.5 border-t border-line pt-1">
+            <button
+              type="button"
+              id="all-settings"
+              className={tertiary}
+              onClick={() => {
+                setOpen(false)
+                navigate({ tab: "tools", tool: "settings" }, { push: true })
+              }}
+            >
+              {t("week.allSettings")}
+            </button>
           </div>
         </Popover.Content>
       </Popover.Portal>

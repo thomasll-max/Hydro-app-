@@ -1,13 +1,15 @@
 // Navigation in the browser history (lot 10d): tabs, tools and sheets each take a step, so the phone's back gesture
 // closes the open sheet first, then goes back to the tool list, then to Today, and only then leaves the app.
-// Routes live in the hash: "" (Today), #journal, #calendar, #charts, #tools, #tools/irrigation…
+// Routes live in the hash: "" (Today), #journal, #calendar, #calendar/2026-10-21, #charts, #tools, #tools/irrigation…
+// Since lot 10h the Calendar has no tab: it opens over the screen it came from (week strip, date of the top bar, Outils),
+// and back returns there.
 import { useSyncExternalStore } from "react"
 
 export const TAB_IDS = ["today", "journal", "calendar", "charts", "tools"] as const
 export type TabId = (typeof TAB_IDS)[number]
 export const TOOL_IDS = ["start", "irrigation", "nutrition", "ph", "ipw", "light", "climate", "ask", "equipment", "data", "reperes", "settings"] as const
 export type ToolId = (typeof TOOL_IDS)[number]
-export type Route = { tab: TabId; tool?: ToolId }
+export type Route = { tab: TabId; tool?: ToolId; /** Calendar opened on a day (week strip of Aujourd'hui). */ day?: string }
 
 const isTool = (s: string | undefined): s is ToolId => !!s && (TOOL_IDS as readonly string[]).includes(s)
 
@@ -15,6 +17,7 @@ const isTool = (s: string | undefined): s is ToolId => !!s && (TOOL_IDS as reado
 export function parseHash(hash: string): Route {
   const [a, b] = decodeURIComponent(hash.replace(/^#/, "")).split("/")
   if (a === "tools") return isTool(b) ? { tab: "tools", tool: b } : { tab: "tools" }
+  if (a === "calendar") return /^\d{4}-\d{2}-\d{2}$/.test(b ?? "") ? { tab: "calendar", day: b } : { tab: "calendar" }
   if (isTool(a)) return { tab: "tools", tool: a }
   if (a === "guide") return { tab: "tools", tool: "reperes" }
   return (TAB_IDS as readonly string[]).includes(a) ? { tab: a as TabId } : { tab: "today" }
@@ -23,6 +26,7 @@ export function parseHash(hash: string): Route {
 /** Hash of a route; Today has none. */
 export function routeHash(r: Route): string {
   if (r.tab === "today") return ""
+  if (r.tab === "calendar" && r.day) return `#calendar/${r.day}`
   return r.tab === "tools" && r.tool ? `#tools/${r.tool}` : `#${r.tab}`
 }
 
@@ -33,13 +37,14 @@ export type NavAction = { kind: "push" | "replace"; hash: string } | { kind: "ba
 /**
  * How to go from one route to the next. The history never grows beyond Today → tab → tool: switching between tabs
  * replaces the entry, so back always leads to Today, then out (as Android's bottom navigation does).
+ * `push` (the Calendar, « Tous les réglages » of the display menu, lot 10h) keeps the screen it came from: back returns there.
  */
-export function planNav(cur: Route, next: Route, st: NavState): NavAction {
+export function planNav(cur: Route, next: Route, st: NavState, push = false): NavAction {
   const hash = routeHash(next)
   if (hash === routeHash(cur)) return null
   // Going back where we came from (the tool list, Today): a real step back.
   if (st.depth > 0 && hash === st.prev) return { kind: "back" }
-  if (st.depth === 0) return { kind: "push", hash }
+  if (st.depth === 0 || push) return { kind: "push", hash }
   // Opening a tool from the list.
   if (cur.tab === "tools" && !cur.tool && next.tool) return { kind: "push", hash }
   // Leaving a tool for another tab: back to the list first, then switch.
@@ -75,9 +80,9 @@ function setRoute(r: Route) {
 }
 let pending: Route | null = null
 
-/** Go to a tab or a tool. */
-export function navigate(next: Route) {
-  const action = planNav(route, next, navState())
+/** Go to a tab or a tool; `push` keeps the current screen under it (back returns to it). */
+export function navigate(next: Route, opts: { push?: boolean } = {}) {
+  const action = planNav(route, next, navState(), opts.push)
   if (!action) return
   if (action.kind === "back") {
     pending = action.then ?? null
@@ -96,6 +101,12 @@ export function navigate(next: Route) {
   if (!ok) safe(() => history.replaceState(null, "", url(action.hash)))
   here = { hash: action.hash, depth: ok ? st.depth : 0 }
   setRoute(next)
+}
+
+/** Back to the screen this one was opened from (the Calendar's back link); Today when there is none. */
+export function goBack() {
+  if (navState().depth > 0 && safe(() => history.back())) return
+  navigate({ tab: "today" })
 }
 
 export function useRoute(): Route {

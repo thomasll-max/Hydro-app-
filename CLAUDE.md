@@ -23,3 +23,4 @@ Ces fichiers sont la source de vérité. Il n'est pas nécessaire d'avoir accès
 - **N'invente aucune valeur** (dose, caractéristique d'équipement…). Pas de source → champ vide ou « donnée manquante ».
 - Ne mélange jamais Pro Line et Blended.
 - Si un lot est trop gros : préviens Thomas et coupe-le en a/b.
+- **Netlify (version des potes)** : un push sur `main` ne met plus en ligne (crédits limités : 20 mises en ligne par mois). Ne mets `[deploy]` dans un message de commit que si Thomas demande une mise en ligne : `git commit --allow-empty -m "Mise en ligne [deploy]"` puis push.

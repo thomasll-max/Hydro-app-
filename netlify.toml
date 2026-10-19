@@ -1,8 +1,12 @@
 # Version locale de Hydro (amis) : site statique, hors ligne, sans compte.
-# Netlify relié au dépôt GitHub : chaque push sur main reconstruit le site.
+# Netlify relié au dépôt GitHub. Offre gratuite : 300 crédits par mois, 15 par mise en ligne (20 par mois au plus).
+# Un push sur main NE met PAS en ligne. Ne sont construits que les commits dont le message contient [deploy]
+# (décision de Thomas, 19/10/2026). Pour mettre en ligne : git commit --allow-empty -m "Mise en ligne [deploy]" && git push
 [build]
   command = "npm run build:local"
   publish = "dist-local"
+  # Code de sortie 0 = build annoncé inutile (annulé, aucun crédit). On construit seulement si le message contient [deploy].
+  ignore = "git log -1 --pretty=%B | grep -qF '[deploy]' && exit 1 || exit 0"
 
 [build.environment]
   NODE_VERSION = "22"

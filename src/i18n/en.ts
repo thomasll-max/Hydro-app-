@@ -282,6 +282,16 @@ export const en: Messages = {
     dark: "Dark",
     system: "System",
   },
+  /** Products given by hand, in the watering can (lot 7b): never in the tank nor its EC. */
+  hand: {
+    title: "By hand, if you like",
+    desc: "Not in the tank nor in its EC. Dose per litre of watering can, copied from the label.",
+    perL: "{range} {unit} per litre of watering can",
+    offAthena: "outside Athena, not verified",
+    reminder: "Add a reminder",
+    reminderTitle: "By hand: {names}",
+    list: "By hand (not in the tank)",
+  },
   own: {
     title: "My recipe",
     desc: "Your line, with the doses from your labels: the app multiplies them by the tank volume. Personal, not verified.",
@@ -1625,6 +1635,8 @@ export const en: Messages = {
     customD: "Outside the program. Dose and weeks from the label; nothing is suggested until you type them.",
     customTank: "in the tank",
     customRoots: "on the roots",
+    customHand: "by hand",
+    pHandHint: "Organic products (enzymes, sugars, extracts): rather by hand, they can clog the drippers and break down in a tank kept for several days.",
     customNoDose: "no dose typed",
     customDose: "{range} {unit} per 10 L",
     customPlant: "{range} {unit} per plant",

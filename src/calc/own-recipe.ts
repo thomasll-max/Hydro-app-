@@ -117,3 +117,19 @@ export function ownTargetsFor(own: OwnTargets | undefined, stage: StageKey): { e
   const t = stage === "veg" ? own.veg : stage === "stretch" || stage === "bulk" || stage === "finish" ? own.flower : undefined
   return { ...(t?.ec ? { ec: t.ec } : {}), ...(t?.ph ? { ph: t.ph } : {}) }
 }
+
+/** A product given by hand (lot 7b): its dose per litre of watering can, from the label. Never in the tank nor its EC. */
+export type HandItem = { id: string; name: string; brand?: string; unit: CustomProduct["unit"]; perL: [number, number] | null; weeksMissing?: boolean }
+
+/**
+ * « À la main, si tu veux »: the products given by hand for this phase (all of them when the phase is not known), in the
+ * order of the list. No frequency and no reminder of their own.
+ */
+export function handList(products: CustomProduct[], phase: OwnPhase | null): HandItem[] {
+  return inListOrder(products.filter((p) => p.application === "hand" && !p.inactive)).flatMap((p) => {
+    const used = phase ? usedIn(p, phase) : true
+    if (used === false) return []
+    const d = p.dosePer10L
+    return [{ id: p.id, name: p.name, ...(p.brand ? { brand: p.brand } : {}), unit: p.unit, perL: d ? ([r2(d.lo / 10), r2(d.hi / 10)] as [number, number]) : null, ...(used === null ? { weeksMissing: true } : {}) }]
+  })
+}

@@ -282,6 +282,16 @@ export const fr = {
     dark: "Sombre",
     system: "Système",
   },
+  /** Products given by hand, in the watering can (lot 7b): never in the tank nor its EC. */
+  hand: {
+    title: "À la main, si tu veux",
+    desc: "Pas dans le bidon ni dans son EC. Dose par litre d'arrosoir, recopiée de l'étiquette.",
+    perL: "{range} {unit} par litre d'arrosoir",
+    offAthena: "hors Athena, non vérifié",
+    reminder: "Ajouter un rappel",
+    reminderTitle: "À la main : {names}",
+    list: "À la main (hors bidon)",
+  },
   own: {
     title: "Ma recette",
     desc: "Ta gamme, avec les doses de tes étiquettes : l'app les multiplie par le volume du bidon. Perso, non vérifié.",
@@ -1625,6 +1635,8 @@ export const fr = {
     customD: "Hors programme. Dose et semaines prises sur l'étiquette ; rien n'est proposé tant que tu ne les as pas saisies.",
     customTank: "dans le bidon",
     customRoots: "sur les racines",
+    customHand: "à la main",
+    pHandHint: "Produits organiques (enzymes, sucres, extraits) : plutôt à la main, ils peuvent boucher les goutteurs et se dégrader dans un bac de plusieurs jours.",
     customNoDose: "dose non saisie",
     customDose: "{range} {unit} pour 10 L",
     customPlant: "{range} {unit} par plante",

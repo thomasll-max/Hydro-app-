@@ -16,7 +16,7 @@ import { newId, useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
 import { badNums, parseNum } from "@/calc/formulas"
 import { stageOn, todayIso } from "@/calc/stage"
-import { inListOrder, LABEL_VOLUMES, litresOf, moveInOrder, ownPhaseOf, ownRecipe, per10L, type LabelVolume, type OwnItem, type OwnPhase } from "@/calc/own-recipe"
+import { handList, inListOrder, LABEL_VOLUMES, litresOf, moveInOrder, ownPhaseOf, ownRecipe, per10L, type LabelVolume, type OwnItem, type OwnPhase } from "@/calc/own-recipe"
 import { OWN_LINE } from "@/data/nutrients"
 import { equipmentAt } from "@/equipment/calc"
 import { GROW_SCHEMA, type CustomProduct } from "@/model/grow"
@@ -185,6 +185,7 @@ export function OwnRecipeTool() {
             </ol>
             {!recipe.items.length && <p className="mt-1 text-[0.8125rem] text-fg-3">{tankProducts.length ? t("own.none") : t("own.empty")}</p>}
           </div>
+          <HandProducts phase={phase} />
 
           <Grid>
             <NumField
@@ -239,6 +240,7 @@ function OwnLineCard() {
   const [full, setFull] = useState(false)
   const [label, setLabel] = useState(false)
   const list = inListOrder(customProducts.filter((p) => p.application === "tank"))
+  const byHand = inListOrder(customProducts.filter((p) => p.application === "hand"))
   const move = async (id: string, dir: -1 | 1) => {
     const next = moveInOrder(list, id, dir)
     const changed = next.filter((p) => list.find((x) => x.id === p.id)?.mixOrder !== p.mixOrder)
@@ -291,6 +293,37 @@ function OwnLineCard() {
             )
           })}
         </ul>
+        {byHand.length > 0 && (
+          <div id="own-line-hand">
+            <div className="mt-1 text-[0.8125rem] font-semibold text-fg-2">{t("hand.list")}</div>
+            <ul>
+              {byHand.map((p) => {
+                const w = weeksText(p)
+                const dose = doseText(p)
+                return (
+                  <li key={p.id} className="border-t border-line first:border-t-0" data-product={p.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEdit(p)
+                        setFull(true)
+                      }}
+                      className="min-h-11 w-full py-1.5 text-left"
+                    >
+                      <b className="block truncate text-[0.875rem] font-semibold">
+                        {p.name}
+                        {p.brand && <span className="font-normal text-fg-3"> · {p.brand}</span>}
+                      </b>
+                      <span className={cn("block text-[0.75rem] leading-snug", dose ? "text-fg-2" : "text-warn")}>
+                        {[dose ?? t("own.doseMissing"), w ? t("nut.customWeeks", { w }) : null, p.inactive ? t("nut.customOff") : null].filter(Boolean).join(" · ")}
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -316,10 +349,12 @@ function LabelSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (o: b
   const [unit, setUnit] = useState<CustomProduct["unit"]>("mL")
   const [per, setPer] = useState<LabelVolume>(1)
   const [veg, setVeg] = useState(false)
+  const [where, setWhere] = useState<"tank" | "hand">("tank")
   const { busy, run } = useSaver(() => onOpenChange(false))
   useEffect(() => {
     if (!open) return
     setF({ name: "", lo: "", hi: "", from: "", to: "" })
+    setWhere("tank")
     setUnit("mL")
     setPer(1)
     setVeg(false)
@@ -342,7 +377,7 @@ function LabelSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (o: b
         id: newId("cp-"),
         name,
         unit,
-        application: "tank",
+        application: where,
         verified: false,
         source: "label",
         createdAt: new Date().toISOString(),
@@ -355,6 +390,21 @@ function LabelSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (o: b
     <Sheet open={open} onOpenChange={onOpenChange} title={t("own.labelTitle")} description={t("own.labelDesc")} footer={<SaveBar busy={busy} onSave={save} />}>
       <div className="flex flex-col gap-3" id="own-label-form">
         <TextField id="lb-name" label={t("nut.pName")} value={f.name ?? ""} onChange={set("name")} />
+        <div>
+          <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.pWhere")}</div>
+          <Seg<"tank" | "hand">
+            label={t("nut.pWhere")}
+            value={where}
+            onChange={setWhere}
+            options={[
+              { value: "tank", label: t("nut.customTank") },
+              { value: "hand", label: t("nut.customHand") },
+            ]}
+          />
+          <p className="mt-1 text-[0.75rem] leading-[1.45] text-fg-3" id="lb-hand-hint">
+            {t("nut.pHandHint")}
+          </p>
+        </div>
         <div>
           <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.pUnit")}</div>
           <Seg<CustomProduct["unit"]> label={t("nut.pUnit")} value={unit} onChange={setUnit} options={(["mL", "g"] as const).map((u) => ({ value: u, label: u }))} />
@@ -389,4 +439,48 @@ export function PerVolume({ value, onChange, other }: { value: LabelVolume | "ot
   ]
   const back = (s: string): LabelVolume | "other" => (s === "gal" || s === "other" ? s : (Number(s) as LabelVolume))
   return <Seg<string> label={t("own.per")} value={String(value)} onChange={(s) => onChange(back(s))} options={options} />
+}
+
+/**
+ * « À la main, si tu veux » (lot 7b): products given in the watering can, under the recipe, with their dose per litre.
+ * Not in the tank nor its EC; no frequency, no automatic reminder — « Ajouter un rappel » if the grower wants one.
+ */
+export function HandProducts({ phase, athena }: { phase: OwnPhase | null; athena?: boolean }) {
+  const { t, range } = useSettings()
+  const { customProducts, space } = useGrow()
+  const ed = useEditors()
+  const items = handList(customProducts, phase)
+  if (!items.length) return null
+  const dec = (x: number) => (Number.isInteger(x) ? 0 : Math.round(x * 10) === x * 10 ? 1 : 2)
+  return (
+    <div className="flex flex-col gap-1.5" id="hand-products">
+      <div>
+        <div className="text-[0.875rem] font-semibold">{t("hand.title")}</div>
+        <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("hand.desc")}</p>
+      </div>
+      <ul>
+        {items.map((i) => (
+          <li key={i.id} data-hand={i.id} className="flex items-center justify-between gap-3 border-t border-line py-2">
+            <span className="min-w-0">
+              <span className="block text-[0.875rem] font-semibold">{i.name}</span>
+              <span className={cn("block text-[0.75rem] leading-snug", i.weeksMissing ? "text-warn" : "text-fg-3")}>
+                {[i.brand, athena ? t("hand.offAthena") : t("own.unverified"), i.weeksMissing ? t("own.weeksMissing") : null].filter(Boolean).join(" · ")}
+              </span>
+            </span>
+            <span className={cn("max-w-[48%] shrink-0 text-right font-mono text-[0.8125rem] leading-snug", i.perL ? "text-fg" : "text-warn")}>
+              {i.perL ? t("hand.perL", { range: range(i.perL[0], i.perL[1], Math.max(dec(i.perL[0]), dec(i.perL[1]))), unit: i.unit }) : t("own.doseMissing")}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        id="hand-reminder"
+        onClick={() => ed.openReminder({ title: t("hand.reminderTitle", { names: items.map((i) => i.name).join(", ") }), spaceId: space?.id })}
+        className={cn("self-start", tertiary)}
+      >
+        {t("hand.reminder")}
+      </button>
+    </div>
+  )
 }

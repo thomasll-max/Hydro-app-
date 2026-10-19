@@ -283,6 +283,16 @@ export const de: Messages = {
     dark: "Dunkel",
     system: "System",
   },
+  /** Products given by hand, in the watering can (lot 7b): never in the tank nor its EC. */
+  hand: {
+    title: "Von Hand, wenn du magst",
+    desc: "Nicht im Ansatz und nicht in seiner EC. Dosis pro Liter Gießkanne, vom Etikett abgeschrieben.",
+    perL: "{range} {unit} pro Liter Gießkanne",
+    offAthena: "nicht von Athena, nicht geprüft",
+    reminder: "Erinnerung hinzufügen",
+    reminderTitle: "Von Hand: {names}",
+    list: "Von Hand (nicht im Ansatz)",
+  },
   own: {
     title: "Mein Rezept",
     desc: "Deine Linie, mit den Dosen von deinen Etiketten: Die App multipliziert sie mit dem Volumen des Ansatzes. Eigene Angaben, nicht geprüft.",
@@ -1626,6 +1636,8 @@ export const de: Messages = {
     customD: "Außerhalb des Programms. Dosis und Wochen vom Etikett; nichts wird vorgeschlagen, solange du sie nicht eingetragen hast.",
     customTank: "in den Ansatz",
     customRoots: "an die Wurzeln",
+    customHand: "von Hand",
+    pHandHint: "Organische Produkte (Enzyme, Zucker, Extrakte): lieber von Hand, sie können Tropfer verstopfen und sich in einem mehrere Tage alten Tank zersetzen.",
     customNoDose: "keine Dosis eingetragen",
     customDose: "{range} {unit} pro 10 L",
     customPlant: "{range} {unit} pro Pflanze",

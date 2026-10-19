@@ -1,5 +1,12 @@
 # Changelog
 
+## Lot 7b — Produits « à la main » (19/10/2026)
+- Chaque produit perso se donne **dans le bidon**, **à la main** (arrosoir) ou **sur les racines** (une fois au transfert, comme avant).
+- Les produits « à la main » ne comptent jamais dans la recette ni dans l'EC du bidon : ils sont listés dessous, dans « À la main, si tu veux », avec leur dose par litre d'arrosoir. Pas de fréquence ni de rappel automatique : un bouton « Ajouter un rappel » si tu en veux un.
+- Pareil avec Athena : tes produits perso restent possibles (« hors Athena, non vérifié »), dans le bidon ou à la main.
+- Une ligne d'aide dans le formulaire : les produits organiques (enzymes, sucres, extraits) plutôt à la main, ils peuvent boucher les goutteurs et se dégrader dans un bac de plusieurs jours.
+- 340 tests.
+
 ## Lot 7a — « Autre marque » : ta recette (19/10/2026)
 Décision de Thomas : pas de catalogue multi-marques. L'app reste Athena seule ; les autres marques s'entrent à la main, avec les doses de leur étiquette.
 - **Ta gamme** : avec « Autre marque / je dose moi-même », Nutrition calcule le bidon de la semaine à partir de tes produits : dose de l'étiquette × volume, produit par produit, une fourchette en min–max. Tout est marqué « perso, non vérifié ».

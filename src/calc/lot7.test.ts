@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest"
-import { doseFor, GALLON_L, hasMixOrder, inListOrder, LABEL_VOLUMES, litresOf, moveInOrder, ownPhaseOf, ownRecipe, ownTargetsFor, per10L, usedIn } from "./own-recipe"
+import fs from "node:fs"
+import path from "node:path"
+import { doseFor, GALLON_L, handList, hasMixOrder, inListOrder, LABEL_VOLUMES, litresOf, moveInOrder, ownPhaseOf, ownRecipe, ownTargetsFor, per10L, usedIn } from "./own-recipe"
 import { dayTargets } from "./targets"
 import { mixRecipe } from "./nutrients"
 import { ownTargetsFromText } from "@/screens/tools/nutrition-settings"
@@ -148,5 +150,40 @@ describe("lot 7a — « Autre marque » : recette perso", () => {
     const without = mixRecipe("athena-pro", { phaseId: "veg", volumeL: 40, ec: 3, custom: [A] })
     expect(withOrder).toEqual(without)
     expect(mixRecipe("athena-blended", { phaseId: "veg", volumeL: 40, custom: [A] }).items.map((i) => i.id)).not.toContain("proCore")
+  })
+})
+
+describe("lot 7b — « à la main » et produits perso dans Athena", () => {
+  const D = prod("d", { createdAt: "2026-10-19T08:00:04Z", application: "hand", labelDose: { lo: 1, hi: 2, perL: 1 }, dosePer10L: per10L(1, 2, 1), use: { veg: true, flowerFrom: 1, flowerTo: 6 } })
+  const E = prod("e", { createdAt: "2026-10-19T08:00:05Z", application: "hand", unit: "g", labelDose: { lo: 5, hi: 5, perL: 10 }, dosePer10L: per10L(5, 5, 10) })
+
+  it("produits « à la main » : ni dans la recette ni dans l'EC du bac, Athena comme « Autre marque »", () => {
+    expect(ownRecipe([A, D, E], { stage: "veg" }, 40).items.map((i) => i.id)).toEqual(["a"])
+    const pro = mixRecipe("athena-pro", { phaseId: "veg", volumeL: 40, ec: 3, custom: [D, E] })
+    expect(pro.items.some((i) => i.kind === "custom")).toBe(false)
+    expect(pro).toEqual(mixRecipe("athena-pro", { phaseId: "veg", volumeL: 40, ec: 3, custom: [] }))
+    const blended = mixRecipe("athena-blended", { phaseId: "veg", volumeL: 40, custom: [D] })
+    expect(blended.items.some((i) => i.id === "d")).toBe(false)
+  })
+
+  it("« À la main, si tu veux » : dose par litre d'arrosoir, dans ses semaines, sans fréquence", () => {
+    expect(handList([A, D, E], { stage: "veg" })).toEqual([
+      { id: "d", name: "D", unit: "mL", perL: [1, 2] },
+      { id: "e", name: "E", unit: "g", perL: [0.5, 0.5], weeksMissing: true },
+    ])
+    expect(handList([D], { stage: "flower", week: 8 })).toEqual([])
+    expect(handList([D, { ...E, inactive: true }], null).map((h) => h.id)).toEqual(["d"])
+    expect(handList([prod("x", { application: "hand" })], { stage: "veg" })).toEqual([{ id: "x", name: "X", unit: "mL", perL: null, weeksMissing: true }])
+    expect(translate("fr", "hand.perL", { range: "1–2", unit: "mL" })).toBe("1–2 mL par litre d'arrosoir")
+  })
+
+  it("choix d'application bac / à la main / racines, avec l'aide sur les produits organiques (sans chiffre)", () => {
+    const hint = translate("fr", "nut.pHandHint")
+    expect(hint).toBe("Produits organiques (enzymes, sucres, extraits) : plutôt à la main, ils peuvent boucher les goutteurs et se dégrader dans un bac de plusieurs jours.")
+    expect(hint).not.toMatch(/\d/)
+    const sheet = fs.readFileSync(path.resolve(import.meta.dirname, "../screens/tools/nutrition-parts.tsx"), "utf8")
+    expect(sheet).toMatch(/value: "tank"[\s\S]*value: "hand"[\s\S]*value: "roots"/)
+    expect(translate("en", "nut.customHand")).toBe("by hand")
+    expect(translate("de", "hand.title")).toBe("Von Hand, wenn du magst")
   })
 })

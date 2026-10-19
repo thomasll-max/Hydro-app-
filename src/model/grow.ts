@@ -249,8 +249,9 @@ export type CustomProduct = {
   /** What it is, as the user describes it (e.g. "terpene booster, humiques/fulviques"). */
   kind?: string
   unit: "mL" | "g"
-  /** Where it goes: in the tank (dose per 10 L) or once on the roots at a transplant / transfer. */
-  application: "tank" | "roots"
+  /** Where it goes: in the tank (dose per 10 L), by hand in the watering can (lot 7b: never in the tank nor its EC; the
+   *  label dose is kept per 10 L like the tank's), or once on the roots at a transplant / transfer. */
+  application: "tank" | "hand" | "roots"
   /** Dose per 10 L (tank) or per plant (roots). Empty until typed from the label: never guessed. */
   dosePer10L?: Range
   dosePerPlant?: Range

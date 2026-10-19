@@ -188,7 +188,7 @@ export function CustomProductsCard({ i }: { i: number }) {
         <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("nut.customD")}</p>
         {customProducts.map((p) => {
           const dose =
-            p.application === "tank"
+            p.application !== "roots"
               ? p.dosePer10L
                 ? t("nut.customDose", { range: range(p.dosePer10L.lo, p.dosePer10L.hi, 1), unit: p.unit })
                 : t("nut.customNoDose")
@@ -200,7 +200,7 @@ export function CustomProductsCard({ i }: { i: number }) {
             <button key={p.id} type="button" onClick={() => openFor(p)} className="flex items-center justify-between gap-2 border-t border-line pt-2.5 text-left">
               <span className="min-w-0">
                 <b className="block text-[0.875rem] font-semibold">
-                  {p.name} <span className="font-normal text-fg-3">· {p.application === "tank" ? t("nut.customTank") : t("nut.customRoots")}</span>
+                  {p.name} <span className="font-normal text-fg-3">· {p.application === "tank" ? t("nut.customTank") : p.application === "hand" ? t("nut.customHand") : t("nut.customRoots")}</span>
                 </b>
                 <span className={cn("block text-[0.75rem]", p.dosePer10L || p.dosePerPlant ? "text-fg-2" : "text-warn")}>
                   {dose}
@@ -281,7 +281,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
         ...(inactive ? { inactive: true } : {}),
         ...(product?.onEvent ? { onEvent: product.onEvent } : where === "roots" ? { onEvent: "transfer" as const } : {}),
       }
-      if (where === "tank") {
+      if (where !== "roots") {
         if (per10 && lo != null && hi != null && perL) Object.assign(base, { dosePer10L: per10, labelDose: { lo, hi, perL, ...(per === "gal" ? { gal: true } : {}) } })
         if (product?.mixOrder != null) base.mixOrder = product.mixOrder
         if (use) base.use = use
@@ -310,9 +310,14 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
             onChange={setWhere}
             options={[
               { value: "tank", label: t("nut.customTank") },
+              { value: "hand", label: t("nut.customHand") },
               { value: "roots", label: t("nut.customRoots") },
             ]}
           />
+          {/* Lot 7b: general advice, no figure. */}
+          <p className="mt-1 text-[0.75rem] leading-[1.45] text-fg-3" id="p-hand-hint">
+            {t("nut.pHandHint")}
+          </p>
         </div>
         <div>
           <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.pUnit")}</div>
@@ -322,7 +327,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
           <NumField id="p-lo" label={t("nut.pDoseLo", { unit })} value={f.lo ?? ""} onChange={set("lo")} />
           <NumField id="p-hi" label={t("nut.pDoseHi", { unit })} value={f.hi ?? ""} onChange={set("hi")} />
         </Grid>
-        {where === "tank" && (
+        {where !== "roots" && (
           <div>
             <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("own.per")}</div>
             <PerVolume value={per} onChange={setPer} other />
@@ -334,9 +339,9 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
             )}
           </div>
         )}
-        {where === "tank" && per10 && <p className="text-[0.75rem] text-primary tabular">{t("nut.pPer10", { range: range(per10.lo, per10.hi, 2), unit })}</p>}
+        {where !== "roots" && per10 && <p className="text-[0.75rem] text-primary tabular">{t("nut.pPer10", { range: range(per10.lo, per10.hi, 2), unit })}</p>}
         {where === "roots" && <p className="text-[0.75rem] text-fg-3">{t("nut.pPerPlant")}</p>}
-        {where === "tank" && (
+        {where !== "roots" && (
           <>
             <SwitchRow id="p-veg" label={t("nut.pUseVeg")} checked={veg} onChange={setVeg} />
             <Grid>

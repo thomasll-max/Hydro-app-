@@ -23,7 +23,7 @@ import { ADDON_NAMES, dosingToConc } from "./nutrition-settings"
 import { SettingsLink } from "./equipment-shared"
 import { useEditors } from "@/app/editors"
 import { ConcentrateCard, CustomProductsCard } from "./nutrition-parts"
-import { OwnRecipeTool } from "./own-recipe"
+import { HandProducts, OwnRecipeTool } from "./own-recipe"
 import { equipmentAt } from "@/equipment/calc"
 import type { Equipment, EquipmentAssignment } from "@/model/grow"
 import { joined, segment, tertiary, toggle } from "@/components/hydro/styles"
@@ -326,6 +326,13 @@ function LineNutrition() {
               </li>
             ))}
           </ol>
+          {/* Lot 7b: personal products given by hand, under the recipe (never in the tank nor its EC). */}
+          <div className="px-3.5 pt-2">
+            <HandProducts
+              athena
+              phase={phase.stage === "veg" ? { stage: "veg" } : phase.stage === "flower" ? { stage: "flower", week: phase.id === cyclePhase.id && pos?.stage === "flower" ? pos.week : phase.weeks?.[0] } : null}
+            />
+          </div>
         </Card>
       </Reveal>
 

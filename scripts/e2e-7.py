@@ -5,7 +5,10 @@ three products added with « Partir de l'étiquette » (2 mL per 1 L in veg and 
 précisé » until a product is moved, then numbered in the new order; flowering S4: the third product appears; the tank
 saved keeps the products and quantities; Today shows no EC / pH zone until targets are typed, then « cible 1,8 »;
 the old free-text note of an « Autre marque » space shows above an empty recipe;
-captures FR / EN / DE of Nutrition in « Autre marque » with the three products.
+7b — a product « à la main » (1–2 mL per 1 L, with the organic-products hint in the form): not in the tank, listed under
+it in « À la main, si tu veux » with « 1–2 mL par litre d'arrosoir », « Ajouter un rappel » opens a reminder with its
+name; back on Athena Pro Line: the same product under the Athena recipe, « hors Athena, non vérifié », not in the order;
+captures FR / EN / DE of Nutrition in « Autre marque » with three products, one by hand.
 Usage: npm run preview:build && PYTHONPATH=scripts python3 scripts/e2e-7.py dist-preview/index.html <out dir>"""
 import sys, json, pathlib
 from playwright.sync_api import sync_playwright
@@ -27,14 +30,15 @@ def rows(pg):
     return [li.inner_text().replace("\n", " | ") for li in pg.locator("#own-recipe > li").all()]
 
 
-def add(pg, name, lo, hi, per, unit="mL", veg=False, frm=None, to=None):
+def add(pg, name, lo, hi, per, unit="mL", veg=False, frm=None, to=None, hand=False):
     pg.click("#own-from-label"); pg.wait_for_selector("#own-label-form"); pg.wait_for_timeout(400)
     pg.fill("#lb-name", name)
     form = pg.locator("#own-label-form")
+    if hand: form.get_by_role("radio", name="à la main", exact=True).click()
     if unit != "mL": form.get_by_role("radio", name=unit, exact=True).click()
     pg.fill("#lb-lo", lo)
     if hi: pg.fill("#lb-hi", hi)
-    form.locator("[role=radiogroup]").nth(1).get_by_role("radio", name=per, exact=True).click()
+    form.get_by_role("radiogroup", name="Pour").get_by_role("radio", name=per, exact=True).click()
     if veg: pg.click("#lb-veg")
     if frm: pg.fill("#lb-from", frm)
     if to: pg.fill("#lb-to", to)
@@ -81,6 +85,21 @@ with sync_playwright() as p:
     pg.fill("#own-week", "7"); pg.wait_for_timeout(300)
     checks["flowerS7"] = rows(pg)
     if any("Bloom C" in r for r in checks["flowerS7"]): errors.append(f"flower S7 {checks['flowerS7']}")
+    # 7b: a product by hand — not in the tank, listed under it with its dose per litre of watering can.
+    pg.click("#own-from-label"); pg.wait_for_selector("#own-label-form"); pg.wait_for_timeout(300)
+    checks["handHint"] = pg.locator("#lb-hand-hint").inner_text()
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(500)
+    add(pg, "Enzymes D", "1", "2", "1 L", veg=True, frm="1", to="8", hand=True)
+    checks["flowerS4hand"] = rows(pg)
+    checks["hand"] = pg.locator("#hand-products li").all_inner_texts()
+    if any("Enzymes D" in r for r in checks["flowerS4hand"]) or not checks["hand"] or "1–2 mL par litre d'arrosoir" not in checks["hand"][0]: errors.append(f"hand list {checks['hand']} / tank {checks['flowerS4hand']}")
+    if not checks["handHint"].startswith("Produits organiques (enzymes, sucres, extraits)"): errors.append(f"hand hint {checks['handHint']}")
+    pg.locator("#hand-products").screenshot(path=str(out / "03b-hand.png"))
+    pg.click("#hand-reminder"); pg.wait_for_timeout(800)
+    checks["handReminder"] = pg.locator("[data-slot=drawer-content] input").first.input_value()
+    if checks["handReminder"] != "À la main : Enzymes D": errors.append(f"hand reminder {checks['handReminder']}")
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(500)
+    if pg.locator("[role=alertdialog]").count(): pg.locator("[role=alertdialog] button").last.click(); pg.wait_for_timeout(400)
     pg.fill("#own-week", "4"); pg.fill("#own-ec", "1,9"); pg.fill("#own-ph", "6,0"); pg.wait_for_timeout(200)
     pg.get_by_role("button", name="Enregistrer ce bidon").click(); pg.wait_for_timeout(1200)
     saved = [m for m in pg.evaluate(MIXES) if m["id"] != "mix-old"]
@@ -102,6 +121,14 @@ with sync_playwright() as p:
     checks["phInAfter"] = pg.evaluate("""() => [...document.querySelectorAll('#readings > div > div')].map((r) => r.textContent).filter((x) => /pH entrée|pH runoff/.test(x))""")
     if any("cible" in x for x in checks["ecInBefore"]) or not any("cible 1,8" in x for x in checks["ecInAfter"]): errors.append(f"EC targets {checks['ecInBefore']} → {checks['ecInAfter']}")
     pg.screenshot(path=str(out / "04-today-targets.png"), full_page=True)
+    # Athena again: the product by hand under the Athena recipe, outside it.
+    pg.goto(f"file://{page_file}#tools/settings"); pg.wait_for_timeout(1500)
+    pg.locator("#g-nut").get_by_role("radio", name="Athena Pro Line").click(); pg.wait_for_timeout(800)
+    pg.goto(f"file://{page_file}#tools/nutrition"); pg.wait_for_timeout(1800)
+    checks["athenaHand"] = pg.locator("#hand-products li").all_inner_texts()
+    checks["athenaOrder"] = pg.locator("#nut-order li").all_inner_texts()
+    if not checks["athenaHand"] or "hors Athena, non vérifié" not in checks["athenaHand"][0] or any("Enzymes D" in x for x in checks["athenaOrder"]) or any("Base A" in x for x in checks["athenaHand"]): errors.append(f"athena hand {checks['athenaHand']}")
+    pg.screenshot(path=str(out / "05-athena-hand.png"), full_page=True)
     ctx.close()
 
     # Captures FR / EN / DE of Nutrition in « Autre marque » with the three products.
@@ -114,14 +141,16 @@ with sync_playwright() as p:
         pg.goto(f"file://{page_file}#tools/settings"); pg.wait_for_timeout(2500)
         pg.evaluate("""() => new Promise((res) => { const r = indexedDB.open('hydro', 1); r.onsuccess = () => { const tx = r.result.transaction('docs', 'readwrite'); const s = tx.objectStore('docs'); const now = '2026-10-19T08:00:00Z';
           s.getAllKeys().onsuccess = (e) => e.target.result.filter((k) => String(k).startsWith('customProducts/')).forEach((k) => s.delete(k));
-          const p = (id, name, unit, lo, hi, perL, gal, use, order) => s.put({ schemaVersion: 2, id, name, unit, application: 'tank', verified: false, source: 'label', createdAt: now, labelDose: { lo, hi, perL, ...(gal ? { gal: true } : {}) }, dosePer10L: { lo: Math.round(lo / perL * 1000) / 100, hi: Math.round(hi / perL * 1000) / 100 }, use, mixOrder: order }, 'customProducts/' + id)
-          p('cp-a', 'Base A', 'mL', 2, 2, 1, false, { veg: true, flowerFrom: 1, flowerTo: 8 }, 1); p('cp-b', 'Base B', 'mL', 4, 6, 3.785, true, { veg: true }, 2); p('cp-c', 'Bloom C', 'g', 1, 1, 4, false, { flowerFrom: 3, flowerTo: 6 }, 3)
+          const p = (id, name, unit, lo, hi, perL, gal, use, order, application = 'tank') => s.put({ schemaVersion: 2, id, name, unit, application, verified: false, source: 'label', createdAt: now, labelDose: { lo, hi, perL, ...(gal ? { gal: true } : {}) }, dosePer10L: { lo: Math.round(lo / perL * 1000) / 100, hi: Math.round(hi / perL * 1000) / 100 }, use, mixOrder: order }, 'customProducts/' + id)
+          p('cp-a', 'Base A', 'mL', 2, 2, 1, false, { veg: true, flowerFrom: 1, flowerTo: 8 }, 1); p('cp-b', 'Base B', 'mL', 4, 6, 3.785, true, { veg: true }, 2); p('cp-d', 'Enzymes D', 'mL', 1, 2, 1, false, { veg: true, flowerFrom: 1, flowerTo: 8 }, 3, 'hand')
           s.get('grow/main').onsuccess = (e) => { const g = e.target.result; s.put({ ...g, nutrition: { ...g.nutrition, line: 'own', addons: [] } }, 'grow/main') }
           tx.oncomplete = () => res(true) } })""")
         pg.goto(f"file://{page_file}#tools/nutrition"); pg.reload(); pg.wait_for_timeout(2200)
         pg.locator("#own-tank [role=radiogroup] [role=radio]").first.click(); pg.wait_for_timeout(200)
         pg.fill("#own-vol", "40"); pg.wait_for_timeout(300)
         checks[f"rows-{lang}"] = rows(pg)
+        checks[f"hand-{lang}"] = pg.locator("#hand-products li").all_inner_texts()
+        if len(checks[f"hand-{lang}"]) != 1: errors.append(f"{lang} hand {checks[f'hand-{lang}']}")
         sw = pg.evaluate("document.documentElement.scrollWidth")
         if sw > 390: errors.append(f"{lang} overflow {sw}")
         if len(checks[f"rows-{lang}"]) != 3: errors.append(f"{lang} rows {checks[f'rows-{lang}']}")

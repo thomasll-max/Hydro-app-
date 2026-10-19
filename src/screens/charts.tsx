@@ -31,7 +31,10 @@ import {
   type Period,
   type Series,
   curveTone,
+  mixDatesIn,
+  withDates,
 } from "@/calc/series"
+import { Drop, DROP_PATH } from "@/components/hydro/wordmark"
 import { drybackMethodOf } from "@/model/entry"
 import type { MessageKey } from "@/i18n/types"
 import type { Space } from "@/model/grow"
@@ -93,6 +96,7 @@ export function ChartsScreen() {
   const firstDate = shown.map((s) => byspace.get(s.id)?.[0]?.date).filter((d): d is string => !!d).sort()[0]
   const range = periodRange(prefs.period, today, shownCycles, firstDate)
   const events = eventsIn(all.events, shown.map((s) => s.id), range, shownCycles.map((c) => c.id))
+  const tanks = mixDatesIn(all.mixes, shown.map((s) => s.id), range, shownCycles.map((c) => c.id))
   const series = useMemo(() => {
     const out: Record<string, Series[]> = {}
     for (const c of curves) out[c] = shown.map((s) => buildSeries(c, s.id, range, { byspace, mixes: all.mixes, potCount: (cycleIn(s.id) ?? undefined)?.potCount }))
@@ -208,7 +212,7 @@ export function ChartsScreen() {
                 <span className="text-[0.75rem] text-fg-3">{CURVE_DEFS[c].unit}</span>
               </div>
               {series[c].some((s) => s.points.length) ? (
-                <CurveChart series={series[c]} spaces={shown} events={events} curve={c} name={curveName(c)} />
+                <CurveChart series={series[c]} spaces={shown} events={events} tanks={tanks} curve={c} name={curveName(c)} />
               ) : (
                 <p className="px-1 pb-2 text-[0.78125rem] text-fg-3">{t("charts.noData")}</p>
               )}
@@ -235,11 +239,19 @@ export function ChartsScreen() {
               series={curves.flatMap((c) => series[c].filter((x) => x.spaceId === overlaySpace.id))}
               space={overlaySpace}
               events={events.filter((e) => !e.spaceId || e.spaceId === overlaySpace.id)}
+              tanks={mixDatesIn(all.mixes, [overlaySpace.id], range, shownCycles.filter((c) => c.spaceId === overlaySpace.id).map((c) => c.id))}
               curveName={curveName}
             />
             <p className="px-1 text-[0.75rem] text-fg-3">{t("charts.overlayNote")}</p>
           </Card>
         </Reveal>
+      )}
+
+      {hasData && tanks.length > 0 && (
+        <p className="mb-3 flex items-center gap-1.5 px-1 text-[0.75rem] text-fg-3" id="ch-tank-legend">
+          <Drop height={12} leaf={false} />
+          {t("charts.tankMark")}
+        </p>
       )}
 
       {hasData && events.length > 0 && (
@@ -278,10 +290,23 @@ function useSummary() {
   }
 }
 
-function CurveChart({ series, spaces, events, curve, name }: { series: Series[]; spaces: Space[]; events: GrowEvent[]; curve: CurveId; name: string }) {
+/** A small water-green drop at the foot of the chart on the day of a tank (bidon), lot 10g. */
+function TankMark({ viewBox }: { viewBox?: { x?: number; y?: number; width?: number; height?: number } }) {
+  if (!viewBox || viewBox.x == null || viewBox.y == null) return null
+  const h = 11
+  const x = viewBox.x - (h * 0.8) / 2
+  const y = viewBox.y + (viewBox.height ?? 0) - h - 1
+  return (
+    <g transform={`translate(${x} ${y}) scale(${h / 125})`} className="tank-mark" aria-hidden="true">
+      <path d={DROP_PATH} fill="var(--water)" />
+    </g>
+  )
+}
+
+function CurveChart({ series, spaces, events, tanks, curve, name }: { series: Series[]; spaces: Space[]; events: GrowEvent[]; tanks: string[]; curve: CurveId; name: string }) {
   const { t, num, dm } = useSettings()
   const summary = useSummary()
-  const rows = useMemo(() => chartRows(series), [series])
+  const rows = useMemo(() => withDates(chartRows(series), tanks), [series, tanks])
   const def = CURVE_DEFS[curve]
   // Water curves in water green, plant curves in leaf green (band, and the line when one space is shown); several
   // spaces keep their own colours so the lines can be told apart.
@@ -300,6 +325,9 @@ function CurveChart({ series, spaces, events, curve, name }: { series: Series[];
         <Area dataKey="band" type="stepAfter" stroke="none" fill={tone} fillOpacity={0.14} isAnimationActive={false} connectNulls />
         {events.map((e) => (
           <ReferenceLine key={e.id} x={e.date} stroke="var(--fg-3)" strokeDasharray="2 4" strokeOpacity={0.7} />
+        ))}
+        {tanks.map((d) => (
+          <ReferenceLine key={`tank-${d}`} x={d} stroke="none" ifOverflow="visible" label={<TankMark />} />
         ))}
         {/* One line per piece: a gap of more than GAP_DAYS is left blank. */}
         {spaces.flatMap((s) =>
@@ -337,12 +365,12 @@ function CurveChart({ series, spaces, events, curve, name }: { series: Series[];
   )
 }
 
-function OverlayChart({ series, space, events, curveName }: { series: Series[]; space: Space; events: GrowEvent[]; curveName: (c: CurveId) => string }) {
+function OverlayChart({ series, space, events, tanks, curveName }: { series: Series[]; space: Space; events: GrowEvent[]; tanks: string[]; curveName: (c: CurveId) => string }) {
   const { t, num, dm } = useSettings()
   const summary = useSummary()
   const norm = useMemo(() => normalize(series), [series])
   const curves = series.map((s) => s.curve)
-  const rows = useMemo(() => chartRows(norm.map((n) => n.series), (s) => s.curve), [norm])
+  const rows = useMemo(() => withDates(chartRows(norm.map((n) => n.series), (s) => s.curve), tanks), [norm, tanks])
   const real = (s: Series, date: string) => s.points.find((p) => p.date === date)?.v
   // One space: one distinct colour per curve, solid lines (dashes were unreadable).
   const colorOf = (s: Series) => `var(--space-${PALETTE[curves.indexOf(s.curve) % PALETTE.length]})`
@@ -357,6 +385,9 @@ function OverlayChart({ series, space, events, curveName }: { series: Series[]; 
             <YAxis hide domain={[0, 100]} />
             {events.map((e) => (
               <ReferenceLine key={e.id} x={e.date} stroke="var(--fg-3)" strokeDasharray="2 4" strokeOpacity={0.7} />
+            ))}
+            {tanks.map((d) => (
+              <ReferenceLine key={`tank-${d}`} x={d} stroke="none" ifOverflow="visible" label={<TankMark />} />
             ))}
             {norm.flatMap((n) =>
               pieceKeys(n.series.points, n.series.curve).map((k) => (

@@ -1,5 +1,12 @@
 # Changelog
 
+## Lot 10g — Motif goutte et écran de démarrage (19/10/2026)
+- **Chargement** : la goutte du logo se remplit de bas en haut ; avec les animations réduites, elle reste fixe et « Chargement… » s'affiche.
+- **Graphiques** : une petite goutte vert eau au pied des courbes les jours de bidon.
+- **Réservoir** : une goutte remplie au pourcentage de litres restants, avec le chiffre à côté.
+- **Écran de démarrage** de la version installée : fond vert-noir, la goutte et « hydro. », le temps de lire les données, sans attente ajoutée. Couleurs du manifeste accordées pour l'écran système d'Android.
+- 298 tests ; `scripts/e2e-10g.py`.
+
 ## Lot 10f2 — Direction visuelle (19/10/2026)
 Consigne de Thomas : ça ne doit pas faire « app générée par une IA ».
 - **Fonds teintés** : vert-noir en thème sombre, blanc cassé verdâtre en thème clair. Contraste vérifié dans les deux thèmes.

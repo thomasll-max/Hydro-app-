@@ -801,6 +801,7 @@ export const fr = {
     overlay: "Superposées",
     overlayTitle: "Courbes superposées",
     overlayNote: "Chaque courbe est mise à l'échelle de sa propre plage (indiquée dans la légende) ; les vraies valeurs sont dans l'infobulle.",
+    tankMark: "Goutte verte : jour d'un bidon.",
     noData: "Pas de donnée sur la période.",
     overlayOne: "Superposées : un espace à la fois, une couleur par courbe.",
     overlaySpace: "Espace superposé",

@@ -333,6 +333,19 @@ svg.lucide[stroke-width="2"] {
 }
 
 
+/* Loading drop (lot 10g): the fill rises from the bottom; with reduced motion it stays full (rule below). */
+@keyframes drop-fill {
+  from {
+    transform: translateY(126px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.drop-fill {
+  animation: drop-fill 1.4s var(--ease) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

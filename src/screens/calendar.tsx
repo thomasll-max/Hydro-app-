@@ -1,5 +1,6 @@
 // Calendrier (spec §4ter): month with stats, agenda, day sheet, filters, .ics export.
 // Follows the space selector at the top; items without a space (whole grow) always show.
+import { Loading } from "@/components/hydro/wordmark"
 import { useMemo, useState } from "react"
 import { ChevronLeft, ChevronRight, Copy, Download, Plus } from "lucide-react"
 import { toast } from "sonner"
@@ -79,7 +80,7 @@ export function CalendarScreen() {
   const [view, setView] = useState<View>("month")
   const [filter, setFilter] = useState<Filter>("all")
   const [day, setDay] = useState<IsoDate | null>(null)
-  if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
+  if (!ready) return <Loading label={t("app.loading")} />
   const eyebrow = selection.kind === "space" ? selection.space.name : selection.kind === "site" ? selection.site.name : (grow?.name ?? "")
   const filters: { v: Filter; k: MessageKey }[] = [
     { v: "all", k: "cal.fAll" },

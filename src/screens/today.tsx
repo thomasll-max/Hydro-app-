@@ -1,4 +1,5 @@
 import { InfoTip, type Term } from "@/components/hydro/info"
+import { Loading } from "@/components/hydro/wordmark"
 import { useEffect, useMemo, useState } from "react"
 import { SpaceToday, AllToday } from "./today-spaces"
 import { motion } from "motion/react"
@@ -61,7 +62,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
   const lastTg = last?.targets ?? tg ?? undefined
   const advice = last && tg ? oneCorrection(last, { ...tg, ...(last.targets as object) } as DayTargets, cycle!.waterMode) : null
 
-  if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
+  if (!ready) return <Loading label={t("app.loading")} />
   // A harvested cycle is no longer running: the space offers to log the harvest and to start the next cycle.
   if (!cycle || !s || s.key === "harvested")
     return (
@@ -314,7 +315,7 @@ function Metric({ k, status: st, target, children, term }: { k: string; status?:
 export function TodayScreen() {
   const { t } = useSettings()
   const { ready, selection } = useGrow()
-  if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
+  if (!ready) return <Loading label={t("app.loading")} />
   return (
     <>
       <StartCard />

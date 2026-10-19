@@ -255,5 +255,20 @@ export function eventsIn(events: GrowEvent[], spaceIds: string[], range: { from:
   return events.filter((e) => e.date >= range.from && e.date <= range.to && ((e.spaceId && spaceIds.includes(e.spaceId)) || (e.cycleId && cycleIds.includes(e.cycleId)))).sort((a, b) => a.date.localeCompare(b.date))
 }
 
+/** Dates of the tanks (bidons) made for these spaces or cycles in the window: water marks on the charts (lot 10g). */
+export function mixDatesIn(mixes: Mix[], spaceIds: string[], range: { from: IsoDate; to: IsoDate }, cycleIds: string[] = []): IsoDate[] {
+  const dates = mixes
+    .filter((m) => m.date >= range.from && m.date <= range.to && ((m.spaceIds ?? []).some((id) => spaceIds.includes(id)) || (!!m.cycleId && cycleIds.includes(m.cycleId))))
+    .map((m) => m.date)
+  return [...new Set(dates)].sort()
+}
+
+/** Adds an empty row for each date the axis must show (a tank on a day without measurements). */
+export function withDates<R extends { date?: unknown }>(rows: R[], dates: IsoDate[]): R[] {
+  const have = new Set(rows.map((r) => String(r.date)))
+  const extra = dates.filter((d) => !have.has(d)).map((d) => ({ date: d }) as unknown as R)
+  return extra.length ? [...rows, ...extra].sort((a, b) => String(a.date).localeCompare(String(b.date))) : rows
+}
+
 /** Days in a window (for the axis). */
 export const spanDays = (r: { from: IsoDate; to: IsoDate }) => daysBetween(r.from, r.to) + 1

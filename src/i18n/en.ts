@@ -801,6 +801,7 @@ export const en: Messages = {
     overlay: "Overlaid",
     overlayTitle: "Overlaid curves",
     overlayNote: "Each curve is scaled to its own range (shown in the legend); real values are in the tooltip.",
+    tankMark: "Green drop: day of a tank.",
     noData: "No data over the period.",
     overlayOne: "Overlay: one space at a time, one colour per curve.",
     overlaySpace: "Space overlaid",

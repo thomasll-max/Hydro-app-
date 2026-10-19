@@ -87,3 +87,39 @@ export function Wordmark({ size = 24, bg = "var(--background)", className }: { s
     </span>
   )
 }
+
+/**
+ * Loading indicator (lot 10g): the logo's drop filling from the bottom (SVG mask). With reduced motion the drop stays
+ * full and still, and « Chargement… » is shown (the text is read by screen readers in both cases).
+ */
+export function Loading({ label, className }: { label: string; className?: string }) {
+  const id = useId().replace(/:/g, "")
+  return (
+    <div role="status" className={cn("flex flex-col items-center gap-2 py-10", className)} id="loading">
+      <svg viewBox="0 0 100 125" className="h-12 w-[38px] overflow-visible" aria-hidden="true" focusable="false">
+        <defs>
+          <mask id={`lm${id}`} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="130">
+            <rect className="drop-fill" x="0" y="0" width="100" height="130" fill="#fff" />
+          </mask>
+        </defs>
+        <path d={DROP_PATH} fill="none" stroke="var(--water)" strokeWidth="5" strokeOpacity="0.45" />
+        <path d={DROP_PATH} fill="var(--water)" mask={`url(#lm${id})`} />
+      </svg>
+      <span className="sr-only text-[0.8125rem] text-fg-3 motion-reduce:not-sr-only">{label}</span>
+    </div>
+  )
+}
+
+/**
+ * Start screen of the installed local version (lot 10g): dark ground, the drop with its leaf, « hydro. » under it.
+ * Shown only while the data load; no artificial delay.
+ */
+export function Splash({ label }: { label: string }) {
+  const dark = { "--water": "#3ecf8e", "--leaf": "#8bd450", "--background": "#0f1512", color: "#eef2ef", background: "#0f1512" } as CSSProperties
+  return (
+    <div role="status" aria-label={label} id="splash" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5" style={dark}>
+      <Drop height={96} />
+      <Wordmark size={34} />
+    </div>
+  )
+}

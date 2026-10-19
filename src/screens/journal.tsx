@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { Loading } from "@/components/hydro/wordmark"
 import { CalendarPlus, ChevronRight, FlaskConical, Layers, Pencil, Plus } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -63,7 +64,7 @@ export function JournalScreen() {
   const list = useMemo(() => filterEntries(entries, live).sort(journalOrder), [entries, live])
   const filtered = live.space !== "all" || live.plant !== "all" || live.tag !== "all" || live.stage !== "all"
 
-  if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
+  if (!ready) return <Loading label={t("app.loading")} />
 
   const s = cycle ? stageOn(cycle, todayIso()) : null
   const harvestPlanned = cycle ? plannedHarvest(cycle) : undefined

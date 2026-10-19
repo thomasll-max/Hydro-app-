@@ -19,6 +19,7 @@ import { Onboarding } from "@/screens/onboarding"
 import { UpdateBanner } from "@/app/update"
 import { OwnerOnly, ProblemScreen } from "@/app/status"
 import { askPersist } from "@/lib/persist"
+import { Splash } from "@/components/hydro/wordmark"
 
 const SCREENS: Record<TabId, () => React.ReactElement> = {
   today: TodayScreen,
@@ -30,7 +31,7 @@ const SCREENS: Record<TabId, () => React.ReactElement> = {
 
 function Shell() {
   const { t } = useSettings()
-  const { cycle, storeKind, spaces, selection, needsSetup, problem, retry, owner, volatile, grow } = useGrow()
+  const { cycle, storeKind, spaces, selection, needsSetup, problem, retry, owner, volatile, grow, ready } = useGrow()
   const ed = useEditors()
   // Tabs and tools are routes in the history (lot 10d): the back gesture walks back through them.
   const { tab } = useRoute()
@@ -48,6 +49,8 @@ function Shell() {
 
   if (problem) return <ProblemScreen kind={problem} onRetry={retry} />
   if (owner === false) return <OwnerOnly />
+  // Installed local version: start screen until the data are read (lot 10g), never longer.
+  if (TARGET === "local" && !ready && !needsSetup) return <Splash label={t("app.loading")} />
   if (needsSetup)
     return (
       <>

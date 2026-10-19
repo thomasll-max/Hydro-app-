@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNod
 import { ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { LineIcon } from "@/components/hydro/line-icon"
+import { Drop } from "@/components/hydro/wordmark"
 import { Chip, Dot, Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -308,8 +309,10 @@ function ReservoirCard({ a, name }: { a: Autonomy; name: string }) {
           </div>
         </div>
         {pct != null && (
-          <div className="relative h-14 w-9 overflow-hidden rounded-md border border-line-strong bg-surface-2" aria-hidden="true">
-            <div className="absolute inset-x-0 bottom-0 bg-info/60" style={{ height: `${pct}%` }} />
+          // Gauge (lot 10g): the logo's drop filled to the share of litres left; the number stays next to it.
+          <div className="flex shrink-0 items-end gap-2" id="res-gauge">
+            <span className="tabular text-[1rem] font-medium">{`${num(pct)}\u202f%`}</span>
+            <Drop height={56} fill={pct / 100} leaf={false} />
           </div>
         )}
       </div>

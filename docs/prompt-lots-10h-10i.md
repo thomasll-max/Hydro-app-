@@ -62,7 +62,7 @@ Consigne de Thomas : que l'app ne fasse plus « générée par une IA ». On rem
      Utiliser les vraies cibles déjà calculées (`dayTargets`), rien d'inventé.
    - **Plus de cartes dans des cartes.** Les sections d'un écran sont séparées par un trait fin et un titre en Fraunces. Le cadre est gardé seulement pour les éléments vraiment à part (feuille modale, guide « Premiers pas »).
    - Les petits titres en capitales avec icône (« À VENIR », « RECETTE ») deviennent des titres en Fraunces, en casse normale.
-   - **Carte du matin** : « Bonjour Thomas. » en Fraunces italique, puis 2 ou 3 phrases simples au lieu d'une liste à puces. Garder exactement les informations actuelles (stade, arrosage, réservoir, rappels), juste rédigées. Le texte envoyé par la tâche du matin ne change pas de contenu.
+   - **Carte du matin** : « Bonjour Thomas. » en Fraunces droit (pas d'italique, choix de Thomas), puis 2 ou 3 phrases simples au lieu d'une liste à puces. Garder exactement les informations actuelles (stade, arrosage, réservoir, rappels), juste rédigées. Le texte envoyé par la tâche du matin ne change pas de contenu.
    - **Journal** : une ligne par jour, avec la date en mono à gauche, le résumé au centre et la valeur clé en mono à droite. Les hauteurs par plante sont regroupées sous la saisie du jour (lot 10d).
    - Filtre d'espaces du haut : des onglets texte soulignés (souligné « eau » de 2 px sur l'actif), au lieu de la barre de pilules.
 

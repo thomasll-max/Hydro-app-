@@ -5,7 +5,7 @@ import { useRef, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AreaField } from "@/components/hydro/form"
-import { Label, Reveal, SourceNote } from "@/components/hydro/primitives"
+import { Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { todayIso } from "@/calc/stage"
@@ -89,7 +89,7 @@ export function AskTool() {
       <Reveal i={2}>
         <Card className="gap-2.5">
           <AreaField id="ask-q" label={turns.length ? t("ask.followUp") : t("ask.question")} value={q} onChange={setQ} placeholder={t("ask.placeholder")} />
-          {err && <p className="text-[0.78125rem] font-medium text-warn">{err}</p>}
+          {err && <Notice>{err}</Notice>}
           <div className="flex gap-2">
             {turns.length > 0 && (
               <Button variant="outline" className="h-12" onClick={() => setTurns([])} disabled={live != null}>

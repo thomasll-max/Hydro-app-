@@ -122,7 +122,7 @@ export function StartTool() {
       </Reveal>
 
       <Reveal i={1}>
-        <Card className="px-3.5 py-1" id="start-how">
+        <Card id="start-how">
           <div className="px-0.5 pt-3">
             <Label emoji="compass">{t("start.how")}</Label>
           </div>
@@ -186,7 +186,7 @@ export function StartCard() {
   const { done, total, next } = startProgress(items)
   if (hidden || !next) return null
   return (
-    <Card className="mb-3 gap-2.5 px-4 py-3.5" id="start-card">
+    <Card framed className="mb-3 gap-2.5 px-4 py-3.5" id="start-card">
       <div className="flex items-start gap-3">
         <Emoji name="sprout" size={36} />
         <div className="min-w-0 flex-1">

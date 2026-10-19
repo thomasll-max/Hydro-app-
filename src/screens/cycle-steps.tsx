@@ -12,9 +12,12 @@ import { daysBetween, todayIso } from "@/calc/stage"
 import { applyStep, expectedHarvest, nextStep, STEP_FIELD, undoStep, type CycleStep } from "@/calc/steps"
 import type { Cycle } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
+import { cn } from "@/lib/utils"
 
 const DONE: Record<CycleStep, MessageKey> = { veg: "step.doneVeg", flip: "step.doneFlip", harvest: "step.doneHarvest" }
 const DESC: Record<CycleStep, MessageKey> = { veg: "step.vegD", flip: "step.flipD", harvest: "step.harvestD" }
+/** What the step changes, written at the right of its button (lot 10h): « J1 floraison → ». */
+const NEXT: Record<CycleStep, MessageKey> = { veg: "step.vegNext", flip: "step.flipNext", harvest: "step.harvestNext" }
 
 export function StepCard({ cycle }: { cycle: Cycle }) {
   const { t, dm } = useSettings()
@@ -61,9 +64,17 @@ export function StepCard({ cycle }: { cycle: Cycle }) {
           {t("cycleForm.expectedHarvest", { date: dm(expected) })} <span className="font-normal text-fg-3">· {t("cycleForm.expectedHarvestD", { weeks: cycle.flowerWeeks })}</span>
         </p>
       )}
-      <Button onClick={go} disabled={busy} variant={early ? "outline" : "default"} className="h-12" id={`step-${step}`}>
-        {t(`step.${step}`)}
-      </Button>
+      {/* A wide outlined button, the consequence in mono on the right (lot 10h). */}
+      <button
+        type="button"
+        onClick={go}
+        disabled={busy}
+        id={`step-${step}`}
+        className="flex min-h-14 w-full items-center justify-between gap-3 rounded-[10px] border border-line-strong bg-surface px-4 text-left text-[0.9375rem] font-semibold transition-transform active:translate-y-px disabled:opacity-50"
+      >
+        <span>{t(`step.${step}`)}</span>
+        <span className={cn("shrink-0 font-mono text-[0.8125rem] font-medium", early ? "text-fg-3" : "text-leaf-ink")}>{t(NEXT[step])}</span>
+      </button>
     </Card>
   )
 }

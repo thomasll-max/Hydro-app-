@@ -88,7 +88,7 @@ export function EquipmentTool() {
 
       {!inventory.length && (
         <Reveal i={1} className="mb-3">
-          <Card className="items-center px-4 py-6 text-center">
+          <Card className="items-center text-center">
             <Emoji name="toolbox" size={56} />
             <p className="max-w-[32ch] text-[0.8125rem] text-fg-2">{t(spaces.length ? "equip.emptyAll" : "equip.noSpaces")}</p>
           </Card>
@@ -217,7 +217,7 @@ function SpaceCard({ space, over, ...drag }: { space: Space; over: boolean } & D
       </div>
 
       {(sum.light || sum.air || sum.shot || sum.tank) && (
-        <div className="rounded-md border border-line bg-surface-2 px-3 py-0.5">
+        <div className="border-y border-line">
           {sum.light && (
             <>
               <CalcRow label={t("equip.c.ppf")} sub={sum.light.names.join(" · ")}>

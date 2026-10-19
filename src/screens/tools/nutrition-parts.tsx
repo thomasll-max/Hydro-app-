@@ -51,7 +51,7 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
           const name = cat.products.find((p) => p.id === s.productId)?.name ?? s.productId
           const pct = s.litresMade > 0 ? Math.max(0, Math.min(1, st.leftL / s.litresMade)) : 0
           return (
-            <div key={s.id} className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
+            <div key={s.id} className="border-t border-line pt-2.5">
               <div className="flex items-center justify-between gap-2">
                 <b className="text-[0.875rem] font-semibold">
                   {name} <span className="font-normal text-fg-3">· {num(s.gPerL)} g/L</span>
@@ -133,7 +133,7 @@ function ConcentrateSheet({ open, onOpenChange, cat, conc }: { open: boolean; on
           <NumField id="c-bag" label={t("nut.cBag")} hint={t("nut.cBagHint")} value={bag} onChange={setBag} />
           <TextField id="c-date" type="date" label={t("nut.cDate")} value={date} onChange={(v) => setDate(v || todayIso())} />
         </Grid>
-        <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
+        <div className="border-t border-line pt-2.5">
           <div className="text-[0.75rem] text-fg-3">{t("nut.cFinal")}</div>
           <div className="text-[1.625rem] font-semibold tabular" id="c-final">
             {final ? `${num(final, 1)} L` : "—"}
@@ -188,7 +188,7 @@ export function CustomProductsCard({ i }: { i: number }) {
                 : t("nut.customNoDose")
           const w = weeks(p)
           return (
-            <button key={p.id} type="button" onClick={() => openFor(p)} className="flex items-center justify-between gap-2 rounded-md border border-line bg-surface-2 px-3 py-2.5 text-left">
+            <button key={p.id} type="button" onClick={() => openFor(p)} className="flex items-center justify-between gap-2 border-t border-line pt-2.5 text-left">
               <span className="min-w-0">
                 <b className="block text-[0.875rem] font-semibold">
                   {p.name} <span className="font-normal text-fg-3">· {p.application === "tank" ? t("nut.customTank") : t("nut.customRoots")}</span>

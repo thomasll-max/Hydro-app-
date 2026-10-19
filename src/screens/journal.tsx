@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import { Loading } from "@/components/hydro/wordmark"
 import { CalendarPlus, ChevronRight, FlaskConical, Layers, Pencil, Plus } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Chip, Dot, Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
@@ -82,7 +82,7 @@ export function JournalScreen() {
 
       {selection.kind === "space" && !cycle && (
         <Reveal i={0} className="mb-3">
-          <Card className="flex-row items-center gap-3 px-4 py-3.5">
+          <Card className="flex-row items-center gap-3">
             <p className="min-w-0 flex-1 text-[0.8125rem] leading-snug text-fg-2">{t("journal.noCycleHere")}</p>
             <Button variant="outline" className="h-11 shrink-0 text-[0.8125rem] font-semibold" onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })}>
               <Plus /> {t("growSet.newCycle")}
@@ -130,9 +130,9 @@ export function JournalScreen() {
                 <button
                   key={id}
                   onClick={() => ed.openPlant(id)}
-                  className="flex min-h-[64px] min-w-0 flex-col items-start rounded-md border border-line bg-surface-2 px-2.5 py-2 text-left"
+                  className="flex min-h-[64px] min-w-0 flex-col items-start rounded-[10px] border border-line-strong px-2.5 py-2 text-left"
                 >
-                  <span className="text-[0.875rem] font-bold">{id}</span>
+                  <span className="font-mono text-[0.875rem] font-semibold">{id}</span>
                   <span className={cn("w-full truncate text-[0.75rem]", p?.phenotype || p?.cultivar ? "text-fg-2" : "text-fg-3")}>
                     {p?.phenotype || p?.cultivar || t("journal.plantEmpty")}
                   </span>
@@ -146,24 +146,24 @@ export function JournalScreen() {
 
       <Reveal i={2} className="fold-2 mb-3 grid gap-2.5">
         {spaces.length > 1 && (
-          <Button className="col-span-full h-auto min-h-12 text-[0.875rem] whitespace-normal" onClick={() => ed.openQuick()}>
+          <Button variant="outline" className="col-span-full h-auto min-h-12 text-[0.875rem] whitespace-normal" onClick={() => ed.openQuick()}>
             <Layers /> {t("quick.open")}
           </Button>
         )}
-        <Button variant="outline" className="h-auto min-h-12 bg-surface text-[0.84375rem] font-semibold whitespace-normal" onClick={() => ed.openEvent()}>
+        <Button variant="outline" className="h-auto min-h-12 text-[0.84375rem] whitespace-normal" onClick={() => ed.openEvent()}>
           <CalendarPlus /> {t("journal.addEvent")}
         </Button>
-        <Button variant="outline" className="h-auto min-h-12 bg-surface text-[0.84375rem] font-semibold whitespace-normal" onClick={() => ed.openMix()}>
+        <Button variant="outline" className="h-auto min-h-12 text-[0.84375rem] whitespace-normal" onClick={() => ed.openMix()}>
           <FlaskConical /> {t("journal.addMix")}
         </Button>
       </Reveal>
 
       {/* History */}
       <Reveal i={3} className="mb-3">
-        <Card className="px-0 pb-1.5">
-          <div className="flex items-center justify-between px-3.5">
+        <Card>
+          <div className="flex items-baseline justify-between">
             <Label emoji="book">{t("journal.history")}</Label>
-            <span className="text-[0.75rem] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
+            <span className="font-mono text-[0.75rem] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
           </div>
           {multi && (
             <FilterRow
@@ -198,12 +198,19 @@ export function JournalScreen() {
             />
           )}
           <ul className="mt-1">
-            {list.slice(0, shown).map((e) => (
-              <EntryRow key={e.id} e={e} space={multi ? spaceOf(e.spaceId) : undefined} onOpen={() => ed.openEntry({ date: e.date, plantId: e.plantId, spaceId: e.spaceId })} photoUrl={photoUrl} />
+            {dayGroups(list.slice(0, shown)).map((g) => (
+              <DayRow
+                key={g.key}
+                room={g.room}
+                plants={g.plants}
+                space={multi ? spaceOf(g.spaceId) : undefined}
+                onOpen={(e) => ed.openEntry({ date: e.date, plantId: e.plantId, spaceId: e.spaceId })}
+                photoUrl={photoUrl}
+              />
             ))}
           </ul>
           {list.length === 0 && (
-            <div className="flex flex-col items-center gap-2 px-3.5 py-6 text-center">
+            <div className="flex flex-col items-center gap-2 py-6 text-center">
               <p className="text-[0.8125rem] text-fg-3">{filtered ? t("journal.historyEmpty") : t("journal.historyNone")}</p>
               {filtered && (
                 <button className={tertiary} onClick={() => setFilter(NO_FILTER)}>
@@ -221,7 +228,7 @@ export function JournalScreen() {
       </Reveal>
 
       <Reveal i={4}>
-        <Card className="px-3.5 py-1">
+        <Card>
           <Accordion type="multiple">
             <AccordionItem value="events" className="border-line">
               <AccordionTrigger className="py-3.5 hover:no-underline">
@@ -310,7 +317,7 @@ function Fact({ k, v, warn }: { k: string; v?: string | false; warn?: boolean })
 
 function FilterRow({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; l: string }[] }) {
   return (
-    <div role="radiogroup" aria-label={label} className="no-scrollbar mt-2 flex items-center gap-1.5 overflow-x-auto px-3.5">
+    <div role="radiogroup" aria-label={label} className="no-scrollbar mt-2 flex items-center gap-1.5 overflow-x-auto">
       <span aria-hidden="true" className="w-12 shrink-0 text-[0.75rem] font-semibold text-fg-3">
         {label}
       </span>
@@ -333,90 +340,120 @@ function FilterRow({ label, value, onChange, options }: { label: string; value: 
   )
 }
 
-function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: string; color: Parameters<typeof SpaceDot>[0]["color"] }; onOpen: () => void; photoUrl: (id: string) => Promise<string> }) {
-  const { t, num, dm } = useSettings()
-  const tg = e.targets
-  const m = (k: "dryback" | "ecRunoff" | "phRunoff" | "vpd", label: string, d: number, unit = "") => {
-    const v = e[k]
-    if (v == null) return null
-    const r = tg?.[k]
-    return (
-      <span className="flex items-center gap-1 text-[0.75rem] text-fg-2">
-        {r && <Dot status={status(v, r, k)} />}
-        {label} <b className="font-semibold text-fg tabular-nums">{`${num(v, d)}${unit}`}</b>
-      </span>
-    )
+/** One day of one space: its entry, then the plants' entries of that day under it (lot 10d / 10h). */
+type DayGroup = { key: string; spaceId: string; room?: Entry; plants: Entry[] }
+export function dayGroups(list: Entry[]): DayGroup[] {
+  const out: DayGroup[] = []
+  const at = new Map<string, DayGroup>()
+  for (const e of list) {
+    const key = `${e.date}_${e.spaceId}`
+    let g = at.get(key)
+    if (!g) {
+      g = { key, spaceId: e.spaceId, plants: [] }
+      at.set(key, g)
+      out.push(g)
+    }
+    if (e.plantId) g.plants.push(e)
+    else g.room = e
   }
+  return out
+}
+
+/**
+ * One line per day (lot 10h): the date in mono on the left, a summary in the middle, the key value in mono on the right
+ * (dryback, else EC runoff, else temperature…). Observations, actions, note and photos under it, then the heights per plant.
+ */
+function DayRow({ room, plants, space, onOpen, photoUrl }: { room?: Entry; plants: Entry[]; space?: { name: string; color: Parameters<typeof SpaceDot>[0]["color"] }; onOpen: (e: Entry) => void; photoUrl: (id: string) => Promise<string> }) {
+  const { t, num, dm } = useSettings()
+  const e = room ?? plants[0]
+  const tg = e.targets
+  const st = (k: "dryback" | "ecRunoff" | "phRunoff" | "vpd") => (e[k] != null && tg?.[k] ? status(e[k]!, tg[k]!, k) : undefined)
+  const tone = (s?: string) => (s === "bad" ? "text-bad" : s === "warn" ? "text-warn" : undefined)
+  // The key value, on the right.
+  const key: { v: string; s?: string } | null = !room
+    ? null
+    : e.dryback != null
+      ? { v: `${num(e.dryback, 0)} %`, s: st("dryback") }
+      : e.ecRunoff != null
+        ? { v: `EC ${num(e.ecRunoff, 1)}`, s: st("ecRunoff") }
+        : e.tempDay != null
+          ? { v: `${num(e.tempDay)}°` }
+          : e.reservoirL != null
+            ? { v: `${num(e.reservoirL)} L` }
+            : null
+  const bits: ReactNode[] = []
+  const bit = (k: string, label: string, v: string, s?: string) => bits.push(<span key={k} className={tone(s)}>{`${label} ${v}`}</span>)
+  if (room) {
+    if (tg) bits.push(<span key="st">{t(`stage.${tg.stage}`)}</span>)
+    if (key?.v.startsWith("EC") === false && e.ecRunoff != null) bit("ec", t("today.ecRunoff"), num(e.ecRunoff, 1), st("ecRunoff"))
+    if (e.phRunoff != null) bit("ph", t("today.phRunoff"), num(e.phRunoff, 1), st("phRunoff"))
+    if (e.drybackSensor != null) bit("ds", t("entry.drybackSensor"), `${num(e.drybackSensor, 0)} %`)
+    if (e.vpd != null) bit("vpd", "VPD", num(e.vpd, 2), st("vpd"))
+    if ((e.tempDay != null && !key?.v.endsWith("°")) || (e.tempDay == null && e.rh != null)) bit("t", "T/HR", `${e.tempDay != null ? `${num(e.tempDay)}°` : "—"}/${e.rh != null ? num(e.rh) : "—"}`)
+    if (e.reservoirL != null && !key?.v.endsWith(" L")) bit("res", t("entry.reservoir"), `${num(e.reservoirL)} L`)
+    if (e.heightCm != null) bit("h", t("journal.height"), `${num(e.heightCm)} cm`)
+    if (e.sownCount != null) bit("g", t("today.germination"), `${e.germinatedCount ?? 0}/${e.sownCount}`)
+  } else bits.push(<span key="pl">{t("journal.plants")}</span>)
+  const tags = room ? [...(room.observations ?? []).map((o) => ({ k: o.tag, l: t(`obs.${o.tag}`), s: o.severity })), ...(room.actions ?? []).map((a) => ({ k: a, l: t(`action.${a}`), s: 0 }))] : []
   return (
-    <li>
-      <button onClick={onOpen} className="flex w-full flex-col gap-1.5 border-t border-line px-3.5 py-3 text-left">
-        <div className="flex w-full items-center gap-2">
-          <span className="text-[0.875rem] font-semibold tabular-nums">{dm(e.date)}</span>
-          {e.time && <span className="text-[0.75rem] text-fg-3 tabular-nums">{e.time}</span>}
+    <li className="border-t border-line first:border-t-0">
+      <button onClick={() => onOpen(e)} className="grid w-full grid-cols-[3.375rem_minmax(0,1fr)_auto] items-baseline gap-x-2 py-2.5 text-left">
+        <span className="font-mono text-[0.8125rem] text-fg-3">{dm(e.date)}</span>
+        <span className="truncate text-[0.9375rem]">
           {space && (
-            <span className="flex items-center gap-1 text-[0.75rem] font-semibold text-fg-2">
+            <span className="mr-1.5 inline-flex items-baseline gap-1 font-semibold">
               <SpaceDot color={space.color} /> {space.name}
             </span>
           )}
-          {e.plantId && <span className="rounded-[6px] border border-line px-1.5 py-0.5 font-mono text-[0.75rem] font-semibold text-fg-2">{e.plantId}</span>}
-          {tg && <span className="text-[0.75rem] text-fg-3">{t(`stage.${tg.stage}`)}</span>}
-          <ChevronRight className="ml-auto size-4 text-fg-3" />
-        </div>
-        <div className="flex flex-wrap gap-x-3 gap-y-1">
-          {m("dryback", t("entry.dryback"), 0, " %")}
-          {e.drybackSensor != null && (
-            <span className="text-[0.75rem] text-fg-2">
-              {t("entry.drybackSensor")} <b className="font-semibold text-fg tabular-nums">{`${num(e.drybackSensor, 0)} %`}</b>
+          {e.time && <span className="mr-1.5 font-mono text-[0.75rem] text-fg-3">{e.time}</span>}
+          {bits.map((b, i) => (
+            <span key={i} className="text-fg-2">
+              {i > 0 && " · "}
+              {b}
             </span>
-          )}
-          {m("ecRunoff", t("today.ecRunoff"), 1)}
-          {m("phRunoff", t("today.phRunoff"), 1)}
-          {m("vpd", "VPD", 2)}
-          {e.tempDay != null && (
-            <span className="text-[0.75rem] text-fg-2">
-              T/HR <b className="font-semibold text-fg tabular-nums">{`${num(e.tempDay)}°/${e.rh != null ? num(e.rh) : "—"}`}</b>
-            </span>
-          )}
-          {e.heightCm != null && (
-            <span className="text-[0.75rem] text-fg-2">
-              {t("journal.height")} <b className="font-semibold text-fg tabular-nums">{num(e.heightCm)} cm</b>
-            </span>
-          )}
-          {e.reservoirL != null && (
-            <span className="text-[0.75rem] text-fg-2">
-              {t("entry.reservoir")} <b className="font-semibold text-fg tabular-nums">{num(e.reservoirL)} L</b>
-            </span>
-          )}
-          {e.sownCount != null && (
-            <span className="text-[0.75rem] text-fg-2">
-              {t("today.germination")} <b className="font-semibold text-fg tabular-nums">{`${e.germinatedCount ?? 0}/${e.sownCount}`}</b>
-            </span>
-          )}
-        </div>
-        {!!(e.observations?.length || e.actions?.length) && (
-          <div className="flex flex-wrap gap-1">
-            {e.observations?.map((o) => (
-              <span key={o.tag} className={cn("rounded-[6px] border border-line px-2 py-0.5 text-[0.75rem] font-semibold", o.severity >= 3 ? "text-bad" : o.severity === 2 ? "text-warn" : "text-fg-2")}>
-                {t(`obs.${o.tag}`)}
-                <span className="sr-only"> ({t("entry.severity", { n: o.severity })})</span>
+          ))}
+        </span>
+        <span className={cn("font-mono text-[0.8125rem] font-medium", tone(key?.s) ?? "text-fg")}>{key?.v ?? ""}</span>
+        {(tags.length > 0 || room?.note || room?.photos?.length) && (
+          <span className="col-start-2 col-end-4 mt-1 flex min-w-0 flex-col gap-1">
+            {tags.length > 0 && (
+              <span className="truncate text-[0.75rem] text-fg-3">
+                {tags.map((x, i) => (
+                  <span key={x.k}>
+                    {i > 0 && " · "}
+                    <span className={x.s >= 3 ? "font-semibold text-bad" : x.s === 2 ? "font-semibold text-warn" : undefined}>{x.l}</span>
+                    {x.s > 0 && <span className="sr-only"> ({t("entry.severity", { n: x.s })})</span>}
+                  </span>
+                ))}
               </span>
-            ))}
-            {e.actions?.map((a) => (
-              <span key={a} className="rounded-[6px] border border-line px-2 py-0.5 text-[0.75rem] font-semibold text-fg-2">
-                {t(`action.${a}`)}
+            )}
+            {room?.note && <span className="line-clamp-2 text-[0.78125rem] text-fg-3">{room.note}</span>}
+            {room?.photos?.length ? (
+              <span className="flex gap-1.5">
+                {room.photos.slice(0, 4).map((id) => (
+                  <PhotoThumb key={id} id={id} url={photoUrl} size={44} />
+                ))}
               </span>
-            ))}
-          </div>
+            ) : null}
+          </span>
         )}
-        {e.photos?.length ? (
-          <div className="flex gap-1.5">
-            {e.photos.slice(0, 4).map((id) => (
-              <PhotoThumb key={id} id={id} url={photoUrl} size={48} />
-            ))}
-          </div>
-        ) : null}
-        {e.note && <p className="line-clamp-2 text-[0.78125rem] text-fg-3">{e.note}</p>}
       </button>
+      {/* The plants of that day, grouped under it. */}
+      {plants.length > 0 && (
+        <ul className="-mt-1 pb-2 pl-[3.875rem]">
+          {plants.map((p) => (
+            <li key={p.id}>
+              <button onClick={() => onOpen(p)} className="flex min-h-11 w-full items-center gap-2 text-left text-[0.8125rem] text-fg-2">
+                <span className="rounded-[6px] border border-line px-1.5 py-0.5 font-mono text-[0.75rem] font-semibold text-fg-2">{p.plantId}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  {p.heightCm != null ? `${t("journal.height")} ${num(p.heightCm)} cm` : (p.note ?? t("journal.plantEntry"))}
+                </span>
+                <ChevronRight className="size-4 shrink-0 text-fg-3" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </li>
   )
 }

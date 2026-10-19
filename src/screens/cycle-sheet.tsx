@@ -133,7 +133,7 @@ export function CycleSheet({
             </Group>
           )}
 
-          <Accordion type="multiple" className="mt-3 rounded-lg border border-line bg-surface px-3">
+          <Accordion type="multiple" className="mt-3 border-y border-line">
             <AccordionItem value="planned" className="border-line">
               <AccordionTrigger className="py-3 text-[0.8125rem] font-semibold hover:no-underline">{t("cycleForm.planned")}</AccordionTrigger>
               <AccordionContent className="flex flex-col gap-2.5 pb-3">

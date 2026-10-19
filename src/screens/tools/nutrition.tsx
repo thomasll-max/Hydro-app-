@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AreaField, Grid, NumField } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
@@ -400,7 +400,7 @@ function LineNutrition() {
       </Reveal>
 
       <Reveal i={1}>
-        <Card className="px-0 pb-1">
+        <Card>
           <Label emoji="testTube" className="px-3.5">
             {t("nut.order")}
           </Label>
@@ -427,22 +427,22 @@ function LineNutrition() {
           {phase.stage !== "flush" ? (
             <>
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
+                <div className="border-t border-line pt-2.5">
                   <div className="text-[0.75rem] text-fg-3">{t("nut.expected")}</div>
                   <div className="text-[1.375rem] font-semibold tabular">{num(expectedEc(ec, tap), 2)}</div>
                 </div>
-                <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5" id="nut-ph">
+                <div className="border-t border-line pt-2.5" id="nut-ph">
                   <div className="text-[0.75rem] text-fg-3">{t("nut.phTarget")}</div>
                   <div className="text-[1.375rem] font-semibold tabular">{range(ph.lo, ph.hi, 1)}</div>
                   <div className="text-[0.75rem] text-fg-3">{srcLabel(ph.src)}</div>
                 </div>
               </div>
               <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t("nut.expectedSub", { ec: num(ec, 1), tap: num(tap, 2) })}</p>
-              {result.scaled && <p className="text-[0.75rem] leading-[1.45] text-warn">{t("nut.scaledNote", { ec: num(phase.ec, 1) })}</p>}
+              {result.scaled && <Notice className="text-[0.75rem]">{t("nut.scaledNote", { ec: num(phase.ec, 1) })}</Notice>}
               {result.ecClamped != null && (
-                <p className="text-[0.75rem] leading-[1.45] font-medium text-warn" id="nut-ec-clamped">
+                <Notice className="text-[0.75rem]" id="nut-ec-clamped">
                   {t("nut.ecClamped", { ec: num(result.ecClamped, 1) })}
-                </p>
+                </Notice>
               )}
               {result.invalidVolume && <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("nut.invalidVolume")}</p>}
               {balanceOn && <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t("nut.phSub", { name: pname("balance") })}</p>}

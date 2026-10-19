@@ -289,7 +289,7 @@ function ManualTable({ rows, current, line }: { rows: ManualPhase[]; current: Ma
 
 function Tile({ k, v, warn }: { k: string; v: string; warn?: boolean }) {
   return (
-    <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2.5 py-2">
+    <div className="min-w-0 border-t border-line pt-1.5">
       <div className="truncate text-[0.75rem] text-fg-3">{k}</div>
       <div className={cn("text-[0.875rem] leading-snug font-semibold tabular-nums", warn && "text-warn")}>{v}</div>
     </div>

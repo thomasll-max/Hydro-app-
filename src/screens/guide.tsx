@@ -31,7 +31,7 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
       )}
 
       <Reveal i={1}>
-        <Card className="px-3.5 py-1">
+        <Card>
           <Accordion type="single" collapsible defaultValue="dosing" key={settings.lang}>
             <Section value="dosing" emoji="testTube" title={t("guide.dosing")} desc={t("guide.dosingD", { line: getCatalog().name })}>
               <Table

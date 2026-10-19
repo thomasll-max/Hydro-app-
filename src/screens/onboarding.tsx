@@ -242,10 +242,11 @@ export function Onboarding() {
       </main>
 
       {step > 0 && (
-        <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-background/90 backdrop-blur">
+        <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-background">
           <div className="mx-auto flex max-w-[480px] flex-col gap-2 pt-3 pr-[max(16px,env(safe-area-inset-right,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pl-[max(16px,env(safe-area-inset-left,0px))]">
             {showIssue && (
-              <p className="text-[0.75rem] font-medium text-warn" id="onb-issue" role="alert">
+              <p className="flex gap-2 text-[0.75rem] font-medium text-fg-2" id="onb-issue" role="alert">
+                <span aria-hidden="true" className="mt-[5px] size-1.5 shrink-0 rounded-[2px] bg-warn" />
                 {t(`onb.issue.${issues[0]}` as MessageKey)}
               </p>
             )}

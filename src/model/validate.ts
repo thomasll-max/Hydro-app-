@@ -13,7 +13,7 @@ const arr = (v: unknown) => Array.isArray(v)
 const strArr = (v: unknown) => Array.isArray(v) && v.every(str)
 
 const CHECKS: Record<CollectionName, (d: Doc) => boolean> = {
-  grow: (d) => opt(d.name, str) && opt(d.nutrition, obj) && opt(d.digestTime, str) && opt(d.timeZone, str),
+  grow: (d) => opt(d.name, str) && opt(d.nutrition, obj) && opt(d.digestTime, str) && opt(d.timeZone, str) && opt(d.ownerName, str),
   sites: (d) => str(d.name) && opt(d.order, num),
   spaces: (d) => str(d.name) && obj(d.modules) && opt(d.order, num) && opt(d.template, str) && opt(d.color, str) && opt(d.irrigation, obj) && opt(d.light, obj) && opt(d.nutrition, obj),
   cycles: (d) => str(d.name) && strArr(d.cultivars) && opt(d.spaceId, str) && opt(d.transfers, arr) && opt(d.createdAt, str) && opt(d.harvest, obj) && opt(d.sensor, obj),

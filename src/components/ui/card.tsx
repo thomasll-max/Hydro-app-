@@ -1,12 +1,18 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+/**
+ * A section of a screen (lot 10h « instrument »): no frame, a thin line on top, a Fraunces title (`Label`).
+ * `framed` keeps a frame for the rare blocks that stand apart (the « Premiers pas » guide).
+ */
+function Card({ className, framed, ...props }: React.ComponentProps<"div"> & { framed?: boolean }) {
   return (
     <div
       data-slot="card"
       className={cn(
-        "relative flex flex-col rounded-xl border bg-card p-3.5 text-card-foreground shadow-card",
+        framed
+          ? "relative flex flex-col rounded-[14px] border border-line bg-surface p-3.5 text-card-foreground"
+          : "relative flex flex-col border-t border-line pt-4 pb-1 text-card-foreground",
         className
       )}
       {...props}

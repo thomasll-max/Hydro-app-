@@ -109,7 +109,7 @@ export function QuickSheet({
           const set = (k: F) => (x: string) => setV((cur) => ({ ...cur, [s.id]: { ...cur[s.id], [k]: x } }))
           const ph = (k: F) => show(prev?.[k] as number | undefined)
           return (
-            <section key={s.id} className="rounded-lg border border-line bg-surface px-3 pt-2.5 pb-3">
+            <section key={s.id} className="border-t border-line pt-3">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2 text-[0.90625rem] font-semibold">
                   <SpaceDot color={s.color} className="size-2.5" /> {s.name}

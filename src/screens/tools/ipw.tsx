@@ -6,7 +6,7 @@ import { Check } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { NumField, Seg } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
@@ -84,7 +84,7 @@ export function IpwTool() {
     <div className="flex flex-col gap-3">
       {!enabled && (
         <Reveal i={0}>
-          <Card className="gap-2 border-warn/35" id="ipw-off">
+          <Card className="gap-2" id="ipw-off">
             <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("ipw.off")}</p>
             {space && (
               <button type="button" onClick={() => ed.openSpace(space.id, "nutrition")} className={cn(secondary, "self-start")}>
@@ -101,9 +101,11 @@ export function IpwTool() {
             <Label emoji="sweat">{t("ipw.window")}</Label>
             <Chip tone={allowed.ok ? "primary" : "warn"}>{allowed.ok ? t("ipw.allowed") : t("ipw.blocked")}</Chip>
           </div>
-          <p className={cn("text-[0.8125rem] leading-[1.45]", allowed.ok ? "text-fg-2" : "font-medium text-bad")}>
-            {allowed.ok ? (lastDay ? t("ipw.until", { date: fmt(lastDay) }) : t("ipw.okVeg")) : t(`ipw.why.${allowed.reason}`)}
-          </p>
+          {allowed.ok ? (
+            <p className="text-[0.8125rem] leading-[1.45] text-fg-2">{lastDay ? t("ipw.until", { date: fmt(lastDay) }) : t("ipw.okVeg")}</p>
+          ) : (
+            <Notice tone="bad" className="text-[0.8125rem]">{t(`ipw.why.${allowed.reason}`)}</Notice>
+          )}
           <p className="text-[0.75rem] text-fg-3">{t("ipw.windowRule")}</p>
         </Card>
       </Reveal>
@@ -115,7 +117,7 @@ export function IpwTool() {
           <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t(`ipw.pd.${protocol}`)}</p>
           <div className="grid grid-cols-[1fr_1fr] items-end gap-2.5">
             <NumField id="ipw-l" label={t("ipw.litres")} hint={t("ipw.litresHint")} value={litres} onChange={setLitres} />
-            <div className="rounded-md border border-line bg-surface-2 px-3 py-2" id="ipw-dose">
+            <div className="border-t border-line pt-2" id="ipw-dose">
               <div className="text-[0.75rem] text-fg-3">{t("ipw.dose", { r: ipwMlPerL(protocol) })}</div>
               <div className="text-[1.625rem] leading-tight font-semibold tabular">{dose != null ? `${num(dose, dose % 1 ? 1 : 0)} mL` : "—"}</div>
             </div>

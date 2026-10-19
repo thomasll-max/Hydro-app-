@@ -1,4 +1,4 @@
-// Space selector under the top bar: a scrolling pill "All · rooms · spaces", remembered in settings.
+// Space selector under the top bar: text tabs "All · rooms · spaces" (the active one underlined, lot 10h), remembered in settings.
 import { useEffect, useRef } from "react"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
@@ -37,13 +37,15 @@ export function SpacePill() {
         aria-pressed={on}
         onClick={() => setSpace(id)}
         className={cn(
-          "hit flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[0.78125rem] font-semibold whitespace-nowrap transition-colors duration-200",
-          on ? "bg-surface text-fg shadow-[0_1px_3px_rgba(0,0,0,0.25)]" : "text-fg-3 hover:text-fg",
-          site && "uppercase tracking-[0.4px] text-[0.75rem]",
+          "relative flex h-11 shrink-0 items-center gap-1.5 text-[0.9375rem] whitespace-nowrap transition-colors duration-200",
+          on ? "font-semibold text-fg" : "text-fg-3 hover:text-fg",
+          site && "text-[0.875rem]",
         )}
       >
         {color && <SpaceDot color={color} />}
         {label}
+        {/* The active tab: a 2 px « eau » underline (lot 10h). */}
+        {on && <span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-0.5 rounded-[1px] bg-water" />}
       </button>
     )
   }
@@ -53,7 +55,7 @@ export function SpacePill() {
         ref={ref}
         role="group"
         aria-label={t("space.selector")}
-        className="no-scrollbar flex items-center gap-0.5 overflow-x-auto rounded-full border border-line bg-surface-2 p-[3px]"
+        className="no-scrollbar flex items-center gap-[22px] overflow-x-auto border-b border-line"
       >
         {item("all", t("space.all"))}
         {groups.map((g) => [

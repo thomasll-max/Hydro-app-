@@ -22,7 +22,7 @@ describe("lot 10f — identité « hydro. »", () => {
     const css = read("src/index.css")
     expect(css).toMatch(/--font-display: "Fraunces"/)
     expect(css).toMatch(/font-variation-settings: "SOFT" 100/)
-    expect(read("index.html")).toMatch(/family=Fraunces:opsz,wght,SOFT@9\.\.144,600\.\.700,100/)
+    expect(read("index.html")).toMatch(/family=Fraunces:opsz,wght,SOFT@9\.\.144,500\.\.700,100/) // 500 since lot 10h (« Bonjour Thomas. »)
     expect(read("src/fonts-local.css")).toMatch(/fontsource-variable\/fraunces\/files\/fraunces-latin-full-normal\.woff2/)
   })
 

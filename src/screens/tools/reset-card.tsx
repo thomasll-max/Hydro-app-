@@ -28,7 +28,7 @@ export function ResetCard({ i }: { i: number }) {
   }
   return (
     <Reveal i={i} className="mb-3">
-      <Card className="gap-2.5 border-bad/30" id="reset-card">
+      <Card className="gap-2.5" id="reset-card">
         <Label>{t("reset.title")}</Label>
         <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t(TARGET === "local" ? "reset.descLocal" : "reset.descClaude")}</p>
         <AlertDialog>

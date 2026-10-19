@@ -33,7 +33,7 @@ export function RootProductsField({ state }: { state: ReturnType<typeof useRootP
   const { t, range } = useSettings()
   if (!state.roots.length) return null
   return (
-    <div className="mt-3 rounded-md border border-line bg-surface px-3 pb-2">
+    <div className="mt-3 border-y border-line pb-2">
       {state.roots.map((p) => {
         const label = p.dosePerPlant ? t("roots.label", { range: range(p.dosePerPlant.lo, p.dosePerPlant.hi, 1), unit: p.unit }) : t("roots.labelMissing")
         return (

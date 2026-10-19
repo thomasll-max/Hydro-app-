@@ -149,7 +149,7 @@ export function DataTool() {
           <Button onClick={exportJson} disabled={busy} className="h-12" id="data-export">
             {t("data.exportBtn")}
           </Button>
-          <div className="mt-1 rounded-md border border-line bg-surface-2 px-3 py-2.5" id="data-transfer">
+          <div className="mt-1 border-t border-line pt-2.5" id="data-transfer">
             <div className="text-[0.8125rem] font-semibold">{t("data.transfer")}</div>
             <p className="mt-0.5 text-[0.75rem] leading-[1.45] text-fg-3">{t("data.transferD")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -196,9 +196,9 @@ export function DataTool() {
             </div>
           )}
           {pending && (
-            <div className="flex flex-col gap-2.5 rounded-md border border-line bg-surface-2 px-3 py-3" id="data-summary">
+            <div className="flex flex-col gap-2.5 border-t border-line pt-3" id="data-summary">
               <b className="text-[0.84375rem]">{t("data.fileSummary", { name: pending.name, n: pending.total, date: dmy(pending.backup.exportedAt) })}</b>
-              {pending.skipped > 0 && <p className="text-[0.75rem] font-medium text-warn">{t("safe.importSkipped", { n: pending.skipped })}</p>}
+              {pending.skipped > 0 && <Notice className="text-[0.75rem]">{t("safe.importSkipped", { n: pending.skipped })}</Notice>}
               <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[0.75rem] text-fg-2">
                 {Object.entries(pending.counts).map(([c, n]) => (
                   <li key={c} className="flex justify-between gap-2">
@@ -216,7 +216,7 @@ export function DataTool() {
                   { value: "replace", label: t("data.replace") },
                 ]}
               />
-              <p className={mode === "replace" ? "text-[0.75rem] font-medium text-bad" : "text-[0.75rem] text-fg-3"}>{mode === "replace" ? t("data.replaceD") : t("data.mergeD")}</p>
+              {mode === "replace" ? <Notice tone="bad" className="text-[0.75rem]">{t("data.replaceD")}</Notice> : <p className="text-[0.75rem] text-fg-3">{t("data.mergeD")}</p>}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -295,7 +295,7 @@ function StorageState() {
           {t("safe.persistAsk")}
         </Button>
       )}
-      {ios && <p className="text-[0.78125rem] leading-[1.45] font-medium text-warn">{t("safe.ios")}</p>}
+      {ios && <Notice>{t("safe.ios")}</Notice>}
     </Card>
   )
 }

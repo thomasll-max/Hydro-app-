@@ -3,7 +3,6 @@ import { cn } from "@/lib/utils"
 import type { Status } from "@/lib/geometry"
 import type { EmojiName } from "@/assets/emoji"
 import { Emoji } from "./emoji"
-import { LineIcon } from "./line-icon"
 
 /**
  * Screen title. Since lot 10f2 there is no illustration next to it (the 3D emojis stay for the assistant, empty
@@ -52,13 +51,12 @@ export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "prima
   )
 }
 
-export function Label({ emoji, children, className }: { emoji?: EmojiName; children: ReactNode; className?: string }) {
-  return (
-    <div className={cn("eyebrow flex items-center gap-1.5", className)}>
-      {emoji && <LineIcon name={emoji} size={17} />}
-      <span>{children}</span>
-    </div>
-  )
+/**
+ * Section title (lot 10h): Fraunces in normal case, no more small capitals with an icon. `emoji` is kept by the call
+ * sites but no longer drawn.
+ */
+export function Label({ children, className }: { emoji?: EmojiName; children: ReactNode; className?: string }) {
+  return <h2 className={cn("display text-[1.25rem] leading-tight font-semibold", className)}>{children}</h2>
 }
 
 /**

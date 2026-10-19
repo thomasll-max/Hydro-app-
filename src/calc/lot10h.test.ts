@@ -5,6 +5,12 @@ import { SPACE_COLORS } from "@/model/grow"
 import { safeSpaceColor } from "@/components/hydro/space-pill"
 import { splitUnit } from "@/components/hydro/form"
 import { translate } from "@/i18n/core"
+import { readingScale } from "@/components/hydro/reading"
+import { ownerName } from "@/screens/today-spaces"
+import { dayGroups } from "@/screens/journal"
+import { buildDailyDigest, digestWeek } from "./digest"
+import { FLOWER_ID, thomasGrow } from "@/data/thomas-grow"
+import type { Entry } from "@/model/types"
 
 const root = path.resolve(import.meta.dirname, "../..")
 const read = (f: string) => fs.readFileSync(path.join(root, f), "utf8")
@@ -110,5 +116,63 @@ describe("lot 10h — champs « instrument »", () => {
     expect(translate("fr", "entry.hint", { v: "25,3" })).toBe("hier 25,3")
     expect(translate("en", "entry.hint", { v: "25.3" })).toBe("yesterday 25.3")
     expect(translate("fr", "entry.resume")).toBe("Copier les valeurs d'hier")
+  })
+})
+
+describe("lot 10h2 — écrans « instrument »", () => {
+  const NOW = "2026-10-18T06:00:00.000Z"
+  const s = thomasGrow(NOW, "2026-06-01")
+  const cycle = { ...s.cycles[0], spaceId: FLOWER_ID, germinationDate: "2026-07-01", vegDate: "2026-07-15", flipDate: "2026-08-24", flowerWeeks: 9 }
+  const data = { grow: s.grow, spaces: s.spaces, cycles: [cycle], entries: [], mixes: [], events: [], equipment: s.equipment, assignments: s.assignments, customProducts: s.customProducts, reminders: [] }
+
+  it("carte du matin en phrases : mêmes informations, le texte envoyé par la tâche du matin ne change pas", () => {
+    const plain = buildDailyDigest(data, "2026-10-19", "fr")
+    const prose = buildDailyDigest(data, "2026-10-19", "fr", "2026-10-19", { prose: true })
+    expect(prose.text).toBe(plain.text)
+    expect(plain.spaces.flatMap((x) => x.lines).some((l) => l.prose)).toBe(false)
+    const lines = prose.spaces.find((x) => x.spaceId === FLOWER_ID)!.lines
+    expect(lines.every((l) => l.prose)).toBe(true)
+    expect(lines.map((l) => l.kind)).toEqual(plain.spaces.find((x) => x.spaceId === FLOWER_ID)!.lines.map((l) => l.kind))
+    expect(lines[0].prose).toMatch(/^Cycle 1 en floraison S9 · finition$/)
+    // The digest docs written for the morning task never carry the sentences.
+    expect(digestWeek(data, "2026-10-19", "fr").flatMap((d) => d.spaces.flatMap((x) => x.lines)).some((l) => l.prose)).toBe(false)
+  })
+
+  it("« Bonjour Thomas. » : le prénom des Réglages, sinon celui de « Grow de … », sinon « Bonjour. »", () => {
+    expect(ownerName({ name: "Grow de Thomas" })).toBe("Thomas")
+    expect(ownerName({ name: "Grow de Thomas (simulation 1 an)" })).toBe("Thomas")
+    expect(ownerName({ name: "Grow d'Anaïs" })).toBe("Anaïs")
+    expect(ownerName({ name: "Sam's grow" })).toBe("Sam")
+    expect(ownerName({ name: "Mon grow", ownerName: " Léa " })).toBe("Léa")
+    expect(ownerName({ name: "La tente du garage" })).toBeUndefined()
+    expect(translate("fr", "prose.hello", { name: "Thomas" })).toBe("Bonjour Thomas.")
+    // Fraunces 500 is loaded for it (upright, Thomas's choice).
+    expect(read("index.html")).toMatch(/Fraunces:opsz,wght,SOFT@9\.\.144,500\.\.700,100/)
+  })
+
+  it("lectures : la barre suit la vraie cible, élargie à la valeur du jour ; sans cible, pas de zone", () => {
+    expect(readingScale(45, { lo: 40, hi: 50 })).toEqual([30, 60])
+    expect(readingScale(75, { lo: 40, hi: 50 })).toEqual([30, 77])
+    expect(readingScale(undefined, { lo: 3.5, hi: 6 })).toEqual([1, 8.5])
+    expect(readingScale(12, undefined, 70)).toEqual([0, 70])
+    expect(readingScale(12)).toBeNull()
+  })
+
+  it("journal : une ligne par jour et par espace, les hauteurs des plantes regroupées dessous", () => {
+    const e = (date: string, spaceId: string, plantId?: string) => ({ id: `${date}_${spaceId}${plantId ? `_${plantId}` : ""}`, date, spaceId, plantId }) as Entry
+    const groups = dayGroups([e("2026-10-19", "a"), e("2026-10-19", "b"), e("2026-10-19", "a", "P1"), e("2026-10-19", "a", "P2"), e("2026-10-18", "a", "P1")])
+    expect(groups.map((g) => [g.key, g.room?.id ?? null, g.plants.map((p) => p.plantId)])).toEqual([
+      ["2026-10-19_a", "2026-10-19_a", ["P1", "P2"]],
+      ["2026-10-19_b", "2026-10-19_b", []],
+      ["2026-10-18_a", null, ["P1"]],
+    ])
+  })
+
+  it("sections sans cadre (trait fin et titre Fraunces), le cadre seulement pour « Premiers pas »", () => {
+    const card = read("src/components/ui/card.tsx")
+    expect(card).toMatch(/border-t border-line pt-4/)
+    expect(read("src/components/hydro/primitives.tsx")).toMatch(/<h2 className=\{cn\("display text-\[1\.25rem\]/)
+    expect(read("src/screens/tools/start.tsx")).toMatch(/<Card framed/)
+    expect(read("src/index.css")).not.toMatch(/text-transform: uppercase/)
   })
 })

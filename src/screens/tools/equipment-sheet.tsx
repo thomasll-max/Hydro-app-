@@ -297,7 +297,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
             </div>
           )}
           {FIELDS[spec].some((f) => f.kind === "bool") && (
-            <div className="mt-2 rounded-md border border-line bg-surface px-3">
+            <div className="mt-2 border-y border-line">
               {FIELDS[spec]
                 .filter((f) => f.kind === "bool")
                 .map((f) => (
@@ -351,7 +351,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
       )}
 
       {e.type === "lamp" && !editing && !e.library && (
-        <div className="mt-3 rounded-md border border-line bg-surface px-3">
+        <div className="mt-3 border-y border-line">
           <SwitchRow id="eq-lib" label={t("equip.saveToLibrary")} hint={t("equip.libraryD")} checked={toLib} onChange={setToLib} />
         </div>
       )}
@@ -362,7 +362,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
 
       {history.length > 0 && (
         <Group title={t("equip.history")}>
-          <ul className="rounded-md border border-line bg-surface px-3 text-[0.8125rem]">
+          <ul className="border-y border-line text-[0.8125rem]">
             {history.map((a) => (
               <li key={a.id} className="flex items-center justify-between gap-2 border-t border-line py-2 first:border-t-0">
                 <span className="flex items-center gap-1.5 font-medium">

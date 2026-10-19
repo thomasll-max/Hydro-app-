@@ -1,5 +1,16 @@
 # Changelog
 
+## Lot 10h2 — Écrans « instrument » (19/10/2026)
+- **Relevés** : les tuiles et les jauges d'Aujourd'hui deviennent des lectures d'instrument : la valeur en grands chiffres, une barre fine avec la zone cible et un trait à la valeur du jour, la cible écrite dessous. Hors cible, le chiffre et le trait passent en orange ou en rouge. Les cibles sont celles du jour, rien d'inventé.
+- **Plus de cartes dans des cartes** : les sections sont séparées par un trait fin et un titre en Fraunces, en casse normale (« À faire », « Relevés », « Arrosage du jour »…). Seul le guide « Premiers pas » garde un cadre.
+- **Carte du matin** : « Bonjour Thomas. » en Fraunces droit, puis chaque espace en deux ou trois phrases au lieu d'une liste. Mêmes informations ; le texte envoyé par la tâche du matin ne change pas. Le prénom se règle dans Réglages → Grow (sinon il est lu dans « Grow de … »).
+- **À faire** (ex « À venir ») : case à cocher, titre, espace, et l'échéance en chiffres à droite (orange si l'heure est passée).
+- **Journal** : une ligne par jour (date à gauche, résumé, valeur clé à droite), les hauteurs des plantes regroupées dessous.
+- **Espaces en haut** : des onglets texte, l'espace choisi souligné.
+- **Étape du cycle** : un bouton large à contour, avec la conséquence à droite (« J1 floraison → »).
+- Les avertissements restants (débit, bidon, lampes, import…) passent en texte normal avec un petit repère.
+- 310 tests ; `scripts/e2e-10h.py` complété.
+
 ## Lot 10h1 — Palette harmonisée et composants « instrument » (19/10/2026)
 Consigne de Thomas : que l'app ne fasse plus « générée par une IA ». Lot 10h coupé en trois : 10h1 (palette et composants), 10h2 (écrans), 10h3 (barre d'onglets et accès au calendrier).
 - **Palette harmonisée** (calculée en OKLCH) dans les deux thèmes : fond, surface, trait, texte, discret, « eau », « plante », « à surveiller », « alerte ». Contrastes vérifiés : texte ≥ 4,5:1, graphismes ≥ 3:1.

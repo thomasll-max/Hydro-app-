@@ -55,14 +55,14 @@ export function ClimateTool() {
             <NumField id="c-off" label={t("clim.offset")} value={f.offset ?? ""} onChange={set("offset")} />
           </Grid>
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
+            <div className="border-t border-line pt-2.5">
               <div className="text-[0.75rem] text-fg-3">{t("clim.vpdLeaf")}</div>
               <div className={cn("text-[1.875rem] leading-tight font-semibold tabular", status === "ok" && "text-primary", (status === "low" || status === "high") && "text-warn")} id="clim-vpd-v">
                 {res ? num(res.vpd, 2) : "—"}
               </div>
               <div className="text-[0.75rem] text-fg-3">kPa{res ? ` · ${t("clim.leaf", { c: num(res.leafC, 1) })}` : ""}</div>
             </div>
-            <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
+            <div className="border-t border-line pt-2.5">
               <div className="text-[0.75rem] text-fg-3">{t("clim.target")}</div>
               <div className="text-[1.375rem] leading-tight font-semibold tabular">{tg?.vpd ? range(tg.vpd.lo, tg.vpd.hi, 1) : "—"}</div>
               <div className="text-[0.75rem] text-fg-3">{tg?.vpd ? t("clim.targetSrc", { stage: t(`stage.${tg.stage}`) }) : t("clim.noCycle")}</div>
@@ -86,7 +86,7 @@ export function ClimateTool() {
         <Card className="gap-2.5" id="clim-air">
           <Label emoji="cyclone">{t("clim.air")}</Label>
           {!air ? (
-            <p className="text-[0.78125rem] text-warn">{t("clim.noExtractor")}</p>
+            <Notice>{t("clim.noExtractor")}</Notice>
           ) : (
             <>
               <SettingsLink
@@ -106,7 +106,7 @@ export function ClimateTool() {
                   <CalcValue c={air.perHour} fmt={(v) => num(v, 0)} />
                 </CalcRow>
               </div>
-              {air.status && air.status !== "ok" && <p className="text-[0.75rem] text-warn">{air.status === "slow" ? t("clim.slow") : t("clim.fast")}</p>}
+              {air.status && air.status !== "ok" && <Notice className="text-[0.75rem]">{air.status === "slow" ? t("clim.slow") : t("clim.fast")}</Notice>}
               {air.carbonFilter && <p className="text-[0.75rem] text-fg-3">{t("equip.c.carbonWarn")}</p>}
               {air.m3h == null && (
                 <a href="#tools/equipment" className={cn(tertiary, "self-start")}>

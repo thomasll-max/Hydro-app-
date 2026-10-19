@@ -6,9 +6,12 @@
   « à surveiller » with its message;
 - segmented control: joined boxes, the active one inverted;
 - reminders: a square check box (22 px, radius 6) that ticks and unticks;
-- keyboard focus: 2 px « eau » outline, 2 px away.
+- keyboard focus: 2 px « eau » outline, 2 px away;
+10h2, with a cycle and entries seeded: readings (bar, target zone, tick in « à surveiller » / « alerte » out of target),
+« Bonjour Thomas. » in upright Fraunces then sentences (no list), sections without frames, space tabs underlined,
+the cycle step button with its consequence, the journal in one line per day with the plants under it.
 Usage: npm run preview:build && PYTHONPATH=scripts python3 scripts/e2e-10h.py dist-preview/index.html <out dir>"""
-import sys, json, pathlib
+import sys, json, pathlib, datetime, subprocess
 from playwright.sync_api import sync_playwright
 from fonts import serve_fonts
 
@@ -96,6 +99,50 @@ with sync_playwright() as p:
         if c["secondary"] != ["10px", "1px", "rgba(0, 0, 0, 0)"]: errors.append(f"{theme} secondary {c['secondary']}")
         pg.screenshot(path=str(out / f"entry-{theme}.png"))
         checks[theme] = c
+        ctx.close()
+
+    # 10h2: a cycle in Floraison, an entry today (EC runoff out of target) and two plant heights.
+    today = datetime.date.today().isoformat()
+    ago = lambda n: (datetime.date.today() - datetime.timedelta(days=n)).isoformat()
+    base = json.loads(subprocess.check_output(["npx", "-y", "tsx", "-e", 'import { thomasGrow } from "./src/data/thomas-grow.ts"; console.log(JSON.stringify(thomasGrow("2026-10-19T06:00:00Z").cycles[0]))'], text=True).strip().splitlines()[-1])
+    docs = {"cycles/cur": {**base, "id": "cur", "name": "Cycle 7", "spaceId": "floraison", "germinationDate": ago(70), "vegDate": ago(60), "flipDate": ago(38), "createdAt": f"{ago(70)}T08:00:00Z"}}
+    tg = {"stage": "bulk", "dryback": {"lo": 40, "hi": 50}, "ecRunoff": {"lo": 3, "hi": 4}, "phRunoff": {"lo": 6.0, "hi": 6.4}}
+    docs[f"entries/{today}_floraison"] = {"schemaVersion": 2, "id": f"{today}_floraison", "date": today, "time": "08:10", "spaceId": "floraison", "cycleId": "cur", "createdAt": "x", "updatedAt": "x", "dryback": 45, "ecRunoff": 5.6, "phRunoff": 6.2, "tempDay": 25, "rh": 60, "targets": tg}
+    for pl, hcm in [("P1", 88), ("P2", 91)]:
+        docs[f"entries/{today}_floraison_{pl}"] = {"schemaVersion": 2, "id": f"{today}_floraison_{pl}", "date": today, "spaceId": "floraison", "plantId": pl, "cycleId": "cur", "heightCm": hcm, "createdAt": "x", "updatedAt": "x"}
+    docs[f"entries/{ago(1)}_floraison"] = {"schemaVersion": 2, "id": f"{ago(1)}_floraison", "date": ago(1), "spaceId": "floraison", "cycleId": "cur", "createdAt": "x", "updatedAt": "x", "dryback": 38, "targets": tg}
+    for theme in ["dark", "light"]:
+        ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, color_scheme=theme)
+        ctx.add_init_script(ui(theme, "fr"))
+        serve_fonts(ctx)
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e: errors.append(f"PAGEERROR {e}"))
+        pg.goto(f"file://{page_file}"); pg.wait_for_timeout(2500)
+        pg.evaluate("""(docs) => new Promise((res, rej) => { const r = indexedDB.open('hydro', 1); r.onsuccess = () => { const tx = r.result.transaction('docs', 'readwrite'); const s = tx.objectStore('docs'); for (const [k, v] of Object.entries(docs)) s.put(v, k); tx.oncomplete = () => res(true); tx.onerror = () => rej(tx.error) } })""", docs)
+        pg.reload(); pg.wait_for_timeout(2500)
+        c = {}
+        c["bonjour"] = pg.evaluate("""() => { const h = document.querySelector('#bonjour h2'); const s = getComputedStyle(h); return { text: h.textContent, font: s.fontFamily.split(',')[0], style: s.fontStyle, weight: s.fontWeight, lists: document.querySelectorAll('#bonjour ul, #bonjour li').length, sentences: [...document.querySelectorAll('#bonjour p')].map((p) => p.textContent.trim()) } }""")
+        bj = c["bonjour"]
+        if bj["text"] != "Bonjour Thomas." or "Fraunces" not in bj["font"] or bj["style"] != "normal" or bj["weight"] != "500" or bj["lists"] or not all(x.endswith(".") for x in bj["sentences"]): errors.append(f"{theme} bonjour {bj}")
+        c["tabs"] = pg.evaluate("""() => { const g = document.querySelector('[role=group][aria-label]'); const on = g.querySelector('[aria-pressed=true]'); const u = on.querySelector('span.absolute'); return { radius: getComputedStyle(g).borderRadius, line: u && getComputedStyle(u).backgroundColor, h: u && u.getBoundingClientRect().height } }""")
+        if c["tabs"]["radius"] != "0px" or c["tabs"]["line"] != rgb(PALETTE[theme]["--water"]) or c["tabs"]["h"] != 2: errors.append(f"{theme} space tabs {c['tabs']}")
+        pg.get_by_role("group").first.get_by_role("button", name="Floraison").click(); pg.wait_for_timeout(1500)
+        c["readings"] = pg.evaluate("""() => [...document.querySelectorAll('#readings [data-status]')].map((r) => ({ status: r.dataset.status, value: getComputedStyle(r.querySelector('.font-mono')).fontSize, tick: r.querySelector('[data-tick]') && getComputedStyle(r.querySelector('[data-tick]')).backgroundColor, zone: !!r.querySelector('[data-zone]'), target: r.lastElementChild.textContent }))""")
+        rd = c["readings"]
+        if len(rd) < 3 or rd[0]["status"] != "ok" or rd[0]["value"] != "30px" or not rd[0]["zone"] or rd[0]["target"] != "cible 40–50 %": errors.append(f"{theme} dryback reading {rd[:1]}")
+        ec = next((r for r in rd if r["target"].startswith("cible 3")), None)
+        if not ec or ec["status"] not in ("warn", "bad") or ec["tick"] != rgb(PALETTE[theme]["--" + ec["status"]]): errors.append(f"{theme} EC reading {ec}")
+        c["frames"] = pg.evaluate("""() => [...document.querySelectorAll('main [data-slot=card]')].filter((el) => getComputedStyle(el).borderLeftWidth !== '0px' && el.id !== 'start-card').length""")
+        if c["frames"]: errors.append(f"{theme} framed sections {c['frames']}")
+        c["step"] = pg.evaluate("""() => { const b = document.querySelector('button[id^=step-]'); return b ? [b.textContent, getComputedStyle(b).borderTopWidth, getComputedStyle(b.lastElementChild).fontFamily.split(',')[0]] : null }""")
+        if not c["step"] or "→" not in c["step"][0] or c["step"][1] != "1px" or "JetBrains" not in c["step"][2]: errors.append(f"{theme} step {c['step']}")
+        pg.screenshot(path=str(out / f"space-{theme}.png"), full_page=True)
+        pg.get_by_role("tab", name="Journal").click(); pg.wait_for_timeout(1500)
+        c["journal"] = pg.evaluate("""() => { const li = document.querySelector('ul.mt-1 > li'); const btn = li.querySelector('button'); const kids = [...btn.children]; return { date: getComputedStyle(kids[0]).fontFamily.split(',')[0], key: kids[2].textContent, plants: [...li.querySelectorAll('ul li')].map((x) => x.textContent.trim()) } }""")
+        j = c["journal"]
+        if "JetBrains" not in j["date"] or j["key"] != "45 %" or j["plants"] != ["P1Hauteur 88 cm", "P2Hauteur 91 cm"]: errors.append(f"{theme} journal {j}")
+        pg.screenshot(path=str(out / f"journal-{theme}.png"), full_page=True)
+        checks[f"10h2-{theme}"] = c
         ctx.close()
 
     # Captures: FR / EN, light / dark, 390 and 360 px; zoom 200 % on the entry.

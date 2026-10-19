@@ -7,7 +7,7 @@ const COLS = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4", 7: "grid-co
 export const joined = (cols?: keyof typeof COLS, className?: string) =>
   cn(
     "grid overflow-hidden rounded-[10px] border border-line-strong",
-    cols ? COLS[cols] : "[grid-template-columns:repeat(auto-fit,minmax(min(100%,4.5rem),1fr))]",
+    cols ? COLS[cols] : "[grid-template-columns:repeat(auto-fit,minmax(min(100%,4rem),1fr))]",
     className,
   )
 

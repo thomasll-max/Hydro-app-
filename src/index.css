@@ -324,11 +324,10 @@ svg.lucide[stroke-width="2"] {
     height: max(100%, 44px);
     transform: translate(-50%, -50%);
   }
+  /* Small context line above a title (lot 10h: normal case, no more small capitals). */
   .eyebrow {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--fg-3);
   }
   /* Opaque since lot 10f2 (no frosted glass). */

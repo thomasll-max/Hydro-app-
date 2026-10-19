@@ -4,7 +4,7 @@
 import { isOwnLine } from "@/data/nutrients"
 import type { Equipment, EquipmentAssignment, Grow, Site, Space } from "@/model/grow"
 import type { Cycle, Entry, GrowEvent, IsoDate, Mix } from "@/model/types"
-import type { Lang } from "@/i18n/types"
+import type { Lang, MessageKey } from "@/i18n/types"
 import { formatDayMonth, formatNumber, translate } from "@/i18n/core"
 import { groupBySite, spaceNutrition } from "@/model/grow-ops"
 import { buildProgram, PHOTOPERIOD, programTotals, steerStage } from "./program"
@@ -35,7 +35,13 @@ export type DigestData = {
   events?: GrowEvent[]
 }
 
-export type DigestLine = { kind: "climate" | "watering" | "lastEntry" | "reservoir" | "stage" | "reminder" | "deadline"; text: string; warn?: boolean }
+export type DigestLine = {
+  kind: "climate" | "watering" | "lastEntry" | "reservoir" | "stage" | "reminder" | "deadline"
+  text: string
+  warn?: boolean
+  /** The same line as a fragment of a sentence (`prose.*`), for the morning card of Aujourd'hui only (lot 10h). */
+  prose?: string
+}
 export type DigestSpace = { spaceId: string; name: string; lines: DigestLine[] }
 export type Digest = {
   schemaVersion: number
@@ -54,8 +60,11 @@ export type Digest = {
 
 export { spaceContext }
 
-export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, today: IsoDate = date): Digest {
+export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, today: IsoDate = date, opts: { prose?: boolean } = {}): Digest {
   const t = (k: Parameters<typeof translate>[1], v?: Record<string, string | number>) => translate(locale, k, v)
+  /** `prose` of a line (Aujourd'hui asks for it; the digest docs of the morning task never carry it). */
+  const P = (key: string, v?: Record<string, string | number>): Pick<DigestLine, "prose"> => (opts.prose ? { prose: t(`prose.${key}` as MessageKey, v) } : {})
+  const lower = (s: string) => s.charAt(0).toLocaleLowerCase(locale) + s.slice(1)
   const n = (v: number, d = 0) => formatNumber(locale, v, d)
   const dm = (iso: IsoDate) => formatDayMonth(locale, new Date(`${iso}T12:00:00`))
   const ordered = groupBySite(data.spaces, data.sites ?? []).flatMap((g) => g.spaces)
@@ -67,8 +76,8 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, 
   const due = calendarItems(data, date, date, today, growTimeZone(data)).filter((i) => !i.done)
   const dueLine = (i: (typeof due)[number]): DigestLine =>
     i.type === "reminder"
-      ? { kind: "reminder", text: t("digest.reminder", { title: itemTitle(locale, i), time: i.time }), warn: false }
-      : { kind: "deadline", text: t("digest.deadline", { title: itemTitle(locale, i) }), warn: true }
+      ? { kind: "reminder", text: t("digest.reminder", { title: itemTitle(locale, i), time: i.time }), warn: false, ...P("reminder", { title: itemTitle(locale, i), time: i.time }) }
+      : { kind: "deadline", text: t("digest.deadline", { title: itemTitle(locale, i) }), warn: true, ...P("deadline", { title: itemTitle(locale, i) }) }
 
   const spaces: DigestSpace[] = ordered.map((space) => {
     const ctx = spaceContext(space, data, date)
@@ -83,12 +92,18 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, 
       : undefined
     if (!cycle && !drying) {
       // Nothing growing here: one line, then what is due (lot 10b: no "no measure / no entry / reservoir" repeated).
-      return { spaceId: space.id, name: space.name, lines: [{ kind: "stage", text: t("digest.empty") }, ...mine] }
+      return { spaceId: space.id, name: space.name, lines: [{ kind: "stage", text: t("digest.empty"), ...P("empty") }, ...mine] }
     }
-    if (cycle && s) lines.push({ kind: "stage", text: t("digest.stage", { cycle: cycle.name, stage: stageShort(t, s) }) })
+    if (cycle && s)
+      lines.push({
+        kind: "stage",
+        text: t("digest.stage", { cycle: cycle.name, stage: stageShort(t, s) }),
+        ...(s.key === "notStarted" ? P("stageNotStarted", { cycle: cycle.name }) : s.key === "harvested" ? P("stageHarvested", { cycle: cycle.name }) : P("stage", { cycle: cycle.name, stage: lower(stageShort(t, s)) })),
+      })
     if (drying) {
       const day = daysBetween(drying.harvestDate!, date) + 1
-      lines.push({ kind: "stage", text: drying.plannedDryingDays ? t("digest.drying", { cycle: drying.name, day, total: drying.plannedDryingDays }) : t("digest.dryingNoPlan", { cycle: drying.name, day }) })
+      const v = { cycle: drying.name, day, total: drying.plannedDryingDays ?? 0 }
+      lines.push({ kind: "stage", text: drying.plannedDryingDays ? t("digest.drying", v) : t("digest.dryingNoPlan", v), ...P(drying.plannedDryingDays ? "drying" : "dryingNoPlan", v) })
     }
 
     // Climate: only once something was ever measured here (a new space says "no entry yet" once, below).
@@ -96,8 +111,8 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, 
       const recent = daysBetween(last.date, date) <= 1 ? last : undefined
       if (recent && (recent.tempDay != null || recent.rh != null)) {
         const parts = [recent.tempDay != null ? `${n(recent.tempDay, 1)} °C` : null, recent.rh != null ? `${n(recent.rh)} %` : null, recent.vpd != null ? `VPD ${n(recent.vpd, 2)} kPa` : null].filter(Boolean)
-        lines.push({ kind: "climate", text: t("digest.climate", { v: parts.join(" · ") }) })
-      } else lines.push({ kind: "climate", text: t("digest.climateNone") })
+        lines.push({ kind: "climate", text: t("digest.climate", { v: parts.join(" · ") }), ...P("climate", { v: parts.join(" · ") }) })
+      } else lines.push({ kind: "climate", text: t("digest.climateNone"), ...P("climateNone") })
     }
 
     if (space.modules.irrigation && cycle && s && s.key !== "notStarted") {
@@ -107,37 +122,38 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, 
       const ss = steerStage(s.key, cycle.establishing)
       // Another brand: its own flush instructions, never Athena's EC < 0.1 (lot 10e).
       const own = isOwnLine(spaceNutrition(data.grow?.nutrition ? { nutrition: data.grow.nutrition } : null, space).line)
-      if (s.key === "flush") lines.push({ kind: "watering", text: t(own ? "digest.wateringFlushOwn" : auto ? "digest.wateringFlushAuto" : "digest.wateringFlushManual") })
-      else if (!ss) lines.push({ kind: "watering", text: t(auto ? "digest.wateringSeedlingAuto" : "digest.wateringHand") })
+      const W = (key: string, v?: Record<string, string | number>): DigestLine => ({ kind: "watering", text: t(`digest.${key}` as MessageKey, v), ...P(key, v) })
+      if (s.key === "flush") lines.push(W(own ? "wateringFlushOwn" : auto ? "wateringFlushAuto" : "wateringFlushManual"))
+      else if (!ss) lines.push(W(auto ? "wateringSeedlingAuto" : "wateringHand"))
       else if (ss === "inst") {
         const small = buildProgram(cycle, ss).find((r) => r.kind === "inst")?.ml
-        lines.push({ kind: "watering", text: small ? t("digest.wateringInst", { ml: n(small) }) : t("digest.wateringInstNoVol") })
-      } else if (!auto) lines.push({ kind: "watering", text: t("digest.wateringManual", { time: cycle.lightsOn }) })
+        lines.push(small ? W("wateringInst", { ml: n(small) }) : W("wateringInstNoVol"))
+      } else if (!auto) lines.push(W("wateringManual", { time: cycle.lightsOn }))
       else {
         const rows = buildProgram(cycle, ss, last?.photoperiodH ?? PHOTOPERIOD[ss])
         const shots = rows.filter((r) => r.kind === "shot" && !r.optional).length
         const first = rows.find((r) => r.kind === "shot")?.time ?? "—"
         const { fixed } = programTotals(rows)
-        lines.push({ kind: "watering", text: fixed ? t("digest.wateringAuto", { shots, litres: n(fixed / 1000, 1), first }) : t("digest.wateringAutoNoVol", { shots, first }) })
+        lines.push(fixed ? W("wateringAuto", { shots, litres: n(fixed / 1000, 1), first }) : W("wateringAutoNoVol", { shots, first }))
       }
     }
 
+    const when = last ? (last.date === date ? (last.time ? t("digest.todayAt", { time: last.time }) : t("digest.today")) : t("digest.on", { date: dm(last.date) })) : ""
     lines.push({
       kind: "lastEntry",
-      text: last ? t("digest.lastEntry", { when: last.date === date ? (last.time ? t("digest.todayAt", { time: last.time }) : t("digest.today")) : t("digest.on", { date: dm(last.date) }) }) : t("digest.noEntry"),
+      text: last ? t("digest.lastEntry", { when }) : t("digest.noEntry"),
       warn: !last || daysBetween(last.date, date) > 1,
+      ...(last ? P("lastEntry", { when }) : P("noEntry")),
     })
 
     if (autonomy && cycle) {
       if (autonomy.days.ok) {
         const d = Math.max(0, Math.floor(autonomy.days.value) - ahead)
-        lines.push({
-          kind: "reservoir",
-          text: t(autonomy.source === "reading" ? "digest.reservoir" : "digest.reservoirEst", { days: n(d), litres: n(autonomy.left.ok ? autonomy.left.value : 0) }),
-          warn: d <= 1 || autonomy.tooOld,
-        })
-      } else lines.push({ kind: "reservoir", text: t("digest.reservoirMissing"), warn: true })
-      if (autonomy.tooOld) lines.push({ kind: "reservoir", text: t("digest.tooOld", { days: n(autonomy.mixAgeDays ?? 0) }), warn: true })
+        const key = autonomy.source === "reading" ? "reservoir" : "reservoirEst"
+        const v = { days: n(d), litres: n(autonomy.left.ok ? autonomy.left.value : 0) }
+        lines.push({ kind: "reservoir", text: t(`digest.${key}`, v), warn: d <= 1 || autonomy.tooOld, ...P(key, v) })
+      } else lines.push({ kind: "reservoir", text: t("digest.reservoirMissing"), warn: true, ...P("reservoirMissing") })
+      if (autonomy.tooOld) lines.push({ kind: "reservoir", text: t("digest.tooOld", { days: n(autonomy.mixAgeDays ?? 0) }), warn: true, ...P("tooOld", { days: n(autonomy.mixAgeDays ?? 0) }) })
     }
     lines.push(...mine)
     return { spaceId: space.id, name: space.name, lines }

@@ -138,7 +138,7 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
   return (
     <>
       <Reveal i={2}>
-        <Card className="gap-2 px-3 pt-3 pb-3.5">
+        <Card className="gap-2">
           <div className="flex items-center justify-between gap-1">
             <button type="button" onClick={() => setFirst(shiftMonth(first, -1))} className={iconButton} aria-label={t("cal.prev")}>
               <ChevronLeft className="size-5" />
@@ -189,7 +189,7 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
                   aria-label={said}
                   aria-current={isToday ? "date" : undefined}
                   className={cn(
-                    "relative flex aspect-square min-h-11 flex-col items-center justify-center rounded-[10px] text-[0.875rem] font-semibold tabular transition-colors hover:bg-surface-2",
+                    "relative flex min-h-11 min-w-0 flex-col items-center justify-center rounded-[10px] text-[0.875rem] font-semibold tabular transition-colors hover:bg-surface-2",
                     inMonth(d) ? "text-fg" : "text-fg-3",
                   )}
                 >
@@ -233,7 +233,7 @@ function Legend({ cls, label }: { cls: string; label: string }) {
 
 function Stat({ k, v }: { k: string; v: number }) {
   return (
-    <div className="min-w-0 rounded-md border border-line bg-surface px-1 py-2 text-center shadow-card">
+    <div className="min-w-0 border-l border-line px-1 py-1 text-center first:border-l-0">
       <div className="text-[1.1875rem] leading-tight font-semibold tabular">{v}</div>
       {/* Whole word, cut with a hyphen if needed: never "Événem…" (lot 10e). */}
       <div className="text-[0.75rem] leading-tight [overflow-wrap:anywhere] text-fg-3 hyphens-auto">{k}</div>
@@ -258,7 +258,7 @@ function AgendaView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => 
   if (!days.length)
     return (
       <Reveal i={2}>
-        <Card className="items-center px-5 py-7 text-center">
+        <Card className="items-center text-center">
           <Emoji name="alarm" size={64} />
           <b className="mt-1 text-[1rem]">{journal ? t("cal.journalEmpty") : t("cal.empty")}</b>
           {!journal && <p className="max-w-[34ch] text-[0.8125rem] leading-[1.5] text-fg-2">{t("cal.agendaEmpty")} {t("cal.emptyBody")}</p>}
@@ -272,7 +272,7 @@ function AgendaView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => 
         const its = journal ? [] : items.filter((i) => i.date === d)
         return (
           <Reveal key={d} i={2 + Math.min(n, 6)}>
-            <Card className="gap-1 py-3">
+            <Card className="gap-1">
               <button type="button" onClick={() => onDay(d)} className="flex items-center justify-between text-left">
                 <Label className={cn(d < today && "text-warn", d === today && "text-primary")}>{d === today ? `${t("cal.backToday")} · ${label(d)}` : label(d)}</Label>
                 <ChevronRight className="size-4 text-fg-3" />
@@ -384,7 +384,7 @@ function DaySheet({ date, filter, onClose }: { date: IsoDate | null; filter: Fil
       {x.items.length > 0 && (
         <section className="mb-3">
           <h3 className="eyebrow mb-1">{t("cal.dayDue")}</h3>
-          <ul className="rounded-lg border border-line bg-surface px-3">
+          <ul className="border-y border-line">
             {x.items.map((i) => (
               <ItemRow key={i.id} i={i} showWhen={false} />
             ))}
@@ -394,7 +394,7 @@ function DaySheet({ date, filter, onClose }: { date: IsoDate | null; filter: Fil
       {(x.entries.length > 0 || x.mixes.length > 0 || x.events.length > 0) && (
         <section>
           <h3 className="eyebrow mb-1">{t("cal.fJournal")}</h3>
-          <div className="rounded-lg border border-line bg-surface px-3">
+          <div className="border-y border-line">
             <JournalLines x={x} />
           </div>
         </section>

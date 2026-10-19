@@ -19,7 +19,7 @@ export function BackupReminder() {
   const d = backupDue(lastBackup(), today, hasData)
   if (!d.due) return null
   return (
-    <Card className="mb-3 flex-row items-center gap-3 border-warn/35 px-4 py-3" id="backup-reminder">
+    <Card className="mb-3 flex-row items-center gap-3" id="backup-reminder">
       <LineIcon name="notebook" size={26} />
       <div className="min-w-0 flex-1">
         <b className="block text-[0.875rem] font-semibold">{d.days == null ? t("backupRem.never") : t("backupRem.days", { n: d.days })}</b>

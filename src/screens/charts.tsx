@@ -197,7 +197,7 @@ export function ChartsScreen() {
 
       {!hasData && (
         <Reveal i={2} className="mb-3">
-          <Card className="px-4 py-4">
+          <Card>
             <b className="text-[0.9375rem] leading-snug font-semibold">{t("charts.emptyTitle")}</b>
             <p className="mt-1.5 text-[0.8125rem] leading-[1.45] text-fg-2">{t("charts.emptyBody")}</p>
           </Card>
@@ -207,7 +207,7 @@ export function ChartsScreen() {
       {hasData && prefs.view === "split" &&
         curves.map((c, i) => (
           <Reveal key={c} i={2 + i} className="mb-3">
-            <Card className="gap-2 px-3 pb-2" data-curve={c}>
+            <Card className="gap-2" data-curve={c}>
               <div className="flex items-center justify-between gap-2 px-1">
                 <Label>{curveName(c)}</Label>
                 <span className="text-[0.75rem] text-fg-3">{CURVE_DEFS[c].unit}</span>
@@ -223,7 +223,7 @@ export function ChartsScreen() {
 
       {hasData && prefs.view === "overlay" && overlaySpace && (
         <Reveal i={2} className="mb-3">
-          <Card className="gap-2 px-3 pb-2">
+          <Card className="gap-2">
             <Label className="px-1">{t("charts.overlayTitle")}</Label>
             {shown.length > 1 && (
               <>

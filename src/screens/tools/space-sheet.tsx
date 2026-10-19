@@ -216,7 +216,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
         </Grid>
       </Group>
       <Group title={t("space.modules")}>
-        <div className="rounded-md border border-line bg-surface px-3">
+        <div className="border-y border-line">
           {MODULES.map((m) => (
             <SwitchRow key={m} id={`sp-m-${m}`} label={t(`module.${m}`)} checked={!!s.modules[m]} onChange={(v) => setS((x) => ({ ...x, modules: { ...x.modules, [m]: v } }))} />
           ))}
@@ -299,12 +299,12 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
               </Grid>
             )}
             {cycle && (
-              <div className="rounded-md border border-line bg-surface px-3">
+              <div className="border-y border-line">
                 <SwitchRow id="sp-est" label={t("irr.establishing")} hint={t("irr.establishingHint")} checked={w.establishing} onChange={(v) => setW((x) => ({ ...x, establishing: v }))} />
               </div>
             )}
             {irr && (
-              <div className="flex items-center justify-between gap-3 rounded-md border border-line bg-surface px-3 py-2">
+              <div className="flex items-center justify-between gap-3 border-y border-line py-2">
                 <span className="min-w-0">
                   <span className="block text-[0.8125rem] font-medium">{t("irr.flow")}</span>
                   <span className="block text-[0.75rem] text-fg-3">{t("space.flowFromEquip")}</span>

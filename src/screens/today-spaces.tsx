@@ -5,14 +5,14 @@ import { ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { LineIcon } from "@/components/hydro/line-icon"
 import { Drop } from "@/components/hydro/wordmark"
-import { Chip, Dot, Label, Reveal, ScreenHero, Notice } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, ScreenHero, Notice } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
 import { stageLine } from "@/app/labels"
 import { stageOn, todayIso, daysBetween } from "@/calc/stage"
-import { buildDailyDigest, changedDigestDocs, digestKey, digestWeek, spaceContext, type DigestData } from "@/calc/digest"
+import { buildDailyDigest, changedDigestDocs, digestKey, digestWeek, spaceContext, type DigestData, type DigestLine } from "@/calc/digest"
 import { status } from "@/calc/advice"
 import { groupBySite } from "@/model/grow-ops"
 import type { Space } from "@/model/grow"
@@ -77,46 +77,87 @@ function usePersistDigest(data: DigestData, lang: "fr" | "en") {
   }, [])
 }
 
+/** The first name of « Bonjour Thomas. »: the one set in Réglages, else the one in « Grow de Thomas » (lot 10h). */
+export function ownerName(grow?: { name?: string; ownerName?: string } | null): string | undefined {
+  if (grow?.ownerName?.trim()) return grow.ownerName.trim()
+  // « Grow de Thomas (simulation 1 an) » → Thomas: what is in brackets is not a name; more than two words neither.
+  const name = (grow?.name ?? "").replace(/\s*\(.*\)\s*$/, "").trim()
+  const m = /^grow (?:de |d['’]\s*)(.+)$/i.exec(name) ?? /^(.+?)['’]s grow$/i.exec(name)
+  const who = m?.[1]?.trim()
+  return who && who.split(/\s+/).length <= 2 ? who : undefined
+}
+
+const GROUPS: DigestLine["kind"][][] = [
+  ["stage", "climate", "lastEntry"],
+  ["watering", "reservoir"],
+  ["reminder", "deadline"],
+]
+
+/** Lines of one space as 2–3 sentences: state, water, what is due. A line to watch keeps a small marker (lot 10h). */
+function Sentences({ lines }: { lines: DigestLine[] }) {
+  const { t } = useSettings()
+  const sentences = GROUPS.map((kinds) => lines.filter((l) => kinds.includes(l.kind))).filter((g) => g.length)
+  return (
+    <>
+      {sentences.map((g, i) => (
+        <span key={i}>
+          {g.map((l, j) => {
+            const text = l.prose ?? l.text
+            const frag = j === 0 ? text.charAt(0).toLocaleUpperCase() + text.slice(1) : text
+            return (
+              <span key={j}>
+                {j > 0 && t("prose.sep")}
+                {l.warn && <span aria-hidden="true" className="mr-1 mb-[2px] inline-block size-1.5 rounded-[2px] bg-warn align-middle" />}
+                {frag}
+              </span>
+            )
+          })}
+          {". "}
+        </span>
+      ))}
+    </>
+  )
+}
+
+/** The morning card: « Bonjour Thomas. » in Fraunces, upright, then each space in a few sentences (lot 10h). */
 export function BonjourCard({ only }: { only?: string }) {
   const { t, settings } = useSettings()
+  const { grow } = useGrow()
   const data = useDigestData()
-  const digest = useMemo(() => buildDailyDigest(data, todayIso(), settings.lang), [data, settings.lang])
+  const digest = useMemo(() => buildDailyDigest(data, todayIso(), settings.lang, todayIso(), { prose: true }), [data, settings.lang])
   usePersistDigest(data, settings.lang)
   const [open, setOpen] = useState(false)
   const spaces = only ? digest.spaces.filter((s) => s.spaceId === only) : digest.spaces
   const shown = only || open ? spaces : spaces.slice(0, 2)
   if (!spaces.length) return null
+  const name = ownerName(grow)
   return (
-    <Card className="relative gap-2 overflow-hidden">
-      <div className="relative flex items-center gap-2.5">
-        <LineIcon name="sun" size={24} />
-        <b className="display text-[1.1875rem] leading-tight">{digest.title}</b>
-      </div>
-      <div className="relative flex flex-col gap-2.5">
-        {shown.map((s) => (
-          <div key={s.spaceId}>
-            {!only && (
-              <div className="mb-0.5 flex items-center gap-1.5 text-[0.78125rem] font-semibold">
-                <SpaceDot color={data.spaces.find((x) => x.id === s.spaceId)?.color} /> {s.name}
-              </div>
-            )}
-            <ul className="flex flex-col gap-0.5">
-              {s.lines.map((l, i) => (
-                <li key={i} className={cn("flex gap-2 text-[0.8125rem] leading-[1.4]", l.warn ? "text-warn" : "text-fg-2")}>
-                  <span className={cn("mt-[7px] size-[5px] shrink-0 rounded-full", l.warn ? "bg-warn" : "bg-primary")} aria-hidden="true" />
-                  {l.text}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+    <section className="flex flex-col gap-2.5 border-t border-line pt-4 pb-1" id="bonjour">
+      <h2 className="font-[family-name:var(--font-display)] text-[1.875rem] leading-tight font-medium [font-variation-settings:'SOFT'_100] tracking-[-0.01em]">
+        {name ? t("prose.hello", { name }) : t("prose.helloNoName")}
+      </h2>
+      {!only && digest.general.length > 0 && (
+        <p className="text-[1rem] leading-[1.5] text-fg-2">
+          <b className="font-semibold text-fg">{t("digest.general")}</b> — <Sentences lines={digest.general} />
+        </p>
+      )}
+      {shown.map((s) => (
+        <p key={s.spaceId} className="text-[1rem] leading-[1.5] text-fg-2">
+          {!only && (
+            <b className="mr-1 inline-flex items-baseline gap-1.5 font-semibold text-fg">
+              <SpaceDot color={data.spaces.find((x) => x.id === s.spaceId)?.color} /> {s.name}
+            </b>
+          )}
+          {!only && "— "}
+          <Sentences lines={s.lines} />
+        </p>
+      ))}
       {!only && spaces.length > 2 && (
         <button onClick={() => setOpen((x) => !x)} className={cn("relative -mb-1 self-start", tertiary)}>
           {open ? t("digest.less") : t("digest.more")}
         </button>
       )}
-    </Card>
+    </section>
   )
 }
 
@@ -149,7 +190,7 @@ export function AllToday() {
         </section>
       ))}
       {!shown.length && (
-        <Card className="items-center px-4 py-6 text-center">
+        <Card className="items-center text-center">
           <p className="text-[0.8125rem] text-fg-2">{t("space.empty")}</p>
           <button onClick={() => ed.openCycle({ cycleId: "new" })} className={tertiary}>
             {t("today.emptyCta")}
@@ -193,13 +234,11 @@ function SpaceCard({ space, onOpen }: { space: Space; onOpen: () => void }) {
           </div>
         </div>
         {pills.length > 0 && (
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-2">
             {pills.slice(0, 4).map((p) => (
-              <div key={p.k} className="rounded-md border border-line bg-surface-2 px-2.5 py-1.5">
-                <div className="flex items-center gap-1.5 text-[0.75rem] text-fg-3">
-                  {p.s ? <Dot status={p.s} /> : <span className="inline-block size-[7px] rounded-full bg-track" aria-hidden="true" />} {p.k}
-                </div>
-                <div className="truncate text-[1.125rem] leading-tight font-medium tabular">{p.v}</div>
+              <div key={p.k} className="min-w-0">
+                <div className="truncate text-[0.75rem] text-fg-3">{p.k}</div>
+                <div className={cn("truncate font-mono text-[1.25rem] leading-tight font-medium tabular-nums", p.s === "warn" && "text-warn", p.s === "bad" && "text-bad")}>{p.v}</div>
               </div>
             ))}
           </div>
@@ -303,7 +342,7 @@ function ReservoirCard({ a, name }: { a: Autonomy; name: string }) {
       </div>
       <div className="flex items-end justify-between gap-3">
         <div>
-          <div className={cn("text-[1.875rem] leading-none font-semibold tabular", days != null && days <= 1 ? "text-warn" : "")}>{days != null ? t("today.resDays", { n: num(days) }) : "—"}</div>
+          <div className={cn("font-mono text-[1.875rem] leading-none font-medium tracking-[-0.02em] tabular-nums", days != null && days <= 1 ? "text-warn" : "")}>{days != null ? t("today.resDays", { n: num(days) }) : "—"}</div>
           <div className="mt-1 text-[0.75rem] text-fg-3">
             {a.left.ok ? (a.usableL ? t("today.resLeftOf", { left: num(a.left.value), usable: num(a.usableL) }) : t("today.resLeft", { left: num(a.left.value) })) : t("today.resMissing")}
             {a.perDay.ok && ` · ${t("today.resPerDay", { v: num(a.perDay.value, 1) })}`}
@@ -342,12 +381,13 @@ function DryingCard({ space, ctx }: { space: Space; ctx: Ctx }) {
   )
 }
 
+/** A value without a target (lot 10h: no box, label and big mono value). */
 function Tile({ k, v, sub }: { k: string; v: string; sub?: string }) {
   return (
-    <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2.5 py-2">
+    <div className="min-w-0">
       <div className="truncate text-[0.75rem] text-fg-3">{k}</div>
-      <div className="mt-0.5 truncate text-[1.25rem] leading-tight font-medium tabular">{v}</div>
-      {sub && <div className="truncate text-[0.75rem] text-fg-3">{sub}</div>}
+      <div className="mt-0.5 truncate font-mono text-[1.5rem] leading-tight font-medium tabular-nums">{v}</div>
+      {sub && <div className="truncate font-mono text-[0.75rem] text-fg-3">{sub}</div>}
     </div>
   )
 }

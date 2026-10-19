@@ -4,7 +4,6 @@ import { useMemo } from "react"
 import { Clock3 } from "lucide-react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
-import { LineIcon } from "@/components/hydro/line-icon"
 import { Label } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { CheckBox } from "@/components/hydro/form"
@@ -99,6 +98,7 @@ export function useWhen() {
   }
 }
 
+/** One thing to do (lot 10h): a square check box, the title, its space and source, when it is due in mono on the right. */
 export function ItemRow({ i, showWhen = true, onOpen }: { i: CalItem; showWhen?: boolean; onOpen?: () => void }) {
   const { t, settings } = useSettings()
   const { spaces } = useGrow()
@@ -107,24 +107,25 @@ export function ItemRow({ i, showWhen = true, onOpen }: { i: CalItem; showWhen?:
   const when = useWhen()
   const space = spaces.find((s) => s.id === i.spaceId)
   const open = onOpen ?? (i.type === "reminder" ? () => ed.openReminder({ reminder: i.occ.reminder }) : undefined)
-  const sub = [showWhen ? when(i) : i.time, space?.name, i.type === "deadline" ? t(`cal.src.${i.deadline.source}`) : null, i.snoozed ? t("cal.snoozed") : null].filter(Boolean).join(" · ")
+  const late = i.overdue || (i.type === "reminder" && i.late)
+  const sub = [space?.name, i.type === "deadline" ? t(`cal.src.${i.deadline.source}`) : null, i.snoozed ? t("cal.snoozed") : null].filter(Boolean).join(" · ")
+  const right = showWhen ? when(i) : i.time
   return (
-    <li className="flex min-h-12 items-center gap-3 border-t border-line py-1 first:border-t-0">
+    <li className="flex min-h-12 items-center gap-3 border-t border-line py-1.5 first:border-t-0">
       {/* « Fait » is a square check box (lot 10h): ticking it again undoes it. */}
       <CheckBox instant checked={!!i.done} label={t("cal.done")} onChange={(on) => act.done(i, on)} />
-      <button type="button" onClick={open} disabled={!open} className={cn("flex min-w-0 flex-1 items-center gap-2.5 py-1 text-left disabled:cursor-default", i.done && "opacity-60")}>
-        <LineIcon name={itemEmoji(i)} size={22} />
-        <span className="min-w-0">
-          <span className={cn("block truncate text-[0.84375rem] font-medium", i.done && "line-through decoration-fg-3")}>{itemTitle(settings.lang, i)}</span>
+      <button type="button" onClick={open} disabled={!open} className={cn("flex min-w-0 flex-1 flex-col py-1 text-left disabled:cursor-default", i.done && "opacity-60")}>
+        <span className={cn("block truncate text-[0.9375rem]", i.done && "text-fg-3 line-through decoration-fg-3")}>{itemTitle(settings.lang, i)}</span>
+        {sub && (
           <span className="flex items-center gap-1.5 truncate text-[0.75rem] text-fg-3">
             {space && <SpaceDot color={space.color} />}
-            {i.overdue || (i.type === "reminder" && i.late) ? <span className="size-1.5 shrink-0 rounded-[2px] bg-warn" aria-hidden="true" /> : null}
             {sub}
           </span>
-        </span>
+        )}
       </button>
+      {right && <span className={cn("max-w-[38%] shrink-0 text-right font-mono text-[0.75rem] leading-tight", late && !i.done ? "text-warn" : "text-fg-3")}>{right}</span>}
       {!i.done && (
-        <button type="button" onClick={() => act.snooze(i)} aria-label={t("cal.snooze")} title={t("cal.snooze")} className={iconButton}>
+        <button type="button" onClick={() => act.snooze(i)} aria-label={t("cal.snooze")} title={t("cal.snooze")} className={cn(iconButton, "-mr-2")}>
           <Clock3 className="size-4" />
         </button>
       )}

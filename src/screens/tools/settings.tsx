@@ -36,10 +36,12 @@ export function SettingsTool() {
   const [transfer, setTransfer] = useState<{ open: boolean; cycle?: Cycle }>({ open: false })
   const [name, setName] = useState(g.grow?.name ?? "")
   const [digest, setDigest] = useState(g.grow?.digestTime ?? "07:00")
+  const [owner, setOwner] = useState(g.grow?.ownerName ?? "")
   useEffect(() => {
     setName(g.grow?.name ?? "")
     setDigest(g.grow?.digestTime ?? "07:00")
-  }, [g.grow?.name, g.grow?.digestTime])
+    setOwner(g.grow?.ownerName ?? "")
+  }, [g.grow?.name, g.grow?.digestTime, g.grow?.ownerName])
 
   const saveGrow = async (patch: Parameters<typeof g.saveGrow>[0]) => {
     try {
@@ -78,6 +80,9 @@ export function SettingsTool() {
           <Label emoji="pottedPlant">{t("growSet.grow")}</Label>
           <div onBlur={() => name.trim() && name !== g.grow?.name && saveGrow({ name: name.trim() })}>
             <TextField id="g-name" label={t("growSet.name")} value={name} onChange={setName} />
+          </div>
+          <div onBlur={() => owner.trim() !== (g.grow?.ownerName ?? "") && saveGrow({ ownerName: owner.trim() || undefined })}>
+            <TextField id="g-owner" label={t("growSet.owner")} hint={t("growSet.ownerHint")} value={owner} onChange={setOwner} />
           </div>
           <div onBlur={() => digest && digest !== g.grow?.digestTime && saveGrow({ digestTime: digest })}>
             <TextField id="g-digest" type="time" label={t("growSet.digest")} hint={TARGET === "local" ? t("growSet.digestHintLocal") : t("growSet.digestHint")} value={digest} onChange={setDigest} />
@@ -340,7 +345,7 @@ function TransferSheet({ open, onOpenChange, cycle }: { open: boolean; onOpenCha
         <TextField id="tr-date" type="date" label={t("growSet.transferDate")} value={date} onChange={(v) => setDate(v || todayIso())} />
       </Group>
       <RootProductsField state={rootState} />
-      <div className="mt-3 rounded-md border border-line bg-surface px-3">
+      <div className="mt-3 border-y border-line">
         <SwitchRow id="tr-partial" label={t("growSet.partial")} hint={t("growSet.partialD")} checked={partial} onChange={setPartial} />
       </div>
       {partial && (

@@ -128,7 +128,7 @@ export function Group({ title, aside, children, className, id }: { title: string
   return (
     <section id={id} className={cn("mt-4 scroll-mt-4 first:mt-1", className)}>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="eyebrow">{title}</h3>
+        <h3 className="display text-[1.0625rem] leading-tight font-semibold">{title}</h3>
         {aside}
       </div>
       {children}
@@ -356,24 +356,15 @@ export function TagChip({ label, on, level, onClick }: { label: string; on: bool
   )
 }
 
-/** Computed value with its status color. */
+/** Computed value (lot 10h): label and mono value, coloured only when out of target. */
 export function Computed({ label, value, status, term }: { label: string; value: string; status?: "ok" | "warn" | "bad"; term?: Term }) {
   return (
-    <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2 py-2">
+    <div className="min-w-0 border-t border-line pt-1.5" data-status={status}>
       <div className="flex min-w-0 items-center gap-0.5 text-[0.75rem] text-fg-3">
         <span className="min-w-0 truncate">{label}</span>
         {term && <InfoTip term={term} />}
       </div>
-      <div
-        className={cn(
-          "text-[1rem] font-semibold tabular",
-          status === "ok" && "text-primary",
-          status === "warn" && "text-warn",
-          status === "bad" && "text-bad",
-        )}
-      >
-        {value}
-      </div>
+      <div className={cn("font-mono text-[1.0625rem] font-medium tabular-nums", status === "warn" && "text-warn", status === "bad" && "text-bad")}>{value}</div>
     </div>
   )
 }

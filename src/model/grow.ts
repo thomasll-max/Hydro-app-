@@ -49,6 +49,8 @@ export type Grow = {
   id: "main"
   name: string
   digestTime: string // "07:00"
+  /** First name for « Bonjour Thomas. » on the morning card (lot 10h). Absent: taken from « Grow de … », else « Bonjour. ». */
+  ownerName?: string
   /** IANA time zone of the grow (reminders, .ics). Absent = the device's. */
   timeZone?: string
   nutrition: NutritionSettings

@@ -226,7 +226,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const fields = (
     <>
       {computed.length > 0 && (
-        <div className="sticky top-0 z-10 -mx-4 mt-3 bg-background/95 px-4 py-2 backdrop-blur">
+        <div className="sticky top-0 z-10 -mx-4 mt-3 bg-background px-4 py-2">
           <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(max(4.5rem, calc((100% - ${computed.length - 1} * 0.375rem) / ${computed.length})), 1fr))` }} aria-live="polite">
             {computed}
           </div>
@@ -248,7 +248,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
             {nf("sownCount", "entry.sown", { integer: true })}
             {nf("germinatedCount", "entry.germinated", { integer: true })}
           </Grid>
-          <div className="mt-2 rounded-md border border-line bg-surface px-3">
+          <div className="mt-2 border-y border-line">
             <SwitchRow
               id="e-dome"
               label={t("entry.dome")}
@@ -306,7 +306,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
         </Group>
       )}
 
-      <Accordion type="single" collapsible className="mt-3 rounded-lg border border-line bg-surface px-3">
+      <Accordion type="single" collapsible className="mt-3 border-y border-line">
         <AccordionItem value="carried" className="border-0">
           <AccordionTrigger className="py-3 text-[0.8125rem] font-semibold hover:no-underline">{t("entry.carried")}</AccordionTrigger>
           <AccordionContent className="flex flex-col gap-3 pb-3">

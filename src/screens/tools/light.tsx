@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Grid, NumField } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { badNums, parseNum } from "@/calc/formulas"
@@ -92,7 +92,7 @@ export function LightTool() {
               <CalcValue c={ppfdEst} fmt={(v) => num(v)} />
             </div>
           )}
-          {!lamps.length && <p className="text-[0.75rem] text-warn">{t("lgt.noLamp")}</p>}
+          {!lamps.length && <Notice className="text-[0.75rem]">{t("lgt.noLamp")}</Notice>}
           {ppfdTarget && (
             <p className="text-[0.75rem] text-fg-2">
               {t("lgt.targets", { ppfd: range(ppfdTarget.lo, ppfdTarget.hi), dli: tg?.dli ? range(tg.dli.lo, tg.dli.hi) : "—", src: srcLabel(ppfdTarget.src) })}
@@ -136,7 +136,7 @@ export function LightTool() {
           <Label emoji="sun">{t("lgt.inverse")}</Label>
           <Grid>
             <NumField id="l-dli" label={t("lgt.dliTarget")} hint={tg?.dli ? t("lgt.dliHint", { r: range(tg.dli.lo, tg.dli.hi) }) : undefined} value={dliTarget} onChange={setDliTarget} />
-            <div className="rounded-md border border-line bg-surface-2 px-3 py-2">
+            <div className="border-t border-line pt-2">
               <div className="text-[0.75rem] text-fg-3">{t("lgt.needPpfd", { h: num(h) })}</div>
               <div className="text-[1.375rem] font-semibold tabular" id="lgt-need">
                 {needPpfd != null ? num(needPpfd) : "—"}
@@ -185,7 +185,7 @@ export function LightTool() {
               )}
             </svg>
           ) : (
-            <p className="text-[0.75rem] text-warn">{t("lgt.noDims")}</p>
+            <Notice className="text-[0.75rem]">{t("lgt.noDims")}</Notice>
           )}
           {schema && schema.lamps.some((l) => !l.rect) && <p className="text-[0.75rem] text-fg-3">{t("lgt.lampNoDims", { list: [...new Set(schema.lamps.filter((l) => !l.rect).map((l) => l.name))].join(", ") })}</p>}
           <p className="text-[0.75rem] text-fg-3">{t("lgt.schemaNote")}</p>
@@ -212,7 +212,7 @@ export function LightTool() {
 
 function Big({ k, v, unit }: { k: string; v: string; unit: string }) {
   return (
-    <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
+    <div className="border-t border-line pt-2.5">
       <div className="text-[0.75rem] text-fg-3">{k}</div>
       <div className="text-[1.75rem] leading-tight font-semibold tabular">{v}</div>
       <div className="text-[0.75rem] text-fg-3">{unit}</div>

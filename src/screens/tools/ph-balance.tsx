@@ -25,7 +25,7 @@ export function PhBalanceTool() {
 function OwnPhNote() {
   const { t } = useSettings()
   return (
-    <Card className="px-4 py-4" id="own-ph">
+    <Card id="own-ph">
       <p className="text-[0.8125rem] leading-[1.45] text-fg-2">{t("own.ph")}</p>
     </Card>
   )
@@ -101,7 +101,7 @@ function BalanceTool() {
             {range(target.lo, target.hi, 1)}
           </div>
           <p className="text-[0.75rem] leading-[1.45] text-fg-2">{tg ? t("phb.targetFrom", { stage: t(`stage.${tg.stage}`) }) : t("phb.targetNoCycle")}</p>
-          {!nutrition.addons.includes("balance") && <p className="text-[0.75rem] text-warn">{t("phb.balanceOff")}</p>}
+          {!nutrition.addons.includes("balance") && <Notice className="text-[0.75rem]">{t("phb.balanceOff")}</Notice>}
         </Card>
       </Reveal>
 
@@ -127,7 +127,7 @@ function BalanceTool() {
             <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("phb.noPred", { n: history.length })}</p>
           )}
 
-          <div className="rounded-[var(--r-xl)] border border-line bg-surface-2 px-4 py-5 text-center">
+          <div className="border-y border-line py-5 text-center">
             <div className="text-[0.75rem] font-medium text-fg-3">{t("phb.total")}</div>
             <div className="mt-1 text-[4.75rem] leading-none font-semibold tracking-[-2px] tabular" id="phb-total" aria-live="polite">
               {/* Exact value at once: a titration counter must never show an in-between number. */}

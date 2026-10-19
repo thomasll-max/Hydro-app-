@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -36,6 +36,8 @@
   - [x] Lot 10b2 : points 31–39, simulation d'un an (254 tests, artefact v30)
 - [x] Lot 10c : calculs Athena (266 tests, artefact v31)
 - [ ] Lot 10d : navigation, saisie, graphiques
+  - [x] Lot 10d1 : points 54–57, 61, 62, 65–68, 70 (272 tests, artefact v32)
+  - [ ] Lot 10d2 : points 58–60, 63, 64, 69
 - [ ] Lot 10e : accessibilité, textes, assistant, option « Autre marque »
 
 ## Lot 10 : passe de corrections (19/10/2026)
@@ -90,6 +92,19 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 - Premiers pas : pots demandés seulement si l'arrosage de l'espace est automatique (cycle en automatique, sinon pompe dans l'espace) ; lampe cochée avec ses watts (`StartItem.canStart` pour « Démarrer aujourd'hui »).
 - Carte Bonjour : un cycle « automatique » dans un espace sans pompe (quand le grow liste ses pompes) est traité comme arrosé à la main. Pas de dose ni de programme inventés pour le rinçage (eau osmosée, EC < 0,1 : fiche Athena).
 - **Simulation d'un an (fin de 10b, 19/10)** : 479 saisies vérifiées, 28/28 anomalies signalées, **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 0 plantage, 364 matins rejoués ; **4 échéances traînent** (12 avant) : toutes « mesurer le débit » (11 matins chacune), car le simulateur ne remesure la pompe qu'aux transferts (71 jours) alors que la règle du cahier des charges est 60 jours. Je n'ai pas changé ce comportement du simulateur : le rappel est juste. Passage navigateur (`browse.py`, 9 dates × 13 écrans) : aucune erreur console, aucun débordement (le seul « Infinity » relevé est la marque AC Infinity).
+
+## Lot 10d1 — notes
+- Lot 10d coupé en **10d1** (navigation, feuilles, saisie, service worker) et **10d2** (journal, graphiques, rappels, nutrition, performance).
+- `app/nav.ts` : routes dans le hash (`""` = Aujourd'hui, `#journal`, `#tools`, `#tools/irrigation`…), `parseHash` (les anciens liens `#irrigation`, `#guide` marchent encore), `routeHash`, `planNav` (pur, testé), `navigate`, `useRoute`, `addLayer` (feuilles). Chaque entrée d'historique porte `{ hydro: { depth, prev } }` ; une seule entrée `hydroSheet` représente toutes les feuilles ouvertes, posée et retirée après le rendu (`setTimeout 0`, pour qu'un passage saisie rapide → saisie complète ne bouge rien).
+- **Décision prise seule** : l'historique ne dépasse jamais Aujourd'hui → onglet → outil (→ feuille). Passer d'un onglet à l'autre remplace l'étape : le retour ramène à Aujourd'hui, puis quitte l'app, comme la barre du bas d'Android. Quitter un outil pour un autre onglet revient d'abord à la liste des outils.
+- `Sheet` (`components/hydro/form.tsx`) : bouton ✕ ; une feuille « touchée » (frappe, choix, interrupteur depuis l'ouverture, ou `dirty` passé par la feuille) demande « Abandonner la saisie ? » avant de se fermer par ✕, glissement, tape à côté, Échap ou retour ; la glisser vers le bas est bloqué tant qu'elle est modifiée (`dismissible`). Les enregistrements ferment sans rien demander.
+- Saisie : `EntryInit.values` (valeurs de la saisie rapide), `typed` (ce qui a été tapé depuis l'ouverture) gardé quand la date, la plante ou l'espace change ; « Reprendre hier » (`resumeFrom`, pur) ne remplit que les champs vides affichés en gris. Une saisie réenregistrée garde son heure (ou aucune) ; une nouvelle saisie d'un autre jour n'a pas d'heure.
+- **Décision prise seule** : la saisie rapide n'emmène dans la saisie complète que les valeurs de l'espace choisi ; celles tapées pour les autres espaces ne sont pas enregistrées.
+- Langue : les formulaires ne se réinitialisent plus (les champs gardent le texte tapé, `parseNum` lit « 2,4 » comme « 2.4 »). `formatInput` (i18n/core) et `show` dans le contexte remplacent les 7 copies du formateur.
+- `useSaver().run(fn)` : `fn` peut renvoyer son propre message, un seul toast par enregistrement (transfert, duplication, archivage).
+- Service worker (version locale) : réseau d'abord, cache au bout de 3 s ; la réponse du réseau met le cache à jour ensuite.
+- Pièges : aucun effet de bord dans un `setState(updater)` (réglages, préférences des graphiques) ; effets toujours entre accolades (corrigé dans l'assistant).
+- **À vérifier sur le téléphone** : le geste retour dans l'app Claude (l'artefact est dans un cadre ; si l'hôte bloque l'historique, l'app marche comme avant, sans étapes de retour). Dans le navigateur et la version locale, vérifié par `scripts/e2e-10d.py`.
 
 ## Lot 10c — notes
 - `calc/nutrients.ts` : `interpEc` renvoie `exact` ; `gramsPer10L` / `concMlPer10L` renvoient `clamped` (EC hors tableau) ; `MixResult.ecClamped`, `MixResult.invalidVolume` ; `phFor(cat, phase, substrate, addons?)` (Fade désactivé dans une phase où il remplace le Core → pH du substrat) ; `chosenPer10L` ; `Mix.items[].per10L` (dose choisie dans une plage, telle que tapée).
@@ -156,7 +171,7 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c
+npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale

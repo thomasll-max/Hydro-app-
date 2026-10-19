@@ -38,10 +38,7 @@ export function defaultCycle(): Cycle {
   }
 }
 
-export const useShow = () => {
-  const { settings } = useSettings()
-  return (v: number | undefined) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
-}
+export const useShow = () => useSettings().show
 
 export function SaveBar({ busy, onSave, onDelete }: { busy: boolean; onSave: () => void; onDelete?: () => Promise<void> }) {
   const { t } = useSettings()
@@ -68,11 +65,12 @@ export function SaveBar({ busy, onSave, onDelete }: { busy: boolean; onSave: () 
 export function useSaver(onDone: () => void) {
   const { t } = useSettings()
   const [busy, setBusy] = useState(false)
+  /** `fn` may return its own success message: one toast per save (lot 10d). */
   const run = async (fn: () => Promise<unknown>) => {
     setBusy(true)
     try {
-      await fn()
-      toast.success(t("common.saved"))
+      const msg = await fn()
+      toast.success(typeof msg === "string" ? msg : t("common.saved"))
       onDone()
     } catch (err) {
       toast.error(t("common.saveError", { reason: (err as { message?: string })?.message ?? "?" }))

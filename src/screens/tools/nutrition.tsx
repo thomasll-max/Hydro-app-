@@ -55,12 +55,11 @@ function defaultEc(cat: NutrientCatalog, phase: ProgramPhase, firstCycle: boolea
 }
 
 export function NutritionTool() {
-  const { t, num, range, settings } = useSettings()
+  const { t, num, range, show } = useSettings()
   const { cycle, cycles, mixes, entries, saveMix, saveCycle, nutrition, space, spaces, grow, equipment, assignments, customProducts } = useGrow()
   const cat = getCatalog(nutrition.line)
   const phaseLabel = usePhaseLabel()
   const srcLabel = useSrcLabel()
-  const show = (v?: number) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
   // Tank volume defaults to the usable volume of the space's reservoir (equipment).
   const reservoirL = space ? reservoirOf(space.id, equipment, assignments) : undefined
   const ed = useEditors()
@@ -98,7 +97,7 @@ export function NutritionTool() {
     })
     setShared(space ? [space.id] : [])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cycle?.id, space?.id, cat.id, settings.lang])
+  }, [cycle?.id, space?.id, cat.id])
   const pickPhase = (id: string) => {
     const p = phaseById(cat, id)
     if (!p) return

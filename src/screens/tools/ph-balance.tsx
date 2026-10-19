@@ -17,11 +17,10 @@ import { cn } from "@/lib/utils"
 import type { Target } from "@/calc/targets"
 
 export function PhBalanceTool() {
-  const { t, num, range, settings } = useSettings()
+  const { t, num, range, show } = useSettings()
   const n1 = (v: number) => num(v, v % 1 ? 1 : 0)
   const { cycle, space, mixes, all, targetsFor, nutrition, saveMix } = useGrow()
   const cat = getCatalog(nutrition.line)
-  const show = (v?: number) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
   const tg = cycle ? targetsFor(todayIso(), cycle) : null
   // Without a cycle, the line's coco range (Athena) is shown, labelled as such.
   const target: Target = tg?.phIn ?? { lo: cat.ph.coco[0], hi: cat.ph.coco[1], src: "athena" }
@@ -39,7 +38,7 @@ export function PhBalanceTool() {
     setPhBefore("")
     reset()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [space?.id, last?.id, settings.lang])
+  }, [space?.id, last?.id])
   function reset() {
     setStartMl(0)
     setSteps(0)

@@ -42,6 +42,27 @@ export function entryHasContent(e: Entry, prefill?: Entry): boolean {
   return e.domeOn != null && e.domeOn !== !!prefill.domeOn
 }
 
+/**
+ * "Reprendre hier" (lot 10d): the day before's measurements, shown in grey, fill the fields still empty. Typed values
+ * are kept. Only the fields on screen are given (`keys`): nothing hidden gets saved.
+ */
+export function resumeFrom<K extends (typeof HINTED)[number]>(
+  values: Partial<Record<K, string>>,
+  prev: Entry | undefined,
+  keys: readonly K[],
+  show: (v?: number) => string,
+): { values: Partial<Record<K, string>>; filled: K[] } {
+  const out = { ...values }
+  const filled: K[] = []
+  for (const k of keys) {
+    const v = prev?.[k]
+    if (v == null || (out[k] ?? "").trim() !== "") continue
+    out[k] = show(v)
+    filled.push(k)
+  }
+  return { values: out, filled }
+}
+
 /** New entry for a space (and its running cycle, if any), prefilled from the previous one of the same scope. */
 export function blankEntry(date: IsoDate, ctx: { spaceId: string; cycle?: Cycle | null }, prev: Entry | undefined, plantId?: PlantId): Entry {
   const now = new Date().toISOString()

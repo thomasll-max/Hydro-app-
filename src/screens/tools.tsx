@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Emoji } from "@/components/hydro/emoji"
@@ -21,8 +21,8 @@ import { AskTool } from "./tools/ask"
 import { DataTool } from "./tools/data"
 import { StartTool } from "./tools/start"
 import { useSample } from "@/lib/sample"
+import { navigate, useRoute, type ToolId } from "@/app/nav"
 
-type ToolId = "start" | "irrigation" | "nutrition" | "ph" | "ipw" | "light" | "climate" | "ask" | "equipment" | "data" | "reperes" | "settings"
 type Tool = { id: ToolId; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; soon?: MessageKey; wide?: boolean; perSpace?: boolean; needsSample?: boolean }
 const TOOLS: Tool[] = [
   { id: "start", emoji: "sprout", title: "tools.start", desc: "tools.startD", wide: true },
@@ -38,23 +38,14 @@ const TOOLS: Tool[] = [
   { id: "reperes", emoji: "compass", title: "tools.reperes", desc: "tools.reperesD" },
   { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD", wide: true },
 ]
-const IDS = TOOLS.map((x) => x.id) as string[]
 
-/** Bento grid of tools; a tool opens in place with a back link. Deep link: #irrigation, #equipment… */
+/** Bento grid of tools; a tool opens in place with a back link. Route: #tools/irrigation… (old links #irrigation still work). */
 export function ToolsScreen() {
   const { t } = useSettings()
   const { space } = useGrow()
   const sample = useSample()
-  const initial = location.hash.replace("#", "")
-  const [open, setOpen] = useState<ToolId | null>(IDS.includes(initial) ? (initial as ToolId) : initial === "guide" ? "reperes" : null)
-  useEffect(() => {
-    const onHash = () => {
-      const h = location.hash.replace("#", "")
-      if (IDS.includes(h)) setOpen(h as ToolId)
-    }
-    window.addEventListener("hashchange", onHash)
-    return () => window.removeEventListener("hashchange", onHash)
-  }, [])
+  const open = useRoute().tool ?? null
+  const setOpen = (tool: ToolId | null) => navigate(tool ? { tab: "tools", tool } : { tab: "tools" })
   useEffect(() => {
     // Block body on purpose: inside the Claude app, scrollTo returns a value React would take for a cleanup function.
     window.scrollTo({ top: 0 })

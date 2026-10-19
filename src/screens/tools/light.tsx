@@ -18,10 +18,9 @@ import { useEditors } from "@/app/editors"
 import { cn } from "@/lib/utils"
 
 export function LightTool() {
-  const { t, num, range, settings } = useSettings()
+  const { t, num, range, show } = useSettings()
   const { cycle, space, equipment, assignments, targetsFor, saveSpace } = useGrow()
   const today = todayIso()
-  const show = (v?: number | null) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
   const lamps = space
     ? equipmentAt(space.id, today, assignments)
         .map((a) => ({ a, e: equipment.find((e) => e.id === a.equipmentId) }))
@@ -38,7 +37,7 @@ export function LightTool() {
     setDliTarget("")
     setCells(Array.from({ length: 9 }, (_, i) => show(space?.lightMap?.cells[i] ?? undefined)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [space?.id, cycle?.id, settings.lang, lamps.length])
+  }, [space?.id, cycle?.id, lamps.length])
 
   const schema = useMemo(
     () =>

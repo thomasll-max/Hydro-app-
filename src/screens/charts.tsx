@@ -42,12 +42,12 @@ export function ChartsScreen() {
   const { t, num, dm } = useSettings()
   const { spaces, selection, all, cycles, cycleIn } = useGrow()
   const [prefs, setPrefsState] = useState<Prefs>(loadPrefs)
-  const setPrefs = (p: Partial<Prefs>) =>
-    setPrefsState((x) => {
-      const n = { ...x, ...p }
-      savePrefs(n)
-      return n
-    })
+  // Saved outside the updater: a setState updater stays pure (lot 10d).
+  const setPrefs = (p: Partial<Prefs>) => {
+    const n = { ...prefs, ...p }
+    savePrefs(n)
+    setPrefsState(n)
+  }
   const initialSpaces = () => {
     if (selection.kind === "space") return [selection.space.id]
     const pool = selection.kind === "site" ? spaces.filter((s) => s.siteId === selection.site.id) : spaces

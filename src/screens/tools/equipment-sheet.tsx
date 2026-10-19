@@ -1,7 +1,6 @@
 // Add / edit one equipment item: type, specs (all optional but the name), source, placements (historized).
 import { useEffect, useMemo, useState } from "react"
 import { Copy } from "lucide-react"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { AreaField, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
 import { Emoji } from "@/components/hydro/emoji"
@@ -130,7 +129,8 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
   }, [open])
 
   const spec = SPEC_OF[e.type]
-  const setType = (type: EquipmentType) => load({ ...e, type })
+  // Changing the type keeps what was typed (name, quantity, fields of the other type if one comes back to it), lot 10d.
+  const setType = (type: EquipmentType) => setE((x) => ({ ...x, type }))
   const fromModel = (m: Equipment) => {
     const copy: Equipment = { ...e, brand: m.brand, model: m.model, name: e.name || m.name, lamp: structuredClone(m.lamp), source: m.source }
     load(copy)
@@ -199,7 +199,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
       await saveEquipment(copy)
       if (!copy.library)
         for (const a of openHere) await addAssignment({ schemaVersion: GROW_SCHEMA.assignment, id: newId("as"), equipmentId: copy.id, spaceId: a.spaceId, from: todayIso() })
-      toast.success(t("equip.duplicated"))
+      return t("equip.duplicated")
     })
 
   const history = init.item ? assignments.filter((a) => a.equipmentId === init.item!.id).sort((a, b) => b.from.localeCompare(a.from)) : []

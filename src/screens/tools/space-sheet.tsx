@@ -3,7 +3,6 @@
 // speed). Tools show results and the day's actions, and open this sheet at the right section.
 import { useEffect, useState } from "react"
 import { Archive, ArchiveRestore, Copy } from "lucide-react"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
 import { spaceColor } from "@/components/hydro/space-pill"
@@ -145,12 +144,12 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
       const d2 = duplicateSpace(src, { id: newId("sp"), name: t("space.copyName", { name: src.name }), order: allSpaces.length, now: new Date().toISOString(), date: todayIso() }, assignments, () => `${newId("as")}${++n}`)
       await saveSpace(d2.space)
       for (const a of d2.assignments) await addAssignment(a)
-      toast.success(t("space.duplicated"))
+      return t("space.duplicated")
     })
   const archive = () =>
     run(async () => {
       await saveSpace(archiveSpace(build(), !s.archived, new Date().toISOString()))
-      if (!s.archived) toast.success(t("space.archivedToast"))
+      if (!s.archived) return t("space.archivedToast")
     })
 
   return (

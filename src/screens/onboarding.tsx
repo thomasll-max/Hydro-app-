@@ -11,6 +11,7 @@ import { Emoji } from "@/components/hydro/emoji"
 import { Label, Reveal } from "@/components/hydro/primitives"
 import { LangSwitch } from "@/components/hydro/top-bar"
 import { spaceColor } from "@/components/hydro/space-pill"
+import { navigate } from "@/app/nav"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
@@ -62,7 +63,9 @@ export function Onboarding() {
   const [step, setStep] = useState(() => (loadDraft() ? loadStep() : 0))
   const [busy, setBusy] = useState(false)
   const top = useRef<HTMLDivElement>(null)
-  useEffect(() => saveDraft(draft, step), [draft, step])
+  useEffect(() => {
+    saveDraft(draft, step)
+  }, [draft, step])
   useEffect(() => {
     window.scrollTo({ top: 0 })
   }, [step])
@@ -102,7 +105,7 @@ export function Onboarding() {
       saveDraft(null)
       toast.success(t("onb.ready", { name: draft.name.trim() }))
       // Next: the getting-started guide (what to enter, then how the app works).
-      location.hash = "start"
+      navigate({ tab: "tools", tool: "start" })
     } catch (e) {
       toast.error(t("common.saveError", { reason: (e as Error).message }))
       setBusy(false)

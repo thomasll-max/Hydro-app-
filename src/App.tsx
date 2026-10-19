@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { Toaster } from "sonner"
 import { SettingsProvider, useSettings } from "@/app/settings-context"
@@ -7,7 +7,8 @@ import { EditorsProvider, useEditors } from "@/app/editors"
 import { TARGET } from "@/store"
 import { todayIso } from "@/calc/stage"
 import { TopBar } from "@/components/hydro/top-bar"
-import { TabBar, TABS, type TabId } from "@/components/hydro/tab-bar"
+import { TabBar } from "@/components/hydro/tab-bar"
+import { navigate, useRoute, type TabId } from "@/app/nav"
 import { Fab } from "@/components/hydro/fab"
 import { TodayScreen } from "@/screens/today"
 import { JournalScreen } from "@/screens/journal"
@@ -27,35 +28,15 @@ const SCREENS: Record<TabId, () => React.ReactElement> = {
   tools: ToolsScreen,
 }
 
-/** Tab from the artifact link (#journal, #tools…) — bare tokens only. Tool ids open the Tools tab. */
-export const TOOL_HASHES = ["start", "irrigation", "nutrition", "ph", "ipw", "light", "climate", "ask", "equipment", "data", "reperes", "settings"]
-function initialTab(): TabId {
-  const h = location.hash.replace("#", "")
-  if (TOOL_HASHES.includes(h) || h === "guide") return "tools"
-  return TABS.some((t) => t.id === h) ? (h as TabId) : "today"
-}
-
 function Shell() {
   const { t } = useSettings()
   const { cycle, storeKind, spaces, selection, needsSetup, problem, retry, owner, volatile, grow } = useGrow()
   const ed = useEditors()
-  const [tab, setTab] = useState<TabId>(initialTab)
+  // Tabs and tools are routes in the history (lot 10d): the back gesture walks back through them.
+  const { tab } = useRoute()
   const Screen = SCREENS[tab]
 
   useEffect(() => {
-    const onHash = () => setTab(initialTab())
-    window.addEventListener("hashchange", onHash)
-    return () => window.removeEventListener("hashchange", onHash)
-  }, [])
-
-  useEffect(() => {
-    try {
-      // A tool deep link (#equipment…) stays as is: the Tools screen mounts after the tab transition.
-      const keep = tab === "tools" && TOOL_HASHES.includes(location.hash.replace("#", ""))
-      if (!keep) history.replaceState(null, "", tab === "today" ? location.pathname + location.search : `#${tab}`)
-    } catch {
-      /* sandboxed history: ignore */
-    }
     window.scrollTo({ top: 0 })
   }, [tab])
 
@@ -113,7 +94,7 @@ function Shell() {
           else ed.openEntry({ date: todayIso(), spaceId: selection.kind === "space" ? selection.space.id : (cycle?.spaceId ?? spaces[0].id) })
         }}
       />
-      <TabBar active={tab} onChange={setTab} />
+      <TabBar active={tab} onChange={(id) => navigate({ tab: id })} />
       <AppToaster />
     </div>
   )

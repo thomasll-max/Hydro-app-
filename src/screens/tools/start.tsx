@@ -9,6 +9,7 @@ import { Label, Reveal } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
+import { navigate, type ToolId } from "@/app/nav"
 import { todayIso } from "@/calc/stage"
 import { lastBackup } from "@/lib/backup-reminder"
 import { setStartHidden, startChecklist, startHidden, startProgress, type StartItem } from "@/calc/getting-started"
@@ -42,9 +43,7 @@ function useStartAction() {
   const ed = useEditors()
   const { spaces } = useGrow()
   return (item: StartItem) => {
-    const go = (hash: string) => {
-      location.hash = hash
-    }
+    const go = (tool: ToolId) => navigate({ tab: "tools", tool })
     switch (item.id) {
       case "lamp":
       case "flow":
@@ -208,7 +207,7 @@ export function StartCard() {
       <div className="h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
         <div className="h-full rounded-full bg-primary" style={{ width: `${(done / total) * 100}%` }} />
       </div>
-      <a href="#start" className="self-start rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12.5px] font-semibold text-primary">
+      <a href="#tools/start" className="self-start rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12.5px] font-semibold text-primary">
         {t("start.open")}
       </a>
     </Card>

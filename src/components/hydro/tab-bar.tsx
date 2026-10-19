@@ -4,7 +4,7 @@ import { useSettings } from "@/app/settings-context"
 import { cn } from "@/lib/utils"
 import type { MessageKey } from "@/i18n/types"
 
-export type TabId = "today" | "journal" | "calendar" | "charts" | "tools"
+import type { TabId } from "@/app/nav"
 
 export const TABS: { id: TabId; label: MessageKey; Icon: typeof House }[] = [
   { id: "today", label: "nav.today", Icon: House },

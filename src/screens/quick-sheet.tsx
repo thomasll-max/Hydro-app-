@@ -17,13 +17,21 @@ import type { Entry } from "@/model/types"
 const FIELDS = ["tempDay", "rh", "reservoirL"] as const
 type F = (typeof FIELDS)[number]
 
-export function QuickSheet({ open, onOpenChange, onFull }: { open: boolean; onOpenChange: (o: boolean) => void; onFull: (spaceId: string) => void }) {
-  const { t, settings } = useSettings()
+export function QuickSheet({
+  open,
+  onOpenChange,
+  onFull,
+}: {
+  open: boolean
+  onOpenChange: (o: boolean) => void
+  /** The full entry of a space, with what was already typed for it (lot 10d: nothing lost on the way). */
+  onFull: (spaceId: string, date: string, values: Partial<Record<F, string>>) => void
+}) {
+  const { t, show } = useSettings()
   const { spaces, all, cycleIn, equipment, assignments, saveEntry } = useGrow()
   const [date, setDate] = useState(todayIso())
   const [v, setV] = useState<Record<string, Partial<Record<F, string>>>>({})
   const [busy, setBusy] = useState(false)
-  const show = (x?: number) => (x == null ? "" : settings.lang === "fr" ? String(x).replace(".", ",") : String(x))
 
   const rows = useMemo(
     () =>
@@ -50,6 +58,8 @@ export function QuickSheet({ open, onOpenChange, onFull }: { open: boolean; onOp
   const save = async () => {
     if (busy) return
     if (rows.some((r) => badNums(v[r.s.id] ?? {}).length)) return toast.error(t("safe.fixFields"))
+    // Nothing typed: say so, the sheet stays open (no false success, lot 10d).
+    if (!rows.some((r) => FIELDS.some((k) => parseNum(v[r.s.id]?.[k]) != null))) return toast.error(t("quick.nothing"))
     setBusy(true)
     try {
       let n = 0
@@ -58,7 +68,8 @@ export function QuickSheet({ open, onOpenChange, onFull }: { open: boolean; onOp
         if (!typed.length) continue
         const base: Entry = r.existing ?? blankEntry(date, { spaceId: r.s.id, cycle: cycleIn(r.s.id) }, r.prev)
         const e: Entry = { ...base }
-        if (!e.time && date === todayIso()) {
+        // A new entry of today gets the current time; an entry saved again keeps its own (lot 10d).
+        if (!r.existing && date === todayIso()) {
           const d = new Date()
           e.time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
         }
@@ -102,7 +113,7 @@ export function QuickSheet({ open, onOpenChange, onFull }: { open: boolean; onOp
                 <span className="flex items-center gap-2 text-[14.5px] font-semibold">
                   <SpaceDot color={s.color} className="size-2.5" /> {s.name}
                 </span>
-                <button type="button" onClick={() => onFull(s.id)} className="flex h-8 items-center gap-0.5 text-[12.5px] font-semibold text-primary">
+                <button type="button" onClick={() => onFull(s.id, date, v[s.id] ?? {})} className="flex h-8 items-center gap-0.5 text-[12.5px] font-semibold text-primary">
                   {t("quick.full")} <ChevronRight className="size-4" />
                 </button>
               </div>

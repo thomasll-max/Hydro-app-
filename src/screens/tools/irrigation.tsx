@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils"
 const STEER_TO_STAGE: Record<SteerStage, StageKey> = { inst: "veg", veg: "veg", str: "stretch", mas: "bulk", fin: "finish" }
 
 export function IrrigationTool() {
-  const { t, num, range, settings } = useSettings()
+  const { t, num, range, show } = useSettings()
   const { cycle, saveCycle, space, equipment, assignments, nutrition } = useGrow()
   const ed = useEditors()
   // Settings live in "Réglages de l'espace" (lot 9): the cycle's watering settings, pots and flow from the equipment.
@@ -32,7 +32,6 @@ export function IrrigationTool() {
   const potL = eq?.potL.ok ? eq.potL.value : undefined
   const potOk = potL != null
   const cat = getCatalog(nutrition.line)
-  const show = (v?: number) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
 
   const base = cycle ?? defaultCycle()
   const cycleStage = cycle ? steerStage(stageOn(cycle, todayIso()).key, cycle.establishing) : null
@@ -46,7 +45,7 @@ export function IrrigationTool() {
     setSPhase(b.sensor?.phase ?? "veg")
     setF({ sBase: show(b.sensor?.base), sPeak: show(b.sensor?.peak), sP2: show(b.sensor?.p2Pct ?? 1.5) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cycle?.id, settings.lang])
+  }, [cycle?.id])
 
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }))
   const mode: WaterMode = base.waterMode

@@ -10,7 +10,7 @@ import {
   type Settings,
   type ThemePref,
 } from "@/lib/settings"
-import { formatDayMonth, formatNumber, formatRange, locales, translate, type Vars } from "@/i18n/core"
+import { formatDayMonth, formatInput, formatNumber, formatRange, locales, translate, type Vars } from "@/i18n/core"
 import type { Lang, MessageKey } from "@/i18n/types"
 
 export type SaveState = "idle" | "saved" | "local-only"
@@ -28,6 +28,8 @@ type Ctx = {
   num: (v: number, decimals?: number) => string
   range: (lo: number, hi: number, decimals?: number) => string
   dm: (iso: string) => string
+  /** A stored number in a form field ("2,4" in French). */
+  show: (v?: number | null) => string
   locale: string
 }
 
@@ -73,6 +75,12 @@ function useSystemDark(): boolean {
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = React.useState<Settings>(readLocal)
+  // The latest settings, read by the writers below: no side effect inside a setState updater (lot 10d).
+  const current = React.useRef(settings)
+  const commit = React.useCallback((next: Settings) => {
+    current.current = next
+    setSettings(next)
+  }, [])
   const [saveState, setSaveState] = React.useState<SaveState>("idle")
   const systemDark = useSystemDark()
   const resolvedTheme = resolveTheme(settings.theme, systemDark)
@@ -95,23 +103,23 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       unsub = docs.watchDoc(SETTINGS_PATH, (d) => {
         if (!d) return
         const remote = parseSettings(d)
-        setSettings((local) => {
-          const winner = newer(local, remote)
-          if (winner === remote) writeLocal(remote)
-          else if (local.activeCycleId == null && remote.activeCycleId) return { ...local, activeCycleId: remote.activeCycleId }
-          return winner
-        })
+        const local = current.current
+        if (newer(local, remote) === remote) {
+          writeLocal(remote)
+          commit(remote)
+        } else if (local.activeCycleId == null && remote.activeCycleId) commit({ ...local, activeCycleId: remote.activeCycleId })
       })
     })
     return () => {
       cancelled = true
       unsub?.()
     }
-  }, [])
+  }, [commit])
 
-  const update = React.useCallback((patch: Partial<Pick<Settings, "theme" | "lang" | "activeCycleId" | "concentrate" | "space">>) => {
-    setSettings((prev) => {
-      const next: Settings = { ...prev, ...patch, updatedAt: new Date().toISOString() }
+  const update = React.useCallback(
+    (patch: Partial<Pick<Settings, "theme" | "lang" | "activeCycleId" | "concentrate" | "space">>) => {
+      const next: Settings = { ...current.current, ...patch, updatedAt: new Date().toISOString() }
+      commit(next)
       writeLocal(next)
       getStores().then(async ({ docs }) => {
         try {
@@ -121,9 +129,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           setSaveState("local-only")
         }
       })
-      return next
-    })
-  }, [])
+    },
+    [commit],
+  )
 
   const value = React.useMemo<Ctx>(() => {
     const lang = settings.lang
@@ -144,6 +152,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         return lo === hi ? formatNumber(lang, lo, dd) : formatRange(lang, lo, hi, dd)
       },
       dm: (iso) => formatDayMonth(lang, new Date(`${iso}T12:00:00`)),
+      show: (v) => formatInput(lang, v),
       locale: locales[lang],
     }
   }, [settings, resolvedTheme, saveState, update])

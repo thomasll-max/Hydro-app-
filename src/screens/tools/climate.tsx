@@ -14,10 +14,9 @@ import { useEditors } from "@/app/editors"
 import { cn } from "@/lib/utils"
 
 export function ClimateTool() {
-  const { t, num, range, settings } = useSettings()
+  const { t, num, range, show } = useSettings()
   const { cycle, space, all, equipment, assignments, targetsFor } = useGrow()
   const today = todayIso()
-  const show = (v?: number) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
   const last = space ? all.entries.find((e) => e.spaceId === space.id && !e.plantId && e.tempDay != null) : undefined
   const tg = cycle ? targetsFor(today, cycle) : null
 
@@ -26,7 +25,7 @@ export function ClimateTool() {
   useEffect(() => {
     setF({ temp: show(last?.tempDay), rh: show(last?.rh), offset: show(last?.leafOffsetC ?? cycle?.leafOffsetC ?? -2) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [space?.id, last?.id, settings.lang])
+  }, [space?.id, last?.id])
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }))
 
   if (!space) return <p className="text-[13px] text-fg-3">{t("lgt.noSpace")}</p>
@@ -109,7 +108,7 @@ export function ClimateTool() {
               {air.status && air.status !== "ok" && <p className="text-[12px] text-warn">{air.status === "slow" ? t("clim.slow") : t("clim.fast")}</p>}
               {air.carbonFilter && <p className="text-[11.5px] text-fg-3">{t("equip.c.carbonWarn")}</p>}
               {air.m3h == null && (
-                <a href="#equipment" className="text-[12.5px] font-semibold text-primary">
+                <a href="#tools/equipment" className="text-[12.5px] font-semibold text-primary">
                   {t("irr.openEquipment")}
                 </a>
               )}

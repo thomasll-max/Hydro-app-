@@ -41,7 +41,7 @@ export function ResetCard({ i }: { i: number }) {
               <AlertDialogTitle>{t("reset.confirmTitle")}</AlertDialogTitle>
               <AlertDialogDescription>{t("reset.confirmBody")}</AlertDialogDescription>
             </AlertDialogHeader>
-            <a href="#data" className="text-[13px] font-semibold text-primary">
+            <a href="#tools/data" className="text-[13px] font-semibold text-primary">
               {t("reset.backupFirst")}
             </a>
             <AlertDialogFooter className="flex-row gap-2">

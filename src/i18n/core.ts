@@ -36,6 +36,12 @@ export function placeholders(template: string): string[] {
 }
 
 const numCache = new Map<string, Intl.NumberFormat>()
+/** A stored number as a form shows it ("2,4" in French): no rounding, empty when unknown. */
+export function formatInput(lang: Lang, value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return ""
+  return lang === "fr" ? String(value).replace(".", ",") : String(value)
+}
+
 export function formatNumber(lang: Lang, value: number, decimals = 0): string {
   const id = `${lang}:${decimals}`
   let f = numCache.get(id)

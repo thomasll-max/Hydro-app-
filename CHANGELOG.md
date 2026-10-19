@@ -1,5 +1,19 @@
 # Changelog
 
+## Lot 10d1 — Navigation, feuilles et saisie (19/10/2026)
+Passe de corrections, points 54 à 57, 61, 62, 65 à 68 et 70 de `docs/audit-2026-10-19.md` (le lot 10d est coupé en 10d1 et 10d2).
+- **Le geste retour ne quitte plus l'app** : onglets, outils et feuilles sont dans l'historique. Le retour ferme d'abord la feuille ouverte, puis revient à la liste des outils, puis à Aujourd'hui.
+- **Outils** : adresses `#tools/irrigation`, `#tools/nutrition`… (les anciens liens `#irrigation` marchent encore) ; retoucher l'onglet Outils ramène à la liste ; le hash n'est plus effacé.
+- **Feuilles** : bouton ✕ ; « Abandonner la saisie ? » avant de fermer une feuille modifiée (✕, glissement, retour) ; la saisie rapide passe ses valeurs à la saisie complète.
+- **« Reprendre hier »** : un bouton recopie les valeurs de la veille affichées en gris dans les champs vides (elles ne sont toujours pas enregistrées sans ce geste).
+- **Changer la date, la plante ou l'espace d'une saisie** garde ce qui a été tapé.
+- **Saisies** : une saisie rapide vide dit « Rien à enregistrer » au lieu d'un faux succès ; une ancienne saisie réenregistrée garde son heure ; un transfert partiel demande au moins une plante cochée.
+- **Équipement** : changer de type ne vide plus les champs tapés. **Langue** : en changer ne vide plus les formulaires en cours.
+- **Un seul message** par transfert, duplication ou archivage (deux avant).
+- **Version locale** : si le réseau ne répond pas en 3 s, l'app s'ouvre depuis le cache.
+- Plus d'effet de bord dans les mises à jour d'état (réglages, préférences des graphiques), plus d'effet sans accolades.
+- 272 tests (6 nouveaux, `calc/lot10d.test.ts` : routes, `planNav`, « Reprendre hier », format des champs) ; `scripts/e2e-10d.py` (retour, feuilles, saisie, langue) ; 2b, 3, 4a, 4b, 5a, 5b, 6a, 6b, 10b repassés.
+
 ## Lot 10c — Calculs Athena : aucune valeur inventée (19/10/2026)
 Passe de corrections, points 40 à 53 de `docs/audit-2026-10-19.md`.
 - **Fade Pro** : 51 mL / 10 L fixes en S8–S9 (p. 31), plus mis à l'échelle de l'EC (37 mL à EC 2,2 avant).

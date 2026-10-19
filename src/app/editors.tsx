@@ -75,7 +75,7 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
       <MixSheet open={is("mix")} onOpenChange={close} mix={last.kind === "mix" ? last.mix : undefined} />
       <ReminderSheet open={is("reminder")} onOpenChange={close} init={last.kind === "reminder" ? last.init : {}} />
       <SpaceSettings open={is("space")} onOpenChange={close} spaceId={last.kind === "space" ? last.spaceId : undefined} section={last.kind === "space" ? last.section : undefined} />
-      <QuickSheet open={is("quick")} onOpenChange={close} onFull={(spaceId) => open({ kind: "entry", init: { spaceId } })} />
+      <QuickSheet open={is("quick")} onOpenChange={close} onFull={(spaceId, date, values) => open({ kind: "entry", init: { spaceId, date, values } })} />
     </Ctx.Provider>
   )
 }

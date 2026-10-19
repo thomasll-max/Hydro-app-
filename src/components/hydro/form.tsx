@@ -1,4 +1,5 @@
-import type { ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode, type SyntheticEvent } from "react"
+import { X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label as UiLabel } from "@/components/ui/label"
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
@@ -6,6 +7,17 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 import { isBadNum } from "@/calc/formulas"
 import { useSettings } from "@/app/settings-context"
+import { addLayer } from "@/app/nav"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 /** Bottom sheet used for every form (shadcn Drawer / vaul), full-height on phones. */
 export function Sheet({
@@ -15,6 +27,7 @@ export function Sheet({
   description,
   children,
   footer,
+  dirty,
 }: {
   open: boolean
   onOpenChange: (o: boolean) => void
@@ -22,20 +35,89 @@ export function Sheet({
   description?: string
   children: ReactNode
   footer: ReactNode
+  /** Unsaved changes. By default: something was typed or picked since the sheet opened. */
+  dirty?: boolean
 }) {
+  const { t } = useSettings()
+  const [touched, setTouched] = useState(false)
+  const [asking, setAsking] = useState(false)
+  const [wasOpen, setWasOpen] = useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    setTouched(false)
+    setAsking(false)
+  }
+  const unsaved = dirty ?? touched
+  // Closing by ✕, swipe, tap outside or the back gesture asks first when something would be lost (lot 10d).
+  const tryClose = (): boolean => {
+    if (unsaved) {
+      setAsking(true)
+      return false
+    }
+    onOpenChange(false)
+    return true
+  }
+  const tryCloseRef = useRef(tryClose)
+  useEffect(() => {
+    tryCloseRef.current = tryClose
+  })
+  useEffect(() => {
+    if (!open) return
+    return addLayer({ onBack: () => tryCloseRef.current() })
+  }, [open])
+  const touch = (e: SyntheticEvent) => {
+    const el = e.target as HTMLElement
+    if (e.type === "input" || el.closest?.("[role=radio],[role=switch],[role=checkbox],[aria-pressed]")) setTouched(true)
+  }
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} repositionInputs={false}>
-      <DrawerContent className="mx-auto max-h-[94dvh]! max-w-[520px] rounded-t-[24px]! border-line-strong bg-background">
-        <DrawerHeader className="pb-2 text-left! md:text-left">
-          <DrawerTitle className="text-[20px] tracking-[-0.4px]">{title}</DrawerTitle>
-          {description ? <DrawerDescription>{description}</DrawerDescription> : <DrawerDescription className="sr-only">{title}</DrawerDescription>}
-        </DrawerHeader>
-        <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4">{children}</div>
-        <DrawerFooter className="border-t border-line bg-background/90 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] backdrop-blur">
-          {footer}
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+    <>
+      <Drawer open={open} onOpenChange={(o) => (o ? onOpenChange(true) : tryClose())} dismissible={!unsaved} repositionInputs={false}>
+        <DrawerContent
+          className="mx-auto max-h-[94dvh]! max-w-[520px] rounded-t-[24px]! border-line-strong bg-background"
+          onInputCapture={touch}
+          onClickCapture={touch}
+          onPointerDownOutside={() => {
+            if (unsaved) tryClose()
+          }}
+          onEscapeKeyDown={() => {
+            if (unsaved) tryClose()
+          }}
+        >
+          <DrawerHeader className="flex-row items-start gap-2 pb-2 text-left! md:text-left">
+            <div className="min-w-0 flex-1">
+              <DrawerTitle className="text-[20px] tracking-[-0.4px]">{title}</DrawerTitle>
+              {description ? <DrawerDescription>{description}</DrawerDescription> : <DrawerDescription className="sr-only">{title}</DrawerDescription>}
+            </div>
+            <button
+              type="button"
+              onClick={tryClose}
+              aria-label={t("common.close")}
+              className="-mt-1 -mr-1 flex size-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-surface-2"
+            >
+              <X className="size-5" />
+            </button>
+          </DrawerHeader>
+          <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4">{children}</div>
+          <DrawerFooter className="border-t border-line bg-background/90 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] backdrop-blur">
+            {footer}
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+      <AlertDialog open={asking} onOpenChange={setAsking}>
+        <AlertDialogContent className="max-w-[340px] rounded-xl border-line-strong bg-surface">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("common.discardTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("common.discardBody")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row gap-2">
+            <AlertDialogCancel className="h-11 flex-1 rounded-full">{t("common.keepEditing")}</AlertDialogCancel>
+            <AlertDialogAction className="h-11 flex-1 rounded-full bg-bad text-white hover:bg-bad/90" onClick={() => onOpenChange(false)}>
+              {t("common.discard")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 

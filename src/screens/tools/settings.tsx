@@ -307,7 +307,9 @@ function TransferSheet({ open, onOpenChange, cycle }: { open: boolean; onOpenCha
       footer={
         <SaveBar
           busy={busy}
-          onSave={() =>
+          onSave={() => {
+            // A partial transfer moves the plants ticked below: at least one (lot 10d).
+            if (partial && !plants.length) return void toast.error(t("growSet.pickPlant"))
             run(async () => {
               if (!to) return
               const next = transferCycle(cycle, to, date, new Date().toISOString(), partial ? { partial: true, plantIds: plants.map((p) => `${cycle.id}_${p}`) } : {})
@@ -324,9 +326,9 @@ function TransferSheet({ open, onOpenChange, cycle }: { open: boolean; onOpenCha
                 createdAt: new Date().toISOString(),
               })
               if (!partial) setSpace(to)
-              toast.success(t("growSet.transferred"))
+              return t("growSet.transferred")
             })
-          }
+          }}
         />
       }
     >

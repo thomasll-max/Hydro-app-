@@ -8,7 +8,7 @@ import { ConfirmDelete } from "@/components/hydro/confirm"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
-import { blankEntry, CARRIED, derive, drybackMethodOf, entryHasContent, entryId, HINTED, previousEntry } from "@/model/entry"
+import { blankEntry, CARRIED, derive, drybackMethodOf, entryHasContent, entryId, HINTED, previousEntry, resumeFrom } from "@/model/entry"
 import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, type ActionTag, type Entry, type ObsTag, type PlantId, type Severity } from "@/model/types"
 import { equipmentAt } from "@/equipment/calc"
 import { SpaceDot } from "@/components/hydro/space-pill"
@@ -18,13 +18,14 @@ import { status } from "@/calc/advice"
 import { addDays, todayIso } from "@/calc/stage"
 import type { MessageKey } from "@/i18n/types"
 
-export type EntryInit = { date?: string; plantId?: PlantId; spaceId?: string }
+/** `values`: measurements already typed in the quick entry, carried into the full one (lot 10d). */
+export type EntryInit = { date?: string; plantId?: PlantId; spaceId?: string; values?: Partial<Record<string, string>> }
 
 type NumKey = (typeof CARRIED)[number] | (typeof HINTED)[number]
 const NUMS: NumKey[] = [...CARRIED.filter((k) => k !== "mixId"), ...HINTED] as NumKey[]
 
 export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpenChange: (o: boolean) => void; init: EntryInit }) {
-  const { t, num, range, dm, settings } = useSettings()
+  const { t, num, range, dm, show } = useSettings()
   const ed = useEditors()
   const { spaces, space: curSpace, all, cycleIn, equipment, assignments, saveEntry, deleteEntry, targetsFor, uploadPhoto, photoUrl, deletePhotos } = useGrow()
   const [spaceId, setSpaceId] = useState(init.spaceId ?? curSpace?.id ?? "")
@@ -57,14 +58,18 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const fileRef = useRef<HTMLInputElement>(null)
   // Photos sent during this visit: removed again if the sheet closes without saving (lot 10a, no orphan files).
   const fresh = useRef<Set<string>>(new Set())
+  // What was typed or picked since the sheet opened: kept when the date, the plant or the space changes (lot 10d).
+  const typed = useRef<Set<string>>(new Set())
+  const opened = useRef(false)
+  const touch = (k: string) => typed.current.add(k)
   useEffect(() => {
     if (open) return
+    opened.current = false
     const left = [...fresh.current]
     fresh.current = new Set()
     if (left.length) deletePhotos(left)
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const show = (v: number | undefined) => (v == null ? "" : settings.lang === "fr" ? String(v).replace(".", ",") : String(v))
 
   // Reset when opened.
   useEffect(() => {
@@ -79,20 +84,31 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const prev = useMemo(() => previousEntry(entries, date, plantId), [entries, date, plantId])
   useEffect(() => {
     if (!open || !space || !date) return
+    const carried = Object.entries(init.values ?? {}).filter(([k, v]) => (NUMS as string[]).includes(k) && v?.trim())
+    if (!opened.current) {
+      opened.current = true
+      typed.current = new Set(carried.map(([k]) => k))
+    }
+    const keep = typed.current
     const found = entries.find((e) => e.id === entryId(date, space.id, plantId)) ?? null
     setExisting(found)
     const src = found ?? blankEntry(date, { spaceId: space.id, cycle }, prev, plantId)
-    setDomeOn(!!src.domeOn)
-    const nf: Partial<Record<NumKey, string>> = {}
-    for (const k of NUMS) nf[k] = show(src[k] as number | undefined)
-    setF(nf)
-    setMixId(src.mixId ?? (found ? "" : (mixes[0]?.id ?? "")))
-    setObs(src.observations ?? [])
-    setActs(src.actions ?? [])
-    setPhotos(src.photos ?? [])
-    setNote(src.note ?? "")
+    if (!keep.has("domeOn")) setDomeOn(!!src.domeOn)
+    setF((cur) => {
+      const nf: Partial<Record<NumKey, string>> = {}
+      for (const k of NUMS) nf[k] = keep.has(k) ? cur[k] : show(src[k] as number | undefined)
+      for (const [k, v] of carried) if (!cur[k as NumKey]) nf[k as NumKey] = v
+      return nf
+    })
+    if (!keep.has("mixId")) setMixId(src.mixId ?? (found ? "" : (mixes[0]?.id ?? "")))
+    if (!keep.has("obs")) setObs(src.observations ?? [])
+    if (!keep.has("acts")) setActs(src.actions ?? [])
+    if (!keep.has("photos")) setPhotos(src.photos ?? [])
+    if (!keep.has("note")) setNote(src.note ?? "")
+    // An entry saved again keeps its own time (or none); a new one of today takes the current time (lot 10d).
     const d = new Date()
-    setTime(found?.time ?? `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`)
+    const now = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+    if (!keep.has("time")) setTime(found ? (found.time ?? "") : date === todayIso() ? now : "")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, date, plantId, space?.id, cycle?.id])
 
@@ -123,22 +139,37 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   }
   const fmt = (v: number | undefined, d: number, unit = "") => (v == null ? "—" : `${num(v, d)}${unit}`)
 
-  const set = (k: NumKey) => (v: string) => setF((s) => ({ ...s, [k]: v }))
+  const set = (k: NumKey) => (v: string) => {
+    touch(k)
+    setF((s) => ({ ...s, [k]: v }))
+  }
+  // Fields on screen this render that show yesterday's value in grey: what "Reprendre hier" fills.
+  const greyed: (typeof HINTED)[number][] = []
+  const resume = () => {
+    const r = resumeFrom(f as Partial<Record<(typeof HINTED)[number], string>>, prev, greyed, show)
+    if (!r.filled.length) return
+    r.filled.forEach(touch)
+    setF((s) => ({ ...s, ...r.values }))
+    toast(t("entry.resumed"))
+  }
   const hint = (k: NumKey) => {
     const v = prev?.[k] as number | undefined
     return v == null ? undefined : t("entry.hint", { v: show(v) })
   }
-  const nf = (k: NumKey, label: MessageKey, opts: { integer?: boolean } = {}) => (
-    <NumField id={`e-${k}`} label={t(label)} value={f[k] ?? ""} onChange={set(k)} placeholder={(HINTED as readonly string[]).includes(k) ? show(prev?.[k] as number | undefined) : undefined} hint={(HINTED as readonly string[]).includes(k) ? hint(k) : undefined} integer={opts.integer} />
-  )
+  const nf = (k: NumKey, label: MessageKey, opts: { integer?: boolean } = {}) => {
+    if ((HINTED as readonly string[]).includes(k) && prev?.[k] != null) greyed.push(k as (typeof HINTED)[number])
+    return <NumField id={`e-${k}`} label={t(label)} value={f[k] ?? ""} onChange={set(k)} placeholder={(HINTED as readonly string[]).includes(k) ? show(prev?.[k] as number | undefined) : undefined} hint={(HINTED as readonly string[]).includes(k) ? hint(k) : undefined} integer={opts.integer} />
+  }
 
-  const cycleObs = (tag: ObsTag) =>
+  const cycleObs = (tag: ObsTag) => {
+    touch("obs")
     setObs((list) => {
       const cur = list.find((o) => o.tag === tag)
       if (!cur) return [...list, { tag, severity: 1 }]
       if (cur.severity === 3) return list.filter((o) => o.tag !== tag)
       return list.map((o) => (o.tag === tag ? { ...o, severity: (o.severity + 1) as Severity } : o))
     })
+  }
 
   const onFiles = async (files: FileList | null) => {
     if (!files?.length) return
@@ -147,6 +178,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       try {
         const id = await uploadPhoto(file)
         fresh.current.add(id)
+        touch("photos")
         setPhotos((p) => [...p, id])
       } catch (err) {
         toast.error(t("common.saveError", { reason: (err as { message?: string })?.message ?? "photo" }))
@@ -190,68 +222,9 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     on("irrigation") && <Computed key="r" label={t("entry.runoffPct")} value={fmt(live?.runoffPct, 0, " %")} status={st("runoffPct")} />,
     on("light") && <Computed key="l" label={t("entry.dli")} value={fmt(live?.dli, 1)} status={st("dli")} />,
   ].filter(Boolean)
-  return (
-    <Sheet
-      open={open}
-      onOpenChange={onOpenChange}
-      title={t("entry.title")}
-      description={existing ? t("entry.existing") : undefined}
-      footer={
-        <div className="flex gap-2">
-          {existing && (
-            <ConfirmDelete
-              onConfirm={async () => {
-                await deleteEntry(existing.id)
-                if (existing.photos?.length) deletePhotos(existing.photos)
-                toast(t("common.deleted"))
-                onOpenChange(false)
-              }}
-              trigger={
-                <Button variant="outline" size="icon-lg" className="size-12 rounded-full border-line-strong" aria-label={t("entry.deleteEntry")}>
-                  <Trash2 className="size-5 text-bad" />
-                </Button>
-              }
-            />
-          )}
-          <Button
-            variant="outline"
-            onClick={() => save(true)}
-            disabled={busy || !date || uploading > 0}
-            className="h-12 rounded-full border-line-strong px-4 text-[14px] font-semibold"
-            aria-label={`${t("common.save")} + ${t("cal.addShort")}`}
-          >
-            <AlarmClockPlus className="size-4.5" /> {t("cal.addShort")}
-          </Button>
-          <Button onClick={() => save()} disabled={busy || !date || uploading > 0} className="h-12 flex-1 rounded-full text-[15px] font-bold">
-            {busy && <Loader2 className="animate-spin" />}
-            {t("common.save")}
-          </Button>
-        </div>
-      }
-    >
-      <Grid>
-        <TextField id="e-date" type="date" label={`${t("entry.date")} · ${t("common.required")}`} value={date} onChange={setDate} />
-        <TextField id="e-time" type="time" label={t("entry.time")} value={time} onChange={setTime} />
-      </Grid>
-      {spaces.length > 1 && (
-        <div className="mt-2.5">
-          <Seg<string> label={t("entry.space")} value={space.id} onChange={setSpaceId} options={spaces.map((x) => ({ value: x.id, label: x.name }))} />
-        </div>
-      )}
-      <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-fg-3">
-        <SpaceDot color={space.color} /> {cycle ? t("entry.forCycle", { space: space.name, cycle: cycle.name }) : t("entry.noCycle", { space: space.name })}
-      </p>
-      {on("plants") && cycle && (
-        <div className="mt-2.5">
-          <Seg<string>
-            label={t("entry.scope")}
-            value={plantId ?? "room"}
-            onChange={(v) => setPlantId(v === "room" ? undefined : (v as PlantId))}
-            options={[{ value: "room", label: t("entry.wholeSpace") }, ...plantIds.map((p) => ({ value: p, label: p }))]}
-          />
-        </div>
-      )}
-
+  // The fields first: they list the greyed values "Reprendre hier" can fill.
+  const fields = (
+    <>
       {computed.length > 0 && (
         <div className="sticky top-0 z-10 -mx-4 mt-3 bg-background/95 px-4 py-2 backdrop-blur">
           <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${computed.length}, minmax(0, 1fr))` }} aria-live="polite">
@@ -276,7 +249,15 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
             {nf("germinatedCount", "entry.germinated", { integer: true })}
           </Grid>
           <div className="mt-2 rounded-md border border-line bg-surface px-3">
-            <SwitchRow id="e-dome" label={t("entry.dome")} checked={domeOn} onChange={setDomeOn} />
+            <SwitchRow
+              id="e-dome"
+              label={t("entry.dome")}
+              checked={domeOn}
+              onChange={(v) => {
+                touch("domeOn")
+                setDomeOn(v)
+              }}
+            />
           </div>
         </Group>
       )}
@@ -342,7 +323,10 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
               <Seg<string>
                 label={t("entry.mix")}
                 value={mixId || "none"}
-                onChange={(v) => setMixId(v === "none" ? "" : v)}
+                onChange={(v) => {
+                  touch("mixId")
+                  setMixId(v === "none" ? "" : v)
+                }}
                 options={[{ value: "none", label: t("entry.noMix") }, ...mixes.slice(0, 3).map((m) => ({ value: m.id, label: `${dm(m.date)} · ${num(m.volumeL)} L` }))]}
               />
             </div>}
@@ -368,14 +352,30 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       <Group title={t("entry.actions")}>
         <div className="flex flex-wrap gap-2">
           {ACTION_TAGS.map((a) => (
-            <TagChip key={a} label={t(`action.${a}`)} on={acts.includes(a)} onClick={() => setActs((l) => (l.includes(a) ? l.filter((x) => x !== a) : [...l, a]))} />
+            <TagChip
+              key={a}
+              label={t(`action.${a}`)}
+              on={acts.includes(a)}
+              onClick={() => {
+                touch("acts")
+                setActs((l) => (l.includes(a) ? l.filter((x) => x !== a) : [...l, a]))
+              }}
+            />
           ))}
         </div>
       </Group>
       <Group title={t("entry.photos")}>
         <div className="flex flex-wrap gap-2">
           {photos.map((id) => (
-            <PhotoThumb key={id} id={id} url={photoUrl} onRemove={() => setPhotos((p) => p.filter((x) => x !== id))} />
+            <PhotoThumb
+              key={id}
+              id={id}
+              url={photoUrl}
+              onRemove={() => {
+                touch("photos")
+                setPhotos((p) => p.filter((x) => x !== id))
+              }}
+            />
           ))}
           <button
             type="button"
@@ -389,8 +389,101 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
         </div>
       </Group>
       <Group title={t("entry.note")}>
-        <AreaField id="e-note" label={t("entry.note")} value={note} onChange={setNote} placeholder={t("entry.notePlaceholder")} />
+        <AreaField
+          id="e-note"
+          label={t("entry.note")}
+          value={note}
+          onChange={(v) => {
+            touch("note")
+            setNote(v)
+          }}
+          placeholder={t("entry.notePlaceholder")}
+        />
       </Group>
+    </>
+  )
+  return (
+    <Sheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t("entry.title")}
+      description={existing ? t("entry.existing") : undefined}
+      // Values carried from the quick entry are not saved yet: closing asks first.
+      dirty={Object.values(init.values ?? {}).some((x) => x?.trim()) || undefined}
+      footer={
+        <div className="flex gap-2">
+          {existing && (
+            <ConfirmDelete
+              onConfirm={async () => {
+                await deleteEntry(existing.id)
+                if (existing.photos?.length) deletePhotos(existing.photos)
+                toast(t("common.deleted"))
+                onOpenChange(false)
+              }}
+              trigger={
+                <Button variant="outline" size="icon-lg" className="size-12 rounded-full border-line-strong" aria-label={t("entry.deleteEntry")}>
+                  <Trash2 className="size-5 text-bad" />
+                </Button>
+              }
+            />
+          )}
+          <Button
+            variant="outline"
+            onClick={() => save(true)}
+            disabled={busy || !date || uploading > 0}
+            className="h-12 rounded-full border-line-strong px-4 text-[14px] font-semibold"
+            aria-label={`${t("common.save")} + ${t("cal.addShort")}`}
+          >
+            <AlarmClockPlus className="size-4.5" /> {t("cal.addShort")}
+          </Button>
+          <Button onClick={() => save()} disabled={busy || !date || uploading > 0} className="h-12 flex-1 rounded-full text-[15px] font-bold">
+            {busy && <Loader2 className="animate-spin" />}
+            {t("common.save")}
+          </Button>
+        </div>
+      }
+    >
+      <Grid>
+        <TextField id="e-date" type="date" label={`${t("entry.date")} · ${t("common.required")}`} value={date} onChange={setDate} />
+        <TextField
+          id="e-time"
+          type="time"
+          label={t("entry.time")}
+          value={time}
+          onChange={(v) => {
+            touch("time")
+            setTime(v)
+          }}
+        />
+      </Grid>
+      {spaces.length > 1 && (
+        <div className="mt-2.5">
+          <Seg<string> label={t("entry.space")} value={space.id} onChange={setSpaceId} options={spaces.map((x) => ({ value: x.id, label: x.name }))} />
+        </div>
+      )}
+      <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-fg-3">
+        <SpaceDot color={space.color} /> {cycle ? t("entry.forCycle", { space: space.name, cycle: cycle.name }) : t("entry.noCycle", { space: space.name })}
+      </p>
+      {on("plants") && cycle && (
+        <div className="mt-2.5">
+          <Seg<string>
+            label={t("entry.scope")}
+            value={plantId ?? "room"}
+            onChange={(v) => setPlantId(v === "room" ? undefined : (v as PlantId))}
+            options={[{ value: "room", label: t("entry.wholeSpace") }, ...plantIds.map((p) => ({ value: p, label: p }))]}
+          />
+        </div>
+      )}
+
+      {greyed.length > 0 && (
+        <div className="mt-2.5 flex items-center gap-2 rounded-md border border-line bg-surface px-3 py-2">
+          <p className="min-w-0 flex-1 text-[11.5px] leading-snug text-fg-3">{t("entry.resumeHint")}</p>
+          <Button type="button" variant="outline" onClick={resume} className="h-10 shrink-0 rounded-full border-primary/40 px-3.5 text-[13px] font-semibold text-primary">
+            {t("entry.resume")}
+          </Button>
+        </div>
+      )}
+      {fields}
     </Sheet>
   )
 }

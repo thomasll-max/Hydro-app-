@@ -395,6 +395,7 @@ export const fr = {
     srcEstimate: "pH 70/30 : estimation",
     srcFlow: "débit mesuré ({flow} L/min)",
     srcFlowMissing: "débit à mesurer",
+    srcApp: "runoff en manuel : repère de l'app",
   },
   advice: {
     range: "cible {range}",
@@ -870,7 +871,7 @@ export const fr = {
     drybackT: "Dryback visé",
     runoffT: "Runoff visé",
     runoffPerPot: "{range} par pot et par jour",
-    runoffManual: "10–25 % du volume donné",
+    runoffManual: "10–25 % du volume donné (repère de l'app)",
     ecRunoffT: "EC du runoff",
     phT: "pH solution",
     program: "Programme du jour",
@@ -892,8 +893,8 @@ export const fr = {
     sensorP2: "déclenchées par le capteur à {trigger} %",
     totals: "Par pot : {fixed}{opt} · {pots} pots : {all}",
     totalsOpt: " + {v} en option",
-    progNotePrec: "D'Athena : P0 de 1 à 2 h, doses de 2 à 6 % du pot, 15 à 30 min entre les doses P1, 2 à 7 % de runoff à la fin du P1. Le nombre de doses P2 et l'heure de la dernière dose sont des points de départ à ajuster avec la saisie du matin.",
-    progNoteManual: "D'Athena : un arrosage par jour à l'allumage, 10–25 % de runoff, et pas d'arrosage tant que le pot n'a pas séché. Le découpage en passages aide le substrat à absorber.",
+    progNotePrec: "D'Athena : P0 de 1 à 2 h, doses de 2 à 6 % du pot, 15 à 30 min entre les doses P1, 2 à 7 % de runoff à la fin du P1. Repères de l'app (hors Handbook), à ajuster avec la saisie du matin : le nombre et l'espacement des doses P2, l'heure de la dernière dose, et en installation les 2 petites doses (≈ 13 mL par litre de pot, entre 100 et 300 mL).",
+    progNoteManual: "D'Athena : un arrosage par jour à l'allumage, et pas d'arrosage tant que le pot n'a pas séché. Les 10–25 % de runoff et le découpage en passages sont des repères de l'app (hors Handbook).",
     noFlow: "Mesure le débit pour avoir la durée de chaque dose.",
     apply: "Utiliser ces réglages pour le cycle",
     applied: "Réglages enregistrés dans le cycle",
@@ -958,6 +959,8 @@ export const fr = {
     how2: "Note le total : au bidon suivant, il est versé en premier (Nutrition).",
     how3: "Pas de Balance avec un NetaFlex : prendre le Pro Balance en poudre (concentré à 282 g/L).",
     sources: "Sources : Athena Handbook (Balance, pH par stade) · tes bidons enregistrés (prédiction)",
+    noNeed: "pH déjà dans la cible : pas de Balance pour ce bidon.",
+    noNeedHigh: "pH déjà au-dessus de la cible : pas de Balance (il ne fait que monter le pH). Aucune dose n'est proposée pour le redescendre.",
   },
   ipw: {
     enableInSettings: "L'activer dans les réglages",
@@ -1469,6 +1472,9 @@ export const fr = {
     pPer10: "= {range} {unit} pour 10 L",
     pNote: "Hors Athena Handbook, non vérifié. Les chiffres viennent de l'étiquette.",
     pNeedName: "Donne un nom au produit",
+    ecClamped: "EC au-delà du tableau Athena (p. 37) : doses de l'EC {ec}, la plus haute publiée. Vérifie l'EC au conductimètre.",
+    invalidVolume: "Indique un volume de bidon pour calculer les quantités.",
+    interpolated: "estimation (entre deux lignes du tableau)",
   },
 
   guide: {

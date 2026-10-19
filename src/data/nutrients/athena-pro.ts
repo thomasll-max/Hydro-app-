@@ -58,7 +58,8 @@ export const ATHENA_PRO: NutrientCatalog = {
     { id: "proGrow", name: "Pro Grow", form: "powder" },
     { id: "proBloom", name: "Pro Bloom", form: "powder" },
     { id: "proCore", name: "Pro Core", form: "powder" },
-    { id: "fade", name: "Fade", form: "liquid", addon: "fade", scalesWithEc: true },
+    // Fixed 51 mL/10 L in S8–S9 (p. 31): not scaled with the EC aimed for (lot 10c).
+    { id: "fade", name: "Fade", form: "liquid", addon: "fade" },
     { id: "cleanse", name: "Cleanse", form: "liquid", addon: "cleanse" },
     { id: "balance", name: "Balance", form: "liquid", addon: "balance" },
   ],

@@ -7,11 +7,17 @@ import type { DayTargets, Target } from "./targets"
 export type Status = "ok" | "warn" | "bad"
 export type MetricKey = "dryback" | "runoffPct" | "ecIn" | "ecRunoff" | "phIn" | "phRunoff" | "vpd" | "dli"
 
-/** In range → ok; within one band width (or 10 % of the value for single-point targets) → warn; else bad. */
-export function status(v: number, t: Pick<Target, "lo" | "hi">): Status {
+/** pH tolerance (lot 10c): 0.2 outside the range is "à surveiller", further is "à corriger" (6.8 in coco is bad). */
+export const PH_MARGIN = 0.2
+
+/**
+ * In range → ok; within one band width (or 10 % of the value for single-point targets) → warn; else bad. pH metrics use
+ * an absolute margin of 0.2 instead (a relative one let pH 6.8 pass as a warning in coco).
+ */
+export function status(v: number, t: Pick<Target, "lo" | "hi">, metric?: string): Status {
   if (v >= t.lo && v <= t.hi) return "ok"
-  const margin = Math.max(t.hi - t.lo, Math.abs(t.hi) * 0.1)
-  return v >= t.lo - margin && v <= t.hi + margin ? "warn" : "bad"
+  const margin = metric?.startsWith("ph") ? PH_MARGIN : Math.max(t.hi - t.lo, Math.abs(t.hi) * 0.1)
+  return v >= t.lo - margin - 1e-9 && v <= t.hi + margin + 1e-9 ? "warn" : "bad"
 }
 
 export function pills(e: Entry, t: DayTargets): Partial<Record<MetricKey, Status>> {
@@ -19,7 +25,7 @@ export function pills(e: Entry, t: DayTargets): Partial<Record<MetricKey, Status
   for (const k of ["dryback", "runoffPct", "ecIn", "ecRunoff", "phIn", "phRunoff", "vpd", "dli"] as const) {
     const v = e[k]
     const tg = t[k]
-    if (typeof v === "number" && tg) out[k] = status(v, tg)
+    if (typeof v === "number" && tg) out[k] = status(v, tg, k)
   }
   return out
 }

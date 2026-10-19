@@ -313,7 +313,7 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
     const r = tg?.[k]
     return (
       <span className="flex items-center gap-1 text-[12px] text-fg-2">
-        {r && <Dot status={status(v, r)} />}
+        {r && <Dot status={status(v, r, k)} />}
         {label} <b className="font-semibold text-fg tabular-nums">{`${num(v, d)}${unit}`}</b>
       </span>
     )

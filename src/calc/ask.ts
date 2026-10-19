@@ -4,7 +4,7 @@
 import type { Equipment, EquipmentAssignment, Grow, Space } from "@/model/grow"
 import type { Cycle, Entry, IsoDate, Mix } from "@/model/types"
 import type { DayTargets } from "./targets"
-import { stageOn } from "./stage"
+import { stageOn, todayIso } from "./stage"
 import { equipmentAt } from "@/equipment/calc"
 import { getCatalog } from "@/data/nutrients"
 import { spaceNutrition } from "@/model/grow-ops"
@@ -93,7 +93,7 @@ export function askPrompt(context: string, question: string, history: AskTurn[],
     "Appuie-toi sur les données ci-dessous. Si une dose ou une valeur n'y figure pas et n'est pas dans l'Athena Handbook, dis-le au lieu de l'inventer.",
     "Ne mélange jamais deux gammes de nutriments. Cite la source quand tu donnes un chiffre (Athena p. X, repère courant, mesure).",
   ].join(" ")
-  const first = `${rules}\n\nDONNÉES DE L'APP (${new Date().toISOString().slice(0, 10)})\n${context}\n\nQUESTION\n${question}`
+  const first = `${rules}\n\nDONNÉES DE L'APP (${todayIso()})\n${context}\n\nQUESTION\n${question}`
   const past = history.slice(-MAX_TURNS)
   if (!past.length) return [{ role: "user", content: first }]
   // Data and rules go with the first kept question; later turns are the conversation as it happened.

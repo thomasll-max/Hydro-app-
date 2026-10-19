@@ -395,6 +395,7 @@ export const en: Messages = {
     srcEstimate: "70/30 pH: estimate",
     srcFlow: "measured flow ({flow} L/min)",
     srcFlowMissing: "flow to measure",
+    srcApp: "manual runoff: the app's starting value",
   },
   advice: {
     range: "target {range}",
@@ -870,7 +871,7 @@ export const en: Messages = {
     drybackT: "Target dryback",
     runoffT: "Target runoff",
     runoffPerPot: "{range} per pot per day",
-    runoffManual: "10–25 % of volume given",
+    runoffManual: "10–25 % of volume given (app's starting value)",
     ecRunoffT: "Runoff EC",
     phT: "Solution pH",
     program: "Today's schedule",
@@ -892,8 +893,8 @@ export const en: Messages = {
     sensorP2: "triggered by the sensor at {trigger} %",
     totals: "Per pot: {fixed}{opt} · {pots} pots: {all}",
     totalsOpt: " + {v} optional",
-    progNotePrec: "From Athena: P0 of 1 to 2 h, shots of 2 to 6 % of the pot, 15 to 30 min between P1 shots, 2 to 7 % runoff at the end of P1. The number of P2 shots and the last-shot time are starting points to tune with the morning entry.",
-    progNoteManual: "From Athena: one watering a day at lights-on, 10–25 % runoff, and no watering until the pot has dried back. Splitting it into passes helps the substrate absorb.",
+    progNotePrec: "From Athena: P0 of 1 to 2 h, shots of 2 to 6 % of the pot, 15 to 30 min between P1 shots, 2 to 7 % runoff at the end of P1. The app's starting values (not from the Handbook), to tune with the morning entry: the number and spacing of P2 shots, the last-shot time, and when establishing the 2 small doses (≈ 13 mL per litre of pot, 100 to 300 mL).",
+    progNoteManual: "From Athena: one watering a day at lights-on, and no watering until the pot has dried back. The 10–25 % runoff and splitting it into passes are the app's starting values (not from the Handbook).",
     noFlow: "Measure the flow to get each shot's duration.",
     apply: "Use these settings for the cycle",
     applied: "Settings saved to the cycle",
@@ -958,6 +959,8 @@ export const en: Messages = {
     how2: "Note the total: in the next tank it goes in first (Nutrition).",
     how3: "No Balance with a NetaFlex: use Pro Balance powder (concentrate at 282 g/L).",
     sources: "Sources: Athena Handbook (Balance, pH by stage) · your saved tanks (prediction)",
+    noNeed: "pH already in the target: no Balance for this tank.",
+    noNeedHigh: "pH already above the target: no Balance (it only raises the pH). No dose is suggested to bring it down.",
   },
   ipw: {
     enableInSettings: "Switch it on in the settings",
@@ -1469,6 +1472,9 @@ export const en: Messages = {
     pPer10: "= {range} {unit} per 10 L",
     pNote: "Not in the Athena Handbook, not verified. Figures come from the label.",
     pNeedName: "Give the product a name",
+    ecClamped: "EC beyond the Athena table (p. 37): doses of EC {ec}, the highest published. Check the EC with the meter.",
+    invalidVolume: "Enter a tank volume to work out the quantities.",
+    interpolated: "estimate (between two rows of the table)",
   },
 
   guide: {

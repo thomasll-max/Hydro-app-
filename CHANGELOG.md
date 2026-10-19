@@ -1,5 +1,21 @@
 # Changelog
 
+## Lot 10c — Calculs Athena : aucune valeur inventée (19/10/2026)
+Passe de corrections, points 40 à 53 de `docs/audit-2026-10-19.md`.
+- **Fade Pro** : 51 mL / 10 L fixes en S8–S9 (p. 31), plus mis à l'échelle de l'EC (37 mL à EC 2,2 avant).
+- **Doses entre deux lignes de la p. 37** (EC 2,2…) : marquées « estimation » (poudre et concentrés) ; une ligne publiée reste « Athena p. 37 ».
+- **EC au-delà du tableau** (> 4,0) : plus ramenée en silence à 4,0, un avertissement le dit.
+- **Balance** : rien de proposé quand le pH avant est déjà dans la cible ou au-dessus (« pas de Balance, il ne fait que monter le pH »), même sans historique par point de pH.
+- **Pastilles pH** : marge absolue de 0,2 (pH 6,8 en coco est « à corriger », plus « à surveiller »).
+- **pH : une seule source, le catalogue de la gamme**, pour la recette et pour les cibles du jour : Blended S8 = 5,8–6,2 en coco (6,0–6,4 seulement en S9) ; Pro S8–S9 = 6,0–6,4 avec Fade, celui du substrat si le Fade est désactivé.
+- **Dose CaMg (Blended) reprise du dernier bidon** telle que tapée (enregistrée par 10 L), sans dérive d'un bidon à l'autre ; les anciens bidons sont corrigés de leur mise à l'échelle.
+- **Cibles « précision »** (P0–P3) seulement en coco sur l'arrosage automatique ; sinon celles de la méthode manuelle.
+- **« Prochaine étape »** juste quand l'éclairage passe minuit (lampes à 18:00 sur 12 h).
+- **Dates** : « aujourd'hui » suit le fuseau du grow ; « Demander à Claude » envoie la date locale (plus la date UTC).
+- **Valeurs sans source dans la fiche** étiquetées « repère de l'app » : 10–25 % de runoff en manuel, doses d'installation, nombre et espacement des doses P2.
+- Recette avec un volume vide, nul ou négatif : quantités vides au lieu de calculs faux. Volume de bidon par défaut : vide (plus de 30 L inventés).
+- 266 tests (12 nouveaux, `calc/lot10c.test.ts` : `nextIndex`, `interpEc`, `concMlPer10L`, `phFor` par gamme, `predictBalance` pH trop haut… ; tests 3 et 4a adaptés au Fade fixe et aux estimations) ; simulation d'un an inchangée (28/28 anomalies, 0 fausse alerte) ; 4a, 4b, 5a repassés.
+
 ## Lot 10b2 — Stades, carte Bonjour, Premiers pas, simulation d'un an (19/10/2026)
 Passe de corrections, points 31 à 39 de `docs/audit-2026-10-19.md`.
 - **Carte Bonjour** : rinçage en arrosage automatique affiché comme tel (eau osmosée, EC < 0,1), installation « 2 petites doses de N mL près de la tige » au lieu de « 0 doses dès — », semis en automatique expliqué (le programme démarre avec « Passer en végé »), pas de programme automatique dans un espace sans pompe ; un espace sans cycle = **une seule ligne « Vide »** ; espace de séchage = **« séchage J3/10 »** ; un nouvel utilisateur ne voit plus « pas de mesure depuis hier » (seulement « Pas encore de saisie », une fois) ; volume des pots manquant signalé au lieu de « 0 L ».

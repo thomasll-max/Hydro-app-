@@ -208,7 +208,8 @@ export type Mix = {
   phTarget?: Range
   balanceMlPer10L?: number
   /** concentrate = strength (g/L) when dosed from a concentrate jerrycan (stock tracking). */
-  items?: { id: string; name?: string; qty: number | null; unit: string; concentrate?: number; range?: [number, number] }[]
+  /** per10L = the dose chosen in a published range, per 10 L as typed (before any EC scaling, lot 10c). */
+  items?: { id: string; name?: string; qty: number | null; unit: string; concentrate?: number; range?: [number, number]; per10L?: number }[]
   note?: string
   createdAt: string
 }

@@ -4,7 +4,7 @@
 // powders are dosed weighed (g) or as a dissolved concentrate (mL, published table p. 37); personal products
 // come after the line, with the label dose only (empty until typed).
 import type { CustomProduct } from "@/model/grow"
-import type { Range, StageKey, Substrate } from "@/model/types"
+import type { Mix, Range, StageKey, Substrate } from "@/model/types"
 import { ADDONS, balanceStepMl, getCatalog, type AddonId, type EcRow, type NutrientCatalog, type Per10L, type ProgramPhase, type ValueSource } from "@/data/nutrients"
 import type { StageInfo } from "./stage"
 
@@ -48,42 +48,55 @@ export function phaseKind(p: ProgramPhase): "seedling" | "veg" | "flower" | "fin
 // ---------- pH ----------
 export type PhTarget = Range & { src: ValueSource | "spec" | "estimate" }
 
-/** pH of solution and runoff for a phase: clone 5.6; 6.0–6.4 with Fade / flush; else by substrate. */
-export function phFor(cat: NutrientCatalog, phase: ProgramPhase, substrate: Substrate = "coco"): PhTarget {
+/**
+ * pH of solution and runoff for a phase, from the line's catalog (the single source of the recipe and of the day's
+ * targets, lot 10c): clone 5.6; the phase's "high" range (Pro: with Fade; Blended: S9; flush); else by substrate.
+ * Pro without Fade in S8–S9 (Core kept): "avec Fade 6,0–6,4" no longer applies, back to the substrate's range.
+ */
+export function phFor(cat: NutrientCatalog, phase: ProgramPhase, substrate: Substrate = "coco", addons?: readonly string[]): PhTarget {
   if (phase.ph === "clone") return { lo: cat.ph.clone[0], hi: cat.ph.clone[1], src: cat.ph.src }
-  if (phase.ph === "high") return { lo: cat.ph.high[0], hi: cat.ph.high[1], src: cat.ph.src }
+  const fadeOff = !!addons && !addons.includes("fade") && phase.doses.some((d) => d.unlessAddon === "fade")
+  if (phase.ph === "high" && !fadeOff) return { lo: cat.ph.high[0], hi: cat.ph.high[1], src: cat.ph.src }
   if (substrate === "soil") return { lo: 6.0, hi: 6.4, src: "spec" }
   if (substrate === "mix7030") return { lo: 5.9, hi: 6.3, src: "estimate" }
   return { lo: cat.ph.coco[0], hi: cat.ph.coco[1], src: cat.ph.src }
 }
 
 // ---------- EC table (powders) ----------
-/** Linear interpolation in an EC table; null outside its range. */
-export function interpEc(t: EcRow[], ec: number): { base: number; core: number } | null {
+/**
+ * Linear interpolation in an EC table; null outside its range. `exact` = the EC is a published row (p. 37); between two
+ * rows the dose is an estimate (lot 10c), shown as such.
+ */
+export function interpEc(t: EcRow[], ec: number): { base: number; core: number; exact: boolean } | null {
   if (!t.length || ec < t[0].ec || ec > t[t.length - 1].ec) return null
+  for (let i = 0; i < t.length; i++) if (Math.abs(t[i].ec - ec) < 1e-9) return { base: t[i].base, core: t[i].core, exact: true }
   for (let i = 0; i < t.length - 1; i++) {
     if (ec <= t[i + 1].ec) {
       const f = (ec - t[i].ec) / (t[i + 1].ec - t[i].ec)
-      return { base: t[i].base + f * (t[i + 1].base - t[i].base), core: t[i].core + f * (t[i + 1].core - t[i].core) }
+      return { base: t[i].base + f * (t[i + 1].base - t[i].base), core: t[i].core + f * (t[i + 1].core - t[i].core), exact: false }
     }
   }
   return null
 }
 
-/** Grams per 10 L at an EC, clamped to the table. */
-export function gramsPer10L(cat: NutrientCatalog, ec: number): { base: number; core: number } {
+/** Grams per 10 L at an EC, clamped to the table; `clamped` says the EC asked was outside it (lot 10c: never silent). */
+export function gramsPer10L(cat: NutrientCatalog, ec: number): { base: number; core: number; exact: boolean; clamped?: number } {
   const t = cat.ecTable?.grams ?? []
-  if (!t.length) return { base: 0, core: 0 }
-  const e = Math.min(t[t.length - 1].ec, Math.max(t[0].ec, ec))
-  return interpEc(t, e) ?? { base: t[t.length - 1].base, core: t[t.length - 1].core }
+  if (!t.length) return { base: 0, core: 0, exact: false }
+  const lo = t[0].ec
+  const hi = t[t.length - 1].ec
+  const e = Math.min(hi, Math.max(lo, ec))
+  const hit = interpEc(t, e) ?? { base: t[t.length - 1].base, core: t[t.length - 1].core, exact: true }
+  return e === ec ? hit : { ...hit, clamped: e }
 }
 
 /** mL of concentrate per 10 L: the published table, else grams ÷ strength (marked as estimate). */
-export function concMlPer10L(cat: NutrientCatalog, ec: number, gPerL: number): { base: number; core: number; estimate: boolean } {
-  const hit = interpEc(cat.ecTable?.concentrates[gPerL] ?? [], ec)
-  if (hit) return { ...hit, estimate: false }
+export function concMlPer10L(cat: NutrientCatalog, ec: number, gPerL: number): { base: number; core: number; estimate: boolean; clamped?: number } {
   const g = gramsPer10L(cat, ec)
-  return { base: (g.base / gPerL) * 1000, core: (g.core / gPerL) * 1000, estimate: true }
+  const e = g.clamped ?? ec
+  const hit = interpEc(cat.ecTable?.concentrates[gPerL] ?? [], e)
+  if (hit) return { base: hit.base, core: hit.core, estimate: !hit.exact, ...(g.clamped != null ? { clamped: g.clamped } : {}) }
+  return { base: (g.base / gPerL) * 1000, core: (g.core / gPerL) * 1000, estimate: true, ...(g.clamped != null ? { clamped: g.clamped } : {}) }
 }
 
 // ---------- Recipe ----------
@@ -133,6 +146,10 @@ export type MixResult = {
   ec: number
   /** The target EC differs from the published one: doses scaled, as an estimate. */
   scaled: boolean
+  /** EC asked outside the line's EC table: doses of this EC instead (lot 10c, shown). */
+  ecClamped?: number
+  /** Volume not usable (empty, zero, negative): every quantity is left empty (lot 10c). */
+  invalidVolume?: boolean
   ph: PhTarget
   items: MixItem[]
 }
@@ -160,7 +177,8 @@ export function mixRecipe(lineId: string, input: MixInput): MixResult {
   const cat = getCatalog(lineId)
   const phase = phaseById(cat, input.phaseId)
   if (!phase) throw new Error(`phase ${input.phaseId} not in ${cat.id}`)
-  const k = input.volumeL / 10
+  const okVolume = Number.isFinite(input.volumeL) && input.volumeL > 0
+  const k = okVolume ? input.volumeL / 10 : 0
   const on = new Set(input.addons ?? cat.defaultAddons)
   const ec = phase.stage === "flush" ? 0 : (input.ec ?? phase.ec)
   const scale = phase.ec > 0 && ec > 0 ? ec / phase.ec : 1
@@ -177,18 +195,21 @@ export function mixRecipe(lineId: string, input: MixInput): MixResult {
     : { id: "water", name: "", kind: "water", qty: input.volumeL, unit: "L" }
   const items: MixItem[] = [water]
   const byProduct = new Map<string, MixItem>()
+  let ecClamped: number | undefined
 
   for (const dose of phase.doses) {
     if (dose.unlessAddon && on.has(dose.unlessAddon)) continue
     if (!allowed(dose.product)) continue
     const p = product(dose.product)
     if (dose.fromEcTable) {
-      const g = gramsPer10L(cat, ec)[dose.fromEcTable]
+      const gr = gramsPer10L(cat, ec)
+      if (gr.clamped != null) ecClamped = gr.clamped
+      const g = gr[dose.fromEcTable]
       const note: MixItem["note"] = dose.fromEcTable === "core" ? (dose.unlessAddon ? "fadeOff" : "coreAlone") : conc ? "concentrate" : undefined
       if (conc) {
         const c = concMlPer10L(cat, ec, conc)
         byProduct.set(p.id, { id: p.id, name: p.name, kind: "product", qty: Math.round(c[dose.fromEcTable] * k), unit: "mL", concentrate: conc, grams: r1(g * k), estimate: c.estimate, src: cat.ecTable!.src, note })
-      } else byProduct.set(p.id, { id: p.id, name: p.name, kind: "product", qty: r1(g * k), unit: "g", src: cat.ecTable!.src, note })
+      } else byProduct.set(p.id, { id: p.id, name: p.name, kind: "product", qty: r1(g * k), unit: "g", estimate: !gr.exact || undefined, src: cat.ecTable!.src, note })
       continue
     }
     const [lo, hi] = lohi(dose.per10L ?? 0)
@@ -248,7 +269,9 @@ export function mixRecipe(lineId: string, input: MixInput): MixResult {
 
   // Only doses actually scaled count (a table-driven powder at another EC is still published data).
   const anyScaled = phase.stage !== "flush" && scaled && phase.doses.some((d) => !d.fromEcTable && cat.products.find((p) => p.id === d.product)?.scalesWithEc && items.some((i) => i.id === d.product))
-  return { line: cat.id, phase, ec, scaled: anyScaled, ph: phFor(cat, phase, input.substrate), items }
+  const ph = phFor(cat, phase, input.substrate, [...on])
+  if (!okVolume) return { line: cat.id, phase, ec, scaled: anyScaled, ph, items: items.map((i) => ({ ...i, qty: null, range: undefined, grams: undefined })), invalidVolume: true }
+  return { line: cat.id, phase, ec, scaled: anyScaled, ph, items, ...(ecClamped != null ? { ecClamped } : {}) }
 }
 
 /** Product ids a recipe uses (lines never share base nutrients). */
@@ -273,6 +296,20 @@ export function nextBalancePer10L(m: { volumeL: number; balanceMlPer10L?: number
   if (!m.volumeL) return undefined
   const total = (m.balanceMlPer10L ?? 0) * (m.volumeL / 10) + (m.balanceAddedMl ?? 0)
   return Math.round((total / m.volumeL) * 10 * 100) / 100
+}
+
+/**
+ * Dose chosen in a published range in a saved tank, per 10 L as typed (lot 10c). Tanks saved before kept only the
+ * quantity, scaled with the EC aimed for: that scaling is taken out, so the dose does not drift tank after tank.
+ */
+export function chosenPer10L(cat: NutrientCatalog, mix: Pick<Mix, "items" | "volumeL" | "phase" | "ecTarget"> | undefined, productId: string): number | undefined {
+  const it = mix?.items?.find((i) => i.id === productId && i.qty != null)
+  if (!it || !mix?.volumeL) return undefined
+  if (it.per10L != null) return it.per10L
+  const p = cat.products.find((x) => x.id === productId)
+  const was = phaseById(cat, mix.phase)
+  const f = p?.scalesWithEc && was && was.ec > 0 && mix.ecTarget ? mix.ecTarget / was.ec : 1
+  return Math.round(((it.qty as number) / mix.volumeL / f) * 10 * 10) / 10
 }
 
 /** Add-ons a line may switch on (CaMg / PK only for Blended). */

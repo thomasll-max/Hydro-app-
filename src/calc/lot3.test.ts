@@ -43,11 +43,13 @@ describe("nutrition", () => {
   it("ordre de mélange : eau → Balance → Grow/Bloom → Core → Cleanse", () => {
     expect(recipe(ATHENA_PRO, { kind: "veg", volumeL: 30, ec: 2.4 }).map((i) => i.id)).toEqual(["water", "balance", "proGrow", "proCore", "cleanse"])
   })
-  it("finition : Fade remplace Core ; 51 mL / 10 L à EC 3,0, estimation ailleurs", () => {
+  it("finition : Fade remplace Core ; 51 mL / 10 L quelle que soit l'EC (p. 31, lot 10c)", () => {
     const at3 = recipe(ATHENA_PRO, { kind: "finish", volumeL: 10, ec: 3 })
     expect(at3.map((i) => i.id)).toEqual(["water", "balance", "proBloom", "fade", "cleanse"])
-    expect(at3.find((i) => i.id === "fade")).toMatchObject({ qty: 51, estimate: false })
-    expect(recipe(ATHENA_PRO, { kind: "finish", volumeL: 10, ec: 2.4 }).find((i) => i.id === "fade")?.estimate).toBe(true)
+    expect(at3.find((i) => i.id === "fade")).toMatchObject({ qty: 51 })
+    const at22 = recipe(ATHENA_PRO, { kind: "finish", volumeL: 10, ec: 2.2 }).find((i) => i.id === "fade")
+    expect(at22?.qty).toBe(51) // was 37 mL when Fade followed the EC
+    expect(at22?.estimate).toBeFalsy()
   })
   it("rinçage : eau osmosée + Cleanse 26 mL / 10 L, sans engrais", () => {
     const r = recipe(ATHENA_PRO, { kind: "flush", volumeL: 20, ec: 0 })

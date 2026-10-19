@@ -11,7 +11,25 @@ export function daysBetween(from: IsoDate, to: IsoDate): number {
 export function addDays(d: IsoDate, n: number): IsoDate {
   return new Date(toUtc(d) + n * DAY).toISOString().slice(0, 10)
 }
-export function todayIso(now = new Date()): IsoDate {
+/** Time zone of the grow (Grow.timeZone), set by the app once the grow is read; absent = the device's (lot 10c). */
+let growZone: string | undefined
+export function setGrowZone(tz?: string): void {
+  try {
+    growZone = tz ? (new Intl.DateTimeFormat("en-CA", { timeZone: tz }), tz) : undefined
+  } catch {
+    growZone = undefined // unknown zone name: the device's
+  }
+}
+
+/** Today's date in the grow's time zone (a phone abroad still logs the grow's day), else the device's. */
+export function todayIso(now = new Date(), tz = growZone): IsoDate {
+  if (tz) {
+    try {
+      return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(now)
+    } catch {
+      /* fall back on the device's day */
+    }
+  }
   const y = now.getFullYear()
   const m = String(now.getMonth() + 1).padStart(2, "0")
   const d = String(now.getDate()).padStart(2, "0")

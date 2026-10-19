@@ -53,9 +53,12 @@ describe("lot 4a — Pro Line, concentrés (p. 37)", () => {
     expect(item(r, "proCore")?.qty).toBe(54)
     expect(item(r, "fade")).toBeUndefined()
   })
-  it("Pro à EC 2,2 : doses lues dans le tableau publié, pas de mise à l'échelle", () => {
-    expect(pro("veg", 10, 2.2).scaled).toBe(false)
-    expect(pro("finish", 10, 2.4).scaled).toBe(true) // Fade 51 donné à EC 3,0
+  it("Pro à EC 2,2 : doses tirées du tableau p. 37 (entre deux lignes = estimation), pas de mise à l'échelle", () => {
+    const r = pro("veg", 10, 2.2)
+    expect(r.scaled).toBe(false)
+    expect(item(r, "proGrow")?.estimate).toBe(true) // between the 2.0 and 2.5 rows (lot 10c)
+    expect(item(pro("veg", 10, 2.0), "proGrow")?.estimate).toBe(false) // a published row
+    expect(pro("finish", 10, 2.4).scaled).toBe(false) // Fade 51 is fixed (p. 31), nothing scaled
   })
   it("Cleanse en plage 5–13 mL / 10 L : rien d'inventé tant que la dose n'est pas choisie", () => {
     const r = pro("veg", 50, 3)

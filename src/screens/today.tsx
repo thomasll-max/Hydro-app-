@@ -94,7 +94,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
   // Sensor spaces: the gauge shows the sensor dryback, on its own scale (no Athena target).
   const bySensor = ["acinfinity", "sensor"].includes(drybackMethodOf(space))
 
-  const pill = (v: number | undefined, r?: Pick<Target, "lo" | "hi">): Status | undefined => (v != null && r ? status(v, r) : undefined)
+  const pill = (v: number | undefined, r?: Pick<Target, "lo" | "hi">, metric?: string): Status | undefined => (v != null && r ? status(v, r, metric) : undefined)
   const when = last ? (last.date === today ? (last.time ? t("today.whenToday", { time: last.time }) : t("today.whenTodayNoTime")) : t("today.whenDay", { date: dm(last.date) })) : ""
 
   // Sources actually used by today's targets.
@@ -103,6 +103,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
     srcs.has("athena") && t("today.srcAthena"),
     srcs.has("spec") && t("today.srcSpec"),
     srcs.has("common") && t("today.srcCommon"),
+    srcs.has("app") && t("today.srcApp"),
     srcs.has("estimate") && t("today.srcEstimate"),
     cycle.waterMode === "auto" && (cycle.flowMlPerMin ? t("today.srcFlow", { flow: num(cycle.flowMlPerMin / 1000, 1) }) : t("today.srcFlowMissing")),
   ].filter(Boolean)
@@ -178,7 +179,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
                   "—"
                 )}
               </Metric>
-              <Metric k={t("today.phRunoff")} status={pill(last?.phRunoff, lastTg?.phRunoff)} target={lastTg?.phRunoff ? range(lastTg.phRunoff.lo, lastTg.phRunoff.hi, 1) : "—"}>
+              <Metric k={t("today.phRunoff")} status={pill(last?.phRunoff, lastTg?.phRunoff, "phRunoff")} target={lastTg?.phRunoff ? range(lastTg.phRunoff.lo, lastTg.phRunoff.hi, 1) : "—"}>
                 {last?.phRunoff != null ? <NumberTicker value={last.phRunoff} decimalPlaces={1} locale={locale} /> : "—"}
               </Metric>
               <Metric k={t("today.vpd")} status={pill(last?.vpd, lastTg?.vpd)} target={lastTg?.vpd ? `${range(lastTg.vpd.lo, lastTg.vpd.hi, 1)} kPa` : "kPa"}>

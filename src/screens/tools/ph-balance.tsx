@@ -98,7 +98,11 @@ export function PhBalanceTool() {
             <NumField id="b-vol" label={t("phb.volume")} hint={last ? t("phb.volumeHint", { v: num(last.volumeL) }) : undefined} value={vol} onChange={setVol} />
             <NumField id="b-before" label={t("phb.before")} value={phBefore} onChange={setPhBefore} />
           </Grid>
-          {pred ? (
+          {before != null && before >= target.lo ? (
+            <p className="rounded-md border border-line bg-surface-2 px-3 py-2.5 text-[12.5px] font-medium text-fg-2" id="phb-noneed">
+              {t(before > target.hi ? "phb.noNeedHigh" : "phb.noNeed")}
+            </p>
+          ) : pred ? (
             <div className="rounded-md border border-primary/30 bg-primary/8 px-3 py-2.5" id="phb-pred">
               <div className="text-[12px] text-fg-2">
                 {t(pred.basis === "perPh" ? "phb.predPerPh" : "phb.predPer10", { n: pred.tanks, rate: num(pred.rate, pred.basis === "perPh" ? 1 : 2) })}

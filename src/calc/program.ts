@@ -109,9 +109,14 @@ export function programTotals(rows: ProgramRow[]) {
   return { fixed, optional }
 }
 
-/** Index of the next row from a time of day (minutes), or −1 when the day is done. */
+/**
+ * Index of the next row from a time of day (minutes), or −1 when the day is done. A light period that runs past
+ * midnight (lights on at 18:00 for 12 h) is still yesterday's program in the small hours (lot 10c).
+ */
 export function nextIndex(rows: ProgramRow[], nowMin: number): number {
-  return rows.findIndex((r) => r.minutes >= nowMin)
+  const end = rows.length ? rows[rows.length - 1].minutes : 0
+  const t = end > 1440 && nowMin + 1440 <= end ? nowMin + 1440 : nowMin
+  return rows.findIndex((r) => r.minutes >= t)
 }
 
 // ---------- Sensor mode (AC Infinity soil sensor), from the Bonorum "Crop Steering Light" guide ----------

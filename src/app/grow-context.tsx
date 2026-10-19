@@ -7,7 +7,7 @@ import { GROW_SCHEMA, type ConcentrateStock, type Spray, type CustomProduct, typ
 import { cycleOfSpace, DEFAULT_NUTRITION, newGrow, spaceNutrition } from "@/model/grow-ops"
 import { moveEquipment } from "@/equipment/calc"
 import { derive } from "@/model/entry"
-import { stageOn, todayIso } from "@/calc/stage"
+import { setGrowZone, stageOn, todayIso } from "@/calc/stage"
 import { cycleNumber, dayTargets, snapshot, type DayTargets } from "@/calc/targets"
 import { compressPhoto } from "@/lib/photo"
 import { seedDocs, thomasGrow } from "@/data/thomas-grow"
@@ -155,6 +155,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
       d.watchDoc(
         "grow/main",
         (doc) => {
+          setGrowZone(typeof doc?.timeZone === "string" ? doc.timeZone : undefined)
           setGrowBad(!!doc && !validDoc("grow", doc))
           setGrow(doc as Grow | null)
           setGrowLoaded(true)
@@ -269,9 +270,9 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
     (date: string, c: Cycle | null = cycle) => {
       if (!c) return null
       const s = stageOn(c, date)
-      // Manual method and solution EC follow the line of the cycle's space (Pro p. 41, Blended p. 60).
-      const line = spaceNutrition(grow, spaces.find((x) => x.id === c.spaceId)).line
-      return dayTargets(s.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(c, cycles), line })
+      // Manual method, solution EC and pH follow the line of the cycle's space (Pro p. 31/41, Blended p. 58/60), with its add-ons.
+      const nut = spaceNutrition(grow, spaces.find((x) => x.id === c.spaceId))
+      return dayTargets(s.key, { mode: c.waterMode, substrate: c.substrate, flowerWeek: s.flowerWeek, cycleNumber: cycleNumber(c, cycles), line: nut.line, addons: nut.addons })
     },
     [cycle, cycles, grow, spaces],
   )

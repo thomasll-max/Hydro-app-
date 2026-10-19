@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -34,7 +34,7 @@
 - [x] Lot 10b : cycles et stades (création de cycle minimale, étapes en un geste)
   - [x] Lot 10b1 : points 24–30 (245 tests, artefact v29)
   - [x] Lot 10b2 : points 31–39, simulation d'un an (254 tests, artefact v30)
-- [ ] Lot 10c : calculs Athena
+- [x] Lot 10c : calculs Athena (266 tests, artefact v31)
 - [ ] Lot 10d : navigation, saisie, graphiques
 - [ ] Lot 10e : accessibilité, textes, assistant, option « Autre marque »
 
@@ -90,6 +90,13 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 - Premiers pas : pots demandés seulement si l'arrosage de l'espace est automatique (cycle en automatique, sinon pompe dans l'espace) ; lampe cochée avec ses watts (`StartItem.canStart` pour « Démarrer aujourd'hui »).
 - Carte Bonjour : un cycle « automatique » dans un espace sans pompe (quand le grow liste ses pompes) est traité comme arrosé à la main. Pas de dose ni de programme inventés pour le rinçage (eau osmosée, EC < 0,1 : fiche Athena).
 - **Simulation d'un an (fin de 10b, 19/10)** : 479 saisies vérifiées, 28/28 anomalies signalées, **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 0 plantage, 364 matins rejoués ; **4 échéances traînent** (12 avant) : toutes « mesurer le débit » (11 matins chacune), car le simulateur ne remesure la pompe qu'aux transferts (71 jours) alors que la règle du cahier des charges est 60 jours. Je n'ai pas changé ce comportement du simulateur : le rappel est juste. Passage navigateur (`browse.py`, 9 dates × 13 écrans) : aucune erreur console, aucun débordement (le seul « Infinity » relevé est la marque AC Infinity).
+
+## Lot 10c — notes
+- `calc/nutrients.ts` : `interpEc` renvoie `exact` ; `gramsPer10L` / `concMlPer10L` renvoient `clamped` (EC hors tableau) ; `MixResult.ecClamped`, `MixResult.invalidVolume` ; `phFor(cat, phase, substrate, addons?)` (Fade désactivé dans une phase où il remplace le Core → pH du substrat) ; `chosenPer10L` ; `Mix.items[].per10L` (dose choisie dans une plage, telle que tapée).
+- `calc/targets.ts` : `phTarget(stage, substrate, { line, flowerWeek, addons })` lit le catalogue (même pH que la recette) ; `dayTargets` reçoit `addons` (le contexte passe ceux de l'espace) et n'applique les cibles de précision que si `isPrecision` (coco + automatique). `Src` gagne `app` (« repère de l'app »), affiché dans les sources d'Aujourd'hui.
+- `calc/advice.ts` : `status(v, t, metric?)`, `PH_MARGIN = 0.2` pour les pH.
+- `calc/stage.ts` : `setGrowZone(tz)` (appelé à la lecture de `grow/main`) et `todayIso(now, tz)` au fuseau du grow.
+- **Décisions prises seul** : au-delà de 4,0 les doses restent celles de la ligne 4,0 avec un avertissement (rien d'extrapolé) ; Balance à 0 dès que le pH avant atteint le bas de la cible (il n'en faut pas) ; le coefficient des doses d'installation (≈ 13 mL par litre de pot, 100–300 mL) et les espacements P2 restent ceux de l'app, étiquetés comme tels (aucune source pour les remplacer).
 
 ## Règles de relais
 1. **Une seule session à la fois** sur le code. Si deux tournent quand même : avant chaque commit **et** chaque republication, `git fetch`, se remettre sur `main`, relancer tous les tests et publier un build qui contient le travail de l'autre.
@@ -149,7 +156,7 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2
+npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale

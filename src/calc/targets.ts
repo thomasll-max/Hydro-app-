@@ -5,21 +5,28 @@
 // common   = common benchmark (not from the Handbook), labelled as such in the UI
 import type { Cycle, Range, StageKey, Substrate, TargetsSnapshot, WaterMode } from "@/model/types"
 import { getCatalog, type ManualPhase, type NutrientCatalog } from "@/data/nutrients"
-import { phaseAt } from "./nutrients"
+import { phaseAt, phFor } from "./nutrients"
+import { isPrecision } from "./program"
 
-export type Src = "athena" | "spec" | "estimate" | "common"
+/** app = a starting value of the app itself (not from the Handbook), labelled "repère de l'app" (lot 10c). */
+export type Src = "athena" | "spec" | "estimate" | "common" | "app"
 export type Target = Range & { src: Src; page?: number }
 export type DayTargets = { [K in keyof Omit<TargetsSnapshot, "stage">]?: Target } & { stage: StageKey; steer?: "vegetative" | "generative" | "mixed" }
 
 const r = (lo: number, hi: number, src: Src, page?: number): Target => (page ? { lo, hi, src, page } : { lo, hi, src })
 
-/** pH of solution and runoff (same ranges, Athena). */
-export function phTarget(stage: StageKey, substrate: Substrate): Target {
-  if (stage === "seedling") return r(5.6, 5.6, "athena")
-  if (stage === "finish" || stage === "flush") return r(6.0, 6.4, "athena")
-  if (substrate === "soil") return r(6.0, 6.4, "spec")
-  if (substrate === "mix7030") return r(5.9, 6.3, "estimate")
-  return r(5.8, 6.2, "athena")
+/**
+ * pH of solution and runoff (same ranges), from the line's catalog: the very range its recipe shows (lot 10c, one
+ * source). Blended S8 stays 5.8–6.2 in coco (6.0–6.4 is S9 only); Pro S8–S9 is 6.0–6.4 with Fade, else by substrate.
+ */
+export function phTarget(stage: StageKey, substrate: Substrate, opts: { line?: string; flowerWeek?: number; addons?: readonly string[] } = {}): Target {
+  const cat = getCatalog(opts.line)
+  const pos = stage === "seedling" ? { stage: "clone" as const } : stage === "veg" ? { stage: "veg" as const } : stage === "flush" ? { stage: "flush" as const } : { stage: "flower" as const, week: opts.flowerWeek ?? (stage === "finish" ? 8 : stage === "bulk" ? 5 : 1) }
+  const phase = phaseAt(cat, pos)
+  if (!phase) return r(5.8, 6.2, "athena")
+  const p = phFor(cat, phase, substrate, opts.addons)
+  const page = typeof p.src === "object" && p.src.kind === "athena" ? p.src.page : undefined
+  return r(p.lo, p.hi, p.src === "spec" ? "spec" : p.src === "estimate" || (typeof p.src === "object" && p.src.kind === "estimate") ? "estimate" : "athena", page)
 }
 
 /** Precision (auto, P0–P3) table — dryback and substrate EC (runoff as proxy) by stage. */
@@ -42,7 +49,8 @@ export function manualRow(cat: NutrientCatalog, stage: StageKey, flowerWeek?: nu
 
 /** Manual method (1 watering at lights-on, 10–25 % runoff): dryback, runoff EC and pH by week, from the line's catalog. */
 function manual(stage: StageKey, flowerWeek: number | undefined, line: string | undefined, substrate: Substrate) {
-  const run = r(10, 25, "athena")
+  // Not in the Handbook pages of the fiche: the app's starting value, labelled as such (lot 10c).
+  const run = r(10, 25, "app")
   const row = manualRow(getCatalog(line), stage, flowerWeek)
   if (!row) return { runoffPct: run }
   const page = row.src.kind === "athena" ? row.src.page : undefined
@@ -68,10 +76,10 @@ const LIGHT: Partial<Record<StageKey, { ppfd: Target; dli: Target; vpd: Target }
 
 export function dayTargets(
   stage: StageKey | "notStarted",
-  opts: { mode: WaterMode; substrate: Substrate; flowerWeek?: number; cycleNumber?: number; line?: string },
+  opts: { mode: WaterMode; substrate: Substrate; flowerWeek?: number; cycleNumber?: number; line?: string; addons?: readonly string[] },
 ): DayTargets | null {
   if (stage === "notStarted" || stage === "harvested") return null
-  const ph = phTarget(stage, opts.substrate)
+  const ph = phTarget(stage, opts.substrate, { line: opts.line, flowerWeek: opts.flowerWeek, addons: opts.addons })
   const t: DayTargets = { stage, phIn: ph, phRunoff: ph, ...LIGHT[stage] }
   // Solution EC: Athena clone/seedling row 2.0; cycle 1 runs 2.0–2.4 (spec); flush = plain water + Cleanse, EC < 0.1.
   const cat = getCatalog(opts.line)
@@ -83,7 +91,8 @@ export function dayTargets(
     if (ph) t.ecIn = r(ph.ec, ph.ec, "athena", ph.src.kind === "athena" ? ph.src.page : undefined)
   } else t.ecIn = (opts.cycleNumber ?? 1) <= 1 ? r(2.0, 2.4, "spec") : r(3.0, 3.0, "athena")
   if (stage === "seedling" || stage === "flush") return t
-  if (opts.mode === "auto") {
+  // Precision targets (P0–P3) only for coco on the pump (Athena table); any other case uses the manual method's.
+  if (isPrecision({ waterMode: opts.mode, substrate: opts.substrate })) {
     const a = AUTO[stage]
     if (a) Object.assign(t, { dryback: a.dryback, ecRunoff: a.ecRunoff, runoffPct: a.runoffPct, steer: a.steer })
   } else Object.assign(t, manual(stage, opts.flowerWeek, opts.line, opts.substrate))

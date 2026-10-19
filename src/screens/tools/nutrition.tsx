@@ -13,7 +13,7 @@ import { badNums, parseNum } from "@/calc/formulas"
 import { stageOn, todayIso } from "@/calc/stage"
 import { cycleNumber } from "@/calc/targets"
 import { tankForecast } from "@/calc/reminders"
-import { expectedEc, mixRecipe, nextBalancePer10L, phaseAt, phaseById, phaseKind, positionOf, suggestedVolume, type MixItem } from "@/calc/nutrients"
+import { chosenPer10L, expectedEc, mixRecipe, nextBalancePer10L, phaseAt, phaseById, phaseKind, positionOf, suggestedVolume, type MixItem } from "@/calc/nutrients"
 import { getCatalog, type NutrientCatalog, type ProgramPhase, type ValueSource } from "@/data/nutrients"
 import { spaceNutrition } from "@/model/grow-ops"
 import { SCHEMA } from "@/model/types"
@@ -81,16 +81,15 @@ export function NutritionTool() {
   const [busy, setBusy] = useState(false)
   const phase = phaseById(cat, phaseId) ?? cyclePhase
 
-  // Dose chosen in a range last time (per 10 L), to prefill.
-  const lastChosen = (id: string) => {
-    const it = last?.items?.find((i) => i.id === id && i.qty != null)
-    return it && last?.volumeL ? Math.round(((it.qty as number) / last.volumeL) * 10 * 10) / 10 : undefined
-  }
+  // Dose chosen in a range last time (per 10 L, as typed), to prefill. Older tanks only kept the scaled quantity: the
+  // EC scaling of that tank is taken out again, so the dose no longer drifts from one tank to the next (lot 10c).
+  const lastChosen = (id: string) => chosenPer10L(cat, last, id)
   const nextBal = last ? nextBalancePer10L(last) : undefined
   useEffect(() => {
     setPhaseId(cyclePhase.id)
     setF({
-      volume: show(suggested ?? last?.volumeL ?? reservoirL ?? 30),
+      // Nothing known (no consumption, no last tank, no reservoir): left empty, never a guessed 30 L (lot 10c).
+      volume: show(suggested ?? last?.volumeL ?? reservoirL),
       ec: show(last?.phase === cyclePhase.id && last?.ecTarget ? last.ecTarget : defaultEc(cat, cyclePhase, firstCycle)),
       tap: show(cycle?.tapEc ?? 0.05),
       balance: show(nextBal),
@@ -200,7 +199,7 @@ export function NutritionTool() {
         ec: parseNum(f.ecMeasured),
         items: items
           .filter((i) => i.kind === "product" || i.kind === "custom")
-          .map((i) => ({ id: i.id, name: i.name, qty: i.qty, unit: i.unit, ...(i.concentrate ? { concentrate: i.concentrate } : {}), ...(i.range ? { range: i.range } : {}) })),
+          .map((i) => ({ id: i.id, name: i.name, qty: i.qty, unit: i.unit, ...(i.concentrate ? { concentrate: i.concentrate } : {}), ...(i.range ? { range: i.range } : {}), ...(i.range && chosen[i.id] != null ? { per10L: chosen[i.id] } : {}) })),
         recipe: items
           .filter((i) => i.qty != null)
           .map((i) => `${i.name || t(i.kind === "roWater" ? "nut.roWater" : "nut.water")} ${num(i.qty!, i.unit === "L" || i.concentrate ? 0 : 1)} ${i.unit}`)
@@ -337,6 +336,12 @@ export function NutritionTool() {
               </div>
               <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.expectedSub", { ec: num(ec, 1), tap: num(tap, 2) })}</p>
               {result.scaled && <p className="text-[12px] leading-[1.45] text-warn">{t("nut.scaledNote", { ec: num(phase.ec, 1) })}</p>}
+              {result.ecClamped != null && (
+                <p className="text-[12px] leading-[1.45] font-medium text-warn" id="nut-ec-clamped">
+                  {t("nut.ecClamped", { ec: num(result.ecClamped, 1) })}
+                </p>
+              )}
+              {result.invalidVolume && <p className="text-[12px] leading-[1.45] text-fg-3">{t("nut.invalidVolume")}</p>}
               {balanceOn && <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.phSub", { name: pname("balance") })}</p>}
               {phase.stage === "clone" && <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.seedNote")}</p>}
               {items.some((i) => i.id === "fade") && <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.finishNote", { fade: pname("fade") })}</p>}

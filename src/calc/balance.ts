@@ -50,6 +50,8 @@ export function predictBalance(history: TankBalance[], volumeL: number, now?: { 
   const recent = history.slice(0, n)
   if (recent.length < MIN_TANKS) return null
   const k = volumeL / 10
+  // pH already in the target or above: no Balance at all (it only raises the pH), whatever the basis (lot 10c).
+  if (now?.phBefore != null && now.target && now.phBefore >= now.target.lo) return { predictedMl: 0, startMl: 0, basis: "per10L", rate: 0, tanks: recent.length }
   const withPh = recent.filter((h) => h.phBefore != null && h.phAfter != null && h.phAfter > h.phBefore)
   if (now?.phBefore != null && now.target && withPh.length >= MIN_TANKS) {
     const rate = withPh.reduce((s, h) => s + h.totalMl / (h.volumeL / 10) / (h.phAfter! - h.phBefore!), 0) / withPh.length

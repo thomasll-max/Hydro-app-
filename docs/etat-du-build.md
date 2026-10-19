@@ -42,6 +42,7 @@
   - [x] Lot 10e1 : points 71–75, accessibilité visuelle (281 tests, artefact v34)
   - [x] Lot 10e2 : points 76–84, textes, assistant, ARIA (286 tests, artefact v35)
   - [x] Lot 10e3 : option « Autre marque / je dose moi-même », simulation finale (288 tests, artefact v36)
+- [ ] Lot 10f/10g : en cours (session planifiée, 2026-10-19 13:17 UTC)
 
 ## Lot 10 : passe de corrections (19/10/2026)
 - Source : `docs/audit-2026-10-19.md`, avec 84 points tirés de la simulation d'un an, de 4 audits et des retours des testeurs. Les points faits y sont cochés ✅.

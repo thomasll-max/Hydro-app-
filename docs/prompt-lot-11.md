@@ -1,12 +1,12 @@
 # Prompt lot 11 : saisie vocale (« dicter le journal à Claude »)
 
-À lancer dans Claude Code **après les lots 10h, 10i et 7** (cochés), une seule session à la fois. Si le lot est trop gros, le couper en 11a (dictée + extraction + enregistrement) et 11b (version Netlify sans IA).
+À lancer dans Claude Code **après les lots 10k et 10l** (cochés), une seule session à la fois. Si le lot est trop gros, le couper en 11a (dictée + extraction + enregistrement) et 11b (version Netlify sans IA).
 
 Demande de Thomas : « Si je peux lâcher toutes les infos à Claude en lisant mes résultats et qu'il complète tout seul le journal, ce serait top. »
 
 ---
 
-0. Vérifie que 10h, 10i et 7 sont cochés dans `docs/etat-du-build.md`. Puis `git pull`, `npm ci`, `npm test`. Ajoute la ligne « [ ] Lot 11 » dans l'état du build.
+0. Vérifie que 10k et 10l sont cochés dans `docs/etat-du-build.md`. Puis `git pull`, `npm ci`, `npm test`. Ajoute la ligne « [ ] Lot 11 » dans l'état du build.
 
 1. **Point d'entrée**
    - Dans la feuille « Saisie du jour », en haut : un bouton secondaire « Dicter » (icône micro).

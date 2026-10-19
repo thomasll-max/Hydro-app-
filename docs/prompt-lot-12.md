@@ -1,6 +1,6 @@
 # Prompt lot 12 : bilans de récolte, galerie, variétés, photo pour Claude, verrou
 
-À lancer dans Claude Code **après les lots 10j, 7 et 11** (cochés), une seule session à la fois. Découpé d'avance en 12a → 12d, un commit par sous-lot. Si un sous-lot est trop gros, le recouper.
+À lancer dans Claude Code **après les lots 10k, 10l et 11** (cochés), une seule session à la fois. Découpé d'avance en 12a → 12d, un commit par sous-lot. Si un sous-lot est trop gros, le recouper.
 
 Origine : comparaison avec Grow with Jane, GrowDiaries, GrowBuddy, StrainTrakker, AROYA GO et l'app AC Infinity (19/10/2026). Thomas a retenu cinq idées. Le reste (communauté publique, abonnés, concours, badges, alertes météo, suivi réglementaire, capteurs AROYA) **n'est pas repris**.
 

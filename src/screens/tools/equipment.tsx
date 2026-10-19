@@ -314,7 +314,7 @@ function DragRow({ item, controls, onOpen, sub }: { item: Equipment; controls: D
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[0.875rem] font-semibold">
             {item.name}
-            {item.quantity && item.quantity > 1 ? <span className="ml-1 text-fg-3">× {item.quantity}</span> : null}
+            {item.quantity && item.quantity > 1 ? <span className="text-fg-3">{" × "}{item.quantity}</span> : null}
           </span>
           <span className="block truncate text-[0.75rem] text-fg-3">{sub}</span>
         </span>
@@ -334,12 +334,12 @@ export function specLine(e: Equipment, t: ReturnType<typeof useSettings>["t"], n
   }
   if (e.reservoir?.usableL) p.push(`${num(e.reservoir.usableL)} L`)
   if (e.reservoir?.mode) p.push(t(e.reservoir.mode === "dtw" ? "equip.f.dtw" : "equip.f.recirc"))
-  if (e.pump) p.push(e.pump.flowMlPerMin ? `${num(e.pump.flowMlPerMin)} mL/min` : `${t("equip.f.flow")} : ${t("equip.missing")}`)
+  if (e.pump) p.push(e.pump.flowMlPerMin ? `${num(e.pump.flowMlPerMin)} mL/min` : `${t("equip.f.flow")}${t("common.colon")}${t("equip.missing")}`)
   if (e.container?.volumeL) p.push(`${e.container.count ?? e.quantity ?? 1} × ${num(e.container.volumeL)} L`)
   if (e.container?.substrate) p.push(e.container.substrate)
   if (e.extractor) {
     const m = extractorM3h(e.extractor)
-    p.push(m ? `${num(m)} m³/h` : `${t("equip.f.m3h")} : ${t("equip.missing")}`)
+    p.push(m ? `${num(m)} m³/h` : `${t("equip.f.m3h")}${t("common.colon")}${t("equip.missing")}`)
     if (e.extractor.carbonFilter) p.push(t("equip.f.carbon"))
   }
   if (e.capacity?.capacity) p.push(e.capacity.capacity)

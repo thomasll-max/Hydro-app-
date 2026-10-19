@@ -65,7 +65,7 @@ export function NutritionFields({ value, onChange, idPrefix }: { value: Nutritio
             onChange={(v) => onChange({ ...value, dosing: v })}
             options={[{ value: "powder" as DosingMethod, label: t("growSet.powder") }, ...concs.map((c) => ({ value: concToDosing(c), label: t("growSet.conc", { c: String(c) }) }))]}
           />
-          <p className="mt-1 text-[0.75rem] text-fg-3">{t("growSet.dosingHint")}</p>
+          <p className="mt-1 text-[0.75rem] text-fg-3">{value.dosing === "powder" ? t("growSet.dosingHintPowder") : t("growSet.dosingHint")}</p>
         </div>
       )}
     </div>

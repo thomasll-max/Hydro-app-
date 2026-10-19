@@ -16,7 +16,7 @@ import { MODULES, SPACE_COLORS, TEMPLATES, modulesFor, type Equipment, type Spac
 import { DRYBACK_METHODS, type Cycle, type Substrate, type WaterMode } from "@/model/types"
 import { drybackMethodOf } from "@/model/entry"
 import { CalcValue } from "./equipment-shared"
-import { archiveSpace, duplicateSpace, newSpace } from "@/model/grow-ops"
+import { archiveSpace, duplicateSpace, freeColor, newSpace } from "@/model/grow-ops"
 import { cn } from "@/lib/utils"
 import { SwitchRow } from "./equipment-shared"
 
@@ -24,7 +24,7 @@ export type SpaceSection = "general" | "nutrition" | "irrigation" | "light" | "a
 import { NutritionFields } from "./nutrition-settings"
 
 export function SpaceSheet({ open, onOpenChange, space, section }: { open: boolean; onOpenChange: (o: boolean) => void; space?: Space; section?: SpaceSection }) {
-  const { t, num } = useSettings()
+  const { t, num, settings } = useSettings()
   const { allSpaces, sites, grow, assignments, equipment, saveSpace, saveGrow, addAssignment, cycleIn, saveCycle, saveEquipment, assignEquipment } = useGrow()
   const show = useShow()
   const [s, setS] = useState<Space>(() => newSpace({ id: "x", name: "", template: "flower", order: 0, now: "" }))
@@ -51,7 +51,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
     if (!open) return
     setAll(!section || section === "general")
     setGrowNut(grow?.nutrition)
-    const base = space ?? newSpace({ id: newId("sp"), name: "", template: "flower", order: allSpaces.length, now: new Date().toISOString() })
+    const base = space ?? newSpace({ id: newId("sp"), name: "", template: "flower", order: allSpaces.length, now: new Date().toISOString(), color: freeColor(allSpaces.map((x) => x.color)) })
     setS(base)
     setDims({ l: show(base.dimensionsCm?.l), w: show(base.dimensionsCm?.w), h: show(base.dimensionsCm?.h) })
     setOwn(!!base.nutrition && Object.keys(base.nutrition).length > 0)
@@ -125,7 +125,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
       const potN = parseNum(f.potN)
       if (potL && (potL !== (irr?.potL.ok ? irr.potL.value : undefined) || (potN && potN !== irr?.potCount))) {
         const existing = equipment.find((e) => e.id === irr?.containerId)
-        const pots = withPots(existing, { volumeL: potL, count: potN ? Math.round(potN) : undefined, substrate: w.substrate, id: newId("eq-"), now, name: t("irr.potsName", { v: num(potL, potL % 1 ? 1 : 0) }) })
+        const pots = withPots(existing, { volumeL: potL, count: potN ? Math.round(potN) : undefined, substrate: w.substrate, id: newId("eq-"), now, name: t("irr.potsName", { v: num(potL, potL % 1 ? 1 : 0) }), decimal: settings.lang === "fr" ? "," : "." })
         await saveEquipment(pots)
         if (!existing) await assignEquipment(pots.id, space.id)
         else if (potN && irr?.containerAssignment?.quantity != null) await addAssignment({ ...irr.containerAssignment, quantity: Math.round(potN) })
@@ -141,7 +141,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
     run(async () => {
       const src = build()
       let n = 0
-      const d2 = duplicateSpace(src, { id: newId("sp"), name: t("space.copyName", { name: src.name }), order: allSpaces.length, now: new Date().toISOString(), date: todayIso() }, assignments, () => `${newId("as")}${++n}`)
+      const d2 = duplicateSpace(src, { id: newId("sp"), name: t("space.copyName", { name: src.name }), order: allSpaces.length, now: new Date().toISOString(), date: todayIso(), color: freeColor(allSpaces.map((x) => x.color)) }, assignments, () => `${newId("as")}${++n}`)
       await saveSpace(d2.space)
       for (const a of d2.assignments) await addAssignment(a)
       return t("space.duplicated")

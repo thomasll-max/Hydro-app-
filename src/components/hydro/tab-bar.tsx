@@ -33,6 +33,8 @@ export function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabI
               key={id}
               role="tab"
               aria-selected={on}
+              aria-current={on ? "page" : undefined}
+              aria-controls="main-panel"
               onClick={() => onChange(id)}
               className={cn(
                 "relative flex flex-col items-center justify-center gap-1 rounded-[18px] text-[0.75rem] font-semibold transition-colors duration-200",

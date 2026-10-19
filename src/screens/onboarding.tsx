@@ -18,13 +18,14 @@ import { parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { importBackup, MAX_BACKUP_BYTES, parseBackup, type Backup } from "@/lib/backup"
 import type { BatchOp } from "@/store/doc-store"
-import { newGrow } from "@/model/grow-ops"
+import { freeColor, newGrow } from "@/model/grow-ops"
 import { MODULES, SPACE_COLORS, TEMPLATES, type TemplateId } from "@/model/grow"
 import type { Substrate, WaterMode } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import {
   draftDocs,
   draftSpace,
+  copyGearToOthers,
   duplicateDraftSpace,
   emptyDraft,
   loadDraft,
@@ -72,6 +73,13 @@ export function Onboarding() {
 
   const key = STEPS[step - 1]
   const issues = key ? stepIssues(draft, key) : []
+  // What is missing shows once Next is tapped, not before anything was typed (lot 10e).
+  const [tried, setTried] = useState<number | null>(null)
+  const showIssue = tried === step && issues.length > 0
+  const next = (go: () => void) => () => {
+    if (issues.length) setTried(step)
+    else go()
+  }
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }))
   const patchSpace = (k: string, p: Partial<DraftSpace>) => setDraft((d) => ({ ...d, spaces: d.spaces.map((s) => (s.key === k ? { ...s, ...p } : s)) }))
   const patchGear = (k: string, p: Partial<DraftGear>) => setDraft((d) => ({ ...d, spaces: d.spaces.map((s) => (s.key === k ? { ...s, gear: { ...s.gear, ...p } } : s)) }))
@@ -167,7 +175,7 @@ export function Onboarding() {
                 <button
                   type="button"
                   id="onb-add-space"
-                  onClick={() => setDraft((d) => ({ ...d, spaces: [...d.spaces, draftSpace(newId("k"), t("onb.spaceN", { n: d.spaces.length + 1 }), "veg")] }))}
+                  onClick={() => setDraft((d) => ({ ...d, spaces: [...d.spaces, draftSpace(newId("k"), t("onb.spaceN", { n: d.spaces.length + 1 }), "veg", freeColor(d.spaces.map((x) => x.color)))] }))}
                   className="flex h-12 items-center justify-center gap-1.5 rounded-full border border-dashed border-line-strong text-[0.875rem] font-semibold text-primary"
                 >
                   <Plus className="size-4" /> {t("space.add")}
@@ -178,7 +186,20 @@ export function Onboarding() {
             {key === "equipment" && (
               <div className="flex flex-col gap-3">
                 {draft.spaces.map((s, i) => (
-                  <GearCard key={s.key} s={s} i={i} onChange={(p) => patchGear(s.key, p)} onDuplicate={() => duplicate(s.key)} />
+                  <GearCard
+                    key={s.key}
+                    s={s}
+                    i={i}
+                    onChange={(p) => patchGear(s.key, p)}
+                    onCopy={
+                      draft.spaces.length > 1
+                        ? () => {
+                            setDraft((d) => copyGearToOthers(d, s.key))
+                            toast.success(t("onb.gearCopied"))
+                          }
+                        : undefined
+                    }
+                  />
                 ))}
               </div>
             )}
@@ -224,8 +245,8 @@ export function Onboarding() {
       {step > 0 && (
         <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-[480px] flex-col gap-2 pt-3 pr-[max(16px,env(safe-area-inset-right,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pl-[max(16px,env(safe-area-inset-left,0px))]">
-            {issues.length > 0 && (
-              <p className="text-[0.75rem] font-medium text-warn" id="onb-issue">
+            {showIssue && (
+              <p className="text-[0.75rem] font-medium text-warn" id="onb-issue" role="alert">
                 {t(`onb.issue.${issues[0]}` as MessageKey)}
               </p>
             )}
@@ -234,11 +255,11 @@ export function Onboarding() {
                 <ChevronLeft className="size-4.5" />
               </Button>
               {step < STEPS.length ? (
-                <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" id="onb-next" disabled={issues.length > 0} onClick={() => setStep((n) => n + 1)}>
+                <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" id="onb-next" onClick={next(() => setStep((n) => n + 1))}>
                   {key === "equipment" || key === "cycle" ? (stepEmpty(draft, key) ? t("onb.later") : t("onb.next")) : t("onb.next")}
                 </Button>
               ) : (
-                <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" id="onb-finish" disabled={issues.length > 0 || busy} onClick={finish}>
+                <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" id="onb-finish" disabled={busy} onClick={next(() => void finish())}>
                   {busy ? t("onb.writing") : t("onb.finish")}
                 </Button>
               )}
@@ -292,7 +313,7 @@ function Welcome({ onStart, onSkip, busy }: { onStart: () => void; onSkip: () =>
 }
 
 function ImportCard() {
-  const { t, dm } = useSettings()
+  const { t, dmy } = useSettings()
   const { withSetup } = useGrow()
   const file = useRef<HTMLInputElement>(null)
   const [paste, setPaste] = useState<string | null>(null)
@@ -323,7 +344,7 @@ function ImportCard() {
       {pending ? (
         <>
           <p className="rounded-md bg-primary/10 px-3 py-2 text-[0.78125rem] font-medium text-primary" id="onb-import-summary">
-            {t("onb.importSummary", { name: pending.name, n: pending.total, date: pending.backup.exportedAt ? dm(pending.backup.exportedAt.slice(0, 10)) : "?" })}
+            {t("onb.importSummary", { name: pending.name, n: pending.total, date: pending.backup.exportedAt ? dmy(pending.backup.exportedAt) : "?" })}
           </p>
           <div className="flex gap-2">
             <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={() => setPending(null)} disabled={!!busy}>
@@ -383,7 +404,7 @@ function SpaceTitle({ s, i, aside }: { s: DraftSpace; i: number; aside?: ReactNo
   return (
     <div className="flex items-center justify-between gap-2">
       <span className="flex min-w-0 items-center gap-2">
-        <span className="size-3 shrink-0 rounded-full" style={{ background: spaceColor(SPACE_COLORS[i % SPACE_COLORS.length]) }} />
+        <span className="size-3 shrink-0 rounded-full" style={{ background: spaceColor(s.color ?? SPACE_COLORS[i % SPACE_COLORS.length]) }} />
         <span className="truncate text-[0.9375rem] font-semibold">{s.name.trim() || t("onb.unnamed")}</span>
         {t(`template.${s.template}`) !== s.name.trim() && <span className="shrink-0 text-[0.75rem] text-fg-3">{t(`template.${s.template}`)}</span>}
       </span>
@@ -454,7 +475,7 @@ function SpaceCard({ s, i, canRemove, onChange, onDuplicate, onRemove }: { s: Dr
   )
 }
 
-function GearCard({ s, i, onChange, onDuplicate }: { s: DraftSpace; i: number; onChange: (p: Partial<DraftGear>) => void; onDuplicate: () => void }) {
+function GearCard({ s, i, onChange, onCopy }: { s: DraftSpace; i: number; onChange: (p: Partial<DraftGear>) => void; onCopy?: () => void }) {
   const { t } = useSettings()
   const g = s.gear
   return (
@@ -463,9 +484,11 @@ function GearCard({ s, i, onChange, onDuplicate }: { s: DraftSpace; i: number; o
         s={s}
         i={i}
         aside={
-          <SmallBtn onClick={onDuplicate} id={`onb-gdup-${i}`}>
-            <Copy className="size-3.5" /> {t("onb.duplicate")}
-          </SmallBtn>
+          onCopy && (
+            <SmallBtn onClick={onCopy} id={`onb-gcopy-${i}`}>
+              <Copy className="size-3.5" /> {t("onb.copyGear")}
+            </SmallBtn>
+          )
         }
       />
       <Grid>

@@ -1,7 +1,7 @@
 // Assistant de premier lancement (lot 8b, version locale) : a draft filled step by step, turned into documents at the
 // end. Nothing is guessed: an equipment field left empty creates nothing, a cycle needs its pots typed.
-import { GROW_SCHEMA, modulesFor, SPACE_COLORS, type DimensionsCm, type Equipment, type EquipmentAssignment, type ModuleId, type NutritionSettings, type Space, type TemplateId } from "@/model/grow"
-import { newGrow, newSpace } from "@/model/grow-ops"
+import { GROW_SCHEMA, modulesFor, SPACE_COLORS, type SpaceColor, type DimensionsCm, type Equipment, type EquipmentAssignment, type ModuleId, type NutritionSettings, type Space, type TemplateId } from "@/model/grow"
+import { freeColor, newGrow, newSpace } from "@/model/grow-ops"
 import { withPots } from "@/equipment/calc"
 import { SCHEMA, type Cycle, type IsoDate, type Substrate, type WaterMode } from "@/model/types"
 
@@ -21,6 +21,8 @@ export type DraftSpace = {
   dims: Partial<DimensionsCm>
   modules: Record<ModuleId, boolean>
   gear: DraftGear
+  /** Chosen when the space is added and kept (lot 10e): removing another space never changes it. */
+  color?: SpaceColor
 }
 
 export type DraftCycle = {
@@ -47,8 +49,8 @@ export type Draft = {
 /** Friends start with the Pro Line, no add-on ticked, concentrate at 226 g/L (Athena's recommended strength, p. 37). */
 export const ONBOARDING_NUTRITION: NutritionSettings = { line: "athena-pro", addons: [], dosing: "conc226" }
 
-export function draftSpace(key: string, name: string, template: TemplateId = "flower"): DraftSpace {
-  return { key, name, template, dims: {}, modules: modulesFor(template), gear: {} }
+export function draftSpace(key: string, name: string, template: TemplateId = "flower", color: SpaceColor = SPACE_COLORS[0]): DraftSpace {
+  return { key, name, template, dims: {}, modules: modulesFor(template), gear: {}, color }
 }
 
 export function emptyDraft(spaceName: string): Draft {
@@ -65,8 +67,15 @@ export function duplicateDraftSpace(d: Draft, key: string, newKey: string, name:
   const i = d.spaces.findIndex((s) => s.key === key)
   if (i < 0) return d
   const src = d.spaces[i]
-  const copy: DraftSpace = { ...src, key: newKey, name: name(src.name), dims: { ...src.dims }, modules: { ...src.modules }, gear: { ...src.gear } }
+  const copy: DraftSpace = { ...src, key: newKey, name: name(src.name), dims: { ...src.dims }, modules: { ...src.modules }, gear: { ...src.gear }, color: freeColor(d.spaces.map((s) => s.color)) }
   return { ...d, spaces: [...d.spaces.slice(0, i + 1), copy, ...d.spaces.slice(i + 1)] }
+}
+
+/** Equipment step (lot 10e): this space's equipment copied to the other spaces, no new space created. */
+export function copyGearToOthers(d: Draft, key: string): Draft {
+  const src = d.spaces.find((s) => s.key === key)
+  if (!src) return d
+  return { ...d, spaces: d.spaces.map((s) => (s.key === key ? s : { ...s, gear: { ...src.gear } })) }
 }
 
 export function removeDraftSpace(d: Draft, key: string): Draft {
@@ -134,7 +143,7 @@ export function draftDocs(d: Draft, p: { now: string; today: IsoDate; id: (prefi
     spaceId.set(ds.key, id)
     const dims = Object.fromEntries(Object.entries(ds.dims).filter(([, v]) => v != null && v > 0)) as Partial<DimensionsCm>
     const space: Space = {
-      ...newSpace({ id, name: ds.name.trim(), template: ds.template, order, now: p.now, color: SPACE_COLORS[order % SPACE_COLORS.length], ...(Object.keys(dims).length ? { dimensionsCm: dims } : {}) }),
+      ...newSpace({ id, name: ds.name.trim(), template: ds.template, order, now: p.now, color: ds.color ?? SPACE_COLORS[order % SPACE_COLORS.length], ...(Object.keys(dims).length ? { dimensionsCm: dims } : {}) }),
       modules: { ...ds.modules },
     }
     out.push([`spaces/${id}`, space])

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { Glossary } from "@/components/hydro/info"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Emoji } from "@/components/hydro/emoji"
@@ -114,6 +115,10 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
               </ul>
             </Section>
 
+            <Section value="glossary" emoji="book" title={t("glossary.title")} desc={t("glossary.titleD")}>
+              <Glossary />
+            </Section>
+
             <Section value="sources" emoji="book" title={t("guide.sources")}>
               <ul className="flex flex-col gap-1.5 text-[0.8125rem] text-fg-2">
                 {(["srcAthena", "srcRain", "srcBonorum", "srcMaker", "srcEstimate"] as const).map((s) => (
@@ -125,7 +130,6 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
         </Card>
       </Reveal>
       <p className="mt-3 text-center text-[0.75rem] text-fg-3">{t("guide.blendedSoon")}</p>
-      <p className="mt-1 text-center text-[0.75rem] text-fg-3">{t("guide.version", { v: "0.3" })}</p>
     </>
   )
 }

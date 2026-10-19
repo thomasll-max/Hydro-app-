@@ -1,3 +1,4 @@
+import { InfoTip, type Term } from "@/components/hydro/info"
 import { useEffect, useMemo, useState } from "react"
 import { SpaceToday, AllToday } from "./today-spaces"
 import { motion } from "motion/react"
@@ -157,20 +158,20 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
       <div className="grid grid-cols-2 gap-2.5">
         <Reveal i={1}>
           {bySensor ? (
-            <GaugeCard emoji="droplet" label={t("today.drybackSensor")} value={last?.drybackSensor} max={70} unit="%" decimals={0} note={t("today.sensorScale")} />
+            <GaugeCard emoji="droplet" label={t("today.drybackSensor")} term="drybackSensor" value={last?.drybackSensor} max={70} unit="%" decimals={0} note={t("today.sensorScale")} />
           ) : (
-            <GaugeCard emoji="droplet" label={t("today.dryback")} value={last?.dryback} target={lastTg?.dryback} max={70} unit="%" decimals={0} />
+            <GaugeCard emoji="droplet" label={t("today.dryback")} term="dryback" value={last?.dryback} target={lastTg?.dryback} max={70} unit="%" decimals={0} />
           )}
         </Reveal>
         <Reveal i={2}>
-          <GaugeCard emoji="testTube" label={t("today.ecRunoff")} value={last?.ecRunoff} target={lastTg?.ecRunoff} max={12} decimals={1} />
+          <GaugeCard emoji="testTube" label={t("today.ecRunoff")} term="ec" value={last?.ecRunoff} target={lastTg?.ecRunoff} max={12} decimals={1} />
         </Reveal>
 
         <Reveal i={3} className="col-span-2">
           <Card>
             <Label emoji="chart">{last ? t("today.lastEntry", { when }) : t("today.noEntryTitle")}</Label>
             <div className="mt-2.5 grid grid-cols-3 gap-2">
-              <Metric k={t("today.runoff")} status={pill(last?.runoffPct, lastTg?.runoffPct)} target={lastTg?.runoffPct ? `${range(lastTg.runoffPct.lo, lastTg.runoffPct.hi)} %` : "—"}>
+              <Metric k={t("today.runoff")} term="runoff" status={pill(last?.runoffPct, lastTg?.runoffPct)} target={lastTg?.runoffPct ? `${range(lastTg.runoffPct.lo, lastTg.runoffPct.hi)} %` : "—"}>
                 {last?.runoffPct != null ? (
                   <>
                     <NumberTicker value={last.runoffPct} locale={locale} />%
@@ -182,13 +183,13 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
               <Metric k={t("today.phRunoff")} status={pill(last?.phRunoff, lastTg?.phRunoff, "phRunoff")} target={lastTg?.phRunoff ? range(lastTg.phRunoff.lo, lastTg.phRunoff.hi, 1) : "—"}>
                 {last?.phRunoff != null ? <NumberTicker value={last.phRunoff} decimalPlaces={1} locale={locale} /> : "—"}
               </Metric>
-              <Metric k={t("today.vpd")} status={pill(last?.vpd, lastTg?.vpd)} target={lastTg?.vpd ? `${range(lastTg.vpd.lo, lastTg.vpd.hi, 1)} kPa` : "kPa"}>
+              <Metric k={t("today.vpd")} term="vpd" status={pill(last?.vpd, lastTg?.vpd)} target={lastTg?.vpd ? `${range(lastTg.vpd.lo, lastTg.vpd.hi, 1)} kPa` : "kPa"}>
                 {last?.vpd != null ? <NumberTicker value={last.vpd} decimalPlaces={2} locale={locale} /> : "—"}
               </Metric>
               <Metric k={t("today.ecIn")} status={pill(last?.ecIn, lastTg?.ecIn)} target={lastTg?.ecIn ? range(lastTg.ecIn.lo, lastTg.ecIn.hi, 1) : "—"}>
                 {last?.ecIn != null ? <NumberTicker value={last.ecIn} decimalPlaces={1} locale={locale} /> : "—"}
               </Metric>
-              <Metric k={t("today.dli")} status={pill(last?.dli, lastTg?.dli)} target={last?.ppfd != null ? `PPFD ${num(last.ppfd)}` : lastTg?.dli ? range(lastTg.dli.lo, lastTg.dli.hi) : "—"}>
+              <Metric k={t("today.dli")} term="dli" status={pill(last?.dli, lastTg?.dli)} target={last?.ppfd != null ? `PPFD ${num(last.ppfd)}` : lastTg?.dli ? range(lastTg.dli.lo, lastTg.dli.hi) : "—"}>
                 {last?.dli != null ? <NumberTicker value={last.dli} decimalPlaces={1} locale={locale} /> : "—"}
               </Metric>
               <Metric k={t("today.tempRh")} target={t("today.dayShort")}>
@@ -263,11 +264,14 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
   )
 }
 
-function GaugeCard({ emoji, label, value, target, max, unit, decimals, note }: { emoji: EmojiName; label: string; value?: number; target?: Pick<Target, "lo" | "hi">; max: number; unit?: string; decimals: number; /** Shown instead of a target (no colour judgment). */ note?: string }) {
+function GaugeCard({ emoji, label, value, target, max, unit, decimals, note, term }: { emoji: EmojiName; label: string; value?: number; target?: Pick<Target, "lo" | "hi">; max: number; unit?: string; decimals: number; /** Shown instead of a target (no colour judgment). */ note?: string; term?: Term }) {
   const { t, range, locale } = useSettings()
   return (
     <Card className="h-full items-center px-2.5 pt-3.5 pb-3 text-center">
-      <Label emoji={emoji}>{label}</Label>
+      <span className="flex items-center gap-1.5">
+        <Label emoji={emoji}>{label}</Label>
+        {term && <InfoTip term={term} />}
+      </span>
       {value != null ? (
         <ArcGauge value={value} lo={target?.lo ?? 0} hi={target?.hi ?? 0} max={Math.max(max, value)} decimals={decimals} unit={unit} locale={locale} tone={target ? status(value, target) : note ? "neutral" : "ok"} />
       ) : (
@@ -289,12 +293,13 @@ function GaugeCard({ emoji, label, value, target, max, unit, decimals, note }: {
   )
 }
 
-function Metric({ k, status: st, target, children }: { k: string; status?: Status; target: string; children: React.ReactNode }) {
+function Metric({ k, status: st, target, children, term }: { k: string; status?: Status; target: string; children: React.ReactNode; term?: Term }) {
   return (
     <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2.5 py-[9px]">
       <div className="flex items-center gap-[5px] text-[0.75rem] text-fg-3">
         {st ? <Dot status={st} /> : <span className="inline-block size-[7px] rounded-full bg-track" aria-hidden="true" />}
-        <span className="truncate">{k}</span>
+        <span className="min-w-0 truncate">{k}</span>
+        {term && <InfoTip term={term} />}
       </div>
       <div className="mt-[3px] truncate text-[1.0625rem] font-semibold tabular">{children}</div>
       <div className="mt-px truncate text-[0.75rem] text-fg-3">{target}</div>

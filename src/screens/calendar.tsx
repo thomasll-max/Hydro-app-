@@ -166,12 +166,25 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
               const hasDl = open.some((i) => i.type === "deadline")
               const hasJ = !!(x && (x.entries.length || x.events.length || x.mixes.length))
               const isToday = d === today
+              // The dots, said aloud (lot 10e): date, then what is due and noted that day.
+              const nDl = open.filter((i) => i.type === "deadline").length
+              const nRem = open.filter((i) => i.type === "reminder").length
+              const said = [
+                new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${d}T12:00:00Z`)),
+                nDl ? t("cal.dayDl", { n: nDl }) : "",
+                nRem ? t("cal.dayRem", { n: nRem }) : "",
+                late ? t("cal.overdue") : "",
+                hasJ ? t("cal.dayJournal") : "",
+              ]
+                .filter(Boolean)
+                .join(" · ")
               return (
                 <button
                   key={d}
                   type="button"
                   onClick={() => onDay(d)}
-                  aria-label={new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${d}T12:00:00Z`))}
+                  aria-label={said}
+                  aria-current={isToday ? "date" : undefined}
                   className={cn(
                     "relative flex aspect-square min-h-11 flex-col items-center justify-center rounded-md text-[0.875rem] font-semibold tabular transition-colors",
                     inMonth(d) ? "text-fg" : "text-fg-3",
@@ -217,9 +230,10 @@ function Legend({ cls, label }: { cls: string; label: string }) {
 
 function Stat({ k, v }: { k: string; v: number }) {
   return (
-    <div className="min-w-0 rounded-md border border-line bg-surface px-2 py-2 text-center shadow-card">
+    <div className="min-w-0 rounded-md border border-line bg-surface px-1 py-2 text-center shadow-card">
       <div className="text-[1.1875rem] leading-tight font-semibold tabular">{v}</div>
-      <div className="truncate text-[0.75rem] text-fg-3">{k}</div>
+      {/* Whole word, cut with a hyphen if needed: never "Événem…" (lot 10e). */}
+      <div className="text-[0.75rem] leading-tight [overflow-wrap:anywhere] text-fg-3 hyphens-auto">{k}</div>
     </div>
   )
 }

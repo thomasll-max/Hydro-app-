@@ -1,5 +1,18 @@
 # Changelog
 
+## Lot 10e2 — Textes, glossaire, assistant, ARIA (19/10/2026)
+Passe de corrections, points 76 à 84 de `docs/audit-2026-10-19.md`.
+- **« EC runoff », « pH runoff »** partout (plus « RO », qui se lit « eau osmosée ») ; « EC entrée ».
+- **Bulles (i) et glossaire** : VPD, DLI, PPFD, dryback, runoff, EC, P0–P3, pilotage végétatif / génératif expliqués là où ils apparaissent, et tous réunis dans Outils → Repères → Glossaire.
+- **Assistant** : « Copier vers les autres espaces » à l'étape Équipement (« Dupliquer » créait un espace) ; plus d'erreur affichée avant d'avoir rien tapé ; « Quitter l'assistant » au lieu de « Passer » ; aide du dosage juste en poudre.
+- **Français** : vrais pluriels (« 1 espace », « 3 espaces »), espaces avant les unités, « pièce » au lieu de « room », plus de vocabulaire de développement (« version Claude », « lot 8 », « Version 0.3 »), fuseau lisible (« heure du grow (Oslo) »).
+- **Anglais** : plus de deux-points à la française ; noms de pots au bon séparateur décimal.
+- **Sauvegarde** : « éléments » et « emplacements du matériel », dates avec l'année.
+- **Lecteurs d'écran** : onglet courant annoncé, gravité des observations lue, jours du calendrier décrits, bouton « FR » nommé.
+- **Couleur d'un espace** fixée à sa création : elle ne change plus quand un autre espace est supprimé ou déplacé.
+- **Calendrier** : libellés des compteurs plus coupés ; **feuille Rappel** : un seul « Note », « Fin de la répétition » titré.
+- 286 tests (5 nouveaux : pluriels, dates, couleurs, assistant) ; `scripts/e2e-10e2.py` ; tous les scripts e2e repassés.
+
 ## Lot 10e1 — Accessibilité visuelle (19/10/2026)
 Passe de corrections, points 71 à 75 de `docs/audit-2026-10-19.md` (le lot 10e est coupé en 10e1, 10e2 et 10e3).
 - **Contraste** : vert plus foncé en thème clair (texte vert lisible, boutons verts à texte blanc), textes secondaires, orange et rouge renforcés dans les deux thèmes ; jours hors du mois lisibles dans le calendrier. 0 défaut de contraste (axe-core) sur les cinq onglets et la saisie, en clair comme en sombre.

@@ -69,7 +69,7 @@ export function ArcGauge({
       </svg>
       <div className="absolute inset-0 flex items-center justify-center pt-1 text-[1.375rem] font-semibold tracking-[-0.5px] tabular">
         <NumberTicker value={value} decimalPlaces={decimals} locale={locale} delay={delay} />
-        {unit && <span className="ml-0.5 text-[0.75rem] font-medium text-fg-3">{unit}</span>}
+        {unit && <span className="text-[0.75rem] font-medium text-fg-3">{"\u202f"}{unit}</span>}
       </div>
     </div>
   )

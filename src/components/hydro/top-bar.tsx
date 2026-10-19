@@ -82,7 +82,7 @@ export function DisplayMenu() {
       <Popover.Trigger asChild>
         <button
           type="button"
-          aria-label={t("controls.display")}
+          aria-label={`${settings.lang.toUpperCase()} · ${t("controls.display")}`}
           id="display-menu"
           className="flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface-2 pr-2.5 pl-2 text-[0.75rem] font-semibold text-fg-2 transition-colors hover:text-fg data-[state=open]:border-primary/40 data-[state=open]:text-fg"
         >

@@ -269,6 +269,19 @@ body {
   .fold-3 {
     grid-template-columns: repeat(auto-fit, minmax(max(6rem, calc((100% - 1.25rem) / 3)), 1fr));
   }
+  /* An icon button with a 44 × 44 px tap area around a small glyph. */
+  .hit-sq {
+    position: relative;
+  }
+  .hit-sq::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
   .eyebrow {
     font-size: 0.75rem;
     font-weight: 600;

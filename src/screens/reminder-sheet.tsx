@@ -159,7 +159,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
         )}
         <Grid>
           <TextField id="rm-date" type="date" label={t("remForm.date")} value={f.date} onChange={(v) => set("date")(v || todayIso())} />
-          <TextField id="rm-time" type="time" label={t("remForm.time")} hint={t("remForm.tzHint", { tz })} value={f.time} onChange={(v) => set("time")(v || "09:00")} />
+          <TextField id="rm-time" type="time" label={t("remForm.time")} hint={t("remForm.tzHint", { city: tz.split("/").pop()!.replace(/_/g, " ") })} value={f.time} onChange={(v) => set("time")(v || "09:00")} />
         </Grid>
       </div>
 
@@ -199,6 +199,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
         )}
         {f.repeat !== "none" && (
           <div className="mt-2.5 flex flex-col gap-2.5">
+            <span className="-mb-1.5 text-[0.75rem] font-medium text-fg-2">{t("remForm.end")}</span>
             <Seg<End> label={t("remForm.end")} value={f.end} onChange={set("end")} options={[{ value: "never", label: t("remForm.eNever") }, { value: "count", label: t("remForm.eCount") }, { value: "until", label: t("remForm.eUntil") }]} />
             {f.end === "count" && <NumField id="rm-count" integer label={t("remForm.count")} value={f.count} onChange={set("count")} />}
             {f.end === "until" && <TextField id="rm-until" type="date" label={t("remForm.until")} value={f.until} onChange={set("until")} />}
@@ -220,9 +221,10 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
           ]}
         />
       </Group>
-      <Group title={t("remForm.note")}>
+      {/* One "Note" label, not a title and a label (lot 10e). */}
+      <div className="mt-4">
         <AreaField id="rm-note" label={t("remForm.note")} value={f.note} onChange={set("note")} />
-      </Group>
+      </div>
     </Sheet>
   )
 }

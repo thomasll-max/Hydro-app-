@@ -48,7 +48,7 @@ with sync_playwright() as p:
     pg.fill("#q-floraison-res", "60")
     pg.screenshot(path=str(out / "04-quick.png"))
     pg.get_by_role("button", name="Enregistrer", exact=True).click()
-    pg.wait_for_selector("text=espace(s) enregistré(s)", timeout=10000)
+    pg.wait_for_selector("text=/espaces? enregistrés?/", timeout=10000)  # lot 10e: real plurals
     pg.wait_for_timeout(1200)
     pg.screenshot(path=str(out / "05-today-all-after.png"), full_page=True)
 

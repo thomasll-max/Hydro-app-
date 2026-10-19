@@ -215,12 +215,12 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   if (!space) return null
   const plantIds = PLANT_IDS.slice(0, Math.max(1, Math.min(PLANT_IDS.length, cycle?.potCount ?? 4)))
   const computed = [
-    on("climate") && <Computed key="v" label={t("entry.vpd")} value={fmt(live?.vpd, 2)} status={st("vpd")} />,
-    on("irrigation") && method === "weight" && <Computed key="d" label={t("entry.dryback")} value={fmt(live?.dryback, 0, " %")} status={st("dryback")} />,
+    on("climate") && <Computed key="v" term="vpd" label={t("entry.vpd")} value={fmt(live?.vpd, 2)} status={st("vpd")} />,
+    on("irrigation") && method === "weight" && <Computed key="d" term="dryback" label={t("entry.dryback")} value={fmt(live?.dryback, 0, " %")} status={st("dryback")} />,
     // Sensor scale: no status against Athena's weighing targets.
-    on("irrigation") && bySensor && <Computed key="ds" label={t("entry.drybackSensor")} value={fmt(live?.drybackSensor, 0, " %")} />,
-    on("irrigation") && <Computed key="r" label={t("entry.runoffPct")} value={fmt(live?.runoffPct, 0, " %")} status={st("runoffPct")} />,
-    on("light") && <Computed key="l" label={t("entry.dli")} value={fmt(live?.dli, 1)} status={st("dli")} />,
+    on("irrigation") && bySensor && <Computed key="ds" term="drybackSensor" label={t("entry.drybackSensor")} value={fmt(live?.drybackSensor, 0, " %")} />,
+    on("irrigation") && <Computed key="r" term="runoff" label={t("entry.runoffPct")} value={fmt(live?.runoffPct, 0, " %")} status={st("runoffPct")} />,
+    on("light") && <Computed key="l" term="dli" label={t("entry.dli")} value={fmt(live?.dli, 1)} status={st("dli")} />,
   ].filter(Boolean)
   // The fields first: they list the greyed values "Reprendre hier" can fill.
   const fields = (

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { isBadNum } from "@/calc/formulas"
 import { useSettings } from "@/app/settings-context"
 import { addLayer } from "@/app/nav"
+import { InfoTip, type Term } from "./info"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -278,6 +279,7 @@ export function Seg<T extends string>({
 
 /** Tappable chip. `level` 1–3 shows a severity dot count. */
 export function TagChip({ label, on, level, onClick }: { label: string; on: boolean; level?: number; onClick: () => void }) {
+  const { t } = useSettings()
   return (
     <button
       type="button"
@@ -296,9 +298,10 @@ export function TagChip({ label, on, level, onClick }: { label: string; on: bool
     >
       {label}
       {on && level ? (
-        <span className="flex gap-0.5" aria-label={`${level}/3`}>
+        <span className="flex gap-0.5">
+          <span className="sr-only">{t("entry.severity", { n: level })}</span>
           {[1, 2, 3].map((i) => (
-            <span key={i} className={cn("size-1.5 rounded-full", i <= level ? "bg-current" : "bg-current/25")} />
+            <span key={i} aria-hidden="true" className={cn("size-1.5 rounded-full", i <= level ? "bg-current" : "bg-current/25")} />
           ))}
         </span>
       ) : null}
@@ -307,10 +310,13 @@ export function TagChip({ label, on, level, onClick }: { label: string; on: bool
 }
 
 /** Computed value with its status color. */
-export function Computed({ label, value, status }: { label: string; value: string; status?: "ok" | "warn" | "bad" }) {
+export function Computed({ label, value, status, term }: { label: string; value: string; status?: "ok" | "warn" | "bad"; term?: Term }) {
   return (
-    <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2.5 py-2">
-      <div className="truncate text-[0.75rem] text-fg-3">{label}</div>
+    <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2 py-2">
+      <div className="flex min-w-0 items-center gap-0.5 text-[0.75rem] text-fg-3">
+        <span className="min-w-0 truncate">{label}</span>
+        {term && <InfoTip term={term} />}
+      </div>
       <div
         className={cn(
           "text-[1rem] font-semibold tabular",

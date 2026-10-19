@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -40,7 +40,7 @@
   - [x] Lot 10d2 : points 58–60, 63, 64, 69 (281 tests, artefact v33)
 - [ ] Lot 10e : accessibilité, textes, assistant, option « Autre marque »
   - [x] Lot 10e1 : points 71–75, accessibilité visuelle (281 tests, artefact v34)
-  - [ ] Lot 10e2 : points 76–84, textes, assistant, ARIA
+  - [x] Lot 10e2 : points 76–84, textes, assistant, ARIA (286 tests, artefact v35)
   - [ ] Lot 10e3 : option « Autre marque / je dose moi-même », simulation finale
 
 ## Lot 10 : passe de corrections (19/10/2026)
@@ -95,6 +95,18 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 - Premiers pas : pots demandés seulement si l'arrosage de l'espace est automatique (cycle en automatique, sinon pompe dans l'espace) ; lampe cochée avec ses watts (`StartItem.canStart` pour « Démarrer aujourd'hui »).
 - Carte Bonjour : un cycle « automatique » dans un espace sans pompe (quand le grow liste ses pompes) est traité comme arrosé à la main. Pas de dose ni de programme inventés pour le rinçage (eau osmosée, EC < 0,1 : fiche Athena).
 - **Simulation d'un an (fin de 10b, 19/10)** : 479 saisies vérifiées, 28/28 anomalies signalées, **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 0 plantage, 364 matins rejoués ; **4 échéances traînent** (12 avant) : toutes « mesurer le débit » (11 matins chacune), car le simulateur ne remesure la pompe qu'aux transferts (71 jours) alors que la règle du cahier des charges est 60 jours. Je n'ai pas changé ce comportement du simulateur : le rappel est juste. Passage navigateur (`browse.py`, 9 dates × 13 écrans) : aucune erreur console, aucun débordement (le seul « Infinity » relevé est la marque AC Infinity).
+
+## Lot 10e2 — notes
+- Mots : « EC runoff », « pH runoff » (plus « RO », lu « eau osmosée ») ; « EC entrée » ; « pièce » au lieu de « room » ; plus de « version Claude », « lot 8 », « Version 0.3 » (« l'app dans Claude », « l'app installée sur le téléphone ») ; « heure du grow (Oslo) » au lieu de « Europe/Oslo ».
+- **Pluriels** : `interpolate` comprend `{n|singulier|pluriel}` (français : 0 et 1 au singulier ; anglais : 1). Plus aucun « (s) » dans les dictionnaires. `placeholders` lit aussi cette forme (test des clés FR/EN).
+- **Glossaire** (`components/hydro/info.tsx`) : `InfoTip` (bulle (i), zone de 44 px `.hit-sq`) sur VPD, DLI, dryback, dryback capteur, runoff, EC (Aujourd'hui, saisie) et P0–P3 (Arrosage) ; section « Glossaire » dans Repères (9 termes). Les définitions reprennent la fiche Athena (P0–P3, dryback = (pic − creux) ÷ pic, runoff 8–16 % / 1–7 %) ; VPD, PPFD, DLI sont des définitions physiques (DLI = PPFD × heures × 0,0036), aucune valeur de culture ajoutée.
+- **Assistant** : à l'étape Équipement, « Copier vers les autres espaces » (`copyGearToOthers`) remplace « Dupliquer », qui créait un espace ; ce qui manque ne s'affiche qu'après un appui sur « Suivant » (le bouton n'est plus grisé) ; « Passer » devient « Quitter l'assistant » ; l'aide sous le dosage suit le mode (poudre ou concentré).
+- **Anglais** : pas de « : » à la française (`common.colon`) ; le nom « Pots 15 L » suit le séparateur décimal de la langue quand le volume change. **Décision prise seule** : le grow de Thomas (préréglé dans l'artefact) garde ses noms en français, ce sont ses données.
+- **Sauvegarde** : « éléments » au lieu de « documents », « emplacements du matériel » au lieu d'« affectations », dates avec l'année (`formatDate`, `dmy` dans le contexte).
+- **ARIA** : onglets avec `aria-current="page"` (et `aria-controls` vers `main#main-panel`) ; gravité des observations lue (« gravité 2 sur 3 ») dans la saisie et le Journal ; jours du calendrier décrits (« lundi 19 octobre · 1 échéance · 2 rappels · en retard · journal rempli »), aujourd'hui en `aria-current="date"` ; bouton d'affichage nommé « FR · Affichage : langue et thème ».
+- **Couleur d'un espace** : `freeColor` choisit à la création la première couleur libre, gardée ensuite (assistant compris) ; supprimer ou réordonner un espace ne change plus la couleur des autres.
+- **Calendrier** : libellés des compteurs entiers (coupés avec un trait d'union si besoin). **Feuille Rappel** : un seul « Note », « Fin de la répétition » titré.
+- `scripts/e2e-8b.py` adapté (le message n'apparaît qu'après « Suivant »), `scripts/e2e-10e2.py` ajouté.
 
 ## Lot 10e1 — notes
 - Lot 10e coupé en **10e1** (71–75, accessibilité visuelle), **10e2** (76–84, textes, assistant, ARIA) et **10e3** (option « Autre marque », décision de Thomas, et simulation finale).
@@ -193,7 +205,7 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1, 281 au lot 10d2
+npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1, 281 au lot 10d2, 286 au lot 10e2
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale

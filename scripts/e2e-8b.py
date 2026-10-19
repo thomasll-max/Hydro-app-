@@ -50,8 +50,11 @@ with sync_playwright() as p:
 
         pg.click("#onb-start")
         checks["step1"] = pg.inner_text("#onb-count")
-        checks["nextDisabledNoName"] = pg.is_disabled("#onb-next")
+        # Lot 10e: nothing flagged before a try; tapping Next without a name says what is missing and stays.
+        checks["noIssueBeforeTry"] = pg.locator("#onb-issue").count() == 0
+        pg.click("#onb-next"); pg.wait_for_timeout(200)
         checks["issueNoName"] = pg.inner_text("#onb-issue")
+        checks["stillStep1"] = pg.inner_text("#onb-count") == checks["step1"]
         pg.fill("#onb-name", "Grow de Léa")
         shot(pg, "02-name.png")
         pg.click("#onb-next")

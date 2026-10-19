@@ -119,7 +119,7 @@ export function PhBalanceTool() {
               <span key={totalMl} className="inline-block animate-in fade-in zoom-in-95 duration-200">
                 {n1(totalMl)}
               </span>
-              <span className="ml-1 text-[1.75rem] font-medium text-fg-2">mL</span>
+              <span className="text-[1.75rem] font-medium text-fg-2">{"\u00a0"}mL</span>
             </div>
             <div className="mt-1.5 text-[0.75rem] text-fg-3">
               {t("phb.detail", { start: n1(startMl), steps, step: n1(stepMl) })}

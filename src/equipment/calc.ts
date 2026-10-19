@@ -163,12 +163,12 @@ export function spaceIrrigation(spaceId: string, date: IsoDate, equipment: Equip
 }
 
 /** Pots typed in the irrigation tool: updates the space's container, or creates one (then assigned to the space). */
-export function withPots(existing: Equipment | undefined, p: { volumeL: number; count?: number; substrate?: string; id: string; now: string; name: string }): Equipment {
+export function withPots(existing: Equipment | undefined, p: { volumeL: number; count?: number; substrate?: string; id: string; now: string; name: string; decimal?: "," | "." }): Equipment {
   if (existing)
     return {
       ...existing,
-      // "Pots 15 L" follows the new volume; a name without a volume in it is kept.
-      name: existing.name.replace(/\d+(?:[.,]\d+)?(\s?L\b)/, `${String(p.volumeL).replace(".", ",")}$1`),
+      // "Pots 15 L" follows the new volume; a name without a volume in it is kept. Decimal mark of the app language (lot 10e).
+      name: existing.name.replace(/\d+(?:[.,]\d+)?(\s?L\b)/, `${String(p.volumeL).replace(".", p.decimal ?? ",")}$1`),
       container: { ...existing.container, volumeL: p.volumeL, ...(p.count ? { count: p.count } : {}) },
       ...(p.count ? { quantity: p.count } : {}),
       updatedAt: p.now,

@@ -28,9 +28,10 @@ SMALL = """() => {
   for (const el of document.querySelectorAll('button, a[href], [role=tab], [role=radio], [role=switch], [role=checkbox], input, select, textarea')) {
     if (!vis(el) || el.closest('.recharts-wrapper')) continue
     const r = el.getBoundingClientRect()
-    const hit = el.classList.contains('hit')
+    const sq = el.classList.contains('hit-sq')
+    const hit = el.classList.contains('hit') || sq
     const iconOnly = !el.textContent.trim()
-    if ((r.height < 43.5 && !hit) || (iconOnly && r.width < 43.5)) targets.push(`${Math.round(r.width)}×${Math.round(r.height)} ${el.tagName} «${(el.textContent.trim() || el.getAttribute('aria-label') || el.id || '').slice(0, 24)}»`)
+    if ((r.height < 43.5 && !hit) || (iconOnly && r.width < 43.5 && !sq)) targets.push(`${Math.round(r.width)}×${Math.round(r.height)} ${el.tagName} «${(el.textContent.trim() || el.getAttribute('aria-label') || el.id || '').slice(0, 24)}»`)
   }
   return { fonts: [...new Set(fonts)].slice(0, 12), targets: [...new Set(targets)].slice(0, 20) }
 }"""
@@ -83,7 +84,9 @@ with sync_playwright() as p:
     if pg.get_by_role("button", name="Saisie complète").count():
         pg.get_by_role("button", name="Saisie complète").first.click()
     pg.wait_for_selector("#e-date"); pg.wait_for_timeout(800)
-    zoom["entryOverflow"] = pg.evaluate("""() => [...document.querySelectorAll('[data-slot=drawer-content] *')].filter((el) => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX !== 'auto' && getComputedStyle(el).overflowX !== 'scroll' && el.clientWidth > 0 && !el.closest('.truncate, [class*=truncate], .sr-only')).map((el) => `${el.tagName}.${String(el.className).slice(0, 40)} ${el.scrollWidth}>${el.clientWidth}`).slice(0, 8)""")
+    # The invisible 44 px tap areas (::after) are not content: left out of the overflow measure.
+    pg.add_style_tag(content=".hit::after, .hit-sq::after { display: none !important }")
+    zoom["entryOverflow"] = pg.evaluate("""() => [...document.querySelectorAll('[data-slot=drawer-content] *')].filter((el) => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX !== 'auto' && getComputedStyle(el).overflowX !== 'scroll' && el.clientWidth > 0 && !el.closest('.truncate, [class*=truncate], [class*=sr-only]')).map((el) => `${el.tagName}.${String(el.className).slice(0, 40)} ${el.scrollWidth}>${el.clientWidth}`).slice(0, 8)""")
     zoom["entryInputs"] = pg.evaluate("""() => [...document.querySelectorAll('[data-slot=drawer-content] input')].filter((i) => { const w = i.getBoundingClientRect().width; return w > 0 && w < 60 }).length""")
     pg.screenshot(path=str(out / "zoom-entry.png"))
     checks["zoom200"] = zoom

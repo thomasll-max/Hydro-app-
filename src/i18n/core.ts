@@ -14,13 +14,22 @@ export function lookup(dict: Messages, key: MessageKey): string {
   return typeof node === "string" ? node : key
 }
 
-export function interpolate(template: string, vars?: Vars): string {
+/** French counts 0 and 1 as singular, English only 1. */
+export const isSingular = (lang: Lang, n: number) => (lang === "fr" ? Math.abs(n) < 2 : n === 1)
+
+/** `{n}` → the value; `{n|espace|espaces}` → the word agreeing with n (lot 10e: no more "espace(s)"). */
+export function interpolate(template: string, vars?: Vars, lang: Lang = "fr"): string {
   if (!vars) return template
-  return template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m))
+  return template.replace(/\{(\w+)(?:\|([^|}]*)\|([^}]*))?\}/g, (m, k: string, one?: string, many?: string) => {
+    if (!(k in vars)) return m
+    if (one == null) return String(vars[k])
+    const n = Number(String(vars[k]).replace(",", "."))
+    return isSingular(lang, n) ? one : (many ?? one)
+  })
 }
 
 export function translate(lang: Lang, key: MessageKey, vars?: Vars): string {
-  return interpolate(lookup(dictionaries[lang], key), vars)
+  return interpolate(lookup(dictionaries[lang], key), vars, lang)
 }
 
 /** Every leaf key of a dictionary, dot-separated, sorted. */
@@ -32,7 +41,7 @@ export function flattenKeys(obj: object, prefix = ""): string[] {
 
 /** Placeholders like {n} used by a template, sorted. */
 export function placeholders(template: string): string[] {
-  return [...template.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
+  return [...new Set([...template.matchAll(/\{(\w+)(?:\|[^}]*)?\}/g)].map((m) => m[1]))].sort()
 }
 
 const numCache = new Map<string, Intl.NumberFormat>()
@@ -63,6 +72,11 @@ export function formatDayMonth(lang: Lang, d: Date): string {
     return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit" }).format(d)
   }
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(d)
+}
+
+/** Full date with the year: "19/10/2026" (fr), "Oct 19, 2026" (en), lot 10e (backups, files). */
+export function formatDate(lang: Lang, d: Date): string {
+  return new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-US", lang === "fr" ? { day: "2-digit", month: "2-digit", year: "numeric" } : { month: "short", day: "numeric", year: "numeric" }).format(d)
 }
 
 /** 24 h clock in both languages (grow schedules are written that way). */

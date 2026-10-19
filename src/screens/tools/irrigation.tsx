@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { InfoTip } from "@/components/hydro/info"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -168,7 +169,10 @@ export function IrrigationTool() {
 
       <Reveal i={4}>
         <Card>
-          <Label emoji="droplet">{t("irr.program")}</Label>
+          <span className="flex items-center gap-1.5">
+            <Label emoji="droplet">{t("irr.program")}</Label>
+            <InfoTip term="phases" />
+          </span>
           {mode === "auto" && !input.flowMlPerMin && <p className="mt-2 rounded-md bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn">{t("irr.noFlow")}</p>}
           <ol className="mt-2 flex flex-col">
             {rows.map((r, i) => (

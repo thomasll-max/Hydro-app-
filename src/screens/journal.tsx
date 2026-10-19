@@ -366,8 +366,8 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
               {t("entry.drybackSensor")} <b className="font-semibold text-fg tabular-nums">{`${num(e.drybackSensor, 0)} %`}</b>
             </span>
           )}
-          {m("ecRunoff", "EC RO", 1)}
-          {m("phRunoff", "pH RO", 1)}
+          {m("ecRunoff", t("today.ecRunoff"), 1)}
+          {m("phRunoff", t("today.phRunoff"), 1)}
           {m("vpd", "VPD", 2)}
           {e.tempDay != null && (
             <span className="text-[0.75rem] text-fg-2">
@@ -395,6 +395,7 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
             {e.observations?.map((o) => (
               <span key={o.tag} className={cn("rounded-full px-2 py-0.5 text-[0.75rem] font-semibold", o.severity >= 3 ? "bg-bad/12 text-bad" : o.severity === 2 ? "bg-warn/12 text-warn" : "bg-surface-2 text-fg-2")}>
                 {t(`obs.${o.tag}`)}
+                <span className="sr-only"> ({t("entry.severity", { n: o.severity })})</span>
               </span>
             ))}
             {e.actions?.map((a) => (

@@ -21,7 +21,7 @@ import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescript
 import { askPersist, isInstalled, isIos, persistState, type PersistState } from "@/lib/persist"
 
 export function DataTool() {
-  const { t, num, settings } = useSettings()
+  const { t, num, dmy, settings } = useSettings()
   const { all, allSpaces, skipped } = useGrow()
   const [busy, setBusy] = useState(false)
   const [pending, setPending] = useState<{ backup: Backup; counts: Partial<Record<CollectionName, number>>; total: number; skipped: number; name: string } | null>(null)
@@ -197,7 +197,7 @@ export function DataTool() {
           )}
           {pending && (
             <div className="flex flex-col gap-2.5 rounded-md border border-line bg-surface-2 px-3 py-3" id="data-summary">
-              <b className="text-[0.84375rem]">{t("data.fileSummary", { name: pending.name, n: pending.total, date: pending.backup.exportedAt.slice(0, 10) })}</b>
+              <b className="text-[0.84375rem]">{t("data.fileSummary", { name: pending.name, n: pending.total, date: dmy(pending.backup.exportedAt) })}</b>
               {pending.skipped > 0 && <p className="text-[0.75rem] font-medium text-warn">{t("safe.importSkipped", { n: pending.skipped })}</p>}
               <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[0.75rem] text-fg-2">
                 {Object.entries(pending.counts).map(([c, n]) => (

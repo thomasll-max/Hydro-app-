@@ -73,7 +73,7 @@ function Shell() {
           </p>
         </div>
       )}
-      <main className="relative mx-auto max-w-[480px] pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+170px)] short:pb-[calc(env(safe-area-inset-bottom,0px)+130px)] pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
+      <main id="main-panel" role="tabpanel" className="relative mx-auto max-w-[480px] pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+170px)] short:pb-[calc(env(safe-area-inset-bottom,0px)+130px)] pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={tab}

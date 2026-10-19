@@ -13,6 +13,14 @@ export function newSite(id: string, name: string, order: number): Site {
   return { schemaVersion: GROW_SCHEMA.site, id, name, order }
 }
 
+/**
+ * A new space's colour, chosen once at creation and stored (lot 10e): the first one no other space uses, so a
+ * removed or reordered space never makes another one change colour.
+ */
+export function freeColor(used: readonly (string | undefined)[], order = used.length): SpaceColor {
+  return SPACE_COLORS.find((c) => !used.includes(c)) ?? SPACE_COLORS[order % SPACE_COLORS.length]
+}
+
 export function newSpace(p: { id: string; name: string; template: TemplateId; order: number; now: string; color?: SpaceColor; siteId?: string; dimensionsCm?: Space["dimensionsCm"] }): Space {
   return {
     schemaVersion: GROW_SCHEMA.space,
@@ -58,11 +66,11 @@ export function visibleEntry(entry: Entry, space: Pick<Space, "modules">): Parti
 /** Duplicate a space with its current equipment (new open assignments from `date`). */
 export function duplicateSpace(
   space: Space,
-  p: { id: string; name: string; order: number; now: string; date: IsoDate },
+  p: { id: string; name: string; order: number; now: string; date: IsoDate; color?: SpaceColor },
   assignments: EquipmentAssignment[],
   newId: () => string,
 ): { space: Space; assignments: EquipmentAssignment[] } {
-  const copy: Space = { ...space, id: p.id, name: p.name, order: p.order, color: SPACE_COLORS[p.order % SPACE_COLORS.length], archived: undefined, createdAt: p.now, updatedAt: p.now }
+  const copy: Space = { ...space, id: p.id, name: p.name, order: p.order, color: p.color ?? SPACE_COLORS[p.order % SPACE_COLORS.length], archived: undefined, createdAt: p.now, updatedAt: p.now }
   delete copy.archived
   const current = assignments.filter((a) => a.spaceId === space.id && !a.to)
   return {

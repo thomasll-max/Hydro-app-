@@ -10,7 +10,7 @@ import {
   type Settings,
   type ThemePref,
 } from "@/lib/settings"
-import { formatDayMonth, formatInput, formatNumber, formatRange, locales, translate, type Vars } from "@/i18n/core"
+import { formatDate, formatDayMonth, formatInput, formatNumber, formatRange, locales, translate, type Vars } from "@/i18n/core"
 import type { Lang, MessageKey } from "@/i18n/types"
 
 export type SaveState = "idle" | "saved" | "local-only"
@@ -28,6 +28,8 @@ type Ctx = {
   num: (v: number, decimals?: number) => string
   range: (lo: number, hi: number, decimals?: number) => string
   dm: (iso: string) => string
+  /** Day, month and year ("19/10/2026"). */
+  dmy: (iso: string) => string
   /** A stored number in a form field ("2,4" in French). */
   show: (v?: number | null) => string
   locale: string
@@ -152,6 +154,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         return lo === hi ? formatNumber(lang, lo, dd) : formatRange(lang, lo, hi, dd)
       },
       dm: (iso) => formatDayMonth(lang, new Date(`${iso}T12:00:00`)),
+      dmy: (iso) => formatDate(lang, new Date(`${iso.slice(0, 10)}T12:00:00`)),
       show: (v) => formatInput(lang, v),
       locale: locales[lang],
     }

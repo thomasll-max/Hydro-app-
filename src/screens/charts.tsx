@@ -311,7 +311,9 @@ function CurveChart({ series, spaces, events, curve, name }: { series: Series[];
                   .map((p) => (
                     <div key={String(p.dataKey)} className="flex items-center gap-1.5">
                       <span className="size-2 rounded-full" style={{ background: p.color }} />
-                      {p.name} : <b className="tabular">{num(Number(p.value), def.decimals)}</b> {def.unit}
+                      {p.name}
+                      {t("common.colon")}
+                      <b className="tabular">{num(Number(p.value), def.decimals)}</b> {def.unit}
                     </div>
                   ))}
                 {payload.find((p) => p.dataKey === "band") && (
@@ -330,7 +332,7 @@ function CurveChart({ series, spaces, events, curve, name }: { series: Series[];
 }
 
 function OverlayChart({ series, space, events, curveName }: { series: Series[]; space: Space; events: GrowEvent[]; curveName: (c: CurveId) => string }) {
-  const { num, dm } = useSettings()
+  const { t, num, dm } = useSettings()
   const summary = useSummary()
   const norm = useMemo(() => normalize(series), [series])
   const curves = series.map((s) => s.curve)
@@ -365,7 +367,9 @@ function OverlayChart({ series, space, events, curveName }: { series: Series[]; 
                       return v == null ? null : (
                         <div key={s.curve} className="flex items-center gap-1.5">
                           <span className="h-[3px] w-3 rounded-full" style={{ background: colorOf(s) }} />
-                          {curveName(s.curve)} : <b className="tabular">{num(v, CURVE_DEFS[s.curve].decimals)}</b> {CURVE_DEFS[s.curve].unit}
+                          {curveName(s.curve)}
+                          {t("common.colon")}
+                          <b className="tabular">{num(v, CURVE_DEFS[s.curve].decimals)}</b> {CURVE_DEFS[s.curve].unit}
                         </div>
                       )
                     })}

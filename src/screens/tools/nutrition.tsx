@@ -232,7 +232,7 @@ export function NutritionTool() {
           </div>
           <div className="flex items-center justify-between gap-2">
             <span className="text-[0.75rem] font-medium text-fg-2">{t("nut.phase")}</span>
-            {pos && <span className="text-[0.75rem] text-fg-3">{`${t("nut.fromCycle")} : ${phaseLabel(cyclePhase)}`}</span>}
+            {pos && <span className="text-[0.75rem] text-fg-3">{`${t("nut.fromCycle")}${t("common.colon")}${phaseLabel(cyclePhase)}`}</span>}
           </div>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("nut.phase")} id="nut-phases">
             {cat.program.map((p) => (

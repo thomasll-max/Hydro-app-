@@ -47,7 +47,17 @@
    - **goutteurs** : produit `dripSafe = "no"` dans un espace en goutte-à-goutte ;
    - **plafond d'EC** et **exclusions** entre produits ;
    - produits **foliaires** jamais comptés dans le bac ni dans l'EC.
-8. Tests unitaires pour chaque règle, avec les cas réels (Mills 24–48 h < bac 5 j, Plagron organiques 48 h, Canna Cannazym 4 j).
+8. **Organiques à la main** (décision de Thomas, 19/10) : un produit va dans un **apport manuel** au lieu du bac goutte-à-goutte si l'une de ces conditions est vraie, d'après les données :
+   - `organic = true` ;
+   - `dripSafe = "no"` ;
+   - sa durée de vie diluée la plus courte (valeur la plus prudente en cas de contradiction) est inférieure à l'autonomie du bac.
+   Un produit dont ces champs sont **non publiés** n'est pas classé d'office : il reste dans le bac avec la mention « non publié par la marque », et un interrupteur par produit permet de le passer à la main.
+   - La recette du bac ne contient plus ces produits. Son EC et ses doses sont calculées sans eux.
+   - **Arrosage manuel** : une carte à part, « À donner à la main ». La dose reste celle de la marque, par litre, mélangée au moment même dans un arrosoir. Le contenu de l'arrosoir est la solution du bac plus ces produits, ou de l'eau si la marque le prévoit. Le volume de l'arrosoir est saisi par l'utilisateur.
+   - **Fréquence** : choisie par l'utilisateur (par exemple 1 fois par semaine) et marquée « choix utilisateur ». Si la marque prévoit le produit à chaque arrosage, l'app le dit en une ligne : « Canna le prévoit à chaque arrosage ; à la main, l'apport est plus faible. » Elle ne calcule aucune compensation.
+   - Les apports manuels deviennent des échéances du calendrier et des cases « Fait » dans À faire. Une fois faits, ils sont notés dans le journal du jour (action « apport manuel », produits et volume).
+   - Produits prévus aussi en foliaire par la marque (Cannaboost) : l'option foliaire est proposée, jamais comptée dans l'EC.
+9. Tests unitaires pour chaque règle, avec les cas réels (Mills 24–48 h < bac 5 j, Plagron organiques 48 h, Canna Cannazym 4 j).
 
 ## 7c : les marques
 

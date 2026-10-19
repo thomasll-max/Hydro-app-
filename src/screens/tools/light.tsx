@@ -48,7 +48,7 @@ export function LightTool() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [space?.id, space?.dimensionsCm, lamps.length, equipment],
   )
-  if (!space) return <p className="text-[13px] text-fg-3">{t("lgt.noSpace")}</p>
+  if (!space) return <p className="text-[0.8125rem] text-fg-3">{t("lgt.noSpace")}</p>
   const dimmers = Object.fromEntries(lamps.map(({ e }) => [e.id, e.lamp?.dimmerPct]))
   const unknownDimmer = lamps.some(({ e }) => dimmers[e.id] == null)
   const { now, full } = spaceLightAt(space, today, equipment, assignments, dimmers)
@@ -92,13 +92,13 @@ export function LightTool() {
               <CalcValue c={ppfdEst} fmt={(v) => num(v)} />
             </div>
           )}
-          {!lamps.length && <p className="text-[12px] text-warn">{t("lgt.noLamp")}</p>}
+          {!lamps.length && <p className="text-[0.75rem] text-warn">{t("lgt.noLamp")}</p>}
           {ppfdTarget && (
-            <p className="text-[12px] text-fg-2">
+            <p className="text-[0.75rem] text-fg-2">
               {t("lgt.targets", { ppfd: range(ppfdTarget.lo, ppfdTarget.hi), dli: tg?.dli ? range(tg.dli.lo, tg.dli.hi) : "—", src: srcLabel(ppfdTarget.src) })}
             </p>
           )}
-          {unknownDimmer && lamps.length > 0 && !stats && <p className="text-[11.5px] text-fg-3">{t("lgt.dimUnknown")}</p>}
+          {unknownDimmer && lamps.length > 0 && !stats && <p className="text-[0.75rem] text-fg-3">{t("lgt.dimUnknown")}</p>}
         </Card>
       </Reveal>
 
@@ -137,11 +137,11 @@ export function LightTool() {
           <Grid>
             <NumField id="l-dli" label={t("lgt.dliTarget")} hint={tg?.dli ? t("lgt.dliHint", { r: range(tg.dli.lo, tg.dli.hi) }) : undefined} value={dliTarget} onChange={setDliTarget} />
             <div className="rounded-md border border-line bg-surface-2 px-3 py-2">
-              <div className="text-[11px] text-fg-3">{t("lgt.needPpfd", { h: num(h) })}</div>
-              <div className="text-[22px] font-semibold tabular" id="lgt-need">
+              <div className="text-[0.75rem] text-fg-3">{t("lgt.needPpfd", { h: num(h) })}</div>
+              <div className="text-[1.375rem] font-semibold tabular" id="lgt-need">
                 {needPpfd != null ? num(needPpfd) : "—"}
               </div>
-              {needDim != null && <div className="text-[11px] text-primary">{t("lgt.needDim", { p: needDim })}</div>}
+              {needDim != null && <div className="text-[0.75rem] text-primary">{t("lgt.needDim", { p: needDim })}</div>}
             </div>
           </Grid>
         </Card>
@@ -173,7 +173,7 @@ export function LightTool() {
                       strokeOpacity={0.18}
                     />
                     {v != null && (
-                      <text x={c.x + c.w / 2} y={c.y + c.h / 2 + 5} textAnchor="middle" className="fill-fg text-[14px] font-semibold tabular-nums">
+                      <text x={c.x + c.w / 2} y={c.y + c.h / 2 + 5} textAnchor="middle" className="fill-fg text-[0.875rem] font-semibold tabular-nums">
                         {num(v)}
                       </text>
                     )}
@@ -185,24 +185,24 @@ export function LightTool() {
               )}
             </svg>
           ) : (
-            <p className="text-[12px] text-warn">{t("lgt.noDims")}</p>
+            <p className="text-[0.75rem] text-warn">{t("lgt.noDims")}</p>
           )}
-          {schema && schema.lamps.some((l) => !l.rect) && <p className="text-[11.5px] text-fg-3">{t("lgt.lampNoDims", { list: [...new Set(schema.lamps.filter((l) => !l.rect).map((l) => l.name))].join(", ") })}</p>}
-          <p className="text-[11.5px] text-fg-3">{t("lgt.schemaNote")}</p>
+          {schema && schema.lamps.some((l) => !l.rect) && <p className="text-[0.75rem] text-fg-3">{t("lgt.lampNoDims", { list: [...new Set(schema.lamps.filter((l) => !l.rect).map((l) => l.name))].join(", ") })}</p>}
+          <p className="text-[0.75rem] text-fg-3">{t("lgt.schemaNote")}</p>
           <div className="grid grid-cols-3 gap-2" id="lgt-map">
             {cells.map((c, i) => (
               <NumField key={i} id={`l-cell-${i}`} integer label={t("lgt.cell", { n: i + 1 })} value={c} onChange={(v) => setCells((x) => x.map((y, j) => (j === i ? v : y)))} />
             ))}
           </div>
           {stats && (
-            <p className="text-[12px] text-fg-2" id="lgt-stats">
+            <p className="text-[0.75rem] text-fg-2" id="lgt-stats">
               {t("lgt.stats", { mean: num(stats.mean), min: num(stats.min), max: num(stats.max), u: num(stats.uniformity, 2), n: stats.measured })}
             </p>
           )}
-          <Button variant="outline" className="h-10 self-start rounded-full" onClick={saveMap} disabled={!stats}>
+          <Button variant="outline" className="h-11 self-start rounded-full" onClick={saveMap} disabled={!stats}>
             {t("lgt.mapSave")}
           </Button>
-          {space.lightMap && <p className="text-[11px] text-fg-3">{t("lgt.mapDate", { date: space.lightMap.date.slice(8, 10) + "/" + space.lightMap.date.slice(5, 7) })}</p>}
+          {space.lightMap && <p className="text-[0.75rem] text-fg-3">{t("lgt.mapDate", { date: space.lightMap.date.slice(8, 10) + "/" + space.lightMap.date.slice(5, 7) })}</p>}
         </Card>
       </Reveal>
       <SourceNote>{t("lgt.sources")}</SourceNote>
@@ -213,9 +213,9 @@ export function LightTool() {
 function Big({ k, v, unit }: { k: string; v: string; unit: string }) {
   return (
     <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
-      <div className="text-[11px] text-fg-3">{k}</div>
-      <div className="text-[28px] leading-tight font-semibold tabular">{v}</div>
-      <div className="text-[10.5px] text-fg-3">{unit}</div>
+      <div className="text-[0.75rem] text-fg-3">{k}</div>
+      <div className="text-[1.75rem] leading-tight font-semibold tabular">{v}</div>
+      <div className="text-[0.75rem] text-fg-3">{unit}</div>
     </div>
   )
 }

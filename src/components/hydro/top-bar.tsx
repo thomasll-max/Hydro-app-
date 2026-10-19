@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 
 const pill = "rounded-full border border-line bg-surface-2 p-[3px] gap-0"
 const pillItem =
-  "h-8 min-w-8 rounded-full! px-2.5 text-[12px] font-semibold text-fg-3 hover:bg-transparent hover:text-fg data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-all duration-200"
+  "h-8 hit min-w-11 rounded-full! px-2.5 text-[0.75rem] font-semibold text-fg-3 hover:bg-transparent hover:text-fg data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-all duration-200"
 
 export function LangSwitch({ wide }: { wide?: boolean } = {}) {
   const { settings, setLang, t } = useSettings()
@@ -22,10 +22,10 @@ export function LangSwitch({ wide }: { wide?: boolean } = {}) {
       aria-label={t("controls.language")}
       className={cn(pill, wide && "flex w-full")}
     >
-      <ToggleGroupItem value="fr" className={cn(pillItem, wide && "h-9 flex-1")} aria-label="Français">
+      <ToggleGroupItem value="fr" className={cn(pillItem, wide && "h-11 flex-1")} aria-label="Français">
         {wide ? "Français" : "FR"}
       </ToggleGroupItem>
-      <ToggleGroupItem value="en" className={cn(pillItem, wide && "h-9 flex-1")} aria-label="English">
+      <ToggleGroupItem value="en" className={cn(pillItem, wide && "h-11 flex-1")} aria-label="English">
         {wide ? "English" : "EN"}
       </ToggleGroupItem>
     </ToggleGroup>
@@ -48,9 +48,9 @@ export function ThemeSwitch({ wide }: { wide?: boolean } = {}) {
       className={cn(pill, wide && "flex w-full")}
     >
       {items.map((i) => (
-        <ToggleGroupItem key={i.v} value={i.v} className={cn(pillItem, wide && "h-9 flex-1 gap-1 px-1.5")} aria-label={i.label} title={i.label}>
+        <ToggleGroupItem key={i.v} value={i.v} className={cn(pillItem, wide && "h-11 flex-1 gap-1 px-1.5")} aria-label={i.label} title={i.label}>
           {i.icon}
-          {wide && <span className="text-[11.5px]">{i.label}</span>}
+          {wide && <span className="text-[0.75rem]">{i.label}</span>}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
@@ -60,9 +60,9 @@ export function ThemeSwitch({ wide }: { wide?: boolean } = {}) {
 export function TopBar() {
   const { t } = useSettings()
   return (
-    <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 bg-background/80 backdrop-blur-md short:static">
       <div className="mx-auto flex max-w-[480px] items-center justify-between gap-2 py-2.5 pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
-        <div className="flex items-center gap-2 text-[16px] font-semibold tracking-[-0.2px]">
+        <div className="flex items-center gap-2 text-[1rem] font-semibold tracking-[-0.2px]">
           <Emoji name="pottedPlant" size={26} />
           {t("app.name")}
         </div>
@@ -84,7 +84,7 @@ export function DisplayMenu() {
           type="button"
           aria-label={t("controls.display")}
           id="display-menu"
-          className="flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface-2 pr-2.5 pl-2 text-[12px] font-semibold text-fg-2 transition-colors hover:text-fg data-[state=open]:border-primary/40 data-[state=open]:text-fg"
+          className="flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface-2 pr-2.5 pl-2 text-[0.75rem] font-semibold text-fg-2 transition-colors hover:text-fg data-[state=open]:border-primary/40 data-[state=open]:text-fg"
         >
           <Settings className="size-4" />
           <span className="uppercase">{settings.lang}</span>
@@ -99,11 +99,11 @@ export function DisplayMenu() {
           className="z-50 flex w-[264px] flex-col gap-3 rounded-[18px] border border-line-strong bg-surface p-3.5 shadow-card outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
         >
           <div className="flex flex-col gap-1.5">
-            <span className="text-[11.5px] font-semibold text-fg-3">{t("controls.language")}</span>
+            <span className="text-[0.75rem] font-semibold text-fg-3">{t("controls.language")}</span>
             <LangSwitch wide />
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-[11.5px] font-semibold text-fg-3">{t("controls.theme")}</span>
+            <span className="text-[0.75rem] font-semibold text-fg-3">{t("controls.theme")}</span>
             <ThemeSwitch wide />
           </div>
         </Popover.Content>

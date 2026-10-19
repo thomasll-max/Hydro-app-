@@ -29,7 +29,7 @@ export function ResetCard({ i }: { i: number }) {
     <Reveal i={i} className="mb-3">
       <Card className="gap-2.5 border-bad/30" id="reset-card">
         <Label>{t("reset.title")}</Label>
-        <p className="text-[12.5px] leading-[1.45] text-fg-2">{t(TARGET === "local" ? "reset.descLocal" : "reset.descClaude")}</p>
+        <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t(TARGET === "local" ? "reset.descLocal" : "reset.descClaude")}</p>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="outline" className="h-11 self-start rounded-full border-bad/40 text-bad" disabled={!!busy}>
@@ -41,7 +41,7 @@ export function ResetCard({ i }: { i: number }) {
               <AlertDialogTitle>{t("reset.confirmTitle")}</AlertDialogTitle>
               <AlertDialogDescription>{t("reset.confirmBody")}</AlertDialogDescription>
             </AlertDialogHeader>
-            <a href="#tools/data" className="text-[13px] font-semibold text-primary">
+            <a href="#tools/data" className="text-[0.8125rem] font-semibold text-primary">
               {t("reset.backupFirst")}
             </a>
             <AlertDialogFooter className="flex-row gap-2">

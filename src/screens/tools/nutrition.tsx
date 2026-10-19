@@ -231,8 +231,8 @@ export function NutritionTool() {
             <Chip>{`${t("nut.line")} · ${cat.name}`}</Chip>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[12px] font-medium text-fg-2">{t("nut.phase")}</span>
-            {pos && <span className="text-[11.5px] text-fg-3">{`${t("nut.fromCycle")} : ${phaseLabel(cyclePhase)}`}</span>}
+            <span className="text-[0.75rem] font-medium text-fg-2">{t("nut.phase")}</span>
+            {pos && <span className="text-[0.75rem] text-fg-3">{`${t("nut.fromCycle")} : ${phaseLabel(cyclePhase)}`}</span>}
           </div>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("nut.phase")} id="nut-phases">
             {cat.program.map((p) => (
@@ -241,7 +241,7 @@ export function NutritionTool() {
                 role="radio"
                 aria-checked={phase.id === p.id}
                 onClick={() => pickPhase(p.id)}
-                className={cn("h-10 rounded-full border px-3.5 text-[13px] font-semibold", phase.id === p.id ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2")}
+                className={cn("h-11 rounded-full border px-3.5 text-[0.8125rem] font-semibold", phase.id === p.id ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2")}
               >
                 {phaseLabel(p)}
               </button>
@@ -260,7 +260,7 @@ export function NutritionTool() {
               onOpen={() => ed.openSpace(space.id, "nutrition")}
             />
           )}
-          {phase.stage !== "flush" && conc > 0 && <span className="-mt-1 text-[11px] leading-snug text-fg-3">{t("nut.concNote", { core: coreName })}</span>}
+          {phase.stage !== "flush" && conc > 0 && <span className="-mt-1 text-[0.75rem] leading-snug text-fg-3">{t("nut.concNote", { core: coreName })}</span>}
           <Grid>
             <NumField
               id="n-vol"
@@ -307,15 +307,15 @@ export function NutritionTool() {
           <ol className="mt-2" id="nut-order">
             {items.map((i, idx) => (
               <li key={i.id} data-item={i.id} className={cn("grid grid-cols-[28px_1fr_auto] items-center gap-2.5 border-t border-line px-3.5 py-3", i.qty == null && "opacity-85")}>
-                <span className="flex size-6 items-center justify-center rounded-full border-[1.5px] border-info text-[11.5px] font-semibold text-info tabular-nums">{idx + 1}</span>
+                <span className="flex size-6 items-center justify-center rounded-full border-[1.5px] border-info text-[0.75rem] font-semibold text-info tabular-nums">{idx + 1}</span>
                 <span className="min-w-0">
-                  <span className="block text-[14px] font-semibold">{i.name || t(i.kind === "roWater" ? "nut.roWater" : "nut.water")}</span>
-                  <span className={cn("block text-[11.5px] leading-snug", i.note === "labelMissing" ? "text-warn" : "text-fg-3")}>
+                  <span className="block text-[0.875rem] font-semibold">{i.name || t(i.kind === "roWater" ? "nut.roWater" : "nut.water")}</span>
+                  <span className={cn("block text-[0.75rem] leading-snug", i.note === "labelMissing" ? "text-warn" : "text-fg-3")}>
                     {[sub(i), i.src ? srcLabel(i.src) : null, i.estimate ? t("nut.estimate") : null].filter(Boolean).join(" · ")}
                   </span>
-                  {i.concentrate != null && i.grams != null && <span className="block text-[11.5px] leading-snug text-primary">{t("nut.concSub", { c: num(i.concentrate), g: num(i.grams, 1) })}</span>}
+                  {i.concentrate != null && i.grams != null && <span className="block text-[0.75rem] leading-snug text-primary">{t("nut.concSub", { c: num(i.concentrate), g: num(i.grams, 1) })}</span>}
                 </span>
-                <span className="text-right text-[18px] font-semibold tabular">{qtyText(i)}</span>
+                <span className="text-right text-[1.125rem] font-semibold tabular">{qtyText(i)}</span>
               </li>
             ))}
           </ol>
@@ -328,33 +328,33 @@ export function NutritionTool() {
             <>
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
-                  <div className="text-[11px] text-fg-3">{t("nut.expected")}</div>
-                  <div className="text-[22px] font-semibold tabular">{num(expectedEc(ec, tap), 2)}</div>
+                  <div className="text-[0.75rem] text-fg-3">{t("nut.expected")}</div>
+                  <div className="text-[1.375rem] font-semibold tabular">{num(expectedEc(ec, tap), 2)}</div>
                 </div>
                 <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5" id="nut-ph">
-                  <div className="text-[11px] text-fg-3">{t("nut.phTarget")}</div>
-                  <div className="text-[22px] font-semibold tabular">{range(ph.lo, ph.hi, 1)}</div>
-                  <div className="text-[10.5px] text-fg-3">{srcLabel(ph.src)}</div>
+                  <div className="text-[0.75rem] text-fg-3">{t("nut.phTarget")}</div>
+                  <div className="text-[1.375rem] font-semibold tabular">{range(ph.lo, ph.hi, 1)}</div>
+                  <div className="text-[0.75rem] text-fg-3">{srcLabel(ph.src)}</div>
                 </div>
               </div>
-              <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.expectedSub", { ec: num(ec, 1), tap: num(tap, 2) })}</p>
-              {result.scaled && <p className="text-[12px] leading-[1.45] text-warn">{t("nut.scaledNote", { ec: num(phase.ec, 1) })}</p>}
+              <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t("nut.expectedSub", { ec: num(ec, 1), tap: num(tap, 2) })}</p>
+              {result.scaled && <p className="text-[0.75rem] leading-[1.45] text-warn">{t("nut.scaledNote", { ec: num(phase.ec, 1) })}</p>}
               {result.ecClamped != null && (
-                <p className="text-[12px] leading-[1.45] font-medium text-warn" id="nut-ec-clamped">
+                <p className="text-[0.75rem] leading-[1.45] font-medium text-warn" id="nut-ec-clamped">
                   {t("nut.ecClamped", { ec: num(result.ecClamped, 1) })}
                 </p>
               )}
-              {result.invalidVolume && <p className="text-[12px] leading-[1.45] text-fg-3">{t("nut.invalidVolume")}</p>}
-              {balanceOn && <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.phSub", { name: pname("balance") })}</p>}
-              {phase.stage === "clone" && <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.seedNote")}</p>}
-              {items.some((i) => i.id === "fade") && <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.finishNote", { fade: pname("fade") })}</p>}
-              {cat.ecTable && firstCycle && (phase.stage === "veg" || phase.stage === "flower") && <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.startLowNote")}</p>}
-              {!cat.ecTable && <p className="text-[12px] leading-[1.45] text-fg-2">{t("nut.blendedNote")}</p>}
+              {result.invalidVolume && <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("nut.invalidVolume")}</p>}
+              {balanceOn && <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t("nut.phSub", { name: pname("balance") })}</p>}
+              {phase.stage === "clone" && <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t("nut.seedNote")}</p>}
+              {items.some((i) => i.id === "fade") && <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t("nut.finishNote", { fade: pname("fade") })}</p>}
+              {cat.ecTable && firstCycle && (phase.stage === "veg" || phase.stage === "flower") && <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t("nut.startLowNote")}</p>}
+              {!cat.ecTable && <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t("nut.blendedNote")}</p>}
             </>
           ) : (
-            <p className="text-[12.5px] leading-[1.45] text-fg-2">{t("nut.flushNote", { cleanse: pname("cleanse") })}</p>
+            <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("nut.flushNote", { cleanse: pname("cleanse") })}</p>
           )}
-          <p className="text-[12px] leading-[1.45] text-fg-3">{t("nut.storageNote")}</p>
+          <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("nut.storageNote")}</p>
         </Card>
       </Reveal>
 
@@ -363,7 +363,7 @@ export function NutritionTool() {
           <Label emoji="bucket">{t("nut.tank")}</Label>
           {feedable.length > 1 && (
             <div>
-              <div className="mb-1 text-[12px] font-medium text-fg-2">{t("nut.tankFor")}</div>
+              <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.tankFor")}</div>
               <div className="flex flex-wrap gap-1.5">
                 {feedable.map((s) => {
                   const other = lineOf(s.id) !== cat.id
@@ -376,18 +376,18 @@ export function NutritionTool() {
                       aria-pressed={on}
                       onClick={() => setShared((x) => (on ? x.filter((y) => y !== s.id) : [...x, s.id]))}
                       className={cn(
-                        "flex h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold",
+                        "flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] font-semibold",
                         on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2",
                         other && "opacity-50",
                       )}
                     >
                       <SpaceDot color={s.color} /> {s.name}
-                      {other && <span className="text-[11px] font-normal">· {t("nut.otherLine")}</span>}
+                      {other && <span className="text-[0.75rem] font-normal">· {t("nut.otherLine")}</span>}
                     </button>
                   )
                 })}
               </div>
-              <p className="mt-1 text-[11px] text-fg-3">{t("nut.tankForHint")}</p>
+              <p className="mt-1 text-[0.75rem] text-fg-3">{t("nut.tankForHint")}</p>
             </div>
           )}
           <Grid>
@@ -397,19 +397,19 @@ export function NutritionTool() {
             <NumField id="n-pha" label={balanceOn ? t("nut.phAfter", { name: pname("balance") }) : t("nut.phTank")} value={f.phAfter ?? ""} onChange={set("phAfter")} />
             <NumField id="n-ecm" label={t("nut.ecMeasured")} value={f.ecMeasured ?? ""} onChange={set("ecMeasured")} />
           </Grid>
-          {balanceOn && balAfter != null && parseNum(f.balAdded) != null && <p className="text-[12px] text-primary">{t("nut.nextBalance", { v: num(balAfter, 2) })}</p>}
-          <Button onClick={save} disabled={volumeL <= 0 || busy} className="h-12 rounded-full text-[15px] font-bold">
+          {balanceOn && balAfter != null && parseNum(f.balAdded) != null && <p className="text-[0.75rem] text-primary">{t("nut.nextBalance", { v: num(balAfter, 2) })}</p>}
+          <Button onClick={save} disabled={volumeL <= 0 || busy} className="h-12 rounded-full text-[0.9375rem] font-bold">
             {t("nut.save")}
           </Button>
           {last && (
             <div id="nut-last" className={cn("flex items-center gap-2 rounded-md border px-3 py-2", last.id === justSaved ? "border-primary/40 bg-primary/8" : "border-line bg-surface-2")}>
-              <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-fg-2">
+              <p className="min-w-0 flex-1 text-[0.78125rem] leading-snug text-fg-2">
                 {t("nut.lastTank", { date: dm(last.date), volume: num(last.volumeL) })}
                 {last.ec != null && ` · EC ${num(last.ec, 1)}`}
                 {last.ph != null && ` · pH ${num(last.ph, 1)}`}
                 {last.id === justSaved && <b className="ml-1 font-semibold text-primary">· {t("nut.lastTankJust")}</b>}
               </p>
-              <button type="button" onClick={() => ed.openMix(last)} className="h-9 shrink-0 rounded-full px-3 text-[12.5px] font-semibold text-primary">
+              <button type="button" onClick={() => ed.openMix(last)} className="h-11 shrink-0 rounded-full px-3 text-[0.78125rem] font-semibold text-primary">
                 {t("nut.openTank")}
               </button>
             </div>

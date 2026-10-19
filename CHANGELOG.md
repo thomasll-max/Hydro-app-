@@ -1,5 +1,14 @@
 # Changelog
 
+## Lot 10e1 — Accessibilité visuelle (19/10/2026)
+Passe de corrections, points 71 à 75 de `docs/audit-2026-10-19.md` (le lot 10e est coupé en 10e1, 10e2 et 10e3).
+- **Contraste** : vert plus foncé en thème clair (texte vert lisible, boutons verts à texte blanc), textes secondaires, orange et rouge renforcés dans les deux thèmes ; jours hors du mois lisibles dans le calendrier. 0 défaut de contraste (axe-core) sur les cinq onglets et la saisie, en clair comme en sombre.
+- **Tailles de texte** en rem (elles suivent le réglage de taille du téléphone), jamais sous 12 px.
+- **Zoom 200 %** : plus rien ne déborde (titres, boutons du Journal, champs de la saisie qui passent sur une colonne) ; sur écran court, barre d'onglets sans libellés et bouton « Saisie du jour » réduit à son icône : les deux prennent 27 % de la hauteur au lieu de 45 %.
+- **Cibles tactiles de 44 px** pour les boutons, puces, filtres et liens (zone de toucher élargie pour les petites pilules).
+- **Le bouton « Saisie du jour » se cache en faisant défiler vers le bas** et revient en remontant : il ne couvre plus les « Fait » ; barre d'onglets plus opaque.
+- `scripts/e2e-10e.py` : contraste, tailles, cibles et zoom 200 % vérifiés dans le navigateur ; tous les scripts précédents repassés.
+
 ## Lot 10d2 — Journal, graphiques, rappels, nutrition (19/10/2026)
 Passe de corrections, points 58 à 60, 63, 64 et 69 de `docs/audit-2026-10-19.md`.
 - **Journal** : les filtres repartent de zéro quand on change d'espace en haut (ils vidaient la liste) ; chaque rangée de filtres a son libellé (Espace, Plante, Stade, Tag) ; dans une journée, la saisie de l'espace passe avant celles des plantes, et la hauteur s'affiche ; plus de « 0 » parasite ; message vide juste : « Pas encore de saisie ici » ou « Aucune saisie avec ces filtres » avec « Effacer les filtres ».

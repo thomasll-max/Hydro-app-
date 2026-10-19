@@ -89,19 +89,19 @@ export function BonjourCard({ only }: { only?: string }) {
       <div aria-hidden="true" className="pointer-events-none absolute -top-10 -right-8 size-36 rounded-full bg-[radial-gradient(closest-side,rgba(245,165,36,0.22),transparent)]" />
       <div className="relative flex items-center gap-2.5">
         <Emoji name="sun" size={34} className="float-y" />
-        <b className="text-[16px] font-semibold tracking-[-0.2px]">{digest.title}</b>
+        <b className="text-[1rem] font-semibold tracking-[-0.2px]">{digest.title}</b>
       </div>
       <div className="relative flex flex-col gap-2.5">
         {shown.map((s) => (
           <div key={s.spaceId}>
             {!only && (
-              <div className="mb-0.5 flex items-center gap-1.5 text-[12.5px] font-semibold">
+              <div className="mb-0.5 flex items-center gap-1.5 text-[0.78125rem] font-semibold">
                 <SpaceDot color={data.spaces.find((x) => x.id === s.spaceId)?.color} /> {s.name}
               </div>
             )}
             <ul className="flex flex-col gap-0.5">
               {s.lines.map((l, i) => (
-                <li key={i} className={cn("flex gap-2 text-[13px] leading-[1.4]", l.warn ? "text-warn" : "text-fg-2")}>
+                <li key={i} className={cn("flex gap-2 text-[0.8125rem] leading-[1.4]", l.warn ? "text-warn" : "text-fg-2")}>
                   <span className={cn("mt-[7px] size-[5px] shrink-0 rounded-full", l.warn ? "bg-warn" : "bg-primary")} aria-hidden="true" />
                   {l.text}
                 </li>
@@ -111,7 +111,7 @@ export function BonjourCard({ only }: { only?: string }) {
         ))}
       </div>
       {!only && spaces.length > 2 && (
-        <button onClick={() => setOpen((x) => !x)} className="relative -mb-1 h-9 self-start text-[12.5px] font-semibold text-primary">
+        <button onClick={() => setOpen((x) => !x)} className="relative -mb-1 h-11 self-start text-[0.78125rem] font-semibold text-primary">
           {open ? t("digest.less") : t("digest.more")}
         </button>
       )}
@@ -129,7 +129,7 @@ export function AllToday() {
   return (
     <>
       <ScreenHero emoji="pottedPlant" eyebrow={selection.kind === "site" ? selection.site.name : (grow?.name ?? "")} title={t("today.allTitle")}>
-        <p className="mt-1 text-[13px] text-fg-2">{t("today.allSub", { n: shown.length })}</p>
+        <p className="mt-1 text-[0.8125rem] text-fg-2">{t("today.allSub", { n: shown.length })}</p>
       </ScreenHero>
       <Reveal i={0} className="mb-3">
         <BonjourCard />
@@ -149,8 +149,8 @@ export function AllToday() {
       ))}
       {!shown.length && (
         <Card className="items-center px-4 py-6 text-center">
-          <p className="text-[13px] text-fg-2">{t("space.empty")}</p>
-          <button onClick={() => ed.openCycle({ cycleId: "new" })} className="h-10 text-[13px] font-semibold text-primary">
+          <p className="text-[0.8125rem] text-fg-2">{t("space.empty")}</p>
+          <button onClick={() => ed.openCycle({ cycleId: "new" })} className="h-11 text-[0.8125rem] font-semibold text-primary">
             {t("today.emptyCta")}
           </button>
         </Card>
@@ -179,10 +179,10 @@ function SpaceCard({ space, onOpen }: { space: Space; onOpen: () => void }) {
       <Card className="gap-2.5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[16px] font-semibold">
+            <div className="flex items-center gap-2 text-[1rem] font-semibold">
               <SpaceDot color={space.color} className="size-2.5" /> {space.name}
             </div>
-            <div className="mt-0.5 truncate text-[12.5px] text-fg-2">
+            <div className="mt-0.5 truncate text-[0.78125rem] text-fg-2">
               {cycle && st ? `${cycle.name} · ${stageLine(t, st)}` : t("space.noCycle")}
             </div>
           </div>
@@ -195,15 +195,15 @@ function SpaceCard({ space, onOpen }: { space: Space; onOpen: () => void }) {
           <div className="grid grid-cols-2 gap-1.5">
             {pills.slice(0, 4).map((p) => (
               <div key={p.k} className="rounded-md border border-line bg-surface-2 px-2.5 py-1.5">
-                <div className="flex items-center gap-1.5 text-[10.5px] text-fg-3">
+                <div className="flex items-center gap-1.5 text-[0.75rem] text-fg-3">
                   {p.s ? <Dot status={p.s} /> : <span className="inline-block size-[7px] rounded-full bg-track" aria-hidden="true" />} {p.k}
                 </div>
-                <div className="text-[15px] font-semibold tabular">{p.v}</div>
+                <div className="text-[0.9375rem] font-semibold tabular">{p.v}</div>
               </div>
             ))}
           </div>
         )}
-        <div className="flex items-center justify-between gap-2 text-[11.5px] text-fg-3">
+        <div className="flex items-center justify-between gap-2 text-[0.75rem] text-fg-3">
           <span>{last ? t("today.lastEntry", { when: last.date === today ? (last.time ? t("today.whenToday", { time: last.time }) : t("today.whenTodayNoTime")) : t("today.whenDay", { date: dm(last.date) }) }) : t("today.noEntryTitle")}</span>
           {autonomy && <AutonomyTag a={autonomy} />}
         </div>
@@ -298,12 +298,12 @@ function ReservoirCard({ a, name }: { a: Autonomy; name: string }) {
     <Card className="gap-2">
       <div className="flex items-center justify-between gap-2">
         <Label emoji="bucket">{name}</Label>
-        {a.source && <span className="text-[11px] text-fg-3">{t(a.source === "reading" ? "today.resReading" : "today.resEstimate")}</span>}
+        {a.source && <span className="text-[0.75rem] text-fg-3">{t(a.source === "reading" ? "today.resReading" : "today.resEstimate")}</span>}
       </div>
       <div className="flex items-end justify-between gap-3">
         <div>
-          <div className={cn("text-[30px] leading-none font-semibold tabular", days != null && days <= 1 ? "text-warn" : "")}>{days != null ? t("today.resDays", { n: num(days) }) : "—"}</div>
-          <div className="mt-1 text-[12px] text-fg-3">
+          <div className={cn("text-[1.875rem] leading-none font-semibold tabular", days != null && days <= 1 ? "text-warn" : "")}>{days != null ? t("today.resDays", { n: num(days) }) : "—"}</div>
+          <div className="mt-1 text-[0.75rem] text-fg-3">
             {a.left.ok ? (a.usableL ? t("today.resLeftOf", { left: num(a.left.value), usable: num(a.usableL) }) : t("today.resLeft", { left: num(a.left.value) })) : t("today.resMissing")}
             {a.perDay.ok && ` · ${t("today.resPerDay", { v: num(a.perDay.value, 1) })}`}
           </div>
@@ -314,8 +314,8 @@ function ReservoirCard({ a, name }: { a: Autonomy; name: string }) {
           </div>
         )}
       </div>
-      {a.tooOld && <p className="rounded-md bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn">{t("digest.tooOld", { days: num(a.mixAgeDays ?? 0) })}</p>}
-      {!a.days.ok && <p className="text-[11.5px] text-fg-3">{t("today.resHow")}</p>}
+      {a.tooOld && <p className="rounded-md bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn">{t("digest.tooOld", { days: num(a.mixAgeDays ?? 0) })}</p>}
+      {!a.days.ok && <p className="text-[0.75rem] text-fg-3">{t("today.resHow")}</p>}
     </Card>
   )
 }
@@ -342,9 +342,9 @@ function DryingCard({ space, ctx }: { space: Space; ctx: Ctx }) {
 function Tile({ k, v, sub }: { k: string; v: string; sub?: string }) {
   return (
     <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2.5 py-2">
-      <div className="truncate text-[11px] text-fg-3">{k}</div>
-      <div className="mt-0.5 truncate text-[17px] font-semibold tabular">{v}</div>
-      {sub && <div className="truncate text-[10.5px] text-fg-3">{sub}</div>}
+      <div className="truncate text-[0.75rem] text-fg-3">{k}</div>
+      <div className="mt-0.5 truncate text-[1.0625rem] font-semibold tabular">{v}</div>
+      {sub && <div className="truncate text-[0.75rem] text-fg-3">{sub}</div>}
     </div>
   )
 }

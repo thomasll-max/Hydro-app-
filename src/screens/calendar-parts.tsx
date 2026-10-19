@@ -111,8 +111,8 @@ export function ItemRow({ i, showWhen = true, onOpen }: { i: CalItem; showWhen?:
       <button type="button" onClick={open} disabled={!open} className="flex min-w-0 flex-1 items-center gap-2.5 py-1 text-left disabled:cursor-default">
         <Emoji name={itemEmoji(i)} size={28} />
         <span className="min-w-0">
-          <span className={cn("block truncate text-[13.5px] font-medium", i.done && "line-through decoration-fg-3")}>{itemTitle(settings.lang, i)}</span>
-          <span className={cn("flex items-center gap-1.5 truncate text-[11.5px]", i.overdue || (i.type === "reminder" && i.late) ? "font-semibold text-warn" : "text-fg-3")}>
+          <span className={cn("block truncate text-[0.84375rem] font-medium", i.done && "line-through decoration-fg-3")}>{itemTitle(settings.lang, i)}</span>
+          <span className={cn("flex items-center gap-1.5 truncate text-[0.75rem]", i.overdue || (i.type === "reminder" && i.late) ? "font-semibold text-warn" : "text-fg-3")}>
             {space && <SpaceDot color={space.color} />}
             {sub}
           </span>
@@ -144,7 +144,7 @@ function IconBtn({ label, onClick, primary, children }: { label: string; onClick
       aria-label={label}
       title={label}
       className={cn(
-        "flex size-10 shrink-0 items-center justify-center rounded-full border transition-transform active:scale-95",
+        "flex size-11 shrink-0 items-center justify-center rounded-full border transition-transform active:scale-95",
         primary ? "border-primary/35 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2",
       )}
     >
@@ -171,13 +171,13 @@ export function UpcomingCard({ spaceIds, max = 4 }: { spaceIds: Set<string> | nu
         <button
           type="button"
           onClick={() => ed.openReminder({ spaceId: spaceIds?.size === 1 ? [...spaceIds][0] : undefined })}
-          className="-my-2 h-10 rounded-full px-2 text-[12.5px] font-semibold text-primary"
+          className="-my-2 h-11 rounded-full px-2 text-[0.78125rem] font-semibold text-primary"
         >
           + {t("cal.addShort")}
         </button>
       </div>
       {items.length === 0 ? (
-        <p className="mt-2 text-[13px] text-fg-3">{t("today.noReminders")}</p>
+        <p className="mt-2 text-[0.8125rem] text-fg-3">{t("today.noReminders")}</p>
       ) : (
         <ul className="mt-1">
           {items.slice(0, max).map((i) => (

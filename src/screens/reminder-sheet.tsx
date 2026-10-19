@@ -153,7 +153,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
         <TextField id="rm-title" label={t("remForm.name")} placeholder={t("remForm.namePh")} value={f.title} onChange={set("title")} />
         {spaces.length > 0 && (
           <div className="flex flex-col gap-1">
-            <span className="text-[12px] font-medium text-fg-2">{t("remForm.space")}</span>
+            <span className="text-[0.75rem] font-medium text-fg-2">{t("remForm.space")}</span>
             <Seg<string> label={t("remForm.space")} value={f.spaceId || "_"} onChange={(v) => set("spaceId")(v === "_" ? "" : v)} options={[{ value: "_", label: t("remForm.spaceNone") }, ...spaces.map((s) => ({ value: s.id, label: s.name }))]} />
           </div>
         )}
@@ -178,7 +178,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
         {f.repeat === "days" && <NumField id="rm-every" integer className="mt-2.5" label={t("remForm.every")} value={f.every} onChange={set("every")} />}
         {f.repeat === "weekly" && (
           <div className="mt-2.5" role="group" aria-label={t("remForm.weekdays")}>
-            <div className="mb-1 text-[12px] font-medium text-fg-2">{t("remForm.weekdays")}</div>
+            <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("remForm.weekdays")}</div>
             <div className="grid grid-cols-7 gap-1">
               {WEEKDAYS.map((d, i) => {
                 const on = f.byDay.includes(d)
@@ -188,7 +188,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
                     type="button"
                     aria-pressed={on}
                     onClick={() => set("byDay")(on ? f.byDay.filter((x) => x !== d) : WEEKDAYS.filter((x) => x === d || f.byDay.includes(x)))}
-                    className={cn("h-10 rounded-full border text-[12px] font-semibold capitalize", on ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2")}
+                    className={cn("h-11 rounded-full border text-[0.75rem] font-semibold capitalize", on ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2")}
                   >
                     {dayNames[i]}
                   </button>
@@ -204,7 +204,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
             {f.end === "until" && <TextField id="rm-until" type="date" label={t("remForm.until")} value={f.until} onChange={set("until")} />}
           </div>
         )}
-        {next.length > 0 && <p className="mt-2 text-[12px] text-fg-3">{t("remForm.next", { dates: next.map((d) => dm(d)).join(", ") })}</p>}
+        {next.length > 0 && <p className="mt-2 text-[0.75rem] text-fg-3">{t("remForm.next", { dates: next.map((d) => dm(d)).join(", ") })}</p>}
       </Group>
 
       <Group title={t("remForm.alarm")}>

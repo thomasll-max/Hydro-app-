@@ -70,8 +70,8 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
         {extra}
         <Reveal>
           <Card className="gap-3 px-4 py-4">
-            <p className="text-[13.5px] leading-[1.5] text-fg-2">{t("today.emptyBody")}</p>
-            <Button onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })} className="h-12 rounded-full text-[15px] font-bold">
+            <p className="text-[0.84375rem] leading-[1.5] text-fg-2">{t("today.emptyBody")}</p>
+            <Button onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })} className="h-12 rounded-full text-[0.9375rem] font-bold">
               {t("today.emptyCta")}
             </Button>
           </Card>
@@ -126,10 +126,10 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
           <div className="flex items-center gap-3 px-3.5 py-3">
             <Emoji name={advice ? (advice.metric.startsWith("ph") || advice.metric === "vpd" ? "thermometer" : advice.metric === "dli" ? "bulb" : "droplet") : last ? "pottedPlant" : "notebook"} size={38} />
             <div className="min-w-0">
-              <b className="block text-[14.5px] font-semibold">
+              <b className="block text-[0.90625rem] font-semibold">
                 {advice ? t(`${advice.key}.title` as MessageKey) : last ? t("today.allGood") : t("today.noEntryTitle")}
               </b>
-              <p className="mt-0.5 text-[13px] leading-[1.35] text-fg-2">
+              <p className="mt-0.5 text-[0.8125rem] leading-[1.35] text-fg-2">
                 {advice
                   ? t(advice.bodyKey as MessageKey, {
                       value: num(advice.vars.value, advice.metric.startsWith("ph") || advice.metric.startsWith("ec") || advice.metric === "dli" ? 1 : advice.metric === "vpd" ? 2 : 0),
@@ -142,7 +142,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
               </p>
             </div>
             {advice && (
-              <span className={cn("ml-auto text-[11px] font-bold whitespace-nowrap", advice.status === "bad" ? "text-bad" : "text-warn")}>{t("today.alertTag")}</span>
+              <span className={cn("ml-auto text-[0.75rem] font-bold whitespace-nowrap", advice.status === "bad" ? "text-bad" : "text-warn")}>{t("today.alertTag")}</span>
             )}
           </div>
         </div>
@@ -206,7 +206,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
                   label={t("today.dryback")}
                   formatValue={(v) => `${num(v)} %`}
                 />
-                <div className="mt-0.5 flex justify-between text-[10.5px] text-fg-3">
+                <div className="mt-0.5 flex justify-between text-[0.75rem] text-fg-3">
                   <span>{t("today.spark", { n: spark.length })}</span>
                   <span>{t("today.band")}</span>
                 </div>
@@ -218,7 +218,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
         <Reveal i={4} className="col-span-2">
           <Card>
             <Label emoji="droplet">{t("today.program")}</Label>
-            {!ss && <p className="mt-2 text-[13px] text-fg-2">{t("irr.seedlingNote")}</p>}
+            {!ss && <p className="mt-2 text-[0.8125rem] text-fg-2">{t("irr.seedlingNote")}</p>}
             <ol className="mt-2.5 flex flex-col gap-0.5">
               {rows.map((r) => {
                 const idx = program.indexOf(r)
@@ -229,24 +229,24 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
                   <li
                     key={`${r.phase}-${r.time}-${r.n ?? 0}`}
                     aria-current={isNext ? "step" : undefined}
-                    className={cn("relative grid grid-cols-[48px_38px_1fr_auto] items-center gap-2 rounded-md px-2 py-[9px] text-[13.5px]", done && !isNext && "opacity-40")}
+                    className={cn("relative grid grid-cols-[48px_38px_1fr_auto] items-center gap-2 rounded-md px-2 py-[9px] text-[0.84375rem]", done && !isNext && "opacity-40")}
                   >
                     {isNext && <motion.span layoutId="next-row" className="absolute inset-0 rounded-md bg-primary/9 outline outline-1 outline-primary/30" />}
                     <span className={cn("relative tabular", isNext ? "font-semibold text-primary" : "text-fg-2")}>{r.time}</span>
                     <PhaseTag phase={r.phase} />
                     <span className="relative min-w-0 truncate">{text}</span>
-                    <span className="relative text-[12.5px] text-fg-3 tabular">{r.seconds != null ? `${num(r.seconds)} s` : r.ml && cycle.waterMode === "auto" ? "?" : "—"}</span>
+                    <span className="relative text-[0.78125rem] text-fg-3 tabular">{r.seconds != null ? `${num(r.seconds)} s` : r.ml && cycle.waterMode === "auto" ? "?" : "—"}</span>
                   </li>
                 )
               })}
             </ol>
             {cycle.waterMode === "auto" && !cycle.flowMlPerMin && (
-              <button onClick={() => ed.openCycle()} className="mt-1 w-full rounded-md bg-warn/10 px-3 py-2 text-left text-[12px] font-medium text-warn">
+              <button onClick={() => ed.openCycle()} className="mt-1 w-full rounded-md bg-warn/10 px-3 py-2 text-left text-[0.75rem] font-medium text-warn">
                 {t("today.flowUnknown")} · {t("cycleForm.flowHint")}
               </button>
             )}
             {program.length > 5 && (
-              <button className="mt-1 w-full rounded-md p-2 text-center text-[12.5px] font-semibold text-primary hover:bg-primary/8" onClick={() => setAllRows((x) => !x)}>
+              <button className="mt-1 w-full rounded-md p-2 text-center text-[0.78125rem] font-semibold text-primary hover:bg-primary/8" onClick={() => setAllRows((x) => !x)}>
                 {allRows ? t("common.less") : t("common.more")}
               </button>
             )}
@@ -271,9 +271,9 @@ function GaugeCard({ emoji, label, value, target, max, unit, decimals, note }: {
       {value != null ? (
         <ArcGauge value={value} lo={target?.lo ?? 0} hi={target?.hi ?? 0} max={Math.max(max, value)} decimals={decimals} unit={unit} locale={locale} tone={target ? status(value, target) : note ? "neutral" : "ok"} />
       ) : (
-        <div className="my-1.5 flex size-[92px] items-center justify-center rounded-full border-[9px] border-track text-[22px] font-semibold text-fg-3">—</div>
+        <div className="my-1.5 flex size-[92px] items-center justify-center rounded-full border-[9px] border-track text-[1.375rem] font-semibold text-fg-3">—</div>
       )}
-      <div className="flex items-center gap-1.5 text-[11.5px] text-fg-3">
+      <div className="flex items-center gap-1.5 text-[0.75rem] text-fg-3">
         {value != null && target && <Dot status={status(value, target)} />}
         {note && !target ? (
           note
@@ -292,12 +292,12 @@ function GaugeCard({ emoji, label, value, target, max, unit, decimals, note }: {
 function Metric({ k, status: st, target, children }: { k: string; status?: Status; target: string; children: React.ReactNode }) {
   return (
     <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2.5 py-[9px]">
-      <div className="flex items-center gap-[5px] text-[11px] text-fg-3">
+      <div className="flex items-center gap-[5px] text-[0.75rem] text-fg-3">
         {st ? <Dot status={st} /> : <span className="inline-block size-[7px] rounded-full bg-track" aria-hidden="true" />}
         <span className="truncate">{k}</span>
       </div>
-      <div className="mt-[3px] truncate text-[17px] font-semibold tabular">{children}</div>
-      <div className="mt-px truncate text-[10.5px] text-fg-3">{target}</div>
+      <div className="mt-[3px] truncate text-[1.0625rem] font-semibold tabular">{children}</div>
+      <div className="mt-px truncate text-[0.75rem] text-fg-3">{target}</div>
     </div>
   )
 }

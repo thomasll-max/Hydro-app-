@@ -675,6 +675,7 @@ export const en: Messages = {
     severityHint: "Tap to set severity: 1, 2, 3, then remove",
     actions: "Actions",
     photos: "Photos",
+    removePhoto: "Remove the photo",
     addPhoto: "Add",
     uploading: "Uploading…",
     note: "Note",

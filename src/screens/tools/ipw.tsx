@@ -84,9 +84,9 @@ export function IpwTool() {
       {!enabled && (
         <Reveal i={0}>
           <Card className="gap-2 border-warn/35" id="ipw-off">
-            <p className="text-[12.5px] leading-[1.45] text-fg-2">{t("ipw.off")}</p>
+            <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("ipw.off")}</p>
             {space && (
-              <button type="button" onClick={() => ed.openSpace(space.id, "nutrition")} className="self-start rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12.5px] font-semibold text-primary">
+              <button type="button" onClick={() => ed.openSpace(space.id, "nutrition")} className="self-start rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[0.78125rem] font-semibold text-primary">
                 {t("ipw.enableInSettings")}
               </button>
             )}
@@ -100,10 +100,10 @@ export function IpwTool() {
             <Label emoji="sweat">{t("ipw.window")}</Label>
             <Chip tone={allowed.ok ? "primary" : "warn"}>{allowed.ok ? t("ipw.allowed") : t("ipw.blocked")}</Chip>
           </div>
-          <p className={cn("text-[13px] leading-[1.45]", allowed.ok ? "text-fg-2" : "font-medium text-bad")}>
+          <p className={cn("text-[0.8125rem] leading-[1.45]", allowed.ok ? "text-fg-2" : "font-medium text-bad")}>
             {allowed.ok ? (lastDay ? t("ipw.until", { date: fmt(lastDay) }) : t("ipw.okVeg")) : t(`ipw.why.${allowed.reason}`)}
           </p>
-          <p className="text-[11.5px] text-fg-3">{t("ipw.windowRule")}</p>
+          <p className="text-[0.75rem] text-fg-3">{t("ipw.windowRule")}</p>
         </Card>
       </Reveal>
 
@@ -111,17 +111,17 @@ export function IpwTool() {
         <Card className="gap-3">
           <Label emoji="testTube">{t("ipw.protocol")}</Label>
           <Seg<IpwProtocol> label={t("ipw.protocol")} value={protocol} onChange={setProtocol} options={IPW_PROTOCOLS.map((p) => ({ value: p, label: t(`ipw.p.${p}`) }))} />
-          <p className="text-[12px] leading-[1.45] text-fg-2">{t(`ipw.pd.${protocol}`)}</p>
+          <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t(`ipw.pd.${protocol}`)}</p>
           <div className="grid grid-cols-[1fr_1fr] items-end gap-2.5">
             <NumField id="ipw-l" label={t("ipw.litres")} hint={t("ipw.litresHint")} value={litres} onChange={setLitres} />
             <div className="rounded-md border border-line bg-surface-2 px-3 py-2" id="ipw-dose">
-              <div className="text-[11px] text-fg-3">{t("ipw.dose", { r: ipwMlPerL(protocol) })}</div>
-              <div className="text-[26px] leading-tight font-semibold tabular">{dose != null ? `${num(dose, dose % 1 ? 1 : 0)} mL` : "—"}</div>
+              <div className="text-[0.75rem] text-fg-3">{t("ipw.dose", { r: ipwMlPerL(protocol) })}</div>
+              <div className="text-[1.625rem] leading-tight font-semibold tabular">{dose != null ? `${num(dose, dose % 1 ? 1 : 0)} mL` : "—"}</div>
             </div>
           </div>
           {plan.length > 0 && allowed.ok && (
             <div>
-              <div className="mb-1 text-[12px] font-medium text-fg-2">{running && running.protocol === protocol ? t("ipw.planRunning") : t("ipw.planNew")}</div>
+              <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{running && running.protocol === protocol ? t("ipw.planRunning") : t("ipw.planNew")}</div>
               <div className="flex flex-wrap gap-1.5" id="ipw-plan">
                 {plan.map((d) => (
                   <Chip key={d} tone={d === today ? "primary" : "neutral"}>
@@ -151,13 +151,13 @@ export function IpwTool() {
                     <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px]", on ? "border-primary bg-primary text-primary-foreground" : "border-line-strong")}>
                       {on && <Check className="size-4" />}
                     </span>
-                    <span className="text-[13.5px] leading-snug">{t(`ipw.c.${c}`)}</span>
+                    <span className="text-[0.84375rem] leading-snug">{t(`ipw.c.${c}`)}</span>
                   </button>
                 </li>
               )
             })}
           </ul>
-          <Button onClick={save} disabled={!allowed.ok || !L || !space || busy} className="mt-2 h-12 rounded-full text-[15px] font-bold">
+          <Button onClick={save} disabled={!allowed.ok || !L || !space || busy} className="mt-2 h-12 rounded-full text-[0.9375rem] font-bold">
             {allChecked ? t("ipw.save") : t("ipw.saveUnchecked", { n: checked.length, total: IPW_CHECKLIST.length })}
           </Button>
         </Card>
@@ -166,13 +166,13 @@ export function IpwTool() {
       <Reveal i={4}>
         <Card className="gap-1.5">
           <Label emoji="calendar">{t("ipw.history")}</Label>
-          {running && enabled && <p className="text-[12.5px] font-medium text-primary">{t("ipw.next", { date: fmt(running.date) })}</p>}
+          {running && enabled && <p className="text-[0.78125rem] font-medium text-primary">{t("ipw.next", { date: fmt(running.date) })}</p>}
           {mine.length === 0 ? (
-            <p className="text-[12.5px] text-fg-3">{t("ipw.none")}</p>
+            <p className="text-[0.78125rem] text-fg-3">{t("ipw.none")}</p>
           ) : (
             <ul id="ipw-history">
               {mine.slice(0, 10).map((s) => (
-                <li key={s.id} className="flex items-center justify-between gap-2 border-t border-line py-2 text-[13px] first:border-t-0">
+                <li key={s.id} className="flex items-center justify-between gap-2 border-t border-line py-2 text-[0.8125rem] first:border-t-0">
                   <span className="text-fg-2">{fmt(s.date)}</span>
                   <span className="tabular-nums">
                     {t(`ipw.p.${s.protocol ?? "prevention"}`)} · {num(s.litres, s.litres % 1 ? 1 : 0)} L · {num(s.mlPerL * s.litres, 0)} mL

@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -39,6 +39,9 @@
   - [x] Lot 10d1 : points 54–57, 61, 62, 65–68, 70 (272 tests, artefact v32)
   - [x] Lot 10d2 : points 58–60, 63, 64, 69 (281 tests, artefact v33)
 - [ ] Lot 10e : accessibilité, textes, assistant, option « Autre marque »
+  - [x] Lot 10e1 : points 71–75, accessibilité visuelle (281 tests, artefact v34)
+  - [ ] Lot 10e2 : points 76–84, textes, assistant, ARIA
+  - [ ] Lot 10e3 : option « Autre marque / je dose moi-même », simulation finale
 
 ## Lot 10 : passe de corrections (19/10/2026)
 - Source : `docs/audit-2026-10-19.md`, avec 84 points tirés de la simulation d'un an, de 4 audits et des retours des testeurs. Les points faits y sont cochés ✅.
@@ -92,6 +95,17 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 - Premiers pas : pots demandés seulement si l'arrosage de l'espace est automatique (cycle en automatique, sinon pompe dans l'espace) ; lampe cochée avec ses watts (`StartItem.canStart` pour « Démarrer aujourd'hui »).
 - Carte Bonjour : un cycle « automatique » dans un espace sans pompe (quand le grow liste ses pompes) est traité comme arrosé à la main. Pas de dose ni de programme inventés pour le rinçage (eau osmosée, EC < 0,1 : fiche Athena).
 - **Simulation d'un an (fin de 10b, 19/10)** : 479 saisies vérifiées, 28/28 anomalies signalées, **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 0 plantage, 364 matins rejoués ; **4 échéances traînent** (12 avant) : toutes « mesurer le débit » (11 matins chacune), car le simulateur ne remesure la pompe qu'aux transferts (71 jours) alors que la règle du cahier des charges est 60 jours. Je n'ai pas changé ce comportement du simulateur : le rappel est juste. Passage navigateur (`browse.py`, 9 dates × 13 écrans) : aucune erreur console, aucun débordement (le seul « Infinity » relevé est la marque AC Infinity).
+
+## Lot 10e1 — notes
+- Lot 10e coupé en **10e1** (71–75, accessibilité visuelle), **10e2** (76–84, textes, assistant, ARIA) et **10e3** (option « Autre marque », décision de Thomas, et simulation finale).
+- **Couleurs (décision prise seule)** : thème clair, `--primary` passe de `#1fa971` (2,7–3:1) à `#0c7049` (5,1:1 sur sa teinte à 12 %, 6,1:1 en blanc dessus) et `--on-primary` devient blanc ; `--fg-3` `#666666` ; `--warn` `#8a5700` ; `--bad` `#b8281f` ; `--info` `#1f6fc2`. Thème sombre : `--fg-3` `#9a9a9a` (5,6:1 sur `surface-2`), `--on-primary` reste foncé (déclaré dans les deux blocs sombres). Le vert clair de la maquette est donc plus foncé dans l'app : c'est voulu (contraste AA).
+- **Textes** : toutes les tailles `text-[Npx]` sont en `rem` (486 remplacements), minimum 0,75 rem = 12 px ; `.eyebrow` et les axes des graphiques à 12 px. Les champs gardent le texte en gris des valeurs de la veille en pleine couleur `fg-3` (plus `/70`).
+- **Cibles tactiles** : boutons, puces et liens à 44 px (`h-11`, `size-11`, `min-h-11`) ; les pilules compactes des barres segmentées (sélecteur d'espace, langue/thème, périodes) gardent leur hauteur et reçoivent `.hit` (zone de toucher de 44 px en hauteur, `::after`).
+- **Zoom 200 % / écran court** : variante Tailwind `short` (`@media (max-height: 35rem)`) : barre d'onglets à 52 px sans libellés (lus par les lecteurs d'écran), bouton « Saisie du jour » réduit à son icône, en-tête non collant, marge du bas réduite. `Grid` devient `.fold-2` / `.fold-3` (colonnes d'au moins 8 / 6 rem, qui se replient en une) ; titre d'écran sans illustration sous 20 rem ; boutons du Journal qui passent à la ligne ; pied des feuilles qui se replie.
+- **Bouton flottant** : se cache quand on fait défiler vers le bas, revient en remontant ou en bas de page ; barre d'onglets plus opaque (`--glass` à 0,92).
+- **Décision prise seule** : barre d'onglets un peu resserrée (marges 8 px) pour que « Aujourd'hui » et « Graphiques » tiennent en 12 px à 360 px.
+- `scripts/e2e-8c.py` remis à jour : il n'avait pas été relancé après 10b2 (pas de ligne « pots » pour un espace arrosé à la main, lampe cochée dès ses watts connus, section « Les étapes du cycle »). Tous les scripts e2e (2b à 10d2) repassent.
+- Vérification : `scripts/e2e-10e.py` (axe-core « color-contrast » sur les 5 onglets et la saisie, en clair et en sombre : 0 défaut ; aucun texte visible sous 12 px ; aucune cible sous 44 px ; zoom 200 % : rien ne déborde, barres à 27 % de la hauteur). axe-core est téléchargé hors du dépôt (`npm pack axe-core@4.10.2`), pas ajouté aux dépendances.
 
 ## Lot 10d2 — notes
 - Journal : `liveFilter` (un filtre sur une valeur absente revient à « Tout ») et remise à zéro des filtres quand le sélecteur du haut change ; `journalOrder` (dans une journée, la saisie de l'espace avant P1, P2…) ; rangées de filtres avec leur libellé visible ; hauteur affichée dans la ligne ; message vide distinct (« pas encore de saisie » / « aucune saisie avec ces filtres » + « Effacer les filtres »).

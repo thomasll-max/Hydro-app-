@@ -30,14 +30,14 @@ export function CalcValue({ c, fmt, className }: { c: Calc; fmt: (v: number) => 
     return (
       <span className={cn("tabular font-semibold", className)}>
         {fmt(c.value)}
-        {c.hypothesis && <span className="ml-1 text-[10.5px] font-semibold text-warn">· {t("equip.hypothesis")}</span>}
+        {c.hypothesis && <span className="ml-1 text-[0.75rem] font-semibold text-warn">· {t("equip.hypothesis")}</span>}
       </span>
     )
   const list = c.missing.map((m) => t(`equip.miss.${m}` as MessageKey)).join(", ")
   return (
     <span className="inline-flex flex-col items-end text-right">
-      <span className="rounded-full border border-warn/35 bg-warn/10 px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-warn">{t("equip.missing")}</span>
-      <span className="mt-0.5 text-[10.5px] text-fg-3">{t("equip.c.missingList", { list })}</span>
+      <span className="rounded-full border border-warn/35 bg-warn/10 px-2 py-0.5 text-[0.75rem] font-semibold whitespace-nowrap text-warn">{t("equip.missing")}</span>
+      <span className="mt-0.5 text-[0.75rem] text-fg-3">{t("equip.c.missingList", { list })}</span>
     </span>
   )
 }
@@ -45,11 +45,11 @@ export function CalcValue({ c, fmt, className }: { c: Calc; fmt: (v: number) => 
 export function CalcRow({ label, sub, children }: { label: string; sub?: string; children: ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-3 border-t border-line py-2 first:border-t-0">
-      <span className="min-w-0 flex-1 text-[13px] text-fg-2">
+      <span className="min-w-0 flex-1 text-[0.8125rem] text-fg-2">
         {label}
-        {sub && <span className="block text-[10.5px] leading-snug text-fg-3">{sub}</span>}
+        {sub && <span className="block text-[0.75rem] leading-snug text-fg-3">{sub}</span>}
       </span>
-      <span className="max-w-[55%] text-right text-[13.5px]">{children}</span>
+      <span className="max-w-[55%] text-right text-[0.84375rem]">{children}</span>
     </div>
   )
 }
@@ -58,8 +58,8 @@ export function SwitchRow({ id, label, hint, checked, onChange }: { id: string; 
   return (
     <label htmlFor={id} className="flex min-h-11 cursor-pointer items-center justify-between gap-3 border-t border-line py-1.5 first:border-t-0">
       <span className="min-w-0">
-        <span className="block text-[14px] font-medium">{label}</span>
-        {hint && <span className="block text-[11px] leading-snug text-fg-3">{hint}</span>}
+        <span className="block text-[0.875rem] font-medium">{label}</span>
+        {hint && <span className="block text-[0.75rem] leading-snug text-fg-3">{hint}</span>}
       </span>
       <Switch id={id} checked={checked} onCheckedChange={onChange} className="data-[size=default]:h-6 data-[size=default]:w-11 [&_[data-slot=switch-thumb]]:size-5! [&_[data-slot=switch-thumb]]:data-[state=checked]:translate-x-[calc(100%-0px)]" />
     </label>
@@ -86,8 +86,8 @@ export function spaceSummary(space: Space, date: string, equipment: Equipment[],
 export function SettingsLink({ summary, onOpen, label }: { summary: ReactNode; onOpen: () => void; label: string }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-md border border-line bg-surface-2 px-3 py-2.5" data-settings-link>
-      <span className="min-w-0 text-[12.5px] leading-[1.45] text-fg-2">{summary}</span>
-      <button type="button" onClick={onOpen} className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12px] font-semibold text-primary">
+      <span className="min-w-0 text-[0.78125rem] leading-[1.45] text-fg-2">{summary}</span>
+      <button type="button" onClick={onOpen} className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[0.75rem] font-semibold text-primary">
         {label}
       </button>
     </div>

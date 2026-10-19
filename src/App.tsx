@@ -63,17 +63,17 @@ function Shell() {
       <UpdateBanner />
       {TARGET === "artifact" && storeKind === "local" && (
         <div className="relative mx-auto max-w-[480px] px-4">
-          <p className="rounded-md border border-warn/30 bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn">{t("app.localOnly")}</p>
+          <p className="rounded-md border border-warn/30 bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn">{t("app.localOnly")}</p>
         </div>
       )}
       {volatile && (
         <div className="relative mx-auto max-w-[480px] px-4">
-          <p className="rounded-md border border-bad/30 bg-bad/10 px-3 py-2 text-[12.5px] font-medium text-bad" id="volatile-warning" role="alert">
+          <p className="rounded-md border border-bad/30 bg-bad/10 px-3 py-2 text-[0.78125rem] font-medium text-bad" id="volatile-warning" role="alert">
             {t("safe.volatile")}
           </p>
         </div>
       )}
-      <main className="relative mx-auto max-w-[480px] pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+170px)] pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
+      <main className="relative mx-auto max-w-[480px] pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+170px)] short:pb-[calc(env(safe-area-inset-bottom,0px)+130px)] pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={tab}

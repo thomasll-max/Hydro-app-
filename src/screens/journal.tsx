@@ -75,14 +75,14 @@ export function JournalScreen() {
   return (
     <>
       <ScreenHero emoji="notebook" eyebrow={eyebrow} title={t("journal.title")}>
-        <p className="mt-1 text-[13px] leading-snug text-fg-2">{t("journal.subtitle")}</p>
+        <p className="mt-1 text-[0.8125rem] leading-snug text-fg-2">{t("journal.subtitle")}</p>
       </ScreenHero>
 
       {selection.kind === "space" && !cycle && (
         <Reveal i={0} className="mb-3">
           <Card className="flex-row items-center gap-3 px-4 py-3.5">
-            <p className="min-w-0 flex-1 text-[13px] leading-snug text-fg-2">{t("journal.noCycleHere")}</p>
-            <Button variant="outline" className="h-10 shrink-0 rounded-full border-line-strong text-[13px] font-semibold" onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })}>
+            <p className="min-w-0 flex-1 text-[0.8125rem] leading-snug text-fg-2">{t("journal.noCycleHere")}</p>
+            <Button variant="outline" className="h-11 shrink-0 rounded-full border-line-strong text-[0.8125rem] font-semibold" onClick={() => ed.openCycle({ cycleId: "new", spaceId: space?.id })}>
               <Plus /> {t("growSet.newCycle")}
             </Button>
           </Card>
@@ -95,7 +95,7 @@ export function JournalScreen() {
         <Card className="gap-3">
           <div className="flex items-center justify-between">
             <Label emoji="sprout">{t("journal.cycle")}</Label>
-            <Button variant="ghost" size="sm" className="h-9 rounded-full text-primary" onClick={() => ed.openCycle()}>
+            <Button variant="ghost" size="sm" className="h-11 rounded-full text-primary" onClick={() => ed.openCycle()}>
               <Pencil /> {t("common.edit")}
             </Button>
           </div>
@@ -104,7 +104,7 @@ export function JournalScreen() {
             <Chip>{`${t(`mode.${cycle.waterMode}Short`)} · ${t(`substrate.${cycle.substrate}`)}`}</Chip>
             {cycle.potCount && cycle.potVolumeL ? <Chip>{`${cycle.potCount} × ${num(cycle.potVolumeL)} L`}</Chip> : null}
           </div>
-          <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[13px]">
+          <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[0.8125rem]">
             <Fact k={t("cycleForm.germination")} v={cycle.germinationDate && dm(cycle.germinationDate)} />
             <Fact k={t("cycleForm.transfer")} v={cycle.transferDate && dm(cycle.transferDate)} />
             <Fact k={t("cycleForm.flip")} v={cycle.flipDate ? dm(cycle.flipDate) : cycle.plannedFlipDate && `${t("cycleForm.plannedFlip")} ${dm(cycle.plannedFlipDate)}`} />
@@ -130,8 +130,8 @@ export function JournalScreen() {
                   onClick={() => ed.openPlant(id)}
                   className="flex min-h-[64px] min-w-0 flex-col items-start rounded-md border border-line bg-surface-2 px-2.5 py-2 text-left"
                 >
-                  <span className="text-[14px] font-bold">{id}</span>
-                  <span className={cn("w-full truncate text-[11px]", p?.phenotype || p?.cultivar ? "text-fg-2" : "text-fg-3")}>
+                  <span className="text-[0.875rem] font-bold">{id}</span>
+                  <span className={cn("w-full truncate text-[0.75rem]", p?.phenotype || p?.cultivar ? "text-fg-2" : "text-fg-3")}>
                     {p?.phenotype || p?.cultivar || t("journal.plantEmpty")}
                   </span>
                 </button>
@@ -142,16 +142,16 @@ export function JournalScreen() {
       </Reveal>
       )}
 
-      <Reveal i={2} className="mb-3 grid grid-cols-2 gap-2.5">
+      <Reveal i={2} className="fold-2 mb-3 grid gap-2.5">
         {spaces.length > 1 && (
-          <Button className="col-span-2 h-12 rounded-full text-[14px] font-bold" onClick={() => ed.openQuick()}>
+          <Button className="col-span-full h-auto min-h-12 rounded-full text-[0.875rem] font-bold whitespace-normal" onClick={() => ed.openQuick()}>
             <Layers /> {t("quick.open")}
           </Button>
         )}
-        <Button variant="outline" className="h-12 rounded-full border-line-strong bg-surface text-[13.5px] font-semibold" onClick={() => ed.openEvent()}>
+        <Button variant="outline" className="h-auto min-h-12 rounded-full border-line-strong bg-surface text-[0.84375rem] font-semibold whitespace-normal" onClick={() => ed.openEvent()}>
           <CalendarPlus /> {t("journal.addEvent")}
         </Button>
-        <Button variant="outline" className="h-12 rounded-full border-line-strong bg-surface text-[13.5px] font-semibold" onClick={() => ed.openMix()}>
+        <Button variant="outline" className="h-auto min-h-12 rounded-full border-line-strong bg-surface text-[0.84375rem] font-semibold whitespace-normal" onClick={() => ed.openMix()}>
           <FlaskConical /> {t("journal.addMix")}
         </Button>
       </Reveal>
@@ -161,7 +161,7 @@ export function JournalScreen() {
         <Card className="px-0 pb-1.5">
           <div className="flex items-center justify-between px-3.5">
             <Label emoji="book">{t("journal.history")}</Label>
-            <span className="text-[11.5px] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
+            <span className="text-[0.75rem] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
           </div>
           {multi && (
             <FilterRow
@@ -202,16 +202,16 @@ export function JournalScreen() {
           </ul>
           {list.length === 0 && (
             <div className="flex flex-col items-center gap-2 px-3.5 py-6 text-center">
-              <p className="text-[13px] text-fg-3">{filtered ? t("journal.historyEmpty") : t("journal.historyNone")}</p>
+              <p className="text-[0.8125rem] text-fg-3">{filtered ? t("journal.historyEmpty") : t("journal.historyNone")}</p>
               {filtered && (
-                <button className="h-10 rounded-full px-3 text-[13px] font-semibold text-primary" onClick={() => setFilter(NO_FILTER)}>
+                <button className="h-11 rounded-full px-3 text-[0.8125rem] font-semibold text-primary" onClick={() => setFilter(NO_FILTER)}>
                   {t("journal.clearFilters")}
                 </button>
               )}
             </div>
           )}
           {list.length > shown && (
-            <button className="w-full p-2.5 text-[12.5px] font-semibold text-primary" onClick={() => setShown((n) => n + PAGE)}>
+            <button className="w-full p-2.5 text-[0.78125rem] font-semibold text-primary" onClick={() => setShown((n) => n + PAGE)}>
               {t("common.more")}
             </button>
           )}
@@ -227,16 +227,16 @@ export function JournalScreen() {
               </AccordionTrigger>
               <AccordionContent>
                 {events.length === 0 ? (
-                  <p className="text-[13px] text-fg-3">{t("journal.eventsEmpty")}</p>
+                  <p className="text-[0.8125rem] text-fg-3">{t("journal.eventsEmpty")}</p>
                 ) : (
                   <ul>
                     {events.map((ev) => (
                       <li key={ev.id}>
                         <button onClick={() => ed.openEvent(ev)} className="flex w-full items-center gap-3 border-t border-line py-2.5 text-left first:border-t-0">
-                          <span className="w-12 text-[12.5px] text-fg-3 tabular">{dm(ev.date)}</span>
+                          <span className="w-12 text-[0.78125rem] text-fg-3 tabular">{dm(ev.date)}</span>
                           {multi && <SpaceDot color={spaceOf(ev.spaceId)?.color} />}
-                          <span className="flex-1 text-[13.5px] font-medium">{t(`event.${ev.type}`)}</span>
-                          {ev.note && <span className="max-w-[40%] truncate text-[12px] text-fg-3">{ev.note}</span>}
+                          <span className="flex-1 text-[0.84375rem] font-medium">{t(`event.${ev.type}`)}</span>
+                          {ev.note && <span className="max-w-[40%] truncate text-[0.75rem] text-fg-3">{ev.note}</span>}
                           <ChevronRight className="size-4 text-fg-3" />
                         </button>
                       </li>
@@ -251,15 +251,15 @@ export function JournalScreen() {
               </AccordionTrigger>
               <AccordionContent>
                 {mixes.length === 0 ? (
-                  <p className="text-[13px] text-fg-3">{t("journal.mixesEmpty")}</p>
+                  <p className="text-[0.8125rem] text-fg-3">{t("journal.mixesEmpty")}</p>
                 ) : (
                   <ul>
                     {mixes.map((m) => (
                       <li key={m.id}>
                         <button onClick={() => ed.openMix(m)} className="flex w-full items-center gap-3 border-t border-line py-2.5 text-left first:border-t-0">
-                          <span className="w-12 text-[12.5px] text-fg-3 tabular">{dm(m.date)}</span>
-                          <span className="flex-1 text-[13.5px] font-medium tabular-nums">{num(m.volumeL)} L</span>
-                          <span className="text-[12px] text-fg-2 tabular-nums">
+                          <span className="w-12 text-[0.78125rem] text-fg-3 tabular">{dm(m.date)}</span>
+                          <span className="flex-1 text-[0.84375rem] font-medium tabular-nums">{num(m.volumeL)} L</span>
+                          <span className="text-[0.75rem] text-fg-2 tabular-nums">
                             {m.ec != null ? `EC ${num(m.ec, 1)}` : m.ecExpected != null ? `EC ≈ ${num(m.ecExpected, 1)}` : ""} {m.ph != null && `· pH ${num(m.ph, 1)}`}
                           </span>
                           <ChevronRight className="size-4 text-fg-3" />
@@ -277,7 +277,7 @@ export function JournalScreen() {
               </AccordionTrigger>
               <AccordionContent className="flex flex-col gap-2">
                 {h && (
-                  <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[13px]">
+                  <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[0.8125rem]">
                     <Fact k={t("cycleForm.wet")} v={h.wetG != null ? `${num(h.wetG)} g` : undefined} />
                     <Fact k={t("cycleForm.dry")} v={h.dryG != null ? `${num(h.dryG)} g` : undefined} />
                     <Fact k="g/W" v={gPerW != null ? num(gPerW, 2) : undefined} />
@@ -300,7 +300,7 @@ export function JournalScreen() {
 function Fact({ k, v, warn }: { k: string; v?: string | false; warn?: boolean }) {
   return (
     <div className="min-w-0">
-      <dt className="truncate text-[11px] text-fg-3">{k}</dt>
+      <dt className="truncate text-[0.75rem] text-fg-3">{k}</dt>
       <dd className={cn("truncate font-medium tabular-nums", warn && "text-warn", !v && "text-fg-3")}>{v || "—"}</dd>
     </div>
   )
@@ -309,7 +309,7 @@ function Fact({ k, v, warn }: { k: string; v?: string | false; warn?: boolean })
 function FilterRow({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; l: string }[] }) {
   return (
     <div role="radiogroup" aria-label={label} className="no-scrollbar mt-2 flex items-center gap-1.5 overflow-x-auto px-3.5">
-      <span aria-hidden="true" className="w-12 shrink-0 text-[11px] font-semibold text-fg-3">
+      <span aria-hidden="true" className="w-12 shrink-0 text-[0.75rem] font-semibold text-fg-3">
         {label}
       </span>
       {options.map((o) => (
@@ -319,7 +319,7 @@ function FilterRow({ label, value, onChange, options }: { label: string; value: 
           aria-checked={value === o.v}
           onClick={() => onChange(o.v)}
           className={cn(
-            "h-8 shrink-0 rounded-full border px-3 text-[12px] font-semibold whitespace-nowrap",
+            "h-11 shrink-0 rounded-full border px-3 text-[0.75rem] font-semibold whitespace-nowrap",
             value === o.v ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2",
           )}
         >
@@ -338,7 +338,7 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
     if (v == null) return null
     const r = tg?.[k]
     return (
-      <span className="flex items-center gap-1 text-[12px] text-fg-2">
+      <span className="flex items-center gap-1 text-[0.75rem] text-fg-2">
         {r && <Dot status={status(v, r, k)} />}
         {label} <b className="font-semibold text-fg tabular-nums">{`${num(v, d)}${unit}`}</b>
       </span>
@@ -348,21 +348,21 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
     <li>
       <button onClick={onOpen} className="flex w-full flex-col gap-1.5 border-t border-line px-3.5 py-3 text-left">
         <div className="flex w-full items-center gap-2">
-          <span className="text-[14px] font-semibold tabular-nums">{dm(e.date)}</span>
-          {e.time && <span className="text-[12px] text-fg-3 tabular-nums">{e.time}</span>}
+          <span className="text-[0.875rem] font-semibold tabular-nums">{dm(e.date)}</span>
+          {e.time && <span className="text-[0.75rem] text-fg-3 tabular-nums">{e.time}</span>}
           {space && (
-            <span className="flex items-center gap-1 text-[11.5px] font-semibold text-fg-2">
+            <span className="flex items-center gap-1 text-[0.75rem] font-semibold text-fg-2">
               <SpaceDot color={space.color} /> {space.name}
             </span>
           )}
-          {e.plantId && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-fg-2">{e.plantId}</span>}
-          {tg && <span className="text-[11px] text-fg-3">{t(`stage.${tg.stage}`)}</span>}
+          {e.plantId && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[0.75rem] font-semibold text-fg-2">{e.plantId}</span>}
+          {tg && <span className="text-[0.75rem] text-fg-3">{t(`stage.${tg.stage}`)}</span>}
           <ChevronRight className="ml-auto size-4 text-fg-3" />
         </div>
         <div className="flex flex-wrap gap-x-3 gap-y-1">
           {m("dryback", t("entry.dryback"), 0, " %")}
           {e.drybackSensor != null && (
-            <span className="text-[12px] text-fg-2">
+            <span className="text-[0.75rem] text-fg-2">
               {t("entry.drybackSensor")} <b className="font-semibold text-fg tabular-nums">{`${num(e.drybackSensor, 0)} %`}</b>
             </span>
           )}
@@ -370,22 +370,22 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
           {m("phRunoff", "pH RO", 1)}
           {m("vpd", "VPD", 2)}
           {e.tempDay != null && (
-            <span className="text-[12px] text-fg-2">
+            <span className="text-[0.75rem] text-fg-2">
               T/HR <b className="font-semibold text-fg tabular-nums">{`${num(e.tempDay)}°/${e.rh != null ? num(e.rh) : "—"}`}</b>
             </span>
           )}
           {e.heightCm != null && (
-            <span className="text-[12px] text-fg-2">
+            <span className="text-[0.75rem] text-fg-2">
               {t("journal.height")} <b className="font-semibold text-fg tabular-nums">{num(e.heightCm)} cm</b>
             </span>
           )}
           {e.reservoirL != null && (
-            <span className="text-[12px] text-fg-2">
+            <span className="text-[0.75rem] text-fg-2">
               {t("entry.reservoir")} <b className="font-semibold text-fg tabular-nums">{num(e.reservoirL)} L</b>
             </span>
           )}
           {e.sownCount != null && (
-            <span className="text-[12px] text-fg-2">
+            <span className="text-[0.75rem] text-fg-2">
               {t("today.germination")} <b className="font-semibold text-fg tabular-nums">{`${e.germinatedCount ?? 0}/${e.sownCount}`}</b>
             </span>
           )}
@@ -393,12 +393,12 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
         {!!(e.observations?.length || e.actions?.length) && (
           <div className="flex flex-wrap gap-1">
             {e.observations?.map((o) => (
-              <span key={o.tag} className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold", o.severity >= 3 ? "bg-bad/12 text-bad" : o.severity === 2 ? "bg-warn/12 text-warn" : "bg-surface-2 text-fg-2")}>
+              <span key={o.tag} className={cn("rounded-full px-2 py-0.5 text-[0.75rem] font-semibold", o.severity >= 3 ? "bg-bad/12 text-bad" : o.severity === 2 ? "bg-warn/12 text-warn" : "bg-surface-2 text-fg-2")}>
                 {t(`obs.${o.tag}`)}
               </span>
             ))}
             {e.actions?.map((a) => (
-              <span key={a} className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+              <span key={a} className="rounded-full bg-primary/10 px-2 py-0.5 text-[0.75rem] font-semibold text-primary">
                 {t(`action.${a}`)}
               </span>
             ))}
@@ -411,7 +411,7 @@ function EntryRow({ e, space, onOpen, photoUrl }: { e: Entry; space?: { name: st
             ))}
           </div>
         ) : null}
-        {e.note && <p className="line-clamp-2 text-[12.5px] text-fg-3">{e.note}</p>}
+        {e.note && <p className="line-clamp-2 text-[0.78125rem] text-fg-3">{e.note}</p>}
       </button>
     </li>
   )

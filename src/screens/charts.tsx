@@ -115,7 +115,7 @@ export function ChartsScreen() {
   return (
     <>
       <ScreenHero emoji="chart" title={t("charts.title")}>
-        <p className="mt-1 text-[13px] leading-snug text-fg-2">{t("charts.subtitle")}</p>
+        <p className="mt-1 text-[0.8125rem] leading-snug text-fg-2">{t("charts.subtitle")}</p>
       </ScreenHero>
 
       <Reveal i={0} className="mb-3">
@@ -137,20 +137,20 @@ export function ChartsScreen() {
             <ToggleGroupItem
               key={v}
               value={v}
-              className="h-9 rounded-full! text-[13px] font-semibold text-fg-3 hover:bg-transparent data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
+              className="h-9 hit rounded-full! text-[0.8125rem] font-semibold text-fg-3 hover:bg-transparent data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
             >
               {t(k)}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-        <p className="mt-1.5 text-center text-[11.5px] text-fg-3">{t("charts.range", { from: dm(range.from), to: dm(range.to) })}</p>
+        <p className="mt-1.5 text-center text-[0.75rem] text-fg-3">{t("charts.range", { from: dm(range.from), to: dm(range.to) })}</p>
       </Reveal>
 
       <Reveal i={1} className="mb-3">
         <Card className="gap-2.5">
           {spaces.length > 1 && (
             <div>
-              <div className="mb-1 text-[12px] font-medium text-fg-2">{t("charts.spaces", { n: MAX_SPACES })}</div>
+              <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("charts.spaces", { n: MAX_SPACES })}</div>
               <div className="flex flex-wrap gap-1.5" id="ch-spaces">
                 {spaces.map((s) => {
                   const on = shown.some((x) => x.id === s.id)
@@ -160,7 +160,7 @@ export function ChartsScreen() {
                       type="button"
                       aria-pressed={on}
                       onClick={() => togglePick(s.id)}
-                      className={on ? "flex h-9 items-center gap-1.5 rounded-full border border-primary/45 bg-primary/12 px-3 text-[12.5px] font-semibold" : "flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 text-[12.5px] font-semibold text-fg-2"}
+                      className={on ? "flex h-11 items-center gap-1.5 rounded-full border border-primary/45 bg-primary/12 px-3 text-[0.78125rem] font-semibold" : "flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 text-[0.78125rem] font-semibold text-fg-2"}
                     >
                       <SpaceDot color={s.color} /> {s.name}
                     </button>
@@ -170,7 +170,7 @@ export function ChartsScreen() {
             </div>
           )}
           <div>
-            <div className="mb-1 text-[12px] font-medium text-fg-2">{t("charts.curves")}</div>
+            <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("charts.curves")}</div>
             <div className="flex flex-wrap gap-1.5" id="ch-curves">
               {CURVES.map((c) => (
                 <TagChip key={c} label={curveName(c)} on={curves.includes(c)} onClick={() => toggleCurve(c)} />
@@ -192,8 +192,8 @@ export function ChartsScreen() {
       {!hasData && (
         <Reveal i={2} className="mb-3">
           <Card className="px-4 py-4">
-            <b className="text-[15px] leading-snug font-semibold">{t("charts.emptyTitle")}</b>
-            <p className="mt-1.5 text-[13px] leading-[1.45] text-fg-2">{t("charts.emptyBody")}</p>
+            <b className="text-[0.9375rem] leading-snug font-semibold">{t("charts.emptyTitle")}</b>
+            <p className="mt-1.5 text-[0.8125rem] leading-[1.45] text-fg-2">{t("charts.emptyBody")}</p>
           </Card>
         </Reveal>
       )}
@@ -204,12 +204,12 @@ export function ChartsScreen() {
             <Card className="gap-2 px-3 pb-2" data-curve={c}>
               <div className="flex items-center justify-between gap-2 px-1">
                 <Label>{curveName(c)}</Label>
-                <span className="text-[11px] text-fg-3">{CURVE_DEFS[c].unit}</span>
+                <span className="text-[0.75rem] text-fg-3">{CURVE_DEFS[c].unit}</span>
               </div>
               {series[c].some((s) => s.points.length) ? (
                 <CurveChart series={series[c]} spaces={shown} events={events} curve={c} name={curveName(c)} />
               ) : (
-                <p className="px-1 pb-2 text-[12.5px] text-fg-3">{t("charts.noData")}</p>
+                <p className="px-1 pb-2 text-[0.78125rem] text-fg-3">{t("charts.noData")}</p>
               )}
             </Card>
           </Reveal>
@@ -221,7 +221,7 @@ export function ChartsScreen() {
             <Label className="px-1">{t("charts.overlayTitle")}</Label>
             {shown.length > 1 && (
               <>
-                <p className="px-1 text-[11.5px] text-fg-3">{t("charts.overlayOne")}</p>
+                <p className="px-1 text-[0.75rem] text-fg-3">{t("charts.overlayOne")}</p>
                 <Seg<string>
                   label={t("charts.overlaySpace")}
                   value={overlaySpace.id}
@@ -236,7 +236,7 @@ export function ChartsScreen() {
               events={events.filter((e) => !e.spaceId || e.spaceId === overlaySpace.id)}
               curveName={curveName}
             />
-            <p className="px-1 text-[11px] text-fg-3">{t("charts.overlayNote")}</p>
+            <p className="px-1 text-[0.75rem] text-fg-3">{t("charts.overlayNote")}</p>
           </Card>
         </Reveal>
       )}
@@ -247,7 +247,7 @@ export function ChartsScreen() {
             <Label>{t("charts.events")}</Label>
             <ul className="mt-1">
               {events.map((e) => (
-                <li key={e.id} className="flex justify-between gap-2 border-t border-line py-1.5 text-[12.5px] first:border-t-0">
+                <li key={e.id} className="flex justify-between gap-2 border-t border-line py-1.5 text-[0.78125rem] first:border-t-0">
                   <span className="text-fg-3 tabular">{dm(e.date)}</span>
                   <span className="text-fg-2">{t(`event.${e.type}`)}</span>
                 </li>
@@ -256,14 +256,14 @@ export function ChartsScreen() {
           </Card>
         </Reveal>
       )}
-      <p className="text-center text-[10.5px] text-fg-3">
+      <p className="text-center text-[0.75rem] text-fg-3">
         {t("charts.foot", { n: num(MAX_SPACES) })} {t("charts.gapNote", { n: GAP_DAYS })}
       </p>
     </>
   )
 }
 
-const axisTick = { fontSize: 10.5 }
+const axisTick = { fontSize: 12 }
 
 /** Name and summary of a chart for screen readers (the drawing itself says nothing), lot 10d. */
 function useSummary() {
@@ -304,7 +304,7 @@ function CurveChart({ series, spaces, events, curve, name }: { series: Series[];
         <ChartTooltip
           content={({ active, payload, label }) =>
             active && payload?.length ? (
-              <div className="rounded-md border border-line bg-surface px-2.5 py-1.5 text-[11.5px] shadow-card">
+              <div className="rounded-md border border-line bg-surface px-2.5 py-1.5 text-[0.75rem] shadow-card">
                 <div className="mb-0.5 font-semibold">{dm(String(label))}</div>
                 {payload
                   .filter((p) => String(p.dataKey).startsWith("s:"))
@@ -358,7 +358,7 @@ function OverlayChart({ series, space, events, curveName }: { series: Series[]; 
             <ChartTooltip
               content={({ active, label }) =>
                 active ? (
-                  <div className="rounded-md border border-line bg-surface px-2.5 py-1.5 text-[11.5px] shadow-card">
+                  <div className="rounded-md border border-line bg-surface px-2.5 py-1.5 text-[0.75rem] shadow-card">
                     <div className="mb-0.5 font-semibold">{dm(String(label))}</div>
                     {series.map((s) => {
                       const v = real(s, String(label))
@@ -382,7 +382,7 @@ function OverlayChart({ series, space, events, curveName }: { series: Series[]; 
           .map((s) => {
             const n = norm.find((x) => x.series.curve === s.curve)!
             return (
-              <span key={s.curve} className="flex items-center gap-2 text-[12px] text-fg-2">
+              <span key={s.curve} className="flex items-center gap-2 text-[0.75rem] text-fg-2">
                 <span className="h-1 w-5 shrink-0 rounded-full" style={{ background: colorOf(s) }} />
                 <b className="font-semibold text-fg">{curveName(s.curve)}</b>
                 <span className="text-fg-3">

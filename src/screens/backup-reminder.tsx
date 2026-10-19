@@ -21,10 +21,10 @@ export function BackupReminder() {
     <Card className="mb-3 flex-row items-center gap-3 border-warn/35 px-4 py-3" id="backup-reminder">
       <Emoji name="notebook" size={34} />
       <div className="min-w-0 flex-1">
-        <b className="block text-[14px] font-semibold">{d.days == null ? t("backupRem.never") : t("backupRem.days", { n: d.days })}</b>
-        <span className="block text-[12px] text-fg-2">{t("backupRem.why")}</span>
+        <b className="block text-[0.875rem] font-semibold">{d.days == null ? t("backupRem.never") : t("backupRem.days", { n: d.days })}</b>
+        <span className="block text-[0.75rem] text-fg-2">{t("backupRem.why")}</span>
       </div>
-      <a href="#tools/data" className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12.5px] font-semibold text-primary">
+      <a href="#tools/data" className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[0.78125rem] font-semibold text-primary">
         {t("backupRem.cta")}
       </a>
     </Card>

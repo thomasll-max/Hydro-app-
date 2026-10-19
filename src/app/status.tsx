@@ -12,13 +12,13 @@ import { todayIso } from "@/calc/stage"
 /** Works outside the providers too (error boundary): the language comes from <html lang>. */
 const tr = (key: MessageKey, vars?: Record<string, string | number>) => translate((document.documentElement.lang === "en" ? "en" : "fr") as Lang, key, vars)
 
-const btn = "h-12 rounded-full px-5 text-[15px] font-bold"
+const btn = "h-12 rounded-full px-5 text-[0.9375rem] font-bold"
 
 function Frame({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
     <div className="relative min-h-full" id={id}>
       <main className="mx-auto flex max-w-[480px] flex-col gap-3 px-4 pt-[calc(env(safe-area-inset-top,0px)+40px)] pb-10">
-        <h1 className="text-[22px] font-bold tracking-[-0.4px]">{title}</h1>
+        <h1 className="text-[1.375rem] font-bold tracking-[-0.4px]">{title}</h1>
         {children}
       </main>
     </div>
@@ -29,8 +29,8 @@ function Frame({ id, title, children }: { id: string; title: string; children: R
 export function ProblemScreen({ kind, onRetry }: { kind: "store" | "read"; onRetry: () => void }) {
   return (
     <Frame id="load-problem" title={tr(kind === "store" ? "safe.storeTitle" : "safe.readTitle")}>
-      <p className="text-[14.5px] leading-[1.5] text-fg-2">{tr(kind === "store" ? "safe.storeBody" : "safe.readBody")}</p>
-      <p className="text-[13px] leading-[1.45] text-fg-3">{tr("safe.nothingLost")}</p>
+      <p className="text-[0.90625rem] leading-[1.5] text-fg-2">{tr(kind === "store" ? "safe.storeBody" : "safe.readBody")}</p>
+      <p className="text-[0.8125rem] leading-[1.45] text-fg-3">{tr("safe.nothingLost")}</p>
       <button type="button" className={`${btn} mt-2 self-start bg-primary text-primary-foreground`} onClick={onRetry} id="load-retry">
         {tr("safe.retry")}
       </button>
@@ -42,7 +42,7 @@ export function ProblemScreen({ kind, onRetry }: { kind: "store" | "read"; onRet
 export function OwnerOnly() {
   return (
     <Frame id="owner-only" title={tr("safe.ownerTitle")}>
-      <p className="text-[14.5px] leading-[1.5] text-fg-2">{tr("safe.ownerBody")}</p>
+      <p className="text-[0.90625rem] leading-[1.5] text-fg-2">{tr("safe.ownerBody")}</p>
     </Frame>
   )
 }

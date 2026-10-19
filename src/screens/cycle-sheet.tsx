@@ -118,7 +118,7 @@ export function CycleSheet({
 
           {editing && (
             <Group title={t("cycleForm.steps")} id="cycle-steps">
-              <p className="mb-2 text-[12px] leading-[1.45] text-fg-3">{t("cycleForm.stepsD")}</p>
+              <p className="mb-2 text-[0.75rem] leading-[1.45] text-fg-3">{t("cycleForm.stepsD")}</p>
               <Grid>
                 <TextField id="c-veg" type="date" label={t("cycleForm.veg")} value={c.vegDate ?? ""} onChange={txt("vegDate")} />
                 <TextField id="c-flip" type="date" label={t("cycleForm.flip")} value={c.flipDate ?? ""} onChange={txt("flipDate")} />
@@ -126,7 +126,7 @@ export function CycleSheet({
                 {c.transferDate && <TextField id="c-trans" type="date" label={t("cycleForm.oldTransfer")} value={c.transferDate} onChange={txt("transferDate")} />}
               </Grid>
               {expected && (
-                <p className="mt-2 text-[12.5px] font-medium text-fg-2" id="cycle-expected">
+                <p className="mt-2 text-[0.78125rem] font-medium text-fg-2" id="cycle-expected">
                   {t("cycleForm.expectedHarvest", { date: dm(expected) })} <span className="font-normal text-fg-3">· {t("cycleForm.expectedHarvestD", { weeks: parseNum(s.flowerWeeks) ?? c.flowerWeeks })}</span>
                 </p>
               )}
@@ -135,9 +135,9 @@ export function CycleSheet({
 
           <Accordion type="multiple" className="mt-3 rounded-lg border border-line bg-surface px-3">
             <AccordionItem value="planned" className="border-line">
-              <AccordionTrigger className="py-3 text-[13px] font-semibold hover:no-underline">{t("cycleForm.planned")}</AccordionTrigger>
+              <AccordionTrigger className="py-3 text-[0.8125rem] font-semibold hover:no-underline">{t("cycleForm.planned")}</AccordionTrigger>
               <AccordionContent className="flex flex-col gap-2.5 pb-3">
-                <p className="text-[12px] leading-[1.45] text-fg-3">{t("cycleForm.plannedD")}</p>
+                <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("cycleForm.plannedD")}</p>
                 <Grid>
                   <TextField id="c-pflip" type="date" label={t("cycleForm.plannedFlip")} value={c.plannedFlipDate ?? ""} onChange={txt("plannedFlipDate")} />
                   <NumField id="c-fw" integer label={t("cycleForm.flowerWeeks")} hint={t("cycleForm.flowerWeeksHint")} value={s.flowerWeeks ?? ""} onChange={sv("flowerWeeks")} />
@@ -146,7 +146,7 @@ export function CycleSheet({
                 </Grid>
                 {!editing && (
                   <>
-                    <p className="text-[12px] leading-[1.45] text-fg-3">{t("cycleForm.pastSteps")}</p>
+                    <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("cycleForm.pastSteps")}</p>
                     <Grid>
                       <TextField id="c-veg" type="date" label={t("cycleForm.veg")} value={c.vegDate ?? ""} onChange={txt("vegDate")} />
                       <TextField id="c-flip" type="date" label={t("cycleForm.flip")} value={c.flipDate ?? ""} onChange={txt("flipDate")} />
@@ -156,9 +156,9 @@ export function CycleSheet({
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="setup" className="border-0">
-              <AccordionTrigger className="py-3 text-[13px] font-semibold hover:no-underline">{t("cycleForm.setupPrefilled")}</AccordionTrigger>
+              <AccordionTrigger className="py-3 text-[0.8125rem] font-semibold hover:no-underline">{t("cycleForm.setupPrefilled")}</AccordionTrigger>
               <AccordionContent className="flex flex-col gap-2.5 pb-3">
-                <p className="text-[12px] leading-[1.45] text-fg-3">{t("cycleForm.setupD")}</p>
+                <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("cycleForm.setupD")}</p>
                 <Seg<Substrate>
                   label={t("cycleForm.substrate")}
                   value={c.substrate}

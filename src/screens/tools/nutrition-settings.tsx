@@ -28,16 +28,16 @@ export function NutritionFields({ value, onChange, idPrefix }: { value: Nutritio
   return (
     <div className="flex flex-col gap-3" id={`${idPrefix}-nut`}>
       <div>
-        <div className="mb-1 text-[12px] font-medium text-fg-2">{t("growSet.line")}</div>
+        <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("growSet.line")}</div>
         {lines.length > 1 ? (
           <Seg<string> label={t("growSet.line")} value={value.line} onChange={pickLine} options={lines.map((l) => ({ value: l.id, label: l.name }))} />
         ) : (
-          <div className="flex h-11 items-center rounded-md border border-line bg-surface px-3 text-[14px] font-semibold">{line.name}</div>
+          <div className="flex h-11 items-center rounded-md border border-line bg-surface px-3 text-[0.875rem] font-semibold">{line.name}</div>
         )}
-        <p className="mt-1 text-[11px] text-fg-3">{lines.length > 1 ? t("growSet.lineBoth") : t("growSet.lineOnly")}</p>
+        <p className="mt-1 text-[0.75rem] text-fg-3">{lines.length > 1 ? t("growSet.lineBoth") : t("growSet.lineOnly")}</p>
       </div>
       <div>
-        <div className="mb-1 text-[12px] font-medium text-fg-2">{t("growSet.addons")}</div>
+        <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("growSet.addons")}</div>
         <div className="flex flex-wrap gap-1.5">
           {line.addons.map((a) => {
             const on = value.addons.includes(a)
@@ -47,25 +47,25 @@ export function NutritionFields({ value, onChange, idPrefix }: { value: Nutritio
                 type="button"
                 aria-pressed={on}
                 onClick={() => onChange({ ...value, addons: on ? value.addons.filter((x) => x !== a) : [...value.addons, a] })}
-                className={cn("h-10 rounded-full border px-4 text-[13px] font-semibold", on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2")}
+                className={cn("h-11 rounded-full border px-4 text-[0.8125rem] font-semibold", on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2")}
               >
                 {ADDON_NAMES[a]}
               </button>
             )
           })}
         </div>
-        {value.addons.includes("ipw") && <p className="mt-1 text-[11px] text-fg-3">{t("growSet.ipwNote")}</p>}
+        {value.addons.includes("ipw") && <p className="mt-1 text-[0.75rem] text-fg-3">{t("growSet.ipwNote")}</p>}
       </div>
       {concs.length > 0 && (
         <div>
-          <div className="mb-1 text-[12px] font-medium text-fg-2">{t("growSet.dosing")}</div>
+          <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("growSet.dosing")}</div>
           <Seg<DosingMethod>
             label={t("growSet.dosing")}
             value={value.dosing}
             onChange={(v) => onChange({ ...value, dosing: v })}
             options={[{ value: "powder" as DosingMethod, label: t("growSet.powder") }, ...concs.map((c) => ({ value: concToDosing(c), label: t("growSet.conc", { c: String(c) }) }))]}
           />
-          <p className="mt-1 text-[11px] text-fg-3">{t("growSet.dosingHint")}</p>
+          <p className="mt-1 text-[0.75rem] text-fg-3">{t("growSet.dosingHint")}</p>
         </div>
       )}
     </div>

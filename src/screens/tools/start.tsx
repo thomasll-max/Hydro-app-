@@ -88,11 +88,11 @@ export function StartTool() {
         <Card className="gap-1" id="start-list">
           <div className="flex items-center justify-between gap-2">
             <Label emoji="pottedPlant">{t("start.enter")}</Label>
-            <span className="text-[12px] font-semibold text-fg-2 tabular-nums" id="start-count">
+            <span className="text-[0.75rem] font-semibold text-fg-2 tabular-nums" id="start-count">
               {done} / {total}
             </span>
           </div>
-          <p className="mt-0.5 text-[12.5px] leading-[1.45] text-fg-2">{t("start.enterD")}</p>
+          <p className="mt-0.5 text-[0.78125rem] leading-[1.45] text-fg-2">{t("start.enterD")}</p>
           <ol className="mt-1.5">
             {items.map((it) => {
               const where = it.spaceId && spaces.length > 1 ? spaceName(it.spaceId) : undefined
@@ -103,11 +103,11 @@ export function StartTool() {
                       {it.done && <Check className="size-4" />}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className={cn("block text-[14px] font-semibold", it.done && "text-fg-3 line-through decoration-1")}>
+                      <span className={cn("block text-[0.875rem] font-semibold", it.done && "text-fg-3 line-through decoration-1")}>
                         {t(`start.i.${it.id}` as MessageKey)}
                         {where && !it.done ? <span className="font-normal text-fg-2"> · {where}</span> : null}
                       </span>
-                      <span className="block text-[12px] leading-snug text-fg-3">{t(`start.w.${it.id}` as MessageKey)}</span>
+                      <span className="block text-[0.75rem] leading-snug text-fg-3">{t(`start.w.${it.id}` as MessageKey)}</span>
                     </span>
                     <ChevronRight className="mt-1 size-4.5 shrink-0 text-fg-3" />
                   </button>
@@ -116,7 +116,7 @@ export function StartTool() {
               )
             })}
           </ol>
-          {done === total && <p className="mt-1 rounded-md bg-primary/10 px-3 py-2 text-[12.5px] font-medium text-primary">{t("start.allDone")}</p>}
+          {done === total && <p className="mt-1 rounded-md bg-primary/10 px-3 py-2 text-[0.78125rem] font-medium text-primary">{t("start.allDone")}</p>}
         </Card>
       </Reveal>
 
@@ -131,11 +131,11 @@ export function StartTool() {
                 <AccordionTrigger className="py-3 hover:no-underline">
                   <span className="flex items-center gap-2.5 text-left">
                     <Emoji name={h.emoji} size={26} />
-                    <span className="text-[14.5px] font-semibold">{t(`start.h.${h.id}` as MessageKey)}</span>
+                    <span className="text-[0.90625rem] font-semibold">{t(`start.h.${h.id}` as MessageKey)}</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <p className="text-[13px] leading-[1.5] text-fg-2">{t(`start.b.${h.id}` as MessageKey)}</p>
+                  <p className="text-[0.8125rem] leading-[1.5] text-fg-2">{t(`start.b.${h.id}` as MessageKey)}</p>
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -144,7 +144,7 @@ export function StartTool() {
       </Reveal>
 
       {hidden && (
-        <button type="button" onClick={() => (setStartHidden(false), setHidden(false))} className="mx-auto h-10 px-2 text-[12.5px] font-semibold text-primary">
+        <button type="button" onClick={() => (setStartHidden(false), setHidden(false))} className="mx-auto h-11 px-2 text-[0.78125rem] font-semibold text-primary">
           {t("start.showCard")}
         </button>
       )}
@@ -171,7 +171,7 @@ function StartToday({ cycleId }: { cycleId: string }) {
     }
   }
   return (
-    <Button onClick={go} disabled={busy} className="mb-2.5 ml-9 h-10 rounded-full px-4 text-[13.5px] font-bold" id="start-today">
+    <Button onClick={go} disabled={busy} className="mb-2.5 ml-9 h-11 rounded-full px-4 text-[0.84375rem] font-bold" id="start-today">
       {t("start.startToday")}
     </Button>
   )
@@ -189,8 +189,8 @@ export function StartCard() {
       <div className="flex items-start gap-3">
         <Emoji name="sprout" size={36} />
         <div className="min-w-0 flex-1">
-          <b className="block text-[14.5px] font-semibold">{t("start.cardTitle", { done, total })}</b>
-          <span className="block text-[12.5px] leading-snug text-fg-2">{t("start.cardNext", { what: t(`start.i.${next.id}` as MessageKey) })}</span>
+          <b className="block text-[0.90625rem] font-semibold">{t("start.cardTitle", { done, total })}</b>
+          <span className="block text-[0.78125rem] leading-snug text-fg-2">{t("start.cardNext", { what: t(`start.i.${next.id}` as MessageKey) })}</span>
         </div>
         <button
           type="button"
@@ -199,7 +199,7 @@ export function StartCard() {
             setStartHidden(true)
             setHidden(true)
           }}
-          className="-mt-1 -mr-1.5 flex size-9 shrink-0 items-center justify-center rounded-full text-fg-3"
+          className="-mt-1 -mr-1.5 flex size-11 shrink-0 items-center justify-center rounded-full text-fg-3"
         >
           <X className="size-4" />
         </button>
@@ -207,7 +207,7 @@ export function StartCard() {
       <div className="h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
         <div className="h-full rounded-full bg-primary" style={{ width: `${(done / total) * 100}%` }} />
       </div>
-      <a href="#tools/start" className="self-start rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12.5px] font-semibold text-primary">
+      <a href="#tools/start" className="inline-flex min-h-11 items-center self-start rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-[0.78125rem] font-semibold text-primary">
         {t("start.open")}
       </a>
     </Card>

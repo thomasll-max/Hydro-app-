@@ -43,7 +43,7 @@ export const useShow = () => useSettings().show
 export function SaveBar({ busy, onSave, onDelete }: { busy: boolean; onSave: () => void; onDelete?: () => Promise<void> }) {
   const { t } = useSettings()
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       {onDelete && (
         <ConfirmDelete
           onConfirm={onDelete}
@@ -54,7 +54,7 @@ export function SaveBar({ busy, onSave, onDelete }: { busy: boolean; onSave: () 
           }
         />
       )}
-      <Button onClick={onSave} disabled={busy} className="h-12 flex-1 rounded-full text-[15px] font-bold">
+      <Button onClick={onSave} disabled={busy} className="h-12 min-w-[6rem] flex-1 rounded-full text-[0.9375rem] font-bold">
         {busy && <Loader2 className="animate-spin" />}
         {t("common.save")}
       </Button>
@@ -139,7 +139,7 @@ export function EventSheet({ open, onOpenChange, event }: { open: boolean; onOpe
               role="radio"
               aria-checked={e.type === ty}
               onClick={() => setE((x) => ({ ...x, type: ty }))}
-              className={`h-10 rounded-full border px-3.5 text-[13px] font-semibold ${e.type === ty ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2"}`}
+              className={`h-11 rounded-full border px-3.5 text-[0.8125rem] font-semibold ${e.type === ty ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2"}`}
             >
               {t(`event.${ty}`)}
             </button>

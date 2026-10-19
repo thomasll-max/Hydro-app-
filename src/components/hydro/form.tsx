@@ -85,7 +85,7 @@ export function Sheet({
         >
           <DrawerHeader className="flex-row items-start gap-2 pb-2 text-left! md:text-left">
             <div className="min-w-0 flex-1">
-              <DrawerTitle className="text-[20px] tracking-[-0.4px]">{title}</DrawerTitle>
+              <DrawerTitle className="text-[1.25rem] tracking-[-0.4px]">{title}</DrawerTitle>
               {description ? <DrawerDescription>{description}</DrawerDescription> : <DrawerDescription className="sr-only">{title}</DrawerDescription>}
             </div>
             <button
@@ -133,12 +133,13 @@ export function Group({ title, aside, children, className, id }: { title: string
   )
 }
 
+/** Columns fold when there is no room (zoom 200 %, large text): never a field cut in half (lot 10e). */
 export function Grid({ cols = 2, children }: { cols?: 2 | 3; children: ReactNode }) {
-  return <div className={cn("grid gap-2.5", cols === 3 ? "grid-cols-3" : "grid-cols-2")}>{children}</div>
+  return <div className={cn("grid gap-2.5", cols === 3 ? "fold-3" : "fold-2")}>{children}</div>
 }
 
 const inputCls =
-  "h-12 rounded-md border-line-strong bg-surface text-fg text-[17px] font-medium shadow-none tabular-nums placeholder:font-normal placeholder:text-fg-3/70 focus-visible:ring-2"
+  "h-12 rounded-md border-line-strong bg-surface text-fg text-[1.0625rem] font-medium shadow-none tabular-nums placeholder:font-normal placeholder:text-fg-3 focus-visible:ring-2"
 
 /** Numeric field: decimal keyboard, accepts "2,4" or "2.4". Value is kept as typed (string). */
 export function NumField({
@@ -165,7 +166,7 @@ export function NumField({
   const bad = isBadNum(value)
   return (
     <div className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <UiLabel htmlFor={id} className="truncate text-[12px] font-medium text-fg-2">
+      <UiLabel htmlFor={id} className="truncate text-[0.75rem] font-medium text-fg-2">
         {label}
       </UiLabel>
       <Input
@@ -182,11 +183,11 @@ export function NumField({
         className={cn(inputCls, bad && "border-bad ring-2 ring-bad/30")}
       />
       {bad ? (
-        <span id={`${id}-err`} className="truncate text-[10.5px] font-semibold text-bad">
+        <span id={`${id}-err`} className="truncate text-[0.75rem] font-semibold text-bad">
           {t("safe.badNumber")}
         </span>
       ) : (
-        hint && <span className="truncate text-[10.5px] text-fg-3">{hint}</span>
+        hint && <span className="truncate text-[0.75rem] text-fg-3">{hint}</span>
       )}
     </div>
   )
@@ -213,11 +214,11 @@ export function TextField({
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <UiLabel htmlFor={id} className="truncate text-[12px] font-medium text-fg-2">
+      <UiLabel htmlFor={id} className="truncate text-[0.75rem] font-medium text-fg-2">
         {label}
       </UiLabel>
-      <Input id={id} type={type} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} className={cn(inputCls, "text-[16px]")} />
-      {hint && <span className="truncate text-[10.5px] text-fg-3">{hint}</span>}
+      <Input id={id} type={type} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} className={cn(inputCls, "text-[1rem]")} />
+      {hint && <span className="truncate text-[0.75rem] text-fg-3">{hint}</span>}
     </div>
   )
 }
@@ -225,7 +226,7 @@ export function TextField({
 export function AreaField({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <UiLabel htmlFor={id} className="text-[12px] font-medium text-fg-2">
+      <UiLabel htmlFor={id} className="text-[0.75rem] font-medium text-fg-2">
         {label}
       </UiLabel>
       <textarea
@@ -234,7 +235,7 @@ export function AreaField({ id, label, value, onChange, placeholder }: { id: str
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-line-strong bg-surface text-fg px-3 py-2.5 text-[16px] outline-none placeholder:text-fg-3/70 focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="w-full rounded-md border border-line-strong bg-surface text-fg px-3 py-2.5 text-[1rem] outline-none placeholder:text-fg-3 focus-visible:ring-2 focus-visible:ring-ring/50"
       />
     </div>
   )
@@ -266,7 +267,7 @@ export function Seg<T extends string>({
         <ToggleGroupItem
           key={o.value}
           value={o.value}
-          className="min-h-10 min-w-0 flex-1 rounded-full! px-2 py-1 text-center text-[13px] leading-tight font-semibold whitespace-normal text-fg-3 hover:bg-transparent hover:text-fg data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
+          className="min-h-11 min-w-0 flex-1 rounded-full! px-2 py-1 text-center text-[0.8125rem] leading-tight font-semibold whitespace-normal text-fg-3 hover:bg-transparent hover:text-fg data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-[0_1px_3px_rgba(0,0,0,0.25)]"
         >
           {o.label}
         </ToggleGroupItem>
@@ -283,7 +284,7 @@ export function TagChip({ label, on, level, onClick }: { label: string; on: bool
       onClick={onClick}
       aria-pressed={on}
       className={cn(
-        "flex h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold transition-colors",
+        "flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] font-semibold transition-colors",
         on
           ? level && level >= 3
             ? "border-bad/40 bg-bad/12 text-bad"
@@ -309,10 +310,10 @@ export function TagChip({ label, on, level, onClick }: { label: string; on: bool
 export function Computed({ label, value, status }: { label: string; value: string; status?: "ok" | "warn" | "bad" }) {
   return (
     <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2.5 py-2">
-      <div className="truncate text-[10.5px] text-fg-3">{label}</div>
+      <div className="truncate text-[0.75rem] text-fg-3">{label}</div>
       <div
         className={cn(
-          "text-[16px] font-semibold tabular",
+          "text-[1rem] font-semibold tabular",
           status === "ok" && "text-primary",
           status === "warn" && "text-warn",
           status === "bad" && "text-bad",

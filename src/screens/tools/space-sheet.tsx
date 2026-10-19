@@ -155,7 +155,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title={space ? t("space.settingsOf", { name: space.name }) : t("space.new")} footer={<SaveBar busy={busy} onSave={save} />}>
       {!all && (
-        <button type="button" onClick={() => setAll(true)} className="mb-1 h-9 rounded-full border border-line bg-surface-2 px-3 text-[12.5px] font-semibold text-fg-2" id="sp-all">
+        <button type="button" onClick={() => setAll(true)} className="mb-1 h-11 rounded-full border border-line bg-surface-2 px-3 text-[0.78125rem] font-semibold text-fg-2" id="sp-all">
           {t("space.showAll")}
         </button>
       )}
@@ -172,13 +172,13 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
               type="button"
               aria-pressed={s.template === tp}
               onClick={() => setS((x) => ({ ...x, template: tp as TemplateId, modules: space ? x.modules : modulesFor(tp) }))}
-              className={cn("h-11 rounded-md border text-[13px] font-semibold", s.template === tp ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
+              className={cn("h-11 rounded-md border text-[0.8125rem] font-semibold", s.template === tp ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
             >
               {t(`template.${tp}`)}
             </button>
           ))}
         </div>
-        <p className="mt-1.5 text-[11.5px] text-fg-3">{t("space.templateHint")}</p>
+        <p className="mt-1.5 text-[0.75rem] text-fg-3">{t("space.templateHint")}</p>
       </Group>
       <Group title={t("space.color")}>
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("space.color")}>
@@ -190,7 +190,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
               aria-checked={s.color === c}
               aria-label={c}
               onClick={() => setS((x) => ({ ...x, color: c }))}
-              className={cn("size-10 rounded-full border-2 transition-transform", s.color === c ? "scale-105 border-fg" : "border-transparent")}
+              className={cn("size-11 rounded-full border-2 transition-transform", s.color === c ? "scale-105 border-fg" : "border-transparent")}
               style={{ background: spaceColor(c) }}
             />
           ))}
@@ -206,7 +206,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
           />
         </Group>
       )}
-      <Group title={t("space.dims")} aside={<span className="text-[11.5px] text-fg-3 tabular">{area.ok ? `${num(area.value, 2)} m²` : ""}{vol.ok ? ` · ${num(vol.value, 2)} m³` : ""}</span>}>
+      <Group title={t("space.dims")} aside={<span className="text-[0.75rem] text-fg-3 tabular">{area.ok ? `${num(area.value, 2)} m²` : ""}{vol.ok ? ` · ${num(vol.value, 2)} m³` : ""}</span>}>
         <Grid cols={3}>
           <NumField id="sp-l" integer label={t("space.l")} value={dims.l} onChange={(v) => setDims((x) => ({ ...x, l: v }))} />
           <NumField id="sp-w" integer label={t("space.w")} value={dims.w} onChange={(v) => setDims((x) => ({ ...x, w: v }))} />
@@ -219,7 +219,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
             <SwitchRow key={m} id={`sp-m-${m}`} label={t(`module.${m}`)} checked={!!s.modules[m]} onChange={(v) => setS((x) => ({ ...x, modules: { ...x.modules, [m]: v } }))} />
           ))}
         </div>
-        <p className="mt-1.5 text-[11.5px] text-fg-3">{t("space.modulesD")}</p>
+        <p className="mt-1.5 text-[0.75rem] text-fg-3">{t("space.modulesD")}</p>
       </Group>
         </>
       )}
@@ -236,7 +236,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
           />
           {!own && growNut && (
             <div className="mt-2.5">
-              <p className="mb-2 text-[11.5px] text-fg-3">{t("space.growNutHint")}</p>
+              <p className="mb-2 text-[0.75rem] text-fg-3">{t("space.growNutHint")}</p>
               <NutritionFields value={growNut} onChange={setGrowNut} idPrefix="spg" />
             </div>
           )}
@@ -251,7 +251,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
         <Group title={t("space.secIrrigation")} id="sp-sec-irrigation">
           <div className="flex flex-col gap-2.5">
             <div id="sp-dryback">
-              <div className="mb-1 text-[12px] font-medium text-fg-2">{t("space.drybackMethod")}</div>
+              <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("space.drybackMethod")}</div>
               <div className="grid grid-cols-2 gap-1.5">
                 {DRYBACK_METHODS.map((m) => (
                   <button
@@ -259,13 +259,13 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
                     type="button"
                     aria-pressed={drybackMethodOf(s) === m}
                     onClick={() => setS((x) => ({ ...x, irrigation: { ...x.irrigation, drybackMethod: m } }))}
-                    className={cn("min-h-11 rounded-md border px-2 text-[13px] leading-tight font-semibold", drybackMethodOf(s) === m ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
+                    className={cn("min-h-11 rounded-md border px-2 text-[0.8125rem] leading-tight font-semibold", drybackMethodOf(s) === m ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
                   >
                     {t(`space.dm.${m}`)}
                   </button>
                 ))}
               </div>
-              <p className="mt-1.5 text-[11.5px] leading-snug text-fg-3">{t(`space.dmD.${drybackMethodOf(s)}`)}</p>
+              <p className="mt-1.5 text-[0.75rem] leading-snug text-fg-3">{t(`space.dmD.${drybackMethodOf(s)}`)}</p>
               {drybackMethodOf(s) === "sensor" && (
                 <TextField
                   id="sp-sensor-name"
@@ -276,7 +276,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
                 />
               )}
             </div>
-            {!cycle && <p className="text-[11.5px] text-fg-3">{t("space.noCycleIrr")}</p>}
+            {!cycle && <p className="text-[0.75rem] text-fg-3">{t("space.noCycleIrr")}</p>}
             {cycle && (
               <>
                 <Seg<WaterMode> label={t("irr.mode")} value={w.mode} onChange={(v) => setW((x) => ({ ...x, mode: v }))} options={(["auto", "manual"] as const).map((v) => ({ value: v, label: t(`mode.${v}`) }))} />
@@ -304,8 +304,8 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
             {irr && (
               <div className="flex items-center justify-between gap-3 rounded-md border border-line bg-surface px-3 py-2">
                 <span className="min-w-0">
-                  <span className="block text-[13px] font-medium">{t("irr.flow")}</span>
-                  <span className="block text-[11px] text-fg-3">{t("space.flowFromEquip")}</span>
+                  <span className="block text-[0.8125rem] font-medium">{t("irr.flow")}</span>
+                  <span className="block text-[0.75rem] text-fg-3">{t("space.flowFromEquip")}</span>
                 </span>
                 <CalcValue c={irr.flow} fmt={(v) => `${num(v)} mL/min`} />
               </div>
@@ -321,7 +321,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
               <NumField key={l.id} id={`sp-dim-${l.id}`} integer label={t("lgt.dimmer", { name: l.name })} hint={l.lamp?.dimmable ? t("lgt.dimLevels", { n: l.lamp.dimmable }) : undefined} value={f[`dim_${l.id}`] ?? ""} onChange={sf(`dim_${l.id}`)} />
             ))}
           </Grid>
-          {!lamps.length && <p className="mt-1.5 text-[11.5px] text-fg-3">{t("lgt.noLamp")}</p>}
+          {!lamps.length && <p className="mt-1.5 text-[0.75rem] text-fg-3">{t("lgt.noLamp")}</p>}
         </Group>
       )}
       {space && s.modules.climate && ext && shows("air") && (
@@ -331,10 +331,10 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
       )}
       {space && all && (
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button variant="outline" onClick={duplicate} disabled={busy} className="h-11 rounded-full border-line-strong text-[13.5px] font-semibold">
+          <Button variant="outline" onClick={duplicate} disabled={busy} className="h-11 rounded-full border-line-strong text-[0.84375rem] font-semibold">
             <Copy className="size-4" /> {t("space.duplicate")}
           </Button>
-          <Button variant="outline" onClick={archive} disabled={busy} className="h-11 rounded-full border-line-strong text-[13.5px] font-semibold">
+          <Button variant="outline" onClick={archive} disabled={busy} className="h-11 rounded-full border-line-strong text-[0.84375rem] font-semibold">
             {s.archived ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />} {s.archived ? t("space.unarchive") : t("space.archive")}
           </Button>
         </div>

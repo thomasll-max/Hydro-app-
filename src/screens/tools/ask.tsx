@@ -24,8 +24,8 @@ export function AskTool() {
   const [blocked, setBlocked] = useState(false)
   const stop = useRef<AbortController | null>(null)
 
-  if (!sample) return <p className="text-[13px] leading-[1.45] text-fg-3">{t("ask.unavailable")}</p>
-  if (!space) return <p className="text-[13px] text-fg-3">{t("lgt.noSpace")}</p>
+  if (!sample) return <p className="text-[0.8125rem] leading-[1.45] text-fg-3">{t("ask.unavailable")}</p>
+  if (!space) return <p className="text-[0.8125rem] text-fg-3">{t("lgt.noSpace")}</p>
 
   const ask = async (question: string) => {
     const text = question.trim()
@@ -57,11 +57,11 @@ export function AskTool() {
       <Reveal i={0}>
         <Card className="gap-2.5">
           <Label emoji="book">{t("ask.title", { space: space.name })}</Label>
-          <p className="text-[12.5px] leading-[1.45] text-fg-2">{t("ask.desc")}</p>
+          <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("ask.desc")}</p>
           {turns.length === 0 && live == null && (
             <div className="flex flex-wrap gap-1.5">
               {ASK_SUGGESTIONS.map((k) => (
-                <button key={k} type="button" onClick={() => ask(t(k))} disabled={blocked} className="rounded-full border border-line bg-surface-2 px-3 py-2 text-left text-[12.5px] font-medium text-fg-2">
+                <button key={k} type="button" onClick={() => ask(t(k))} disabled={blocked} className="rounded-full border border-line bg-surface-2 px-3 py-2 text-left text-[0.78125rem] font-medium text-fg-2">
                   {t(k)}
                 </button>
               ))}
@@ -78,7 +78,7 @@ export function AskTool() {
             ))}
             {live != null && <Bubble me={false} text={live || t("ask.thinking")} pending />}
             {live != null && (
-              <Button variant="outline" className="h-9 self-start rounded-full" onClick={() => stop.current?.abort()}>
+              <Button variant="outline" className="h-11 self-start rounded-full" onClick={() => stop.current?.abort()}>
                 {t("ask.stop")}
               </Button>
             )}
@@ -89,14 +89,14 @@ export function AskTool() {
       <Reveal i={2}>
         <Card className="gap-2.5">
           <AreaField id="ask-q" label={turns.length ? t("ask.followUp") : t("ask.question")} value={q} onChange={setQ} placeholder={t("ask.placeholder")} />
-          {err && <p className="text-[12.5px] font-medium text-warn">{err}</p>}
+          {err && <p className="text-[0.78125rem] font-medium text-warn">{err}</p>}
           <div className="flex gap-2">
             {turns.length > 0 && (
               <Button variant="outline" className="h-12 rounded-full" onClick={() => setTurns([])} disabled={live != null}>
                 {t("ask.new")}
               </Button>
             )}
-            <Button className="h-12 flex-1 rounded-full text-[15px] font-bold" onClick={() => ask(q)} disabled={!q.trim() || live != null || blocked}>
+            <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" onClick={() => ask(q)} disabled={!q.trim() || live != null || blocked}>
               {t("ask.send")}
             </Button>
           </div>
@@ -109,7 +109,7 @@ export function AskTool() {
 
 function Bubble({ me, text, pending }: { me: boolean; text: string; pending?: boolean }) {
   return (
-    <div className={cn("max-w-[92%] rounded-[16px] px-3.5 py-2.5 text-[13.5px] leading-[1.5] whitespace-pre-wrap", me ? "self-end bg-primary/14 text-fg" : "self-start border border-line bg-surface-2 text-fg", pending && "opacity-90")}>
+    <div className={cn("max-w-[92%] rounded-[16px] px-3.5 py-2.5 text-[0.84375rem] leading-[1.5] whitespace-pre-wrap", me ? "self-end bg-primary/14 text-fg" : "self-start border border-line bg-surface-2 text-fg", pending && "opacity-90")}>
       {text}
     </div>
   )

@@ -57,7 +57,7 @@ export function SettingsTool() {
           <div className="flex items-center justify-between">
             <Label emoji="gear">{t("growSet.display")}</Label>
             {saveState !== "idle" && (
-              <span className={cn("flex items-center gap-1 text-[11.5px] font-semibold", saveState === "saved" ? "text-primary" : "text-fg-3")}>
+              <span className={cn("flex items-center gap-1 text-[0.75rem] font-semibold", saveState === "saved" ? "text-primary" : "text-fg-3")}>
                 {saveState === "saved" ? <Check className="size-3.5" /> : <CloudOff className="size-3.5" />}
                 {saveState === "saved" ? t("guide.saved") : t("guide.saveFailed")}
               </span>
@@ -97,7 +97,7 @@ export function SettingsTool() {
             <Label emoji="herb">{t("growSet.spaces")}</Label>
             <AddBtn onClick={() => setSpaceSheet({ open: true })}>{t("space.add")}</AddBtn>
           </div>
-          {g.spaces.length === 0 && <p className="text-[12.5px] text-fg-3">{t("space.empty")}</p>}
+          {g.spaces.length === 0 && <p className="text-[0.78125rem] text-fg-3">{t("space.empty")}</p>}
           {groupBySite(g.spaces, g.sites).map((grp) => (
             <div key={grp.site?.id ?? "none"}>
               {grp.site && <div className="eyebrow mt-2 mb-0.5">{grp.site.name}</div>}
@@ -110,8 +110,8 @@ export function SettingsTool() {
                       <button onClick={() => setSpaceSheet({ open: true, space: s })} className="flex min-h-14 w-full items-center gap-2.5 py-2 text-left">
                         <SpaceDot color={s.color} className="size-3" />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[14.5px] font-semibold">{s.name}</span>
-                          <span className="block truncate text-[11.5px] text-fg-3">
+                          <span className="block truncate text-[0.90625rem] font-semibold">{s.name}</span>
+                          <span className="block truncate text-[0.75rem] text-fg-3">
                             {t(`template.${s.template}`)}
                             {d?.l && d.w && d.h ? ` · ${d.l}×${d.w}×${d.h} cm` : ""} · {c ? t("space.cycleIn", { name: c.name }) : t("space.noCycle")}
                           </span>
@@ -125,7 +125,7 @@ export function SettingsTool() {
             </div>
           ))}
           {archived.length > 0 && (
-            <details className="mt-1 text-[13px]">
+            <details className="mt-1 text-[0.8125rem]">
               <summary className="cursor-pointer py-2 font-semibold text-fg-2">
                 {t("space.archived")} ({archived.length})
               </summary>
@@ -150,14 +150,14 @@ export function SettingsTool() {
             <AddBtn onClick={() => setSiteSheet({ open: true })}>{t("site.add")}</AddBtn>
           </div>
           {g.sites.length === 0 ? (
-            <p className="text-[12.5px] text-fg-3">{t("site.empty")}</p>
+            <p className="text-[0.78125rem] text-fg-3">{t("site.empty")}</p>
           ) : (
             <ul>
               {g.sites.map((s) => (
                 <li key={s.id} className="border-t border-line first:border-t-0">
                   <button onClick={() => setSiteSheet({ open: true, site: s })} className="flex min-h-12 w-full items-center justify-between gap-2 text-left">
-                    <span className="text-[14px] font-semibold">{s.name}</span>
-                    <span className="text-[11.5px] text-fg-3">{t("site.spaces", { n: String(g.spaces.filter((x) => x.siteId === s.id).length) })}</span>
+                    <span className="text-[0.875rem] font-semibold">{s.name}</span>
+                    <span className="text-[0.75rem] text-fg-3">{t("site.spaces", { n: String(g.spaces.filter((x) => x.siteId === s.id).length) })}</span>
                   </button>
                 </li>
               ))}
@@ -184,17 +184,17 @@ export function SettingsTool() {
                   >
                     <SpaceDot color={sp?.color} className="size-3" />
                     <span className="min-w-0">
-                      <span className="block truncate text-[14.5px] font-semibold">
+                      <span className="block truncate text-[0.90625rem] font-semibold">
                         {c.name}
                         {c.cultivars[0] ? <span className="font-normal text-fg-2"> · {c.cultivars[0]}</span> : null}
                       </span>
-                      <span className="block truncate text-[11.5px] text-fg-3">
+                      <span className="block truncate text-[0.75rem] text-fg-3">
                         {t("growSet.inSpace", { space: spaceName(c.spaceId) })} · {c.harvestDate ? t("growSet.harvested", { date: dm(c.harvestDate) }) : stageLine(t, st)}
                       </span>
                     </span>
                   </button>
                   {!c.harvestDate && g.spaces.length > 1 && (
-                    <button onClick={() => setTransfer({ open: true, cycle: c })} className="flex h-10 shrink-0 items-center gap-1 rounded-full border border-line px-3 text-[12.5px] font-semibold text-fg-2" aria-label={t("growSet.transfer")}>
+                    <button onClick={() => setTransfer({ open: true, cycle: c })} className="flex h-11 shrink-0 items-center gap-1 rounded-full border border-line px-3 text-[0.78125rem] font-semibold text-fg-2" aria-label={t("growSet.transfer")}>
                       <ArrowRightLeft className="size-3.5" /> {t("growSet.transfer")}
                     </button>
                   )}
@@ -211,7 +211,7 @@ export function SettingsTool() {
         </Reveal>
       )}
       <ResetCard i={9} />
-      <p className="mt-4 text-center text-[11px] text-fg-3 tabular-nums" id="app-version">
+      <p className="mt-4 text-center text-[0.75rem] text-fg-3 tabular-nums" id="app-version">
         {t("growSet.version", { v: formatVersion(CURRENT_BUILD, locale) })}
       </p>
       <SpaceSheet open={spaceSheet.open} onOpenChange={(o) => setSpaceSheet((s) => ({ ...s, open: o }))} space={spaceSheet.space} />
@@ -224,7 +224,7 @@ export function SettingsTool() {
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-[14px] font-medium">{label}</span>
+      <span className="text-[0.875rem] font-medium">{label}</span>
       {children}
     </div>
   )
@@ -232,7 +232,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 
 function AddBtn({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
-    <button onClick={onClick} className="flex h-9 items-center gap-1 rounded-full px-2 text-[13px] font-semibold text-primary">
+    <button onClick={onClick} className="flex h-11 items-center gap-1 rounded-full px-2 text-[0.8125rem] font-semibold text-primary">
       <Plus className="size-4" /> {children}
     </button>
   )
@@ -347,7 +347,7 @@ function TransferSheet({ open, onOpenChange, cycle }: { open: boolean; onOpenCha
           {labels.map((p) => {
             const on = plants.includes(p)
             return (
-              <button key={p} type="button" aria-pressed={on} onClick={() => setPlants((x) => (on ? x.filter((y) => y !== p) : [...x, p]))} className={cn("h-10 min-w-12 rounded-full border px-3 text-[13px] font-semibold", on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2")}>
+              <button key={p} type="button" aria-pressed={on} onClick={() => setPlants((x) => (on ? x.filter((y) => y !== p) : [...x, p]))} className={cn("h-11 min-w-12 rounded-full border px-3 text-[0.8125rem] font-semibold", on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2")}>
                 {p}
               </button>
             )

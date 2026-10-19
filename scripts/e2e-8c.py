@@ -54,12 +54,9 @@ with sync_playwright() as p:
     pg.get_by_role("button", name="Enregistrer").click(); pg.wait_for_timeout(1200)
     checks["afterCycle"] = items(pg)
 
-    # Pots line opens the space's watering settings; lamp line opens Equipment.
-    pg.click("#start-pots"); pg.wait_for_selector("#sp-potL", timeout=5000)
-    checks["potsOpensSheet"] = True
-    pg.fill("#sp-potL", "18"); pg.fill("#sp-potN", "2")
-    pg.get_by_role("button", name="Enregistrer").click(); pg.wait_for_timeout(1200)
-    checks["afterPots"] = items(pg)
+    # Lot 10b2: no pots asked for a space watered by hand (no pump), the lamp is done once its watts are known.
+    checks["noPotsWhenManual"] = "pots" not in checks["afterCycle"] and checks["afterCycle"].get("lamp") == "true"
+    # The lamp line still opens Equipment.
     pg.click("#start-lamp"); pg.wait_for_timeout(1200)
     checks["lampOpens"] = pg.evaluate("location.hash")
 
@@ -92,7 +89,7 @@ with sync_playwright() as p:
     shot(pg, "06-claude-today.png")
     pg.goto(preview.as_uri() + "#start"); pg.wait_for_selector("#start-list", timeout=8000)
     checks["claudeItems"] = items(pg)
-    pg.locator("#start-how").get_by_role("button", name="Le cycle avance tout seul").click()
+    pg.locator("#start-how").get_by_role("button", name="Les étapes du cycle").click()
     shot(pg, "07-claude-guide.png")
     ctx.close()
     b.close()

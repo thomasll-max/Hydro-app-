@@ -17,7 +17,7 @@ export function InstallTip() {
   return (
     <Card className="gap-2" id="install-tip">
       <Label emoji="pottedPlant">{t("install.title")}</Label>
-      <ul className="flex flex-col gap-1.5 text-[12.5px] leading-[1.45] text-fg-2">
+      <ul className="flex flex-col gap-1.5 text-[0.78125rem] leading-[1.45] text-fg-2">
         <li>
           <span className="font-semibold text-fg">iPhone</span> · {t("install.ios")}
         </li>
@@ -25,7 +25,7 @@ export function InstallTip() {
           <span className="font-semibold text-fg">Android</span> · {t("install.android")}
         </li>
       </ul>
-      <p className="text-[11.5px] leading-snug text-fg-3">{t("install.offline")}</p>
+      <p className="text-[0.75rem] leading-snug text-fg-3">{t("install.offline")}</p>
     </Card>
   )
 }

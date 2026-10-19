@@ -25,7 +25,7 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
     <>
       {!embedded && (
         <ScreenHero emoji="compass" title={t("guide.title")}>
-          <p className="mt-1 text-[13px] leading-snug text-fg-2">{t("guide.subtitle")}</p>
+          <p className="mt-1 text-[0.8125rem] leading-snug text-fg-2">{t("guide.subtitle")}</p>
         </ScreenHero>
       )}
 
@@ -76,7 +76,7 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
                 rows={STEERING.map((r) => [
                   <span key="s">
                     {t(`guide.${r.stage}`)}
-                    <span className="block text-[11px] text-fg-3">
+                    <span className="block text-[0.75rem] text-fg-3">
                       {r.flower ? t("guide.flowerWeeks", { range: range(...r.weeks) }) : t("guide.vegWeeks", { range: range(...r.weeks) })}
                     </span>
                   </span>,
@@ -104,7 +104,7 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
             </Section>
 
             <Section value="notes" emoji="bulb" title={t("guide.notes")}>
-              <ul className="flex flex-col gap-2 text-[13px] leading-[1.45] text-fg-2">
+              <ul className="flex flex-col gap-2 text-[0.8125rem] leading-[1.45] text-fg-2">
                 {(["note1", "note2", "note3", "note4"] as const).map((n) => (
                   <li key={n} className="flex gap-2">
                     <span className="mt-[7px] size-[5px] shrink-0 rounded-full bg-primary" aria-hidden="true" />
@@ -115,7 +115,7 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
             </Section>
 
             <Section value="sources" emoji="book" title={t("guide.sources")}>
-              <ul className="flex flex-col gap-1.5 text-[13px] text-fg-2">
+              <ul className="flex flex-col gap-1.5 text-[0.8125rem] text-fg-2">
                 {(["srcAthena", "srcRain", "srcBonorum", "srcMaker", "srcEstimate"] as const).map((s) => (
                   <li key={s}>{t(`guide.${s}`)}</li>
                 ))}
@@ -124,8 +124,8 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
           </Accordion>
         </Card>
       </Reveal>
-      <p className="mt-3 text-center text-[10.5px] text-fg-3">{t("guide.blendedSoon")}</p>
-      <p className="mt-1 text-center text-[10.5px] text-fg-3">{t("guide.version", { v: "0.3" })}</p>
+      <p className="mt-3 text-center text-[0.75rem] text-fg-3">{t("guide.blendedSoon")}</p>
+      <p className="mt-1 text-center text-[0.75rem] text-fg-3">{t("guide.version", { v: "0.3" })}</p>
     </>
   )
 }
@@ -137,8 +137,8 @@ function Section({ value, emoji, title, desc, children }: { value: string; emoji
         <span className="flex items-center gap-3">
           <Emoji name={emoji} size={30} />
           <span>
-            <span className="block text-[14.5px] font-semibold">{title}</span>
-            {desc && <span className="block text-[12px] font-normal text-fg-3">{desc}</span>}
+            <span className="block text-[0.90625rem] font-semibold">{title}</span>
+            {desc && <span className="block text-[0.75rem] font-normal text-fg-3">{desc}</span>}
           </span>
         </span>
       </AccordionTrigger>
@@ -150,11 +150,11 @@ function Section({ value, emoji, title, desc, children }: { value: string; emoji
 function Table({ head, rows, highlight }: { head: ReactNode[]; rows: ReactNode[][]; highlight?: (i: number) => boolean }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-[13px]">
+      <table className="w-full border-collapse text-[0.8125rem]">
         <thead>
           <tr>
             {head.map((h, i) => (
-              <th key={i} className={cn("pb-1.5 text-[11px] font-semibold tracking-[0.5px] text-fg-3 uppercase", i ? "text-right" : "text-left")}>
+              <th key={i} className={cn("pb-1.5 text-[0.75rem] font-semibold tracking-[0.5px] text-fg-3 uppercase", i ? "text-right" : "text-left")}>
                 {h}
               </th>
             ))}
@@ -177,5 +177,5 @@ function Table({ head, rows, highlight }: { head: ReactNode[]; rows: ReactNode[]
 }
 
 function Src({ children }: { children: ReactNode }) {
-  return <p className="mt-2 text-[10.5px] text-fg-3">{children}</p>
+  return <p className="mt-2 text-[0.75rem] text-fg-3">{children}</p>
 }

@@ -227,7 +227,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     <>
       {computed.length > 0 && (
         <div className="sticky top-0 z-10 -mx-4 mt-3 bg-background/95 px-4 py-2 backdrop-blur">
-          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${computed.length}, minmax(0, 1fr))` }} aria-live="polite">
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(max(4.5rem, calc((100% - ${computed.length - 1} * 0.375rem) / ${computed.length})), 1fr))` }} aria-live="polite">
             {computed}
           </div>
         </div>
@@ -267,11 +267,11 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
             title={t("entry.irrigation")}
             aside={
               method === "weight" && tg?.dryback ? (
-                <span className="text-[11px] text-fg-3">
+                <span className="text-[0.75rem] text-fg-3">
                   {t("today.dryback")} {range(tg.dryback.lo, tg.dryback.hi)} %
                 </span>
               ) : bySensor ? (
-                <span className="text-[11px] text-fg-3">{sensorLabel}</span>
+                <span className="text-[0.75rem] text-fg-3">{sensorLabel}</span>
               ) : undefined
             }
           >
@@ -284,12 +284,12 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
               {f.sensorPct ? nf("sensorPct", "entry.sensorPct") : null}
             </Grid>
             {bySensor && (
-              <p className="mt-1.5 text-[11.5px] leading-snug text-fg-3" id="e-sensor-scale">
+              <p className="mt-1.5 text-[0.75rem] leading-snug text-fg-3" id="e-sensor-scale">
                 {t("entry.sensorScale")}
               </p>
             )}
           </Group>
-          <Group title={t("entry.runoffSection")} aside={tg?.phRunoff && <span className="text-[11px] text-fg-3">pH {range(tg.phRunoff.lo, tg.phRunoff.hi, 1)}</span>}>
+          <Group title={t("entry.runoffSection")} aside={tg?.phRunoff && <span className="text-[0.75rem] text-fg-3">pH {range(tg.phRunoff.lo, tg.phRunoff.hi, 1)}</span>}>
             <Grid>
               {nf("ecRunoff", "entry.ecRunoff")}
               {nf("phRunoff", "entry.phRunoff")}
@@ -308,7 +308,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
 
       <Accordion type="single" collapsible className="mt-3 rounded-lg border border-line bg-surface px-3">
         <AccordionItem value="carried" className="border-0">
-          <AccordionTrigger className="py-3 text-[13px] font-semibold hover:no-underline">{t("entry.carried")}</AccordionTrigger>
+          <AccordionTrigger className="py-3 text-[0.8125rem] font-semibold hover:no-underline">{t("entry.carried")}</AccordionTrigger>
           <AccordionContent className="flex flex-col gap-3 pb-3">
             {(on("irrigation") || on("nutrition")) && (
               <Grid>
@@ -319,7 +319,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
               </Grid>
             )}
             {on("nutrition") && <div className="flex flex-col gap-1">
-              <span className="text-[12px] font-medium text-fg-2">{t("entry.mix")}</span>
+              <span className="text-[0.75rem] font-medium text-fg-2">{t("entry.mix")}</span>
               <Seg<string>
                 label={t("entry.mix")}
                 value={mixId || "none"}
@@ -341,7 +341,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
         </AccordionItem>
       </Accordion>
 
-      <Group title={t("entry.observations")} aside={<span className="text-[10.5px] text-fg-3">{t("entry.severityHint")}</span>}>
+      <Group title={t("entry.observations")} aside={<span className="text-[0.75rem] text-fg-3">{t("entry.severityHint")}</span>}>
         <div className="flex flex-wrap gap-2">
           {OBS_TAGS.map((tag) => {
             const cur = obs.find((o) => o.tag === tag)
@@ -380,7 +380,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="flex size-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line-strong text-[11.5px] font-semibold text-fg-2"
+            className="flex size-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line-strong text-[0.75rem] font-semibold text-fg-2"
           >
             {uploading ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
             {uploading ? t("entry.uploading") : t("entry.addPhoto")}
@@ -411,7 +411,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       // Values carried from the quick entry are not saved yet: closing asks first.
       dirty={Object.values(init.values ?? {}).some((x) => x?.trim()) || undefined}
       footer={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {existing && (
             <ConfirmDelete
               onConfirm={async () => {
@@ -431,12 +431,12 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
             variant="outline"
             onClick={() => save(true)}
             disabled={busy || !date || uploading > 0}
-            className="h-12 rounded-full border-line-strong px-4 text-[14px] font-semibold"
+            className="h-12 rounded-full border-line-strong px-4 text-[0.875rem] font-semibold short:w-12 short:px-0"
             aria-label={`${t("common.save")} + ${t("cal.addShort")}`}
           >
-            <AlarmClockPlus className="size-4.5" /> {t("cal.addShort")}
+            <AlarmClockPlus className="size-4.5" /> <span className="short:sr-only">{t("cal.addShort")}</span>
           </Button>
-          <Button onClick={() => save()} disabled={busy || !date || uploading > 0} className="h-12 flex-1 rounded-full text-[15px] font-bold">
+          <Button onClick={() => save()} disabled={busy || !date || uploading > 0} className="h-12 min-w-[6rem] flex-1 rounded-full text-[0.9375rem] font-bold">
             {busy && <Loader2 className="animate-spin" />}
             {t("common.save")}
           </Button>
@@ -461,7 +461,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
           <Seg<string> label={t("entry.space")} value={space.id} onChange={setSpaceId} options={spaces.map((x) => ({ value: x.id, label: x.name }))} />
         </div>
       )}
-      <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-fg-3">
+      <p className="mt-1.5 flex items-center gap-1.5 text-[0.75rem] text-fg-3">
         <SpaceDot color={space.color} /> {cycle ? t("entry.forCycle", { space: space.name, cycle: cycle.name }) : t("entry.noCycle", { space: space.name })}
       </p>
       {on("plants") && cycle && (
@@ -477,8 +477,8 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
 
       {greyed.length > 0 && (
         <div className="mt-2.5 flex items-center gap-2 rounded-md border border-line bg-surface px-3 py-2">
-          <p className="min-w-0 flex-1 text-[11.5px] leading-snug text-fg-3">{t("entry.resumeHint")}</p>
-          <Button type="button" variant="outline" onClick={resume} className="h-10 shrink-0 rounded-full border-primary/40 px-3.5 text-[13px] font-semibold text-primary">
+          <p className="min-w-0 flex-1 text-[0.75rem] leading-snug text-fg-3">{t("entry.resumeHint")}</p>
+          <Button type="button" variant="outline" onClick={resume} className="h-11 shrink-0 rounded-full border-primary/40 px-3.5 text-[0.8125rem] font-semibold text-primary">
             {t("entry.resume")}
           </Button>
         </div>
@@ -489,6 +489,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
 }
 
 export function PhotoThumb({ id, url, onRemove, size = 80 }: { id: string; url: (id: string) => Promise<string>; onRemove?: () => void; size?: number }) {
+  const { t } = useSettings()
   const [src, setSrc] = useState("")
   useEffect(() => {
     let live = true
@@ -501,8 +502,10 @@ export function PhotoThumb({ id, url, onRemove, size = 80 }: { id: string; url: 
     <div className="relative shrink-0 overflow-hidden rounded-md border border-line bg-surface-2" style={{ width: size, height: size }}>
       {src && <img src={src} alt="" className="size-full object-cover" loading="lazy" />}
       {onRemove && (
-        <button type="button" onClick={onRemove} aria-label="×" className="absolute top-1 right-1 flex size-6 items-center justify-center rounded-full bg-black/60 text-white">
-          <X className="size-3.5" />
+        <button type="button" onClick={onRemove} aria-label={t("entry.removePhoto")} className="absolute top-0 right-0 flex size-11 items-start justify-end p-1">
+          <span className="flex size-6 items-center justify-center rounded-full bg-black/60 text-white">
+            <X className="size-3.5" />
+          </span>
         </button>
       )}
     </div>

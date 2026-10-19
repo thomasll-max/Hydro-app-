@@ -675,6 +675,7 @@ export const fr = {
     severityHint: "Touche pour régler la gravité : 1, 2, 3, puis retirer",
     actions: "Actions",
     photos: "Photos",
+    removePhoto: "Retirer la photo",
     addPhoto: "Ajouter",
     uploading: "Envoi…",
     note: "Note",

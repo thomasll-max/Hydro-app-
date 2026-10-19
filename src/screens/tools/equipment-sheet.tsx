@@ -229,7 +229,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
               aria-pressed={e.type === ty}
               onClick={() => setType(ty)}
               className={cn(
-                "flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-md border px-1 py-1.5 text-center text-[10.5px] leading-tight font-semibold",
+                "flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-md border px-1 py-1.5 text-center text-[0.75rem] leading-tight font-semibold",
                 e.type === ty ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2",
               )}
             >
@@ -244,7 +244,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
         <Group title={t("equip.fromLibrary")}>
           <div className="flex flex-wrap gap-1.5">
             {library.map((m) => (
-              <button key={m.id} type="button" onClick={() => fromModel(m)} className="flex h-10 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3.5 text-[13px] font-semibold text-fg-2">
+              <button key={m.id} type="button" onClick={() => fromModel(m)} className="flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3.5 text-[0.8125rem] font-semibold text-fg-2">
                 <Emoji name="bulb" size={18} /> {m.name}
               </button>
             ))}
@@ -326,7 +326,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
 
       {!e.library && (
         <Group title={t("equip.where")}>
-          <p className="mb-2 text-[12px] text-fg-3">{t("equip.whereD")}</p>
+          <p className="mb-2 text-[0.75rem] text-fg-3">{t("equip.whereD")}</p>
           <div className="flex flex-wrap gap-1.5">
             {spaces.map((s) => {
               const on = where.has(s.id)
@@ -336,13 +336,13 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
                   type="button"
                   aria-pressed={on}
                   onClick={() => setWhere((w) => (w.has(s.id) ? new Set([...w].filter((x) => x !== s.id)) : new Set([...w, s.id])))}
-                  className={cn("flex h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold", on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2")}
+                  className={cn("flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] font-semibold", on ? "border-primary/45 bg-primary/12 text-fg" : "border-line bg-surface-2 text-fg-2")}
                 >
                   <SpaceDot color={s.color} /> {s.name}
                 </button>
               )
             })}
-            <span className={cn("flex h-10 items-center rounded-full border border-dashed px-3.5 text-[13px] font-semibold", where.size ? "border-line text-fg-3" : "border-primary/45 text-fg")}>{t("equip.stock")}</span>
+            <span className={cn("flex h-10 items-center rounded-full border border-dashed px-3.5 text-[0.8125rem] font-semibold", where.size ? "border-line text-fg-3" : "border-primary/45 text-fg")}>{t("equip.stock")}</span>
           </div>
           {editing && (
             <div className="mt-2.5">
@@ -364,7 +364,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
 
       {history.length > 0 && (
         <Group title={t("equip.history")}>
-          <ul className="rounded-md border border-line bg-surface px-3 text-[13px]">
+          <ul className="rounded-md border border-line bg-surface px-3 text-[0.8125rem]">
             {history.map((a) => (
               <li key={a.id} className="flex items-center justify-between gap-2 border-t border-line py-2 first:border-t-0">
                 <span className="flex items-center gap-1.5 font-medium">
@@ -374,12 +374,12 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
               </li>
             ))}
           </ul>
-          <p className="mt-1.5 text-[11px] text-fg-3">{t("equip.deleteHint")}</p>
+          <p className="mt-1.5 text-[0.75rem] text-fg-3">{t("equip.deleteHint")}</p>
         </Group>
       )}
 
       {editing && (
-        <Button variant="outline" onClick={duplicate} disabled={busy} className="mt-4 h-11 w-full rounded-full border-line-strong text-[14px] font-semibold">
+        <Button variant="outline" onClick={duplicate} disabled={busy} className="mt-4 h-11 w-full rounded-full border-line-strong text-[0.875rem] font-semibold">
           <Copy className="size-4" /> {t("equip.duplicate")}
         </Button>
       )}

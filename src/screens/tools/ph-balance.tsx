@@ -82,11 +82,11 @@ export function PhBalanceTool() {
             <Label emoji="scales">{t("phb.target")}</Label>
             <Chip tone="primary">{srcText}</Chip>
           </div>
-          <div className="text-[34px] leading-none font-semibold tabular" id="phb-target">
+          <div className="text-[2.125rem] leading-none font-semibold tabular" id="phb-target">
             {range(target.lo, target.hi, 1)}
           </div>
-          <p className="text-[12px] leading-[1.45] text-fg-2">{tg ? t("phb.targetFrom", { stage: t(`stage.${tg.stage}`) }) : t("phb.targetNoCycle")}</p>
-          {!nutrition.addons.includes("balance") && <p className="text-[12px] text-warn">{t("phb.balanceOff")}</p>}
+          <p className="text-[0.75rem] leading-[1.45] text-fg-2">{tg ? t("phb.targetFrom", { stage: t(`stage.${tg.stage}`) }) : t("phb.targetNoCycle")}</p>
+          {!nutrition.addons.includes("balance") && <p className="text-[0.75rem] text-warn">{t("phb.balanceOff")}</p>}
         </Card>
       </Reveal>
 
@@ -98,30 +98,30 @@ export function PhBalanceTool() {
             <NumField id="b-before" label={t("phb.before")} value={phBefore} onChange={setPhBefore} />
           </Grid>
           {before != null && before >= target.lo ? (
-            <p className="rounded-md border border-line bg-surface-2 px-3 py-2.5 text-[12.5px] font-medium text-fg-2" id="phb-noneed">
+            <p className="rounded-md border border-line bg-surface-2 px-3 py-2.5 text-[0.78125rem] font-medium text-fg-2" id="phb-noneed">
               {t(before > target.hi ? "phb.noNeedHigh" : "phb.noNeed")}
             </p>
           ) : pred ? (
             <div className="rounded-md border border-primary/30 bg-primary/8 px-3 py-2.5" id="phb-pred">
-              <div className="text-[12px] text-fg-2">
+              <div className="text-[0.75rem] text-fg-2">
                 {t(pred.basis === "perPh" ? "phb.predPerPh" : "phb.predPer10", { n: pred.tanks, rate: num(pred.rate, pred.basis === "perPh" ? 1 : 2) })}
               </div>
-              <div className="mt-0.5 text-[15px] font-semibold">{t("phb.predLine", { pred: n1(pred.predictedMl), start: n1(pred.startMl), pct: Math.round(START_FRACTION * 100) })}</div>
+              <div className="mt-0.5 text-[0.9375rem] font-semibold">{t("phb.predLine", { pred: n1(pred.predictedMl), start: n1(pred.startMl), pct: Math.round(START_FRACTION * 100) })}</div>
             </div>
           ) : (
-            <p className="text-[12px] leading-[1.45] text-fg-3">{t("phb.noPred", { n: history.length })}</p>
+            <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("phb.noPred", { n: history.length })}</p>
           )}
 
           <div className="rounded-[var(--r-xl)] border border-line bg-surface-2 px-4 py-5 text-center">
-            <div className="text-[12px] font-medium text-fg-3">{t("phb.total")}</div>
-            <div className="mt-1 text-[76px] leading-none font-semibold tracking-[-2px] tabular" id="phb-total" aria-live="polite">
+            <div className="text-[0.75rem] font-medium text-fg-3">{t("phb.total")}</div>
+            <div className="mt-1 text-[4.75rem] leading-none font-semibold tracking-[-2px] tabular" id="phb-total" aria-live="polite">
               {/* Exact value at once: a titration counter must never show an in-between number. */}
               <span key={totalMl} className="inline-block animate-in fade-in zoom-in-95 duration-200">
                 {n1(totalMl)}
               </span>
-              <span className="ml-1 text-[28px] font-medium text-fg-2">mL</span>
+              <span className="ml-1 text-[1.75rem] font-medium text-fg-2">mL</span>
             </div>
-            <div className="mt-1.5 text-[12px] text-fg-3">
+            <div className="mt-1.5 text-[0.75rem] text-fg-3">
               {t("phb.detail", { start: n1(startMl), steps, step: n1(stepMl) })}
             </div>
             <div className="mt-4 grid grid-cols-[48px_1fr_48px] gap-2">
@@ -129,11 +129,11 @@ export function PhBalanceTool() {
                 <Minus className="size-5" />
               </Button>
               {pred && pred.startMl > 0 && !startMl && !steps ? (
-                <Button className="h-12 rounded-full text-[15px] font-bold" onClick={() => setStartMl(pred.startMl)} disabled={volumeL <= 0}>
+                <Button className="h-12 rounded-full text-[0.9375rem] font-bold" onClick={() => setStartMl(pred.startMl)} disabled={volumeL <= 0}>
                   {t("phb.pourStart", { v: n1(pred.startMl) })}
                 </Button>
               ) : (
-                <Button className="h-12 rounded-full text-[15px] font-bold" onClick={() => setSteps((s) => s + 1)} disabled={volumeL <= 0 || status === "ok" || status === "over"} id="phb-step">
+                <Button className="h-12 rounded-full text-[0.9375rem] font-bold" onClick={() => setSteps((s) => s + 1)} disabled={volumeL <= 0 || status === "ok" || status === "over"} id="phb-step">
                   <Plus className="size-5" /> {t("phb.step", { v: num(stepMl, stepMl % 1 ? 1 : 0) })}
                 </Button>
               )}
@@ -152,7 +152,7 @@ export function PhBalanceTool() {
           {readings.length > 0 && (
             <ol className="flex flex-col" id="phb-readings">
               {readings.map((r, i) => (
-                <li key={i} className="flex items-center justify-between border-t border-line py-2 text-[13.5px] tabular-nums first:border-t-0">
+                <li key={i} className="flex items-center justify-between border-t border-line py-2 text-[0.84375rem] tabular-nums first:border-t-0">
                   <span className="text-fg-2">{t("phb.after", { ml: num(r.ml, r.ml % 1 ? 1 : 0) })}</span>
                   <b className={cn("font-semibold", phStatus(r.ph, target) === "ok" ? "text-primary" : phStatus(r.ph, target) === "over" ? "text-bad" : "")}>pH {num(r.ph, 2)}</b>
                 </li>
@@ -163,7 +163,7 @@ export function PhBalanceTool() {
             <p
               id="phb-status"
               className={cn(
-                "rounded-md px-3 py-2 text-[12.5px] leading-[1.45] font-medium",
+                "rounded-md px-3 py-2 text-[0.78125rem] leading-[1.45] font-medium",
                 status === "ok" && "bg-primary/10 text-primary",
                 status === "low" && "bg-info/10 text-info",
                 status === "over" && "bg-bad/10 text-bad",
@@ -172,7 +172,7 @@ export function PhBalanceTool() {
               {status === "ok" ? t("phb.ok") : status === "low" ? t("phb.low", { step: num(stepMl, stepMl % 1 ? 1 : 0) }) : t("phb.over")}
             </p>
           )}
-          <Button onClick={save} disabled={!last || totalMl <= 0} className="h-12 rounded-full text-[15px] font-bold">
+          <Button onClick={save} disabled={!last || totalMl <= 0} className="h-12 rounded-full text-[0.9375rem] font-bold">
             {last ? t("phb.save", { litres: num(last.volumeL), date: last.date.slice(8, 10) + "/" + last.date.slice(5, 7) }) : t("phb.noTank")}
           </Button>
         </Card>
@@ -181,7 +181,7 @@ export function PhBalanceTool() {
       <Reveal i={2}>
         <Card className="gap-1.5">
           <Label emoji="book">{t("phb.how")}</Label>
-          <ul className="flex list-disc flex-col gap-1 pl-5 text-[12.5px] leading-[1.45] text-fg-2">
+          <ul className="flex list-disc flex-col gap-1 pl-5 text-[0.78125rem] leading-[1.45] text-fg-2">
             <li>{t("phb.how1")}</li>
             <li>{t("phb.how2")}</li>
             <li>{t("phb.how3")}</li>

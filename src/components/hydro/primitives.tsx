@@ -18,10 +18,11 @@ export function ScreenHero({
 }) {
   return (
     <BlurFade className="mt-1.5 mb-4 flex items-center gap-3.5">
-      <Emoji name={emoji} size={64} className="float-y drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)]" />
+      {/* Very narrow screen (zoom 200 %): the title keeps the room, the illustration goes (lot 10e). */}
+      <Emoji name={emoji} size={64} className="float-y drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)] max-[20rem]:hidden" />
       <div className="min-w-0">
         {eyebrow && <div className="eyebrow">{eyebrow}</div>}
-        <h1 className="mt-0.5 text-[26px] leading-[1.1] font-semibold tracking-[-0.6px]">{title}</h1>
+        <h1 className="mt-0.5 text-[1.625rem] leading-[1.1] font-semibold tracking-[-0.6px] [overflow-wrap:anywhere]">{title}</h1>
         {children}
       </div>
     </BlurFade>
@@ -36,7 +37,7 @@ export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "prima
   return (
     <span
       className={cn(
-        "rounded-full border px-2.5 py-1 text-[11.5px] font-semibold whitespace-nowrap",
+        "rounded-full border px-2.5 py-1 text-[0.75rem] font-semibold whitespace-nowrap",
         tone === "neutral" && "border-line bg-surface-2 text-fg-2",
         tone === "primary" && "border-primary/35 bg-primary/10 text-primary",
         tone === "warn" && "border-warn/35 bg-warn/10 text-warn",
@@ -80,7 +81,7 @@ export function Reveal({ i = 0, className, children }: { i?: number; className?:
 }
 
 export function SourceNote({ children }: { children: ReactNode }) {
-  return <p className="mt-3 text-center text-[10.5px] leading-[1.5] text-fg-3">{children}</p>
+  return <p className="mt-3 text-center text-[0.75rem] leading-[1.5] text-fg-3">{children}</p>
 }
 
 /** Polished empty state for a tab or tool that arrives in a later batch ("Arrive au lot X"). Never a broken page. */
@@ -92,9 +93,9 @@ export function ComingSoon({ emoji, title, lot, body, foot }: { emoji: EmojiName
       <div className="relative mt-3 inline-flex">
         <Chip tone="primary">{lot}</Chip>
       </div>
-      <h2 className="relative mt-2.5 text-[19px] leading-tight font-semibold tracking-[-0.3px]">{title}</h2>
-      <p className="relative mx-auto mt-1.5 max-w-[34ch] text-[13px] leading-[1.5] text-fg-2">{body}</p>
-      {foot && <p className="relative mx-auto mt-3 max-w-[36ch] text-[11.5px] leading-[1.45] text-fg-3">{foot}</p>}
+      <h2 className="relative mt-2.5 text-[1.1875rem] leading-tight font-semibold tracking-[-0.3px]">{title}</h2>
+      <p className="relative mx-auto mt-1.5 max-w-[34ch] text-[0.8125rem] leading-[1.5] text-fg-2">{body}</p>
+      {foot && <p className="relative mx-auto mt-3 max-w-[36ch] text-[0.75rem] leading-[1.45] text-fg-3">{foot}</p>}
     </div>
   )
 }

@@ -77,18 +77,18 @@ export function EquipmentTool() {
               { value: "type", label: t("equip.byType") },
             ]}
           />
-          <Button onClick={() => open({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 rounded-full px-4 text-[14px] font-bold">
+          <Button onClick={() => open({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 rounded-full px-4 text-[0.875rem] font-bold">
             <Plus className="size-4" /> {t("equip.add")}
           </Button>
         </div>
-        {view === "space" && inventory.length > 0 && <p className="mt-2 px-1 text-[11.5px] text-fg-3">{t("equip.dragHint")}</p>}
+        {view === "space" && inventory.length > 0 && <p className="mt-2 px-1 text-[0.75rem] text-fg-3">{t("equip.dragHint")}</p>}
       </Reveal>
 
       {!inventory.length && (
         <Reveal i={1} className="mb-3">
           <Card className="items-center px-4 py-6 text-center">
             <Emoji name="toolbox" size={56} />
-            <p className="max-w-[32ch] text-[13px] text-fg-2">{t(spaces.length ? "equip.emptyAll" : "equip.noSpaces")}</p>
+            <p className="max-w-[32ch] text-[0.8125rem] text-fg-2">{t(spaces.length ? "equip.emptyAll" : "equip.noSpaces")}</p>
           </Card>
         </Reveal>
       )}
@@ -104,7 +104,7 @@ export function EquipmentTool() {
             <Card data-drop="stock" className={cn("gap-2 transition-colors", over === "stock" && "border-primary/50 bg-primary/5")}>
               <div className="flex items-center justify-between">
                 <Label emoji="toolbox">{t("equip.stock")}</Label>
-                <span className="text-[11.5px] text-fg-3">{t("equip.stockD")}</span>
+                <span className="text-[0.75rem] text-fg-3">{t("equip.stockD")}</span>
               </div>
               {inStock.length ? (
                 <ul>
@@ -113,7 +113,7 @@ export function EquipmentTool() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-[12.5px] text-fg-3">{over === "stock" ? t("equip.drop") : "—"}</p>
+                <p className="text-[0.78125rem] text-fg-3">{over === "stock" ? t("equip.drop") : "—"}</p>
               )}
             </Card>
           </Reveal>
@@ -132,13 +132,13 @@ export function EquipmentTool() {
                       <li key={e.id} className="border-t border-line first:border-t-0">
                         <button onClick={() => open({ item: e })} className="flex min-h-12 w-full items-center justify-between gap-2 py-2 text-left">
                           <span className="min-w-0">
-                            <span className="block truncate text-[14px] font-semibold">{e.name}</span>
-                            <span className="block truncate text-[11.5px] text-fg-3">{specLine(e, t, num)}</span>
+                            <span className="block truncate text-[0.875rem] font-semibold">{e.name}</span>
+                            <span className="block truncate text-[0.75rem] text-fg-3">{specLine(e, t, num)}</span>
                           </span>
                           <span className="flex shrink-0 flex-wrap justify-end gap-1">
                             {where.length ? (
                               where.map((s) => (
-                                <span key={s.id} className="flex items-center gap-1 rounded-full border border-line bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-fg-2">
+                                <span key={s.id} className="flex items-center gap-1 rounded-full border border-line bg-surface-2 px-2 py-0.5 text-[0.75rem] font-semibold text-fg-2">
                                   <SpaceDot color={s.color} /> {s.name}
                                 </span>
                               ))
@@ -160,11 +160,11 @@ export function EquipmentTool() {
         <Card className="gap-2">
           <div className="flex items-center justify-between gap-2">
             <Label emoji="bulb">{t("equip.library")}</Label>
-            <button onClick={() => open({ type: "lamp", library: true })} className="flex h-9 items-center gap-1 rounded-full px-2 text-[13px] font-semibold text-primary">
+            <button onClick={() => open({ type: "lamp", library: true })} className="flex h-11 items-center gap-1 rounded-full px-2 text-[0.8125rem] font-semibold text-primary">
               <Plus className="size-4" /> {t("common.add")}
             </button>
           </div>
-          <p className="text-[12px] text-fg-3">{library.length ? t("equip.libraryD") : t("equip.libraryEmpty")}</p>
+          <p className="text-[0.75rem] text-fg-3">{library.length ? t("equip.libraryD") : t("equip.libraryEmpty")}</p>
           {library.length > 0 && (
             <ul>
               {library.map((e) => (
@@ -172,8 +172,8 @@ export function EquipmentTool() {
                   <button onClick={() => open({ item: e })} className="flex min-h-11 w-full items-center gap-2.5 py-1.5 text-left">
                     <Emoji name="bulb" size={26} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[14px] font-semibold">{e.name}</span>
-                      <span className="block truncate text-[11.5px] text-fg-3">{specLine(e, t, num)}</span>
+                      <span className="block truncate text-[0.875rem] font-semibold">{e.name}</span>
+                      <span className="block truncate text-[0.75rem] text-fg-3">{specLine(e, t, num)}</span>
                     </span>
                     <Chip>{t("equip.libraryTag")}</Chip>
                   </button>
@@ -202,10 +202,10 @@ function SpaceCard({ space, over, ...drag }: { space: Space; over: boolean } & D
     <Card data-drop={space.id} className={cn("gap-2 transition-colors", over && "border-primary/50 bg-primary/5")}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-[16px] font-semibold">
+          <div className="flex items-center gap-2 text-[1rem] font-semibold">
             <SpaceDot color={space.color} className="size-2.5" /> {space.name}
           </div>
-          <div className="mt-0.5 text-[11.5px] text-fg-3 tabular">
+          <div className="mt-0.5 text-[0.75rem] text-fg-3 tabular">
             {d?.l && d?.w && d?.h ? `${d.l} × ${d.w} × ${d.h} cm` : t("equip.missing")}
             {sum.area.ok && ` · ${num(sum.area.value, 2)} m²`}
             {sum.volume.ok && ` · ${num(sum.volume.value, 2)} m³`}
@@ -254,9 +254,9 @@ function SpaceCard({ space, over, ...drag }: { space: Space; over: boolean } & D
           ))}
         </ul>
       ) : (
-        <p className="py-1 text-[12.5px] text-fg-3">{over ? t("equip.drop") : t("equip.emptySpace")}</p>
+        <p className="py-1 text-[0.78125rem] text-fg-3">{over ? t("equip.drop") : t("equip.emptySpace")}</p>
       )}
-      <button onClick={() => drag.onOpen({ spaceId: space.id })} className="-mb-1 flex h-10 items-center gap-1 self-start rounded-full text-[13px] font-semibold text-primary">
+      <button onClick={() => drag.onOpen({ spaceId: space.id })} className="-mb-1 flex h-11 items-center gap-1 self-start rounded-full text-[0.8125rem] font-semibold text-primary">
         <Plus className="size-4" /> {t("equip.add")}
       </button>
     </Card>
@@ -304,7 +304,7 @@ function DragRow({ item, controls, onOpen, sub }: { item: Equipment; controls: D
     <div className="flex min-h-12 items-center gap-1">
       <span
         data-grip
-        className="flex size-10 shrink-0 cursor-grab touch-none items-center justify-center text-fg-3 active:cursor-grabbing"
+        className="flex size-11 shrink-0 cursor-grab touch-none items-center justify-center text-fg-3 active:cursor-grabbing"
         onPointerDown={(e) => controls.start(e)}
       >
         <GripVertical className="size-4.5" />
@@ -312,11 +312,11 @@ function DragRow({ item, controls, onOpen, sub }: { item: Equipment; controls: D
       <button onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-2.5 py-1.5 text-left">
         <Emoji name={TYPE_EMOJI[item.type]} size={28} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[14px] font-semibold">
+          <span className="block truncate text-[0.875rem] font-semibold">
             {item.name}
             {item.quantity && item.quantity > 1 ? <span className="ml-1 text-fg-3">× {item.quantity}</span> : null}
           </span>
-          <span className="block truncate text-[11.5px] text-fg-3">{sub}</span>
+          <span className="block truncate text-[0.75rem] text-fg-3">{sub}</span>
         </span>
       </button>
     </div>

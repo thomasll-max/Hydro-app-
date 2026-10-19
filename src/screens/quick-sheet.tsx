@@ -96,7 +96,7 @@ export function QuickSheet({
       title={t("quick.title")}
       description={t("quick.desc")}
       footer={
-        <Button onClick={save} disabled={busy} className="h-12 w-full rounded-full text-[15px] font-bold">
+        <Button onClick={save} disabled={busy} className="h-12 w-full rounded-full text-[0.9375rem] font-bold">
           {busy && <Loader2 className="animate-spin" />}
           {t("common.save")}
         </Button>
@@ -110,10 +110,10 @@ export function QuickSheet({
           return (
             <section key={s.id} className="rounded-lg border border-line bg-surface px-3 pt-2.5 pb-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2 text-[14.5px] font-semibold">
+                <span className="flex items-center gap-2 text-[0.90625rem] font-semibold">
                   <SpaceDot color={s.color} className="size-2.5" /> {s.name}
                 </span>
-                <button type="button" onClick={() => onFull(s.id, date, v[s.id] ?? {})} className="flex h-8 items-center gap-0.5 text-[12.5px] font-semibold text-primary">
+                <button type="button" onClick={() => onFull(s.id, date, v[s.id] ?? {})} className="flex h-11 items-center gap-0.5 text-[0.78125rem] font-semibold text-primary">
                   {t("quick.full")} <ChevronRight className="size-4" />
                 </button>
               </div>

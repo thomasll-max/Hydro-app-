@@ -111,11 +111,11 @@ export function IrrigationTool() {
       <Reveal i={0}>
         <Card className="gap-2.5" id="irr-equipment">
           <Label emoji="droplet">{t("irr.method")}</Label>
-          <p className="text-[12.5px] leading-[1.45] text-fg-2">
+          <p className="text-[0.78125rem] leading-[1.45] text-fg-2">
             {prec ? t("irr.methodPrec") : mode === "manual" && substrate === "coco" ? t("irr.methodManualCoco") : t("irr.methodManual")}
           </p>
           {space && <SettingsLink summary={summary} label={t("tools.settingsBtn")} onOpen={() => ed.openSpace(space.id, "irrigation")} />}
-          {!cycle && <p className="text-[12px] text-fg-3">{t("irr.noCycle")}</p>}
+          {!cycle && <p className="text-[0.75rem] text-fg-3">{t("irr.noCycle")}</p>}
         </Card>
       </Reveal>
 
@@ -132,13 +132,13 @@ export function IrrigationTool() {
                 role="radio"
                 aria-checked={stage === s.v}
                 onClick={() => setStage(s.v)}
-                className={cn("h-10 rounded-full border px-3.5 text-[13px] font-semibold", stage === s.v ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2")}
+                className={cn("h-11 rounded-full border px-3.5 text-[0.8125rem] font-semibold", stage === s.v ? "border-primary/40 bg-primary/12 text-primary" : "border-line bg-surface-2 text-fg-2")}
               >
                 {t(s.k)}
               </button>
             ))}
           </div>
-          <p className="text-[11.5px] text-fg-3">{t("irr.stageView")}</p>
+          <p className="text-[0.75rem] text-fg-3">{t("irr.stageView")}</p>
         </Card>
       </Reveal>
 
@@ -161,7 +161,7 @@ export function IrrigationTool() {
               <Tile k={t("irr.ecRunoffT")} v={tg.ecRunoff ? range(tg.ecRunoff.lo, tg.ecRunoff.hi, 1) : "—"} />
               <Tile k={t("irr.phT")} v={tg.phIn ? range(tg.phIn.lo, tg.phIn.hi, 1) : "—"} />
             </div>
-            {mode === "manual" && tg.ecRunoff?.page && <p className="mt-2 text-[11px] text-fg-3">{t("irr.manualSrc", { line: cat.name, p: tg.ecRunoff.page })}</p>}
+            {mode === "manual" && tg.ecRunoff?.page && <p className="mt-2 text-[0.75rem] text-fg-3">{t("irr.manualSrc", { line: cat.name, p: tg.ecRunoff.page })}</p>}
           </Card>
         </Reveal>
       )}
@@ -169,13 +169,13 @@ export function IrrigationTool() {
       <Reveal i={4}>
         <Card>
           <Label emoji="droplet">{t("irr.program")}</Label>
-          {mode === "auto" && !input.flowMlPerMin && <p className="mt-2 rounded-md bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn">{t("irr.noFlow")}</p>}
+          {mode === "auto" && !input.flowMlPerMin && <p className="mt-2 rounded-md bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn">{t("irr.noFlow")}</p>}
           <ol className="mt-2 flex flex-col">
             {rows.map((r, i) => (
               <ProgramLine key={i} r={r} showMl={potOk} />
             ))}
           </ol>
-          {potOk && <p className="mt-2 text-[12px] text-fg-2">
+          {potOk && <p className="mt-2 text-[0.75rem] text-fg-2">
             {t("irr.totals", {
               fixed: ml(totals.fixed),
               opt: totals.optional ? t("irr.totalsOpt", { v: ml(totals.optional) }) : "",
@@ -183,7 +183,7 @@ export function IrrigationTool() {
               all: ml(totals.fixed * potCount),
             })}
           </p>}
-          <p className="mt-2 text-[11.5px] leading-[1.45] text-fg-3">{prec ? t("irr.progNotePrec") : t("irr.progNoteManual")}</p>
+          <p className="mt-2 text-[0.75rem] leading-[1.45] text-fg-3">{prec ? t("irr.progNotePrec") : t("irr.progNoteManual")}</p>
         </Card>
       </Reveal>
 
@@ -197,7 +197,7 @@ export function IrrigationTool() {
         <Reveal i={5}>
           <Card className="gap-3">
             <Label emoji="scales">{t("irr.sensor")}</Label>
-            <p className="text-[12.5px] leading-[1.45] text-fg-2">{t("irr.sensorD")}</p>
+            <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("irr.sensorD")}</p>
             <Seg<SensorPhase>
               label={t("irr.sensor")}
               value={sPhase}
@@ -222,7 +222,7 @@ export function IrrigationTool() {
               <Tile k={t("irr.sShots")} v={SENSOR[sPhase].shots} />
               <Tile k={t("irr.sRunoff")} v={`${SENSOR[sPhase].runoff} %`} />
             </div>
-            {sensor.tooShort && <p className="rounded-md bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn">{t("irr.tooShort")}</p>}
+            {sensor.tooShort && <p className="rounded-md bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn">{t("irr.tooShort")}</p>}
             <ol className="flex flex-col">
               {sensor.rows.map((r, i) => (
                 <ProgramLine key={i} r={r} trigger={sensor.trigger} showMl={potOk} />
@@ -231,7 +231,7 @@ export function IrrigationTool() {
             <Button variant="outline" onClick={saveSensor} disabled={!cycle} className="h-11 rounded-full">
               {t("irr.sensorSave")}
             </Button>
-            <ul className="flex flex-col gap-1.5 text-[11.5px] leading-[1.45] text-fg-3">
+            <ul className="flex flex-col gap-1.5 text-[0.75rem] leading-[1.45] text-fg-3">
               {(["sNote1", "sNote2", "sNote3", "sNote4"] as const).map((k) => (
                 <li key={k}>{t(`irr.${k}`)}</li>
               ))}
@@ -255,7 +255,7 @@ function ManualTable({ rows, current, line }: { rows: ManualPhase[]; current: Ma
   return (
     <Card className="gap-2" id="irr-manual">
       <Label emoji="droplet">{t("irr.manualTable", { line })}</Label>
-      <div className="grid grid-cols-[1.2fr_0.8fr_1fr_1fr] gap-x-2 px-1 text-[10.5px] font-semibold text-fg-3 uppercase">
+      <div className="grid grid-cols-[1.2fr_0.8fr_1fr_1fr] gap-x-2 px-1 text-[0.75rem] font-semibold text-fg-3 uppercase">
         <span>{t("irr.mStage")}</span>
         <span>{t("irr.mEc")}</span>
         <span>{t("irr.ecRunoffT")}</span>
@@ -266,7 +266,7 @@ function ManualTable({ rows, current, line }: { rows: ManualPhase[]; current: Ma
           <li
             key={i}
             data-current={m === current || undefined}
-            className={cn("grid grid-cols-[1.2fr_0.8fr_1fr_1fr] items-center gap-x-2 rounded-md px-1 py-2 text-[13px] tabular-nums", m === current ? "bg-primary/12 font-semibold text-fg" : "text-fg-2")}
+            className={cn("grid grid-cols-[1.2fr_0.8fr_1fr_1fr] items-center gap-x-2 rounded-md px-1 py-2 text-[0.8125rem] tabular-nums", m === current ? "bg-primary/12 font-semibold text-fg" : "text-fg-2")}
           >
             <span>{label(m)}</span>
             <span>{r1(m.ecIn)}</span>
@@ -275,7 +275,7 @@ function ManualTable({ rows, current, line }: { rows: ManualPhase[]; current: Ma
           </li>
         ))}
       </ol>
-      <p className="text-[11px] leading-[1.45] text-fg-3">{t("irr.manualNote", { p: page ?? "" })}</p>
+      <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("irr.manualNote", { p: page ?? "" })}</p>
     </Card>
   )
 }
@@ -283,8 +283,8 @@ function ManualTable({ rows, current, line }: { rows: ManualPhase[]; current: Ma
 function Tile({ k, v, warn }: { k: string; v: string; warn?: boolean }) {
   return (
     <div className="min-w-0 rounded-md border border-line bg-surface-2 px-2.5 py-2">
-      <div className="truncate text-[11px] text-fg-3">{k}</div>
-      <div className={cn("text-[14px] leading-snug font-semibold tabular-nums", warn && "text-warn")}>{v}</div>
+      <div className="truncate text-[0.75rem] text-fg-3">{k}</div>
+      <div className={cn("text-[0.875rem] leading-snug font-semibold tabular-nums", warn && "text-warn")}>{v}</div>
     </div>
   )
 }
@@ -312,16 +312,16 @@ function ProgramLine({ r, trigger, showMl = true }: { r: ProgramRow; trigger?: n
   const { t, num } = useSettings()
   const note = r.noteKey ? t(`irr.${r.noteKey}` as MessageKey, { trigger: trigger != null ? num(Math.round(trigger)) : "?" }) : null
   return (
-    <li className={cn("grid grid-cols-[48px_40px_1fr_auto] items-start gap-2 border-t border-line px-1 py-2.5 text-[13.5px] first:border-t-0", r.optional && "opacity-75")}>
+    <li className={cn("grid grid-cols-[48px_40px_1fr_auto] items-start gap-2 border-t border-line px-1 py-2.5 text-[0.84375rem] first:border-t-0", r.optional && "opacity-75")}>
       <span className="text-fg-2 tabular">{r.time}</span>
       <PhaseTag phase={r.phase} />
       <span className="min-w-0">
         {rowText(t, r)}
-        {note && <span className="block text-[11.5px] leading-snug text-fg-3">{note}</span>}
+        {note && <span className="block text-[0.75rem] leading-snug text-fg-3">{note}</span>}
       </span>
-      <span className="text-right text-[12.5px] text-fg-2 tabular-nums">
+      <span className="text-right text-[0.78125rem] text-fg-2 tabular-nums">
         {r.ml && showMl ? `${num(r.ml)} mL` : ""}
-        {r.seconds != null && showMl && <span className="block text-[11px] text-fg-3">{num(r.seconds)} s</span>}
+        {r.seconds != null && showMl && <span className="block text-[0.75rem] text-fg-3">{num(r.seconds)} s</span>}
       </span>
     </li>
   )
@@ -332,7 +332,7 @@ export function PhaseTag({ phase }: { phase: ProgramRow["phase"] }) {
   return (
     <span
       className={cn(
-        "rounded-[6px] py-[3px] text-center text-[10.5px] font-bold",
+        "rounded-[6px] py-[3px] text-center text-[0.75rem] font-bold",
         (phase === "P0" || phase === "OFF") && "bg-surface-2 text-fg-2",
         (phase === "P1" || phase === "MAN" || phase === "INST") && "bg-info/14 text-info",
         phase === "P2" && "bg-primary/14 text-primary",

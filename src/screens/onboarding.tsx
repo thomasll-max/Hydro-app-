@@ -140,17 +140,17 @@ export function Onboarding() {
                 <span className="eyebrow" id="onb-count">
                   {t("onb.stepOf", { n: step, total: STEPS.length })}
                 </span>
-                <button type="button" onClick={skip} disabled={busy} className="h-9 px-1 text-[12.5px] font-semibold text-fg-3">
+                <button type="button" onClick={skip} disabled={busy} className="h-11 px-1 text-[0.78125rem] font-semibold text-fg-3">
                   {t("onb.skip")}
                 </button>
               </div>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
                 <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${(step / STEPS.length) * 100}%` }} />
               </div>
-              <h1 className="mt-3 text-[24px] leading-[1.15] font-semibold tracking-[-0.5px]" id="onb-title">
+              <h1 className="mt-3 text-[1.5rem] leading-[1.15] font-semibold tracking-[-0.5px]" id="onb-title">
                 {t(`onb.s.${key}` as MessageKey)}
               </h1>
-              <p className="mt-1 text-[13px] leading-[1.45] text-fg-2">{t(`onb.d.${key}` as MessageKey)}</p>
+              <p className="mt-1 text-[0.8125rem] leading-[1.45] text-fg-2">{t(`onb.d.${key}` as MessageKey)}</p>
             </header>
 
             {key === "name" && (
@@ -168,7 +168,7 @@ export function Onboarding() {
                   type="button"
                   id="onb-add-space"
                   onClick={() => setDraft((d) => ({ ...d, spaces: [...d.spaces, draftSpace(newId("k"), t("onb.spaceN", { n: d.spaces.length + 1 }), "veg")] }))}
-                  className="flex h-12 items-center justify-center gap-1.5 rounded-full border border-dashed border-line-strong text-[14px] font-semibold text-primary"
+                  className="flex h-12 items-center justify-center gap-1.5 rounded-full border border-dashed border-line-strong text-[0.875rem] font-semibold text-primary"
                 >
                   <Plus className="size-4" /> {t("space.add")}
                 </button>
@@ -195,7 +195,7 @@ export function Onboarding() {
                     </div>
                   </Card>
                 ))}
-                <p className="text-[11.5px] text-fg-3">{t("space.modulesD")}</p>
+                <p className="text-[0.75rem] text-fg-3">{t("space.modulesD")}</p>
               </div>
             )}
 
@@ -211,7 +211,7 @@ export function Onboarding() {
               <div className="flex flex-col gap-3">
                 <Card className="gap-2.5">
                   <TextField id="onb-digest" type="time" label={t("growSet.digest")} value={draft.digestTime} onChange={(v) => patch({ digestTime: v })} />
-                  <p className="text-[11.5px] leading-snug text-fg-3">{t("onb.digestLocal")}</p>
+                  <p className="text-[0.75rem] leading-snug text-fg-3">{t("onb.digestLocal")}</p>
                 </Card>
                 <Recap draft={draft} />
                 <InstallTip />
@@ -225,7 +225,7 @@ export function Onboarding() {
         <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-[480px] flex-col gap-2 pt-3 pr-[max(16px,env(safe-area-inset-right,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pl-[max(16px,env(safe-area-inset-left,0px))]">
             {issues.length > 0 && (
-              <p className="text-[12px] font-medium text-warn" id="onb-issue">
+              <p className="text-[0.75rem] font-medium text-warn" id="onb-issue">
                 {t(`onb.issue.${issues[0]}` as MessageKey)}
               </p>
             )}
@@ -234,11 +234,11 @@ export function Onboarding() {
                 <ChevronLeft className="size-4.5" />
               </Button>
               {step < STEPS.length ? (
-                <Button className="h-12 flex-1 rounded-full text-[15px] font-bold" id="onb-next" disabled={issues.length > 0} onClick={() => setStep((n) => n + 1)}>
+                <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" id="onb-next" disabled={issues.length > 0} onClick={() => setStep((n) => n + 1)}>
                   {key === "equipment" || key === "cycle" ? (stepEmpty(draft, key) ? t("onb.later") : t("onb.next")) : t("onb.next")}
                 </Button>
               ) : (
-                <Button className="h-12 flex-1 rounded-full text-[15px] font-bold" id="onb-finish" disabled={issues.length > 0 || busy} onClick={finish}>
+                <Button className="h-12 flex-1 rounded-full text-[0.9375rem] font-bold" id="onb-finish" disabled={issues.length > 0 || busy} onClick={finish}>
                   {busy ? t("onb.writing") : t("onb.finish")}
                 </Button>
               )}
@@ -263,10 +263,10 @@ function Welcome({ onStart, onSkip, busy }: { onStart: () => void; onSkip: () =>
       <Reveal i={0}>
         <div className="mt-6 mb-2 flex flex-col items-center text-center">
           <Emoji name="pottedPlant" size={88} className="float-y drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)]" />
-          <h1 className="mt-3 text-[28px] leading-[1.1] font-semibold tracking-[-0.6px]" id="onb-welcome">
+          <h1 className="mt-3 text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.6px]" id="onb-welcome">
             {t("onb.welcome")}
           </h1>
-          <p className="mt-2 max-w-[320px] text-[14px] leading-[1.45] text-fg-2">{t("onb.welcomeD", { n: STEPS.length })}</p>
+          <p className="mt-2 max-w-[320px] text-[0.875rem] leading-[1.45] text-fg-2">{t("onb.welcomeD", { n: STEPS.length })}</p>
         </div>
       </Reveal>
       <Reveal i={1}>
@@ -275,7 +275,7 @@ function Welcome({ onStart, onSkip, busy }: { onStart: () => void; onSkip: () =>
         </div>
       </Reveal>
       <Reveal i={2}>
-        <Button className="mt-2 h-13 w-full rounded-full text-[16px] font-bold" id="onb-start" onClick={onStart}>
+        <Button className="mt-2 h-13 w-full rounded-full text-[1rem] font-bold" id="onb-start" onClick={onStart}>
           {t("onb.start")}
         </Button>
       </Reveal>
@@ -283,7 +283,7 @@ function Welcome({ onStart, onSkip, busy }: { onStart: () => void; onSkip: () =>
         <ImportCard />
       </Reveal>
       <Reveal i={4}>
-        <button type="button" onClick={onSkip} disabled={busy} className="mx-auto block h-10 px-2 text-[12.5px] font-semibold text-fg-3" id="onb-skip">
+        <button type="button" onClick={onSkip} disabled={busy} className="mx-auto block h-11 px-2 text-[0.78125rem] font-semibold text-fg-3" id="onb-skip">
           {t("onb.skipAll")}
         </button>
       </Reveal>
@@ -319,10 +319,10 @@ function ImportCard() {
   return (
     <Card className="mt-2 gap-2.5" id="onb-import">
       <Label emoji="notebook">{t("onb.importTitle")}</Label>
-      <p className="text-[12.5px] leading-[1.45] text-fg-2">{t("onb.importD")}</p>
+      <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("onb.importD")}</p>
       {pending ? (
         <>
-          <p className="rounded-md bg-primary/10 px-3 py-2 text-[12.5px] font-medium text-primary" id="onb-import-summary">
+          <p className="rounded-md bg-primary/10 px-3 py-2 text-[0.78125rem] font-medium text-primary" id="onb-import-summary">
             {t("onb.importSummary", { name: pending.name, n: pending.total, date: pending.backup.exportedAt ? dm(pending.backup.exportedAt.slice(0, 10)) : "?" })}
           </p>
           <div className="flex gap-2">
@@ -347,10 +347,10 @@ function ImportCard() {
         <>
           <AreaField id="onb-paste" label={t("data.pasteLabel")} value={paste} onChange={setPaste} placeholder='{"format":"hydro-backup",…}' />
           <div className="flex gap-2">
-            <Button variant="outline" className="h-10 flex-1 rounded-full" onClick={() => setPaste(null)}>
+            <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={() => setPaste(null)}>
               {t("common.cancel")}
             </Button>
-            <Button className="h-10 flex-1 rounded-full font-bold" onClick={() => read(paste, t("data.pasted"))} disabled={!paste.trim()} id="onb-paste-read">
+            <Button className="h-11 flex-1 rounded-full font-bold" onClick={() => read(paste, t("data.pasted"))} disabled={!paste.trim()} id="onb-paste-read">
               {t("data.pasteRead")}
             </Button>
           </div>
@@ -384,8 +384,8 @@ function SpaceTitle({ s, i, aside }: { s: DraftSpace; i: number; aside?: ReactNo
     <div className="flex items-center justify-between gap-2">
       <span className="flex min-w-0 items-center gap-2">
         <span className="size-3 shrink-0 rounded-full" style={{ background: spaceColor(SPACE_COLORS[i % SPACE_COLORS.length]) }} />
-        <span className="truncate text-[15px] font-semibold">{s.name.trim() || t("onb.unnamed")}</span>
-        {t(`template.${s.template}`) !== s.name.trim() && <span className="shrink-0 text-[11.5px] text-fg-3">{t(`template.${s.template}`)}</span>}
+        <span className="truncate text-[0.9375rem] font-semibold">{s.name.trim() || t("onb.unnamed")}</span>
+        {t(`template.${s.template}`) !== s.name.trim() && <span className="shrink-0 text-[0.75rem] text-fg-3">{t(`template.${s.template}`)}</span>}
       </span>
       {aside}
     </div>
@@ -417,7 +417,7 @@ function SpaceCard({ s, i, canRemove, onChange, onDuplicate, onRemove }: { s: Dr
     <Card className="gap-3" id={`onb-space-${i}`}>
       <TextField id={`onb-sp-name-${i}`} label={t("space.name")} value={s.name} onChange={(v) => onChange({ name: v })} />
       <div>
-        <div className="mb-1 text-[12px] font-medium text-fg-2">{t("space.template")}</div>
+        <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("space.template")}</div>
         <div className="grid grid-cols-3 gap-1.5">
           {TEMPLATES.map((tp) => (
             <button
@@ -425,7 +425,7 @@ function SpaceCard({ s, i, canRemove, onChange, onDuplicate, onRemove }: { s: Dr
               type="button"
               aria-pressed={s.template === tp}
               onClick={() => onChange(setTemplate(s, tp as TemplateId))}
-              className={cn("h-11 rounded-md border text-[13px] font-semibold", s.template === tp ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
+              className={cn("h-11 rounded-md border text-[0.8125rem] font-semibold", s.template === tp ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2")}
             >
               {t(`template.${tp}`)}
             </button>
@@ -433,7 +433,7 @@ function SpaceCard({ s, i, canRemove, onChange, onDuplicate, onRemove }: { s: Dr
         </div>
       </div>
       <div>
-        <div className="mb-1 text-[12px] font-medium text-fg-2">{t("space.dims")}</div>
+        <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("space.dims")}</div>
         <Grid cols={3}>
           <Num id={`onb-l-${i}`} integer label={t("space.l")} value={s.dims.l} onValue={(v) => onChange({ dims: { ...s.dims, l: v } })} />
           <Num id={`onb-w-${i}`} integer label={t("space.w")} value={s.dims.w} onValue={(v) => onChange({ dims: { ...s.dims, w: v } })} />
@@ -502,7 +502,7 @@ function CycleStep({ draft, onChange }: { draft: Draft; onChange: (c: Draft["cyc
           <TextField id="onb-c-name" label={t("cycleForm.name")} value={c.name} onChange={(v) => set({ name: v })} />
           {draft.spaces.length > 1 && (
             <div>
-              <div className="mb-1 text-[12px] font-medium text-fg-2">{t("cycleForm.space")}</div>
+              <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("cycleForm.space")}</div>
               <Seg<string>
                 label={t("cycleForm.space")}
                 value={c.spaceKey}
@@ -517,11 +517,11 @@ function CycleStep({ draft, onChange }: { draft: Draft; onChange: (c: Draft["cyc
           <TextField id="onb-c-cult" label={t("cycleForm.cultivars")} hint={t("cycleForm.cultivarsHint")} value={c.cultivars} onChange={(v) => set({ cultivars: v })} />
           <TextField id="onb-c-germ" type="date" label={t("cycleForm.germination")} value={c.germinationDate ?? ""} onChange={(v) => set({ germinationDate: v || undefined })} />
           <div>
-            <div className="mb-1 text-[12px] font-medium text-fg-2">{t("cycleForm.substrate")}</div>
+            <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("cycleForm.substrate")}</div>
             <Seg<Substrate> label={t("cycleForm.substrate")} value={c.substrate} onChange={(v) => set({ substrate: v })} options={(["coco", "soil", "mix7030"] as const).map((v) => ({ value: v, label: t(`substrate.${v}`) }))} />
           </div>
           <div>
-            <div className="mb-1 text-[12px] font-medium text-fg-2">{t("cycleForm.waterMode")}</div>
+            <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("cycleForm.waterMode")}</div>
             <Seg<WaterMode> label={t("cycleForm.waterMode")} value={c.waterMode} onChange={(v) => set({ waterMode: v })} options={(["auto", "manual"] as const).map((v) => ({ value: v, label: t(`mode.${v}`) }))} />
           </div>
           <Grid>
@@ -529,7 +529,7 @@ function CycleStep({ draft, onChange }: { draft: Draft; onChange: (c: Draft["cyc
             <Num key={`pn-${c.spaceKey}`} id="onb-c-potn" integer label={t("cycleForm.potCount")} value={c.potN} onValue={(v) => set({ potN: v })} />
           </Grid>
           <TextField id="onb-c-on" type="time" label={t("cycleForm.lightsOn")} value={c.lightsOn} onChange={(v) => set({ lightsOn: v })} />
-          <p className="text-[11.5px] leading-snug text-fg-3">{t("onb.cycleNote")}</p>
+          <p className="text-[0.75rem] leading-snug text-fg-3">{t("onb.cycleNote")}</p>
         </Card>
       )}
     </div>
@@ -550,7 +550,7 @@ function Recap({ draft }: { draft: Draft }) {
       <Label emoji="notebook">{t("onb.recap")}</Label>
       <dl className="mt-1">
         {rows.map(([k, v]) => (
-          <div key={k} className="flex justify-between gap-3 border-t border-line py-2 text-[13px] first:border-t-0">
+          <div key={k} className="flex justify-between gap-3 border-t border-line py-2 text-[0.8125rem] first:border-t-0">
             <dt className="shrink-0 text-fg-3">{k}</dt>
             <dd className="min-w-0 text-right font-medium">{v}</dd>
           </div>
@@ -562,7 +562,7 @@ function Recap({ draft }: { draft: Draft }) {
 
 function SmallBtn({ onClick, id, children }: { onClick: () => void; id?: string; children: ReactNode }) {
   return (
-    <button type="button" id={id} onClick={onClick} className="flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 text-[12.5px] font-semibold text-fg-2">
+    <button type="button" id={id} onClick={onClick} className="flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 text-[0.78125rem] font-semibold text-fg-2">
       {children}
     </button>
   )

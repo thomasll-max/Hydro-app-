@@ -20,11 +20,11 @@ export function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabI
   return (
     <nav
       aria-label={t("nav.label")}
-      className="fixed inset-x-0 bottom-0 z-30 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pr-[max(12px,env(safe-area-inset-right,0px))] pl-[max(12px,env(safe-area-inset-left,0px))] pointer-events-none"
+      className="fixed inset-x-0 bottom-0 z-30 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pr-[max(8px,env(safe-area-inset-right,0px))] pl-[max(8px,env(safe-area-inset-left,0px))] pointer-events-none"
     >
       <div
         role="tablist"
-        className="glass pointer-events-auto mx-auto grid h-[68px] max-w-[456px] grid-cols-5 rounded-[24px] border border-line-strong p-1.5 shadow-card"
+        className="glass pointer-events-auto mx-auto grid h-[68px] max-w-[456px] grid-cols-5 rounded-[24px] border border-line-strong p-1 shadow-card short:h-[52px]"
       >
         {TABS.map(({ id, label, Icon }) => {
           const on = id === active
@@ -35,7 +35,7 @@ export function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabI
               aria-selected={on}
               onClick={() => onChange(id)}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-1 rounded-[18px] text-[10.5px] font-semibold transition-colors duration-200",
+                "relative flex flex-col items-center justify-center gap-1 rounded-[18px] text-[0.75rem] font-semibold transition-colors duration-200",
                 on ? "text-primary" : "text-fg-3 hover:text-fg-2",
               )}
             >
@@ -47,7 +47,7 @@ export function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabI
                 />
               )}
               <Icon className="size-[21px]" strokeWidth={2} />
-              <span className="max-w-full truncate px-0.5">{t(label)}</span>
+              <span className="max-w-full truncate tracking-[-0.02em] short:sr-only">{t(label)}</span>
             </button>
           )
         })}

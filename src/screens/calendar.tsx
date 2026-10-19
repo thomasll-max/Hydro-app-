@@ -91,7 +91,7 @@ export function CalendarScreen() {
       <ScreenHero emoji="calendar" eyebrow={eyebrow} title={t("nav.calendar")} />
       <Reveal i={0} className="mb-2.5 flex items-center gap-2">
         <Seg<View> className="flex-1" label={t("cal.view")} value={view} onChange={setView} options={[{ value: "month", label: t("cal.month") }, { value: "agenda", label: t("cal.agenda") }]} />
-        <Button onClick={() => ed.openReminder({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 shrink-0 rounded-full px-4 text-[14px] font-bold" aria-label={t("cal.add")}>
+        <Button onClick={() => ed.openReminder({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 shrink-0 rounded-full px-4 text-[0.875rem] font-bold" aria-label={t("cal.add")}>
           <Plus className="size-4.5" strokeWidth={2.6} /> {t("cal.addShort")}
         </Button>
       </Reveal>
@@ -137,22 +137,22 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
       <Reveal i={2}>
         <Card className="gap-2 px-3 pt-3 pb-3.5">
           <div className="flex items-center justify-between gap-1">
-            <button type="button" onClick={() => setFirst(shiftMonth(first, -1))} className="flex size-10 items-center justify-center rounded-full text-fg-2 hover:bg-surface-2" aria-label={t("cal.prev")}>
+            <button type="button" onClick={() => setFirst(shiftMonth(first, -1))} className="flex size-11 items-center justify-center rounded-full text-fg-2 hover:bg-surface-2" aria-label={t("cal.prev")}>
               <ChevronLeft className="size-5" />
             </button>
             <div className="flex flex-col items-center">
-              <b className="text-[16px] font-semibold capitalize">{title}</b>
+              <b className="text-[1rem] font-semibold capitalize">{title}</b>
               {first !== monthStart(today) && (
-                <button type="button" onClick={() => setFirst(monthStart(today))} className="text-[11.5px] font-semibold text-primary">
+                <button type="button" onClick={() => setFirst(monthStart(today))} className="text-[0.75rem] font-semibold text-primary">
                   {t("cal.backToday")}
                 </button>
               )}
             </div>
-            <button type="button" onClick={() => setFirst(shiftMonth(first, 1))} className="flex size-10 items-center justify-center rounded-full text-fg-2 hover:bg-surface-2" aria-label={t("cal.next")}>
+            <button type="button" onClick={() => setFirst(shiftMonth(first, 1))} className="flex size-11 items-center justify-center rounded-full text-fg-2 hover:bg-surface-2" aria-label={t("cal.next")}>
               <ChevronRight className="size-5" />
             </button>
           </div>
-          <div className="grid grid-cols-7 text-center text-[10.5px] font-semibold tracking-[0.6px] text-fg-3 uppercase" aria-hidden="true">
+          <div className="grid grid-cols-7 text-center text-[0.75rem] font-semibold tracking-[0.6px] text-fg-3 uppercase" aria-hidden="true">
             {[0, 1, 2, 3, 4, 5, 6].map((i) => (
               <span key={i}>{wd.format(new Date(Date.UTC(2026, 9, 19 + i)))}</span>
             ))}
@@ -173,8 +173,8 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
                   onClick={() => onDay(d)}
                   aria-label={new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${d}T12:00:00Z`))}
                   className={cn(
-                    "relative flex aspect-square min-h-11 flex-col items-center justify-center rounded-md text-[14px] font-semibold tabular transition-colors",
-                    inMonth(d) ? "text-fg" : "text-fg-3/50",
+                    "relative flex aspect-square min-h-11 flex-col items-center justify-center rounded-md text-[0.875rem] font-semibold tabular transition-colors",
+                    inMonth(d) ? "text-fg" : "text-fg-3",
                     isToday ? "bg-primary/14 text-primary outline outline-1 outline-primary/40" : "hover:bg-surface-2",
                   )}
                 >
@@ -188,7 +188,7 @@ function MonthView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => v
               )
             })}
           </motion.div>
-          <div className="mt-0.5 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10.5px] text-fg-3">
+          <div className="mt-0.5 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[0.75rem] text-fg-3">
             <Legend cls="bg-primary" label={t("cal.fJournal")} />
             <Legend cls="bg-warn" label={t("cal.fDeadlines")} />
             <Legend cls="bg-info" label={t("cal.fReminders")} />
@@ -218,8 +218,8 @@ function Legend({ cls, label }: { cls: string; label: string }) {
 function Stat({ k, v }: { k: string; v: number }) {
   return (
     <div className="min-w-0 rounded-md border border-line bg-surface px-2 py-2 text-center shadow-card">
-      <div className="text-[19px] leading-tight font-semibold tabular">{v}</div>
-      <div className="truncate text-[10.5px] text-fg-3">{k}</div>
+      <div className="text-[1.1875rem] leading-tight font-semibold tabular">{v}</div>
+      <div className="truncate text-[0.75rem] text-fg-3">{k}</div>
     </div>
   )
 }
@@ -243,8 +243,8 @@ function AgendaView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => 
       <Reveal i={2}>
         <Card className="items-center px-5 py-7 text-center">
           <Emoji name="alarm" size={64} className="float-y" />
-          <b className="mt-1 text-[16px]">{journal ? t("cal.journalEmpty") : t("cal.empty")}</b>
-          {!journal && <p className="max-w-[34ch] text-[13px] leading-[1.5] text-fg-2">{t("cal.agendaEmpty")} {t("cal.emptyBody")}</p>}
+          <b className="mt-1 text-[1rem]">{journal ? t("cal.journalEmpty") : t("cal.empty")}</b>
+          {!journal && <p className="max-w-[34ch] text-[0.8125rem] leading-[1.5] text-fg-2">{t("cal.agendaEmpty")} {t("cal.emptyBody")}</p>}
         </Card>
       </Reveal>
     )
@@ -301,12 +301,12 @@ function JournalLines({ x }: { x: DayData }) {
           <button type="button" onClick={() => ed.openEntry({ date: e.date, spaceId: e.spaceId, plantId: e.plantId })} className="flex w-full items-center gap-2.5 py-2 text-left">
             <Emoji name="notebook" size={26} />
             <span className="min-w-0">
-              <span className="flex items-center gap-1.5 text-[13.5px] font-medium">
+              <span className="flex items-center gap-1.5 text-[0.84375rem] font-medium">
                 <SpaceDot color={sp(e.spaceId)?.color} /> {sp(e.spaceId)?.name ?? "—"}
                 {e.plantId ? ` · ${e.plantId}` : ""}
                 {e.time ? <span className="font-normal text-fg-3"> · {e.time}</span> : null}
               </span>
-              <span className="block truncate text-[11.5px] text-fg-3">{facts(e) || "—"}</span>
+              <span className="block truncate text-[0.75rem] text-fg-3">{facts(e) || "—"}</span>
             </span>
           </button>
         </li>
@@ -314,7 +314,7 @@ function JournalLines({ x }: { x: DayData }) {
       {x.mixes.map((m) => (
         <li key={m.id} className="flex items-center gap-2.5 border-t border-line py-2 first:border-t-0">
           <Emoji name="testTube" size={26} />
-          <span className="text-[13.5px] font-medium">
+          <span className="text-[0.84375rem] font-medium">
             {t("cal.mixLine", { litres: num(m.volumeL) })}
             {m.ec != null && <span className="font-normal text-fg-3"> · EC {num(m.ec, 1)}</span>}
             {m.ph != null && <span className="font-normal text-fg-3"> · pH {num(m.ph, 1)}</span>}
@@ -324,10 +324,10 @@ function JournalLines({ x }: { x: DayData }) {
       {x.events.map((e) => (
         <li key={e.id} className="flex items-center gap-2.5 border-t border-line py-2 first:border-t-0">
           <Emoji name="book" size={26} />
-          <span className="min-w-0 text-[13.5px] font-medium">
+          <span className="min-w-0 text-[0.84375rem] font-medium">
             {t(`event.${e.type}` as MessageKey)}
             {sp(e.spaceId) && <span className="font-normal text-fg-3"> · {sp(e.spaceId)!.name}</span>}
-            {e.note && <span className="block truncate text-[11.5px] font-normal text-fg-3">{e.note}</span>}
+            {e.note && <span className="block truncate text-[0.75rem] font-normal text-fg-3">{e.note}</span>}
           </span>
         </li>
       ))}
@@ -352,18 +352,18 @@ function DaySheet({ date, filter, onClose }: { date: IsoDate | null; filter: Fil
       title={label(d, "long")}
       footer={
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => ed.openReminder({ date: d, spaceId })} className="h-12 flex-1 rounded-full border-line-strong text-[14px] font-semibold">
+          <Button variant="outline" onClick={() => ed.openReminder({ date: d, spaceId })} className="h-12 flex-1 rounded-full border-line-strong text-[0.875rem] font-semibold">
             <Plus className="size-4.5" /> {t("cal.addShort")}
           </Button>
           {spaces.length > 0 && d <= todayIso() && (
-            <Button onClick={() => ed.openEntry({ date: d, spaceId: spaceId ?? spaces[0].id })} className="h-12 flex-1 rounded-full text-[14px] font-bold">
+            <Button onClick={() => ed.openEntry({ date: d, spaceId: spaceId ?? spaces[0].id })} className="h-12 flex-1 rounded-full text-[0.875rem] font-bold">
               {t("cal.openEntry")}
             </Button>
           )}
         </div>
       }
     >
-      {empty && <p className="py-6 text-center text-[13.5px] text-fg-3">{t("cal.nothingDay")}</p>}
+      {empty && <p className="py-6 text-center text-[0.84375rem] text-fg-3">{t("cal.nothingDay")}</p>}
       {x.items.length > 0 && (
         <section className="mb-3">
           <h3 className="eyebrow mb-1">{t("cal.dayDue")}</h3>
@@ -425,15 +425,15 @@ function ExportCard() {
   return (
     <Card className="gap-2">
       <Label emoji="calendar">{t("cal.export")}</Label>
-      <p className="text-[12.5px] leading-[1.45] text-fg-2">
+      <p className="text-[0.78125rem] leading-[1.45] text-fg-2">
         {t("cal.exportHint")}
         {TARGET !== "local" && ` ${t("cal.exportZip")}`}
       </p>
       <div className="flex gap-2">
-        <Button onClick={download} disabled={busy} className="h-11 flex-1 rounded-full text-[14px] font-bold">
+        <Button onClick={download} disabled={busy} className="h-11 flex-1 rounded-full text-[0.875rem] font-bold">
           <Download className="size-4.5" /> {TARGET === "local" ? "hydro.ics" : "hydro.zip"}
         </Button>
-        <Button variant="outline" onClick={copy} className="h-11 rounded-full border-line-strong px-4 text-[14px] font-semibold" aria-label={t("cal.copy")}>
+        <Button variant="outline" onClick={copy} className="h-11 rounded-full border-line-strong px-4 text-[0.875rem] font-semibold" aria-label={t("cal.copy")}>
           <Copy className="size-4.5" />
         </Button>
       </div>

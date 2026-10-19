@@ -36,9 +36,9 @@ export function SpacePill() {
         aria-pressed={on}
         onClick={() => setSpace(id)}
         className={cn(
-          "flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-semibold whitespace-nowrap transition-colors duration-200",
+          "hit flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[0.78125rem] font-semibold whitespace-nowrap transition-colors duration-200",
           on ? "bg-surface text-fg shadow-[0_1px_3px_rgba(0,0,0,0.25)]" : "text-fg-3 hover:text-fg",
-          site && "uppercase tracking-[0.4px] text-[11px]",
+          site && "uppercase tracking-[0.4px] text-[0.75rem]",
         )}
       >
         {color && <SpaceDot color={color} />}

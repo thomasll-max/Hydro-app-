@@ -55,13 +55,13 @@ export function ToolsScreen() {
     const tool = TOOLS.find((x) => x.id === open)!
     return (
       <>
-        <button onClick={() => setOpen(null)} className="-ml-1 mb-1 flex h-10 items-center gap-1 rounded-full pr-3 text-[14px] font-semibold text-primary">
+        <button onClick={() => setOpen(null)} className="-ml-1 mb-1 flex h-11 items-center gap-1 rounded-full pr-3 text-[0.875rem] font-semibold text-primary">
           <ChevronLeft className="size-5" /> {t("tools.back")}
         </button>
         <ScreenHero emoji={tool.emoji} title={t(tool.title)}>
-          <p className="mt-1 text-[13px] leading-snug text-fg-2">{t(tool.desc)}</p>
+          <p className="mt-1 text-[0.8125rem] leading-snug text-fg-2">{t(tool.desc)}</p>
           {tool.perSpace && space && (
-            <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-fg-2">
+            <p className="mt-1 flex items-center gap-1.5 text-[0.75rem] font-semibold text-fg-2">
               <SpaceDot color={space.color} /> {t("tools.forSpace", { name: space.name })}
             </p>
           )}
@@ -100,7 +100,7 @@ export function ToolsScreen() {
   return (
     <>
       <ScreenHero emoji="toolbox" title={t("tools.title")}>
-        <p className="mt-1 text-[13px] leading-snug text-fg-2">{t("tools.subtitle")}</p>
+        <p className="mt-1 text-[0.8125rem] leading-snug text-fg-2">{t("tools.subtitle")}</p>
       </ScreenHero>
       <div className="grid grid-cols-2 gap-2.5">
         {TOOLS.filter((tool) => !tool.needsSample || sample).map((tool, i) => {
@@ -112,10 +112,10 @@ export function ToolsScreen() {
                   <Emoji name={tool.emoji} size={tool.wide ? 52 : 40} className={ready ? undefined : "opacity-80 grayscale-[35%]"} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <b className="text-[15px] font-semibold">{t(tool.title)}</b>
+                      <b className="text-[0.9375rem] font-semibold">{t(tool.title)}</b>
                       {tool.wide && (ready ? <ChevronRight className="size-5 text-fg-3" /> : <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>)}
                     </div>
-                    <p className="mt-0.5 text-[12.5px] leading-snug text-fg-3">{t(tool.desc)}</p>
+                    <p className="mt-0.5 text-[0.78125rem] leading-snug text-fg-3">{t(tool.desc)}</p>
                     {!tool.wide && <div className="mt-2">{ready ? <ChevronRight className="size-5 text-fg-3" /> : <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>}</div>}
                   </div>
                 </Card>

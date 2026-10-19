@@ -38,13 +38,13 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
         <div className="flex items-center justify-between gap-2">
           <Label emoji="bucket">{t("nut.stocks")}</Label>
           {conc > 0 && (
-            <button type="button" onClick={() => setOpen(true)} className="h-9 rounded-full border border-primary/40 bg-primary/10 px-3 text-[12.5px] font-semibold text-primary">
+            <button type="button" onClick={() => setOpen(true)} className="h-11 rounded-full border border-primary/40 bg-primary/10 px-3 text-[0.78125rem] font-semibold text-primary">
               {t("nut.stockAdd")}
             </button>
           )}
         </div>
-        <p className="text-[12px] leading-[1.45] text-fg-3">{conc > 0 ? t("nut.stocksD") : t("nut.stockPowder")}</p>
-        {conc > 0 && !stocks.length && <p className="text-[12.5px] text-fg-2">{t("nut.stocksNone")}</p>}
+        <p className="text-[0.75rem] leading-[1.45] text-fg-3">{conc > 0 ? t("nut.stocksD") : t("nut.stockPowder")}</p>
+        {conc > 0 && !stocks.length && <p className="text-[0.78125rem] text-fg-2">{t("nut.stocksNone")}</p>}
         {stocks.map((s) => {
           const st = stockStatus(s, concentrateStocks, all.mixes)
           const name = cat.products.find((p) => p.id === s.productId)?.name ?? s.productId
@@ -52,7 +52,7 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
           return (
             <div key={s.id} className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
               <div className="flex items-center justify-between gap-2">
-                <b className="text-[14px] font-semibold">
+                <b className="text-[0.875rem] font-semibold">
                   {name} <span className="font-normal text-fg-3">· {num(s.gPerL)} g/L</span>
                 </b>
                 {st.empty ? <Chip tone="warn">{t("nut.stockEmpty")}</Chip> : st.low ? <Chip tone="warn">{t("nut.stockLow")}</Chip> : null}
@@ -60,19 +60,19 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-line" aria-hidden="true">
                 <div className={cn("h-full rounded-full", st.low ? "bg-warn" : "bg-primary")} style={{ width: `${pct * 100}%` }} />
               </div>
-              <div className="mt-1.5 flex items-center justify-between gap-2 text-[11.5px] text-fg-3">
+              <div className="mt-1.5 flex items-center justify-between gap-2 text-[0.75rem] text-fg-3">
                 <span className="tabular">
                   {t("nut.stockLeft", { left: num(st.leftL, 1), made: num(s.litresMade, 1) })} · {st.tanksLeft != null ? t("nut.stockTanks", { n: st.tanksLeft }) : t("nut.stockNoUse")}
                 </span>
                 <span>{t("nut.stockMade", { date: date(s.madeOn) })}</span>
               </div>
-              <button type="button" onClick={() => finish(s)} className="mt-1.5 h-8 text-[12px] font-semibold text-primary">
+              <button type="button" onClick={() => finish(s)} className="mt-1.5 h-11 text-[0.75rem] font-semibold text-primary">
                 {t("nut.stockFinish")}
               </button>
             </div>
           )
         })}
-        {stocks.length > 0 && <p className="text-[11px] text-fg-3">{t("nut.stockLowNote")}</p>}
+        {stocks.length > 0 && <p className="text-[0.75rem] text-fg-3">{t("nut.stockLowNote")}</p>}
       </Card>
       <ConcentrateSheet open={open} onOpenChange={setOpen} cat={cat} conc={conc} />
     </Reveal>
@@ -121,11 +121,11 @@ function ConcentrateSheet({ open, onOpenChange, cat, conc }: { open: boolean; on
     <Sheet open={open} onOpenChange={onOpenChange} title={t("nut.cTitle")} description={t("nut.cDesc")} footer={<SaveBar busy={busy} onSave={save} />}>
       <div className="flex flex-col gap-3">
         <div>
-          <div className="mb-1 text-[12px] font-medium text-fg-2">{t("nut.cProduct")}</div>
+          <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.cProduct")}</div>
           <Seg<string> label={t("nut.cProduct")} value={product} onChange={setProduct} options={powders.map((p) => ({ value: p.id, label: p.name }))} />
         </div>
         <div>
-          <div className="mb-1 text-[12px] font-medium text-fg-2">{t("nut.cStrength")}</div>
+          <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.cStrength")}</div>
           <Seg<string> label={t("nut.cStrength")} value={g} onChange={setG} options={strengths.map((s) => ({ value: String(s), label: `${num(s)} g/L` }))} />
         </div>
         <Grid>
@@ -133,12 +133,12 @@ function ConcentrateSheet({ open, onOpenChange, cat, conc }: { open: boolean; on
           <TextField id="c-date" type="date" label={t("nut.cDate")} value={date} onChange={(v) => setDate(v || todayIso())} />
         </Grid>
         <div className="rounded-md border border-line bg-surface-2 px-3 py-2.5">
-          <div className="text-[11px] text-fg-3">{t("nut.cFinal")}</div>
-          <div className="text-[26px] font-semibold tabular" id="c-final">
+          <div className="text-[0.75rem] text-fg-3">{t("nut.cFinal")}</div>
+          <div className="text-[1.625rem] font-semibold tabular" id="c-final">
             {final ? `${num(final, 1)} L` : "—"}
           </div>
         </div>
-        <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-[13px] leading-[1.45] text-fg-2">
+        <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-[0.8125rem] leading-[1.45] text-fg-2">
           <li>{t("nut.cStep1", { water: final ? num(startWaterL(final), 1) : "…" })}</li>
           <li>{t("nut.cStep2", { bag: kg ? num(kg, 1) : "…" })}</li>
           <li>{t("nut.cStep3")}</li>
@@ -171,11 +171,11 @@ export function CustomProductsCard({ i }: { i: number }) {
       <Card className="gap-2.5" id="nut-custom">
         <div className="flex items-center justify-between gap-2">
           <Label emoji="testTube">{t("nut.custom")}</Label>
-          <button type="button" onClick={() => openFor(null)} className="h-9 rounded-full border border-line bg-surface-2 px-3 text-[12.5px] font-semibold text-fg-2">
+          <button type="button" onClick={() => openFor(null)} className="h-11 rounded-full border border-line bg-surface-2 px-3 text-[0.78125rem] font-semibold text-fg-2">
             {t("nut.customAdd")}
           </button>
         </div>
-        <p className="text-[12px] leading-[1.45] text-fg-3">{t("nut.customD")}</p>
+        <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("nut.customD")}</p>
         {customProducts.map((p) => {
           const dose =
             p.application === "tank"
@@ -189,17 +189,17 @@ export function CustomProductsCard({ i }: { i: number }) {
           return (
             <button key={p.id} type="button" onClick={() => openFor(p)} className="flex items-center justify-between gap-2 rounded-md border border-line bg-surface-2 px-3 py-2.5 text-left">
               <span className="min-w-0">
-                <b className="block text-[14px] font-semibold">
+                <b className="block text-[0.875rem] font-semibold">
                   {p.name} <span className="font-normal text-fg-3">· {p.application === "tank" ? t("nut.customTank") : t("nut.customRoots")}</span>
                 </b>
-                <span className={cn("block text-[11.5px]", p.dosePer10L || p.dosePerPlant ? "text-fg-2" : "text-warn")}>
+                <span className={cn("block text-[0.75rem]", p.dosePer10L || p.dosePerPlant ? "text-fg-2" : "text-warn")}>
                   {dose}
                   {w ? ` · ${t("nut.customWeeks", { w })}` : ""}
                   {p.inactive ? ` · ${t("nut.customOff")}` : ""}
                 </span>
-                <span className="block text-[10.5px] text-fg-3">{t("nut.srcLabel")}</span>
+                <span className="block text-[0.75rem] text-fg-3">{t("nut.srcLabel")}</span>
               </span>
-              <span className="shrink-0 text-[12px] font-semibold text-primary">{t("nut.customEdit")}</span>
+              <span className="shrink-0 text-[0.75rem] font-semibold text-primary">{t("nut.customEdit")}</span>
             </button>
           )
         })}
@@ -289,7 +289,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
         </Grid>
         <TextField id="p-kind" label={t("nut.pKind")} value={f.kind ?? ""} onChange={set("kind")} />
         <div>
-          <div className="mb-1 text-[12px] font-medium text-fg-2">{t("nut.pWhere")}</div>
+          <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.pWhere")}</div>
           <Seg<CustomProduct["application"]>
             label={t("nut.pWhere")}
             value={where}
@@ -301,7 +301,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
           />
         </div>
         <div>
-          <div className="mb-1 text-[12px] font-medium text-fg-2">{t("nut.pUnit")}</div>
+          <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("nut.pUnit")}</div>
           <Seg<CustomProduct["unit"]> label={t("nut.pUnit")} value={unit} onChange={setUnit} options={(["mL", "g"] as const).map((u) => ({ value: u, label: u }))} />
         </div>
         <Grid cols={where === "tank" ? 3 : 2}>
@@ -309,8 +309,8 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
           <NumField id="p-hi" label={t("nut.pDoseHi", { unit })} value={f.hi ?? ""} onChange={set("hi")} />
           {where === "tank" && <NumField id="p-per" label={t("nut.pDoseFor")} hint={t("nut.pDoseForHint")} value={f.perL ?? ""} onChange={set("perL")} />}
         </Grid>
-        {where === "tank" && per10 && <p className="text-[12px] text-primary tabular">{t("nut.pPer10", { range: range(per10.lo, per10.hi, 2), unit })}</p>}
-        {where === "roots" && <p className="text-[12px] text-fg-3">{t("nut.pPerPlant")}</p>}
+        {where === "tank" && per10 && <p className="text-[0.75rem] text-primary tabular">{t("nut.pPer10", { range: range(per10.lo, per10.hi, 2), unit })}</p>}
+        {where === "roots" && <p className="text-[0.75rem] text-fg-3">{t("nut.pPerPlant")}</p>}
         {where === "tank" && (
           <>
             <SwitchRow id="p-veg" label={t("nut.pUseVeg")} checked={veg} onChange={setVeg} />
@@ -322,7 +322,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
         )}
         <AreaField id="p-weeks" label={t("nut.pWeeksText")} value={f.weeks ?? ""} onChange={set("weeks")} />
         <SwitchRow id="p-off" label={t("nut.pInactive")} checked={inactive} onChange={setInactive} />
-        <p className="text-[11.5px] leading-[1.45] text-fg-3">{t("nut.pNote")}</p>
+        <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("nut.pNote")}</p>
       </div>
     </Sheet>
   )

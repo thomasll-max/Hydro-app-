@@ -55,13 +55,13 @@ export function StepCard({ cycle }: { cycle: Cycle }) {
   return (
     <Card className="gap-2" id="step-card">
       <Label emoji={step === "harvest" ? "blossom" : step === "flip" ? "bulb" : "herb"}>{t("step.next")}</Label>
-      <p className="text-[12.5px] leading-[1.45] text-fg-2">{t(DESC[step])}</p>
+      <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t(DESC[step])}</p>
       {expected && (
-        <p className="text-[12.5px] font-medium text-fg-2" id="step-expected">
+        <p className="text-[0.78125rem] font-medium text-fg-2" id="step-expected">
           {t("cycleForm.expectedHarvest", { date: dm(expected) })} <span className="font-normal text-fg-3">· {t("cycleForm.expectedHarvestD", { weeks: cycle.flowerWeeks })}</span>
         </p>
       )}
-      <Button onClick={go} disabled={busy} variant={early ? "outline" : "default"} className="h-12 rounded-full text-[15px] font-bold" id={`step-${step}`}>
+      <Button onClick={go} disabled={busy} variant={early ? "outline" : "default"} className="h-12 rounded-full text-[0.9375rem] font-bold" id={`step-${step}`}>
         {t(`step.${step}`)}
       </Button>
     </Card>

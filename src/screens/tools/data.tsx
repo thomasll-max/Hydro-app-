@@ -145,20 +145,20 @@ export function DataTool() {
       <Reveal i={0}>
         <Card className="gap-2.5">
           <Label emoji="bucket">{t("data.export")}</Label>
-          <p className="text-[12.5px] leading-[1.45] text-fg-2">{t("data.exportD")}</p>
-          <Button onClick={exportJson} disabled={busy} className="h-12 rounded-full text-[15px] font-bold" id="data-export">
+          <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("data.exportD")}</p>
+          <Button onClick={exportJson} disabled={busy} className="h-12 rounded-full text-[0.9375rem] font-bold" id="data-export">
             {t("data.exportBtn")}
           </Button>
           <div className="mt-1 rounded-md border border-line bg-surface-2 px-3 py-2.5" id="data-transfer">
-            <div className="text-[13px] font-semibold">{t("data.transfer")}</div>
-            <p className="mt-0.5 text-[11.5px] leading-[1.45] text-fg-3">{t("data.transferD")}</p>
+            <div className="text-[0.8125rem] font-semibold">{t("data.transfer")}</div>
+            <p className="mt-0.5 text-[0.75rem] leading-[1.45] text-fg-3">{t("data.transferD")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {canShare && (
-                <Button variant="outline" onClick={share} disabled={busy} className="h-10 rounded-full">
+                <Button variant="outline" onClick={share} disabled={busy} className="h-11 rounded-full">
                   {t("data.share")}
                 </Button>
               )}
-              <Button variant="outline" onClick={copy} disabled={busy} className="h-10 rounded-full">
+              <Button variant="outline" onClick={copy} disabled={busy} className="h-11 rounded-full">
                 {t("data.copy")}
               </Button>
             </div>
@@ -166,14 +166,14 @@ export function DataTool() {
           <Button variant="outline" onClick={exportCsv} disabled={busy || !all.entries.length} className="h-11 rounded-full">
             {t("data.csvBtn", { n: num(all.entries.length) })}
           </Button>
-          <p className="text-[11.5px] text-fg-3">{t("data.photos")}</p>
+          <p className="text-[0.75rem] text-fg-3">{t("data.photos")}</p>
         </Card>
       </Reveal>
 
       <Reveal i={1}>
         <Card className="gap-2.5" id="data-import">
           <Label emoji="notebook">{t("data.import")}</Label>
-          <p className="text-[12.5px] leading-[1.45] text-fg-2">{t("data.importD")}</p>
+          <p className="text-[0.78125rem] leading-[1.45] text-fg-2">{t("data.importD")}</p>
           <input ref={file} type="file" accept=".json,application/json" className="hidden" id="data-file" onChange={(e) => pick(e.target.files?.[0])} />
           <Button variant="outline" onClick={() => file.current?.click()} disabled={busy} className="h-11 rounded-full">
             {t("data.chooseFile")}
@@ -186,10 +186,10 @@ export function DataTool() {
             <div className="flex flex-col gap-2">
               <AreaField id="data-paste" label={t("data.pasteLabel")} value={paste} onChange={setPaste} placeholder='{"format":"hydro-backup",…}' />
               <div className="flex gap-2">
-                <Button variant="outline" className="h-10 flex-1 rounded-full" onClick={() => setPaste(null)}>
+                <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={() => setPaste(null)}>
                   {t("data.cancel")}
                 </Button>
-                <Button className="h-10 flex-1 rounded-full font-bold" onClick={readPaste} disabled={!paste.trim()}>
+                <Button className="h-11 flex-1 rounded-full font-bold" onClick={readPaste} disabled={!paste.trim()}>
                   {t("data.pasteRead")}
                 </Button>
               </div>
@@ -197,9 +197,9 @@ export function DataTool() {
           )}
           {pending && (
             <div className="flex flex-col gap-2.5 rounded-md border border-line bg-surface-2 px-3 py-3" id="data-summary">
-              <b className="text-[13.5px]">{t("data.fileSummary", { name: pending.name, n: pending.total, date: pending.backup.exportedAt.slice(0, 10) })}</b>
-              {pending.skipped > 0 && <p className="text-[12px] font-medium text-warn">{t("safe.importSkipped", { n: pending.skipped })}</p>}
-              <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[12px] text-fg-2">
+              <b className="text-[0.84375rem]">{t("data.fileSummary", { name: pending.name, n: pending.total, date: pending.backup.exportedAt.slice(0, 10) })}</b>
+              {pending.skipped > 0 && <p className="text-[0.75rem] font-medium text-warn">{t("safe.importSkipped", { n: pending.skipped })}</p>}
+              <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[0.75rem] text-fg-2">
                 {Object.entries(pending.counts).map(([c, n]) => (
                   <li key={c} className="flex justify-between gap-2">
                     <span>{t(`data.col.${c}` as MessageKey)}</span>
@@ -216,7 +216,7 @@ export function DataTool() {
                   { value: "replace", label: t("data.replace") },
                 ]}
               />
-              <p className={mode === "replace" ? "text-[12px] font-medium text-bad" : "text-[12px] text-fg-3"}>{mode === "replace" ? t("data.replaceD") : t("data.mergeD")}</p>
+              <p className={mode === "replace" ? "text-[0.75rem] font-medium text-bad" : "text-[0.75rem] text-fg-3"}>{mode === "replace" ? t("data.replaceD") : t("data.mergeD")}</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -264,7 +264,7 @@ export function DataTool() {
         </Card>
       </Reveal>
       {skipped.length > 0 && (
-        <p className="rounded-md border border-warn/30 bg-warn/10 px-3 py-2 text-[12px] font-medium text-warn" id="data-skipped">
+        <p className="rounded-md border border-warn/30 bg-warn/10 px-3 py-2 text-[0.75rem] font-medium text-warn" id="data-skipped">
           {t("safe.skipped", { n: skipped.length })}
         </p>
       )}
@@ -289,13 +289,13 @@ function StorageState() {
   if (st === "unknown" && !ios) return null
   return (
     <Card className="gap-2" id="data-storage">
-      {st !== "unknown" && <p className={st === "on" ? "text-[12.5px] leading-[1.45] text-fg-2" : "text-[12.5px] leading-[1.45] font-medium text-warn"}>{t(st === "on" ? "safe.persistOn" : "safe.persistOff")}</p>}
+      {st !== "unknown" && <p className={st === "on" ? "text-[0.78125rem] leading-[1.45] text-fg-2" : "text-[0.78125rem] leading-[1.45] font-medium text-warn"}>{t(st === "on" ? "safe.persistOn" : "safe.persistOff")}</p>}
       {st === "off" && (
         <Button variant="outline" className="h-11 self-start rounded-full" onClick={() => askPersist(true).then(setSt)}>
           {t("safe.persistAsk")}
         </Button>
       )}
-      {ios && <p className="text-[12.5px] leading-[1.45] font-medium text-warn">{t("safe.ios")}</p>}
+      {ios && <p className="text-[0.78125rem] leading-[1.45] font-medium text-warn">{t("safe.ios")}</p>}
     </Card>
   )
 }

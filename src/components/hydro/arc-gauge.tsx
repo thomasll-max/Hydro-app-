@@ -67,9 +67,9 @@ export function ArcGauge({
           style={{ transition: "stroke-dashoffset 1.4s var(--ease)" }}
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center pt-1 text-[22px] font-semibold tracking-[-0.5px] tabular">
+      <div className="absolute inset-0 flex items-center justify-center pt-1 text-[1.375rem] font-semibold tracking-[-0.5px] tabular">
         <NumberTicker value={value} decimalPlaces={decimals} locale={locale} delay={delay} />
-        {unit && <span className="ml-0.5 text-[12px] font-medium text-fg-3">{unit}</span>}
+        {unit && <span className="ml-0.5 text-[0.75rem] font-medium text-fg-3">{unit}</span>}
       </div>
     </div>
   )

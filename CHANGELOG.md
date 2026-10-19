@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 10i — Allemand (19/10/2026)
+- **Troisième langue** : l'app existe en allemand (tutoiement « du »), à côté du français et de l'anglais. Sélecteur FR / EN / DE dans la barre du haut, les Réglages et l'assistant de démarrage. Un téléphone réglé en allemand ouvre l'app en allemand au premier lancement.
+- Vocabulaire de culture courant (Blüte, Wachstum, Steckling, Runoff, Dryback…) ; les noms de produits (Pro Grow, Pro Bloom, Pro Core, Fade, Cleanse, Balance, IPW, Proper, Great White) et les sources (« Handbook p. 37 ») ne sont pas traduits.
+- Formats allemands : virgule décimale, dates « 19.10. » et « 19. Okt. », semaine commençant le lundi, export CSV avec « ; » et virgule comme en français.
+- Carte du matin : le texte existe aussi en allemand ; la tâche du matin de Thomas continue d'envoyer le français.
+- Les noms créés par l'assistant (premier espace, équipement) suivent la langue choisie ; les données déjà enregistrées ne sont jamais renommées.
+- 318 tests ; `scripts/e2e-10i.py`.
+
 ## Lot 10h3 — Barre d'onglets ancrée et accès au calendrier (19/10/2026)
 - **Barre d'onglets** ancrée en bas de l'écran, pleine largeur, sur le fond de la page : Aujourd'hui, Journal, « + », Graphiques, Outils. Le « + » de la saisie du jour est au milieu de la barre ; plus de bouton flottant sur le contenu.
 - **Calendrier** sans onglet, toujours à portée depuis l'écran d'accueil :

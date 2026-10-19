@@ -2,7 +2,7 @@
 // missing, the viewer is not the owner, or the app crashed. Nothing is written from here except on an explicit tap.
 import { useState } from "react"
 import { translate } from "@/i18n/core"
-import type { Lang, MessageKey } from "@/i18n/types"
+import { isLang, type MessageKey } from "@/i18n/types"
 import { getStores } from "@/store"
 import { exportRaw } from "@/lib/backup"
 import { saveFile } from "@/lib/download"
@@ -10,7 +10,7 @@ import { resetData } from "@/lib/reset"
 import { todayIso } from "@/calc/stage"
 
 /** Works outside the providers too (error boundary): the language comes from <html lang>. */
-const tr = (key: MessageKey, vars?: Record<string, string | number>) => translate((document.documentElement.lang === "en" ? "en" : "fr") as Lang, key, vars)
+const tr = (key: MessageKey, vars?: Record<string, string | number>) => translate(isLang(document.documentElement.lang) ? document.documentElement.lang : "fr", key, vars)
 
 const btn = "h-12 rounded-[10px] px-5 text-[0.9375rem] font-semibold"
 

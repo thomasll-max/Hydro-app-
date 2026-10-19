@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { fr } from "./fr"
 import { en } from "./en"
+import { de } from "./de"
 import {
   flattenKeys,
   formatDayMonth,
@@ -12,26 +13,26 @@ import {
   translate,
 } from "./core"
 
-describe("dictionnaires FR/EN", () => {
+describe("dictionnaires FR/EN/DE (lot 10i)", () => {
   const frKeys = flattenKeys(fr)
-  const enKeys = flattenKeys(en)
 
   it("ont exactement les mêmes clés", () => {
-    expect(enKeys).toEqual(frKeys)
+    expect(flattenKeys(en)).toEqual(frKeys)
+    expect(flattenKeys(de)).toEqual(frKeys)
   })
 
   it("utilisent les mêmes variables dans chaque texte", () => {
     for (const key of frKeys) {
       const k = key as Parameters<typeof lookup>[1]
       expect(placeholders(lookup(en, k)), key).toEqual(placeholders(lookup(fr, k)))
+      expect(placeholders(lookup(de, k)), key).toEqual(placeholders(lookup(fr, k)))
     }
   })
 
   it("n'ont aucun texte vide", () => {
     for (const key of frKeys) {
       const k = key as Parameters<typeof lookup>[1]
-      expect(lookup(fr, k).trim(), key).not.toBe("")
-      expect(lookup(en, k).trim(), key).not.toBe("")
+      for (const dict of [fr, en, de]) expect(lookup(dict, k).trim(), key).not.toBe("")
     }
   })
 })
@@ -47,9 +48,10 @@ describe("traduction", () => {
 })
 
 describe("formats selon la langue", () => {
-  it("nombres : FR 2,0 / EN 2.0", () => {
+  it("nombres : FR 2,0 / EN 2.0 / DE 2,0", () => {
     expect(formatNumber("fr", 2, 1)).toBe("2,0")
     expect(formatNumber("en", 2, 1)).toBe("2.0")
+    expect(formatNumber("de", 2, 1)).toBe("2,0")
   })
   it("plages", () => {
     expect(formatRange("fr", 5.8, 6.2, 1)).toBe("5,8–6,2")
@@ -59,6 +61,7 @@ describe("formats selon la langue", () => {
     const d = new Date(2026, 9, 18, 7, 42)
     expect(formatDayMonth("fr", d)).toBe("18/10")
     expect(formatDayMonth("en", d)).toBe("Oct 18")
+    expect(formatDayMonth("de", d)).toBe("18.10.")
   })
   it("heure sur 24 h", () => {
     const d = new Date(2026, 9, 18, 7, 42)
@@ -77,7 +80,7 @@ describe("toutes les corrections ont un texte", () => {
       for (const m of metrics)
         for (const v of [-100, 1000]) {
           const a = oneCorrection({ schemaVersion: 1, id: "x", date: "2026-10-18", spaceId: "s", createdAt: "", updatedAt: "", [m]: v }, t, mode)!
-          for (const lang of [fr, en]) {
+          for (const lang of [fr, en, de]) {
             expect(lookup(lang, `${a.key}.title` as never), a.key).not.toBe(`${a.key}.title`)
             expect(lookup(lang, a.bodyKey as never), a.bodyKey).not.toBe(a.bodyKey)
           }

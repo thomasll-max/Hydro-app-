@@ -8,6 +8,7 @@ import { stageOn, todayIso } from "./stage"
 import { equipmentAt } from "@/equipment/calc"
 import { getCatalog, isOwnLine } from "@/data/nutrients"
 import { spaceNutrition } from "@/model/grow-ops"
+import type { Lang } from "@/i18n/types"
 
 export type AskTurn = { role: "user" | "assistant"; content: string }
 export type AskData = {
@@ -90,9 +91,9 @@ export function askContext(d: AskData, today: IsoDate): string {
 }
 
 /** Prompt for one question, with the conversation so far (memoryless calls). */
-export function askPrompt(context: string, question: string, history: AskTurn[], lang: "fr" | "en"): AskTurn[] {
+export function askPrompt(context: string, question: string, history: AskTurn[], lang: Lang): AskTurn[] {
   const rules = [
-    lang === "fr" ? "Réponds en français." : "Answer in English.",
+    lang === "fr" ? "Réponds en français." : lang === "de" ? "Antworte auf Deutsch (du-Form)." : "Answer in English.",
     "Tu aides un cultivateur dans sa tente, au téléphone : réponse courte (moins de 150 mots), concrète, une seule correction prioritaire si quelque chose cloche.",
     "Appuie-toi sur les données ci-dessous. Si une dose ou une valeur n'y figure pas et n'est pas dans l'Athena Handbook, dis-le au lieu de l'inventer.",
     "Ne mélange jamais deux gammes de nutriments. Cite la source quand tu donnes un chiffre (Athena p. X, repère courant, mesure).",

@@ -44,6 +44,7 @@ import { NutritionFields } from "./tools/nutrition-settings"
 import { SwitchRow } from "./tools/equipment-shared"
 import { InstallTip } from "./install-tip"
 import { joined, secondary, segment } from "@/components/hydro/styles"
+import { formatInput, translate } from "@/i18n/core"
 
 /** Collections the assistant writes before grow/main (cleared if an earlier attempt was cut short). */
 const SETUP_COLLECTIONS = ["spaces", "equipment", "equipmentAssignments", "cycles"] as const
@@ -57,9 +58,16 @@ const deviceZone = () => {
 }
 
 export function Onboarding() {
-  const { t, num } = useSettings()
+  const { t, num, settings } = useSettings()
   const { withSetup } = useGrow()
   const [draft, setDraft] = useState<Draft>(() => loadDraft() ?? emptyDraft(t("onb.firstSpace")))
+  // The first space's name follows the language picked on the welcome screen, until it is typed (lot 10i).
+  const [lang, setLang] = useState(settings.lang)
+  if (lang !== settings.lang) {
+    setLang(settings.lang)
+    const before = translate(lang, "onb.firstSpace")
+    if (draft.spaces.length === 1 && draft.spaces[0].name === before) setDraft((d) => ({ ...d, spaces: [{ ...d.spaces[0], name: t("onb.firstSpace") }] }))
+  }
   // 0 = welcome, 1…7 = STEPS
   const [step, setStep] = useState(() => (loadDraft() ? loadStep() : 0))
   const [busy, setBusy] = useState(false)
@@ -416,7 +424,7 @@ function SpaceTitle({ s, i, aside }: { s: DraftSpace; i: number; aside?: ReactNo
 /** Number field holding its own text ("2," while typing), reporting the parsed value. */
 function Num({ id, label, value, onValue, integer, hint }: { id: string; label: string; value?: number; onValue: (v: number | undefined) => void; integer?: boolean; hint?: string }) {
   const { settings } = useSettings()
-  const [s, setS] = useState(value == null ? "" : settings.lang === "fr" ? String(value).replace(".", ",") : String(value))
+  const [s, setS] = useState(formatInput(settings.lang, value))
   return (
     <NumField
       id={id}

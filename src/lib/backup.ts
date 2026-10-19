@@ -5,6 +5,8 @@ import { writeAll, type BatchOp, type Doc, type DocStore } from "@/store/doc-sto
 import { COLLECTIONS, type CollectionName } from "@/model/grow"
 import type { Entry } from "@/model/types"
 import { validDoc } from "@/model/validate"
+import type { Lang } from "@/i18n/types"
+import { decimalComma } from "@/i18n/core"
 
 export const BACKUP_FORMAT = "hydro-backup"
 export const BACKUP_VERSION = 1
@@ -156,16 +158,17 @@ const CSV_FIELDS: (keyof Entry)[] = [
  * One CSV cell. Numbers use the decimal comma in French (else a spreadsheet reads "6.2" as a date); text that a
  * spreadsheet would run as a formula (= + - @, tab, CR) is prefixed with an apostrophe.
  */
-export function csvCell(v: unknown, lang: "fr" | "en" = "fr"): string {
+export function csvCell(v: unknown, lang: Lang = "fr"): string {
   if (v == null) return ""
-  if (typeof v === "number") return Number.isFinite(v) ? (lang === "fr" ? String(v).replace(".", ",") : String(v)) : ""
+  // German too (lot 10i): decimal comma and ";" like French spreadsheets.
+  if (typeof v === "number") return Number.isFinite(v) ? (decimalComma(lang) ? String(v).replace(".", ",") : String(v)) : ""
   let s = String(v)
   if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
   return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 
 /** Journal entries as CSV (";" separator, works with French spreadsheets). Space names replace ids. */
-export function entriesCsv(entries: Entry[], spaceName: (id: string) => string, lang: "fr" | "en" = "fr"): string {
+export function entriesCsv(entries: Entry[], spaceName: (id: string) => string, lang: Lang = "fr"): string {
   const rows = [...entries].sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.spaceId).localeCompare(String(b.spaceId)))
   const head = CSV_FIELDS.join(";")
   return [head, ...rows.map((e) => CSV_FIELDS.map((f) => csvCell(f === "spaceId" ? spaceName(e.spaceId) : e[f], lang)).join(";"))].join("\n")

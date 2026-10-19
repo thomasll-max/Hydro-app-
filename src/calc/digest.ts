@@ -4,7 +4,7 @@
 import { isOwnLine } from "@/data/nutrients"
 import type { Equipment, EquipmentAssignment, Grow, Site, Space } from "@/model/grow"
 import type { Cycle, Entry, GrowEvent, IsoDate, Mix } from "@/model/types"
-import type { Lang, MessageKey } from "@/i18n/types"
+import { LANGS, type Lang, type MessageKey } from "@/i18n/types"
 import { formatDayMonth, formatNumber, translate } from "@/i18n/core"
 import { groupBySite, spaceNutrition } from "@/model/grow-ops"
 import { buildProgram, PHOTOPERIOD, programTotals, steerStage } from "./program"
@@ -54,7 +54,7 @@ export type Digest = {
   text: string
   /** Day the app computed it (the journal as it was then). */
   computedOn?: IsoDate
-  /** The text in both languages (the morning task sends French, whatever the language of the phone that computed it). */
+  /** The text in every language (the morning task sends French, whatever the language of the phone that computed it). */
   texts?: Record<Lang, string>
 }
 
@@ -64,7 +64,8 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, 
   const t = (k: Parameters<typeof translate>[1], v?: Record<string, string | number>) => translate(locale, k, v)
   /** `prose` of a line (Aujourd'hui asks for it; the digest docs of the morning task never carry it). */
   const P = (key: string, v?: Record<string, string | number>): Pick<DigestLine, "prose"> => (opts.prose ? { prose: t(`prose.${key}` as MessageKey, v) } : {})
-  const lower = (s: string) => s.charAt(0).toLocaleLowerCase(locale) + s.slice(1)
+  // Mid-sentence stage names in lower case — but German nouns keep their capital (lot 10i).
+  const lower = (s: string) => (locale === "de" ? s : s.charAt(0).toLocaleLowerCase(locale) + s.slice(1))
   const n = (v: number, d = 0) => formatNumber(locale, v, d)
   const dm = (iso: IsoDate) => formatDayMonth(locale, new Date(`${iso}T12:00:00`))
   const ordered = groupBySite(data.spaces, data.sites ?? []).flatMap((g) => g.spaces)
@@ -97,8 +98,8 @@ export function buildDailyDigest(data: DigestData, date: IsoDate, locale: Lang, 
     if (cycle && s)
       lines.push({
         kind: "stage",
-        text: t("digest.stage", { cycle: cycle.name, stage: stageShort(t, s) }),
-        ...(s.key === "notStarted" ? P("stageNotStarted", { cycle: cycle.name }) : s.key === "harvested" ? P("stageHarvested", { cycle: cycle.name }) : P("stage", { cycle: cycle.name, stage: lower(stageShort(t, s)) })),
+        text: t("digest.stage", { cycle: cycle.name, stage: stageShort(t, s, locale) }),
+        ...(s.key === "notStarted" ? P("stageNotStarted", { cycle: cycle.name }) : s.key === "harvested" ? P("stageHarvested", { cycle: cycle.name }) : P("stage", { cycle: cycle.name, stage: lower(stageShort(t, s, locale)) })),
       })
     if (drying) {
       const day = daysBetween(drying.harvestDate!, date) + 1
@@ -174,8 +175,9 @@ export function digestWeek(data: DigestData, today: IsoDate, locale: Lang, days 
   return Array.from({ length: days }, (_, i) => {
     const date = addDays(today, i)
     const d = buildDailyDigest(data, date, locale, today)
-    const other = buildDailyDigest(data, date, locale === "fr" ? "en" : "fr", today)
-    return { ...d, computedOn: today, texts: { [locale]: d.text, [other.locale]: other.text } as Record<Lang, string> }
+    // Every language (the morning task of Thomas keeps sending the French one, lot 10i adds German).
+    const texts = Object.fromEntries(LANGS.map((l) => [l, l === locale ? d.text : buildDailyDigest(data, date, l, today).text])) as Record<Lang, string>
+    return { ...d, computedOn: today, texts }
   })
 }
 

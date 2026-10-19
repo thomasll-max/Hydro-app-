@@ -1,10 +1,16 @@
 // Pure i18n helpers — no React here, so they are unit-testable.
 import { fr } from "./fr"
 import { en } from "./en"
+import { de } from "./de"
 import type { Lang, MessageKey, Messages } from "./types"
 
-export const dictionaries: Record<Lang, Messages> = { fr, en }
-export const locales: Record<Lang, string> = { fr: "fr-FR", en: "en-US" }
+export const dictionaries: Record<Lang, Messages> = { fr, en, de }
+export const locales: Record<Lang, string> = { fr: "fr-FR", en: "en-US", de: "de-DE" }
+/** A word put in lower case mid-sentence; German nouns keep their capital (lot 10i). */
+export const lowerWord = (lang: Lang, s: string) => (lang === "de" ? s : s.toLowerCase())
+
+/** French and German write « 2,4 » (decimal comma), English « 2.4 » (lot 10i). */
+export const decimalComma = (lang: Lang) => lang !== "en"
 
 export type Vars = Record<string, string | number>
 
@@ -14,7 +20,7 @@ export function lookup(dict: Messages, key: MessageKey): string {
   return typeof node === "string" ? node : key
 }
 
-/** French counts 0 and 1 as singular, English only 1. */
+/** French counts 0 and 1 as singular, English and German only 1. */
 export const isSingular = (lang: Lang, n: number) => (lang === "fr" ? Math.abs(n) < 2 : n === 1)
 
 /** `{n}` → the value; `{n|espace|espaces}` → the word agreeing with n (lot 10e: no more "espace(s)"). */
@@ -48,7 +54,7 @@ const numCache = new Map<string, Intl.NumberFormat>()
 /** A stored number as a form shows it ("2,4" in French): no rounding, empty when unknown. */
 export function formatInput(lang: Lang, value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return ""
-  return lang === "fr" ? String(value).replace(".", ",") : String(value)
+  return decimalComma(lang) ? String(value).replace(".", ",") : String(value)
 }
 
 export function formatNumber(lang: Lang, value: number, decimals = 0): string {
@@ -66,20 +72,23 @@ export function formatRange(lang: Lang, lo: number, hi: number, decimals = 0): s
   return `${formatNumber(lang, lo, decimals)}–${formatNumber(lang, hi, decimals)}`
 }
 
-/** Short day + month: "18/10" (fr), "Oct 18" (en). */
+/** Short day + month: "18/10" (fr), "18.10." (de), "Oct 18" (en). */
 export function formatDayMonth(lang: Lang, d: Date): string {
-  if (lang === "fr") {
-    return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit" }).format(d)
-  }
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(d)
+  if (lang === "en") return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(d)
+  return new Intl.DateTimeFormat(locales[lang], { day: "2-digit", month: "2-digit" }).format(d)
 }
 
-/** Full date with the year: "19/10/2026" (fr), "Oct 19, 2026" (en), lot 10e (backups, files). */
+/** Full date with the year: "19/10/2026" (fr), "19.10.2026" (de), "Oct 19, 2026" (en), lot 10e (backups, files). */
 export function formatDate(lang: Lang, d: Date): string {
-  return new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-US", lang === "fr" ? { day: "2-digit", month: "2-digit", year: "numeric" } : { month: "short", day: "numeric", year: "numeric" }).format(d)
+  return new Intl.DateTimeFormat(locales[lang], lang === "en" ? { month: "short", day: "numeric", year: "numeric" } : { day: "2-digit", month: "2-digit", year: "numeric" }).format(d)
 }
 
-/** 24 h clock in both languages (grow schedules are written that way). */
+/** Day and short month: "19 oct." (fr), "19. Okt." (de), "Oct 19" (en). */
+export function formatDayShortMonth(lang: Lang, d: Date): string {
+  return new Intl.DateTimeFormat(locales[lang], { day: "numeric", month: "short" }).format(d)
+}
+
+/** 24 h clock in every language (grow schedules are written that way). */
 export function formatTime(lang: Lang, d: Date): string {
   return new Intl.DateTimeFormat(locales[lang], { hour: "2-digit", minute: "2-digit", hour12: false }).format(d)
 }

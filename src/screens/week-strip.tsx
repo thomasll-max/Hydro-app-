@@ -10,6 +10,7 @@ import { weekdayIndex } from "@/calendar/rrule"
 import type { IsoDate } from "@/model/types"
 import { cn } from "@/lib/utils"
 import { selectedSpaceIds, useCalendarData } from "./calendar-parts"
+import { locales } from "@/i18n/core"
 
 /**
  * Monday → Sunday: the day in Figtree, its number in mono, today underlined in « eau ». Under each day one small marker
@@ -29,7 +30,7 @@ export function WeekStrip() {
     () => forSpaces(calendarItems(data, monday, addDays(monday, 6), today, data.tz), ids).filter((i) => !i.done),
     [data, monday, today, ids],
   )
-  const locale = settings.lang === "fr" ? "fr-FR" : "en-US"
+  const locale = locales[settings.lang]
   const short = new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" })
   const long = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })
   const swipe = useRef<number | null>(null)

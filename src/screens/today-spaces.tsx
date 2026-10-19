@@ -20,6 +20,7 @@ import type { Autonomy } from "@/calc/reservoir"
 import { cn } from "@/lib/utils"
 import { UpcomingCard } from "./calendar-parts"
 import { tertiary } from "@/components/hydro/styles"
+import type { Lang } from "@/i18n/types"
 
 function useDigestData(): DigestData {
   const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks, sprays } = useGrow()
@@ -37,7 +38,7 @@ const DIGEST_DELAY_MS = 4000
  * once things settle (4 s after the last entry, or when the app goes to the background / Today is left), and only the
  * docs whose text changed, in one batch. Old dated docs are pruned once a day.
  */
-function usePersistDigest(data: DigestData, lang: "fr" | "en") {
+function usePersistDigest(data: DigestData, lang: Lang) {
   const { storeKind, saveDigestWeek } = useGrow()
   const written = useRef(new Map<string, string>())
   const prunedOn = useRef("")

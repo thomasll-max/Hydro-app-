@@ -10,10 +10,16 @@ import { SpacePill } from "./space-pill"
 import { cn } from "@/lib/utils"
 import { joined, segmentItem, tertiary } from "@/components/hydro/styles"
 import { navigate } from "@/app/nav"
+import { locales } from "@/i18n/core"
 
 // Joined boxes (lot 10h), the active one inverted.
 const compact = "inline-grid grid-flow-col auto-cols-fr [grid-template-columns:none] gap-0"
 const pillItem = cn(segmentItem, "min-w-11 text-[0.75rem]")
+const LANG_NAMES: [Lang, string][] = [
+  ["fr", "Français"],
+  ["en", "English"],
+  ["de", "Deutsch"],
+]
 
 export function LangSwitch({ wide }: { wide?: boolean } = {}) {
   const { settings, setLang, t } = useSettings()
@@ -23,14 +29,14 @@ export function LangSwitch({ wide }: { wide?: boolean } = {}) {
       value={settings.lang}
       onValueChange={(v) => v && setLang(v as Lang)}
       aria-label={t("controls.language")}
-      className={wide ? joined(2, "w-full gap-0") : joined(undefined, compact)}
+      className={wide ? joined(3, "w-full gap-0") : joined(undefined, compact)}
     >
-      <ToggleGroupItem value="fr" className={pillItem} aria-label="Français">
-        {wide ? "Français" : "FR"}
-      </ToggleGroupItem>
-      <ToggleGroupItem value="en" className={pillItem} aria-label="English">
-        {wide ? "English" : "EN"}
-      </ToggleGroupItem>
+      {/* Each language in its own words (lot 10i: FR / EN / DE). */}
+      {LANG_NAMES.map(([v, name]) => (
+        <ToggleGroupItem key={v} value={v} className={pillItem} aria-label={name}>
+          {wide ? name : v.toUpperCase()}
+        </ToggleGroupItem>
+      ))}
     </ToggleGroup>
   )
 }
@@ -79,8 +85,8 @@ export function TopBar() {
 function TodayButton() {
   const { t, settings } = useSettings()
   const now = new Date()
-  const date = new Intl.DateTimeFormat(settings.lang === "fr" ? "fr-FR" : "en-US", { weekday: "short", day: "numeric", month: "short" }).format(now)
-  const long = new Intl.DateTimeFormat(settings.lang === "fr" ? "fr-FR" : "en-US", { weekday: "long", day: "numeric", month: "long" }).format(now)
+  const date = new Intl.DateTimeFormat(locales[settings.lang], { weekday: "short", day: "numeric", month: "short" }).format(now)
+  const long = new Intl.DateTimeFormat(locales[settings.lang], { weekday: "long", day: "numeric", month: "long" }).format(now)
   return (
     <button
       type="button"

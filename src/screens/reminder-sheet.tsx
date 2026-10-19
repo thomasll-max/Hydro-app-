@@ -11,6 +11,7 @@ import { growTimeZone } from "@/calendar/agenda"
 import { formatRRule, parseRRule, seriesDates, WEEKDAYS, weekdayIndex, type Rule, type Weekday } from "@/calendar/rrule"
 import type { Reminder } from "@/model/grow"
 import { joined, segment } from "@/components/hydro/styles"
+import { locales } from "@/i18n/core"
 
 export type ReminderInit = { reminder?: Reminder; date?: string; spaceId?: string; title?: string }
 
@@ -93,7 +94,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
 
   // Monday-first narrow day names in the app language.
   const dayNames = useMemo(() => {
-    const fmt = new Intl.DateTimeFormat(settings.lang === "fr" ? "fr-FR" : "en-US", { weekday: "short", timeZone: "UTC" })
+    const fmt = new Intl.DateTimeFormat(locales[settings.lang], { weekday: "short", timeZone: "UTC" })
     return WEEKDAYS.map((_, i) => fmt.format(new Date(Date.UTC(2026, 9, 19 + i))).replace(".", ""))
   }, [settings.lang])
 

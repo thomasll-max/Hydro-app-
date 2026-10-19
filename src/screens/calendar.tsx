@@ -29,6 +29,7 @@ import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
 import { iconButton, tertiary } from "@/components/hydro/styles"
 import { goBack, useRoute } from "@/app/nav"
+import { locales } from "@/i18n/core"
 
 type View = "month" | "agenda"
 type Filter = "all" | "reminders" | "deadlines" | "journal"
@@ -136,7 +137,7 @@ function MonthView({ filter, onDay, start }: { filter: Filter; onDay: (d: IsoDat
   const r = useRange(gridFrom, gridTo, filter)
   const days: IsoDate[] = []
   for (let d = gridFrom; d <= gridTo; d = addDays(d, 1)) days.push(d)
-  const locale = settings.lang === "fr" ? "fr-FR" : "en-US"
+  const locale = locales[settings.lang]
   const title = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${first}T12:00:00Z`))
   const wd = new Intl.DateTimeFormat(locale, { weekday: "narrow", timeZone: "UTC" })
   const inMonth = (d: IsoDate) => d >= first && d <= last
@@ -255,7 +256,7 @@ function Stat({ k, v }: { k: string; v: number }) {
 function useDayLabel() {
   const { settings } = useSettings()
   return (d: IsoDate, style: "long" | "short" = "short") =>
-    new Intl.DateTimeFormat(settings.lang === "fr" ? "fr-FR" : "en-US", style === "long" ? { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" } : { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${d}T12:00:00Z`))
+    new Intl.DateTimeFormat(locales[settings.lang], style === "long" ? { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" } : { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${d}T12:00:00Z`))
 }
 
 function AgendaView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => void }) {

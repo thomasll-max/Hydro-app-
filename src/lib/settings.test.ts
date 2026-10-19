@@ -6,7 +6,7 @@ describe("réglages", () => {
     expect(parseSettings(undefined)).toEqual(DEFAULT_SETTINGS)
   })
   it("rejette les valeurs inconnues et pose le schemaVersion", () => {
-    const s = parseSettings({ theme: "neon", lang: "de", schemaVersion: 99 })
+    const s = parseSettings({ theme: "neon", lang: "it", schemaVersion: 99 })
     expect(s.theme).toBe("system")
     expect(s.lang).toBe("fr")
     expect(s.schemaVersion).toBe(SETTINGS_SCHEMA)

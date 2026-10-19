@@ -35,7 +35,7 @@ Journal en une minute · Crop steering · Nutrition · Calendrier · Graphiques 
 | ⚖️ **pH / Balance** | pH cible selon le stade, titrage guidé, et une prédiction qui apprend de tes bidons précédents. |
 | 📅 **Calendrier** | Rappels récurrents, échéances automatiques (12/12, Fade, rinçage, récolte, bidon à refaire…) et export vers le calendrier du téléphone (.ics). Il s'ouvre depuis la bande de la semaine, la date en haut de l'écran ou Outils. |
 | 📈 **Graphiques** | Courbes avec les zones cibles en fond, événements sur la frise, comparaison de jusqu'à 4 espaces. |
-| 🌍 **Partout** | Français / anglais, thème clair / sombre, conçu pour une main et un écran de téléphone : quatre onglets en bas (Aujourd'hui, Journal, Graphiques, Outils) avec le « + » de la saisie du jour au milieu. |
+| 🌍 **Partout** | Français / anglais / allemand, thème clair / sombre, conçu pour une main et un écran de téléphone : quatre onglets en bas (Aujourd'hui, Journal, Graphiques, Outils) avec le « + » de la saisie du jour au milieu. |
 
 <div align="center">
 <img src="docs/screenshots/today-clair.png" width="31%" alt="Aujourd'hui, thème clair">&nbsp;
@@ -128,7 +128,7 @@ Hydro est développée par lots, avec [Claude](https://claude.ai) : une session 
 <summary><b>Ajouter une gamme d'engrais ou un module</b></summary>
 
 - **Gamme d'engrais** : décrire la gamme dans `src/data/nutrients/` (produits, unités, formes, programme par stade, guide par EC, ordre de mélange, règles, sources), puis l'enregistrer dans le catalogue. Le sélecteur de gamme apparaît dès qu'il y en a plusieurs.
-- **Module** : ajouter son id à `MODULES` (`src/model/grow.ts`), l'inclure dans les modèles d'espace voulus, déclarer ses champs dans `MODULE_FIELDS` (`src/model/grow-ops.ts`) et ses libellés dans `fr.ts` / `en.ts`. Le test i18n vérifie la parité des clés.
+- **Module** : ajouter son id à `MODULES` (`src/model/grow.ts`), l'inclure dans les modèles d'espace voulus, déclarer ses champs dans `MODULE_FIELDS` (`src/model/grow-ops.ts`) et ses libellés dans `fr.ts` / `en.ts` / `de.ts`. Le test i18n vérifie la parité des clés dans les trois langues.
 
 </details>
 

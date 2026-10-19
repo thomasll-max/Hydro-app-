@@ -15,6 +15,7 @@ import { GROW_SCHEMA, type ConcentrateStock, type CustomProduct } from "@/model/
 import type { NutrientCatalog } from "@/data/nutrients"
 import { cn } from "@/lib/utils"
 import { secondary, tertiary } from "@/components/hydro/styles"
+import { locales } from "@/i18n/core"
 
 // ---------- Concentrates ----------
 export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: number; i: number }) {
@@ -24,7 +25,7 @@ export function ConcentrateCard({ cat, conc, i }: { cat: NutrientCatalog; conc: 
   const powders = cat.products.filter((p) => p.form === "powder")
   if (!powders.length || !cat.ecTable) return null
   const stocks = openStocks(concentrateStocks, cat.id)
-  const date = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(settings.lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" })
+  const date = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(settings.lang === "en" ? "en-GB" : locales[settings.lang], { day: "numeric", month: "short", year: "numeric" })
   const finish = async (s: ConcentrateStock) => {
     try {
       await saveConcentrateStock({ ...s, finishedOn: todayIso() })

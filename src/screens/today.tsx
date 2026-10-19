@@ -27,6 +27,7 @@ import { LastHarvest, StepCard } from "./cycle-steps"
 import { nextStep } from "@/calc/steps"
 import { tertiary } from "@/components/hydro/styles"
 import { WeekStrip } from "./week-strip"
+import { lowerWord } from "@/i18n/core"
 
 function useNowMinutes() {
   const now = () => {
@@ -43,7 +44,7 @@ function useNowMinutes() {
 
 /** Culture view of one space (stage, targets, program, last entry, one correction). `extra` goes under the hero. */
 function CultureToday({ extra }: { extra?: React.ReactNode }) {
-  const { t, num, range, dm } = useSettings()
+  const { t, num, range, dm, settings } = useSettings()
   const { ready, cycle, entries, space, targetsFor } = useGrow()
   const ed = useEditors()
   const nowMin = useNowMinutes()
@@ -112,7 +113,7 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
         <Chips>
           {tg?.steer && <Chip tone="leaf">{`${t(`stage.${s.key}`)} · ${t(`steerChip.${tg.steer}`)}`}</Chip>}
           {!tg?.steer && s.key !== "notStarted" && <Chip tone="leaf">{t(`stage.${s.key}`)}</Chip>}
-          <Chip tone="water">{`${t(`mode.${cycle.waterMode}Short`)} · ${t(`substrate.${cycle.substrate}`).toLowerCase()}`}</Chip>
+          <Chip tone="water">{`${t(`mode.${cycle.waterMode}Short`)} · ${lowerWord(settings.lang, t(`substrate.${cycle.substrate}`))}`}</Chip>
         </Chips>
       </ScreenHero>
       {extra}

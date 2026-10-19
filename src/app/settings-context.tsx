@@ -1,15 +1,6 @@
 import * as React from "react"
 import { getStores } from "@/store"
-import {
-  DEFAULT_SETTINGS,
-  LOCAL_KEY,
-  newer,
-  parseSettings,
-  resolveTheme,
-  SETTINGS_PATH,
-  type Settings,
-  type ThemePref,
-} from "@/lib/settings"
+import { DEFAULT_SETTINGS, LOCAL_KEY, newer, parseSettings, resolveTheme, SETTINGS_PATH, type Settings, type ThemePref, phoneLang } from "@/lib/settings"
 import { formatDate, formatDayMonth, formatInput, formatNumber, formatRange, locales, translate, type Vars } from "@/i18n/core"
 import type { Lang, MessageKey } from "@/i18n/types"
 
@@ -39,7 +30,10 @@ const SettingsContext = React.createContext<Ctx | null>(null)
 
 function readLocal(): Settings {
   try {
-    return parseSettings(JSON.parse(localStorage.getItem(LOCAL_KEY) ?? "null"))
+    const raw = localStorage.getItem(LOCAL_KEY)
+    // Never opened on this device: the phone's language if it is German (a saved copy in the base still wins, it is newer).
+    if (raw == null) return { ...DEFAULT_SETTINGS, lang: phoneLang() }
+    return parseSettings(JSON.parse(raw))
   } catch {
     return DEFAULT_SETTINGS
   }

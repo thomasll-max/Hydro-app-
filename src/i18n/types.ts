@@ -9,5 +9,6 @@ type Leaves<T, P extends string = ""> = {
 }[keyof T & string]
 export type MessageKey = Leaves<Messages>
 
-export type Lang = "fr" | "en"
-export const LANGS: Lang[] = ["fr", "en"]
+export type Lang = "fr" | "en" | "de"
+export const LANGS: Lang[] = ["fr", "en", "de"]
+export const isLang = (v: unknown): v is Lang => LANGS.includes(v as Lang)

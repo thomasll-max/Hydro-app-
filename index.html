@@ -16,7 +16,8 @@
       try {
         var s = JSON.parse(localStorage.getItem("hydro.ui") || "null")
         if (s && (s.theme === "light" || s.theme === "dark")) document.documentElement.setAttribute("data-app-theme", s.theme)
-        if (s && s.lang === "en") document.documentElement.lang = "en"
+        if (s && (s.lang === "en" || s.lang === "de")) document.documentElement.lang = s.lang
+        else if (!s && /^de/i.test(navigator.language || "")) document.documentElement.lang = "de"
       } catch (e) {}
     </script>
   </head>

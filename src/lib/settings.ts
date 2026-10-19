@@ -1,5 +1,5 @@
 // Settings model (db path: settings/main). Pure functions only.
-import type { Lang } from "@/i18n/types"
+import { isLang, type Lang } from "@/i18n/types"
 
 export const SETTINGS_PATH = "settings/main"
 export const SETTINGS_SCHEMA = 1
@@ -28,13 +28,18 @@ export const DEFAULT_SETTINGS: Settings = {
 
 const THEMES: ThemePref[] = ["light", "dark", "system"]
 
+/** First launch (nothing saved yet): a German phone starts in German (lot 10i); otherwise French, the default. */
+export function phoneLang(languages: readonly string[] = typeof navigator === "undefined" ? [] : (navigator.languages ?? [navigator.language])): Lang {
+  return languages[0]?.toLowerCase().startsWith("de") ? "de" : DEFAULT_SETTINGS.lang
+}
+
 /** Accept anything (db doc, localStorage JSON) and return a valid Settings. */
 export function parseSettings(raw: unknown): Settings {
   const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {}
   return {
     schemaVersion: SETTINGS_SCHEMA,
     theme: THEMES.includes(o.theme as ThemePref) ? (o.theme as ThemePref) : DEFAULT_SETTINGS.theme,
-    lang: o.lang === "en" || o.lang === "fr" ? o.lang : DEFAULT_SETTINGS.lang,
+    lang: isLang(o.lang) ? o.lang : DEFAULT_SETTINGS.lang,
     activeCycleId: typeof o.activeCycleId === "string" ? o.activeCycleId : undefined,
     space: typeof o.space === "string" && o.space ? o.space : undefined,
     concentrate: [0, 113, 226, 282].includes(o.concentrate as number) ? (o.concentrate as number) : undefined,

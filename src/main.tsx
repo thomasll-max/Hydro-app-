@@ -32,16 +32,17 @@ class Boundary extends Component<{ children: ReactNode }, { error: Error | null 
   }
   render() {
     if (!this.state.error) return this.props.children
-    const fr = document.documentElement.lang !== "en"
+    const lang = document.documentElement.lang
+    const say = (fr: string, en: string, de: string) => (lang === "en" ? en : lang === "de" ? de : fr)
     return (
       <div style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
-        <h1 style={{ fontSize: 20 }}>{fr ? "Hydro n'a pas pu s'afficher" : "Hydro couldn't load"}</h1>
+        <h1 style={{ fontSize: 20 }}>{say("Hydro n'a pas pu s'afficher", "Hydro couldn't load", "Hydro konnte nicht angezeigt werden")}</h1>
         <p style={{ opacity: 0.75, fontSize: 14 }}>{this.state.error.message}</p>
         <pre style={{ opacity: 0.6, fontSize: 10.5, whiteSpace: "pre-wrap", wordBreak: "break-all", maxHeight: 260, overflow: "auto" }}>
           {String(this.state.error.stack ?? "").split("\n").slice(0, 8).join("\n")}
         </pre>
         <button onClick={() => location.reload()} style={{ marginTop: 12, padding: "10px 16px", borderRadius: 999 }}>
-          {fr ? "Recharger" : "Reload"}
+          {say("Recharger", "Reload", "Neu laden")}
         </button>
         <RescueActions />
       </div>

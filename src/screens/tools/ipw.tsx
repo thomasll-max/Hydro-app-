@@ -16,6 +16,7 @@ import { GROW_SCHEMA } from "@/model/grow"
 import { cn } from "@/lib/utils"
 import { useEditors } from "@/app/editors"
 import { secondary } from "@/components/hydro/styles"
+import { formatInput, locales } from "@/i18n/core"
 
 export function IpwTool() {
   const { t, num, settings } = useSettings()
@@ -35,7 +36,7 @@ export function IpwTool() {
   useEffect(() => {
     const last = mine[0]
     setProtocol((last?.protocol as IpwProtocol) ?? "prevention")
-    setLitres(last ? (settings.lang === "fr" ? String(last.litres).replace(".", ",") : String(last.litres)) : "")
+    setLitres(last ? formatInput(settings.lang, last.litres) : "")
     setChecked([])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [space?.id, mine.length])
@@ -47,7 +48,7 @@ export function IpwTool() {
   // Same protocol still running: the schedule keeps its first day; otherwise a new run starts today.
   const start = running && running.protocol === protocol ? running.start : today
   const plan = ipwSchedule(protocol, start, lastDay).filter((d) => d >= today).slice(0, 8)
-  const fmt = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(settings.lang === "fr" ? "fr-FR" : "en-GB", { weekday: "short", day: "numeric", month: "short" })
+  const fmt = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(settings.lang === "en" ? "en-GB" : locales[settings.lang], { weekday: "short", day: "numeric", month: "short" })
   const allChecked = IPW_CHECKLIST.every((c) => checked.includes(c))
 
 

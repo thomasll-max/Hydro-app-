@@ -159,3 +159,33 @@ describe("lot 10k1b — Aujourd'hui calme : l'écran", () => {
     expect(read("src/components/hydro/primitives.tsx")).toMatch(/export function Label\(\{ children, className \}/)
   })
 })
+
+describe("lot 10k2a — Outils en trois groupes", () => {
+  const tools = read("src/screens/tools.tsx")
+  const ids = (g: string) => [...tools.matchAll(new RegExp(`\\{ id: "(\\w+)"[^}]*group: "${g}"`, "g"))].map((m) => m[1])
+  it("Chaque jour, Régler la pièce, Mon installation ; Premiers pas et Réglages hors de la liste, leurs routes gardées", () => {
+    expect(ids("daily")).toEqual(["nutrition", "irrigation", "ph", "calendar", "ask"])
+    expect(ids("room")).toEqual(["light", "climate", "ipw"])
+    expect(ids("setup")).toEqual(["equipment", "reperes", "data"])
+    expect(tools).toMatch(/\{ id: "start", emoji: "sprout", title: "tools\.start", desc: "tools\.startD" \}/)
+    expect(tools).toMatch(/\{ id: "settings", emoji: "gear", title: "tools\.settings", desc: "tools\.settingsD" \}/)
+    expect(read("src/app/nav.ts")).toMatch(/TOOL_IDS = \["start",[^\]]*"settings"\]/)
+    expect(read("src/components/hydro/top-bar.tsx")).toMatch(/id="menu-start"/)
+  })
+  it("icônes au trait colorées par sujet, lignes de 54 px, plus de « Calculs testés »", () => {
+    for (const id of ["nutrition", "irrigation", "ph"]) expect(tools).toMatch(new RegExp(`id: "${id}"[^}]*tone: "water"`))
+    for (const id of ["light", "climate", "ipw"]) expect(tools).toMatch(new RegExp(`id: "${id}"[^}]*tone: "leaf"`))
+    for (const id of ["calendar", "equipment", "reperes", "data"]) expect(tools).toMatch(new RegExp(`id: "${id}"[^}]*tone: "neutral"`))
+    expect(tools).toMatch(/min-h-\[54px\]/)
+    expect(tools).not.toMatch(/tools\.subtitle/)
+    for (const l of [fr, en, de]) expect((l as unknown as { tools: Record<string, string> }).tools.subtitle).toBeUndefined()
+  })
+  it("des mots simples (planche « Les menus »)", () => {
+    const T = (k: string) => translate("fr", `tools.${k}` as never)
+    expect([T("nutrition"), T("nutritionD"), T("irrigation"), T("irrigationD"), T("ph"), T("phD"), T("calendar"), T("calendarD")]).toEqual(["Nutrition", "La recette du bidon", "Arrosage", "Doses et horaires du jour", "pH", "Combien de Balance verser", "Calendrier", "Rappels et échéances"])
+    expect([T("light"), T("lightD"), T("climate"), T("climateD")]).toEqual(["Lumière", "Intensité et hauteur de lampe", "Climat", "Température, humidité, VPD"])
+    expect([T("equipment"), T("equipmentD"), T("reperes"), T("reperesD"), T("data"), T("dataD")]).toEqual(["Équipement", "Lampes, réservoirs, pompes", "Repères Athena", "Les tableaux du Handbook", "Sauvegarde", "Exporter, importer"])
+    expect([T("gDaily"), T("gRoom"), T("gSetup"), T("foot")]).toEqual(["Chaque jour", "Régler la pièce", "Mon installation", "Premiers pas et Réglages : dans l'engrenage en haut."])
+    for (const l of ["en", "de"] as const) for (const k of ["gDaily", "gRoom", "gSetup", "foot"]) expect(translate(l, `tools.${k}` as never)).not.toMatch(/^tools\./)
+  })
+})

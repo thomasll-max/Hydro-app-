@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1 ; 38 = lot 10f2 ; 39 = lot 10g ; 40 = lot 10h1 ; 41 = lot 10h2 ; 42 = lot 10h3 ; 43 = lot 10i ; 44 = lot 10j1 ; 45 = lot 10j2 ; 46 = lot 7a ; 47 = lot 7b ; 48 = lot 10k1a ; 49 = lot 10k1b)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1 ; 38 = lot 10f2 ; 39 = lot 10g ; 40 = lot 10h1 ; 41 = lot 10h2 ; 42 = lot 10h3 ; 43 = lot 10i ; 44 = lot 10j1 ; 45 = lot 10j2 ; 46 = lot 7a ; 47 = lot 7b ; 48 = lot 10k1a ; 49 = lot 10k1b ; 50 = lot 10k2a)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -30,7 +30,8 @@
 - [ ] Lot 10k : interface « calme » : Aujourd'hui, Outils, Journal par semaines, Graphiques (prompt `docs/prompt-lot-10k.md`, avant 11 et 12)
   - [x] Lot 10k1a : typographie droite (Geologica pour les titres et les chiffres, plus de JetBrains Mono, Fraunces dans le logo seul) (344 tests, artefact v48)
   - [x] Lot 10k1b : Aujourd'hui calme (bandeau Premiers pas, bloc « Maintenant », À faire, une ligne par espace) (350 tests, artefact v49)
-  - [ ] Lot 10k2 : Outils en trois groupes, Pulvérisation générique
+  - [x] Lot 10k2a : Outils en trois groupes (353 tests, artefact v50)
+  - [ ] Lot 10k2b : Pulvérisation générique (IPW Athena ou mon mélange)
   - [ ] Lot 10k3 : Journal par semaines, page d'une semaine, menu du « + »
   - [ ] Lot 10k4 : Graphiques (vues prêtes, segments droits)
 - [ ] Lot 10l : page d'un espace et saisie du jour, version calme (prompt `docs/prompt-lot-10l.md`, juste après 10k)
@@ -130,6 +131,13 @@ Constat de Thomas après 10j : « toujours un effet plein d'infos éparpillées,
 5. Pas de jargon dans les listes (il reste dans les outils, avec le glossaire).
 6. Lignes de graphique honnêtes : segments droits.
 7. Typographie droite : Fraunces seulement dans le logo et l'écran de démarrage ; titres en Geologica 700 (−0,02 em) ; texte en Figtree ; tous les chiffres en Geologica à chasse fixe (plus de JetBrains Mono) ; liens de titre de section petits (≈ 13 px, Figtree 600).
+
+## Lot 10k2a — notes
+- **Découpage** : le lot 10k2 est coupé en 10k2a (la liste d'Outils) et 10k2b (Pulvérisation générique, qui touche aux données et aux rappels).
+- **Outils** (`screens/tools.tsx`) : trois groupes au petit titre en capitales (Geologica 12 px, interlettrage 0,12 em) : « Chaque jour » (Nutrition, Arrosage, pH, Calendrier), « Régler la pièce » (Lumière, Climat, Pulvérisation), « Mon installation » (Équipement, Repères Athena, Sauvegarde). Lignes de 54 px sans trait, icônes au trait colorées par sujet (`LineIcon tone` : « eau » Nutrition / Arrosage / pH, « plante » Lumière / Climat / Pulvérisation, neutre le reste ; Climat prend le thermomètre). Mots simples de la planche (`tools.*D`), « Climat et air » → « Climat », « pH / Balance » → « pH », « Repères » → « Repères Athena » (titres repris dans la page de chaque outil).
+- **Premiers pas et Réglages** ne sont plus listés ; leurs routes `#tools/start`, `#tools/settings` (et les anciennes `#start`, `#settings`) restent. Une ligne en bas : « Premiers pas et Réglages : dans l'engrenage en haut. » ; le menu de l'engrenage gagne « Premiers pas → » (`#menu-start`) sous « Tous les réglages → ». La phrase « Calculs testés… » (`tools.subtitle`) est retirée.
+- **Décision prise seule** : « Demander à Claude » (version Claude seulement, capacité `sample`), absent de la planche, reste en dernière ligne de « Chaque jour ».
+- Scripts : `e2e-10k2.py` (nouveau : groupes, ordre, 54 px, couleur des icônes, pas de dessin ni de trait, ligne du bas, calendrier et retour, anciennes routes, « Premiers pas → » du menu ; FR/EN/DE, clair/sombre, 390/360) ; `e2e-10h.py` (Nutrition en premier). 353 tests (`lot10k.test.ts` : groupes, couleurs, textes).
 
 ## Lot 10k1b — notes
 - **Écran** (`screens/today-calm.tsx`, `CalmToday`, vue « Tous » ou une room) : titre « Bonjour Thomas. » (Geologica 30 px), bloc « Maintenant », À faire, Espaces, 36 px entre les sections (`gap-9`). La vue d'un espace (`SpaceToday`) garde provisoirement son contenu, **sans** le résumé « Bonjour » (refaite au lot 10l).

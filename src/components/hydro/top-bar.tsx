@@ -134,8 +134,9 @@ export function DisplayMenu() {
             <span className="text-[0.75rem] font-semibold text-fg-3">{t("controls.theme")}</span>
             <ThemeSwitch wide />
           </div>
-          {/* Shortcut to Réglages (Thomas's request, lot 10h): the menu closes, back returns here. */}
-          <div className="-mb-1.5 border-t border-line pt-1">
+          {/* Shortcuts to Réglages (Thomas's request, lot 10h) and Premiers pas (lot 10k2: no longer listed in Outils): the
+              menu closes, back returns here. */}
+          <div className="-mb-1.5 flex flex-col items-start border-t border-line pt-1">
             <button
               type="button"
               id="all-settings"
@@ -146,6 +147,17 @@ export function DisplayMenu() {
               }}
             >
               {t("week.allSettings")}
+            </button>
+            <button
+              type="button"
+              id="menu-start"
+              className={tertiary}
+              onClick={() => {
+                setOpen(false)
+                navigate({ tab: "tools", tool: "start" }, { push: true })
+              }}
+            >
+              {t("controls.start")}
             </button>
           </div>
         </Popover.Content>

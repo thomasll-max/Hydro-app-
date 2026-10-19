@@ -35,7 +35,7 @@ Journal en une minute · Crop steering · Nutrition · Calendrier · Graphiques 
 | ⚖️ **pH / Balance** | pH cible selon le stade, titrage guidé, et une prédiction qui apprend de tes bidons précédents. |
 | 📅 **Calendrier** | Rappels récurrents, échéances automatiques (12/12, Fade, rinçage, récolte, bidon à refaire…) et export vers le calendrier du téléphone (.ics). Il s'ouvre depuis la date en haut de l'écran, « Tout le calendrier → » d'Aujourd'hui ou Outils. |
 | 📈 **Graphiques** | Courbes avec les zones cibles en fond, événements sur la frise, comparaison de jusqu'à 4 espaces. |
-| 🌍 **Partout** | Français / anglais / allemand, thème clair / sombre, conçu pour une main et un écran de téléphone : quatre onglets en bas (Aujourd'hui, Journal, Graphiques, Outils) avec le « + » de la saisie du jour au milieu. |
+| 🌍 **Partout** | Français / anglais / allemand, thème clair / sombre, conçu pour une main et un écran de téléphone : quatre onglets en bas (Aujourd'hui, Journal, Graphiques, Outils) avec le « + » de la saisie du jour au milieu ; Outils rangé en trois groupes (chaque jour, la pièce, l'installation). |
 
 <div align="center">
 <img src="docs/screenshots/today-clair.png" width="31%" alt="Aujourd'hui, thème clair">&nbsp;

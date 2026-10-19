@@ -22,23 +22,35 @@ import { StartTool } from "./tools/start"
 import { useSample } from "@/lib/sample"
 import { navigate, useRoute, type ToolId } from "@/app/nav"
 
-type Tool = { id: ToolId; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; soon?: MessageKey; wide?: boolean; perSpace?: boolean; needsSample?: boolean }
+type Group = "daily" | "room" | "setup"
+type Tool = { id: ToolId | "calendar"; emoji: EmojiName; title: MessageKey; desc: MessageKey; lot?: number; soon?: MessageKey; perSpace?: boolean; needsSample?: boolean; group?: Group; tone?: "water" | "leaf" | "neutral" }
+/**
+ * Lot 10k2: three groups (« Chaque jour », « Régler la pièce », « Mon installation »), simple words, line icons coloured by
+ * subject (« eau » for the tank and the watering, « plante » for the room, neutral for the setup). Premiers pas and
+ * Réglages are not listed (the gear of the top bar and the banner of Aujourd'hui open them); their routes stay.
+ */
 const TOOLS: Tool[] = [
-  { id: "start", emoji: "sprout", title: "tools.start", desc: "tools.startD", wide: true },
-  { id: "irrigation", emoji: "droplet", title: "tools.irrigation", desc: "tools.irrigationD", wide: true, perSpace: true },
-  { id: "nutrition", emoji: "testTube", title: "tools.nutrition", desc: "tools.nutritionD", perSpace: true },
-  { id: "ph", emoji: "scales", title: "tools.ph", desc: "tools.phD", perSpace: true },
-  { id: "ipw", emoji: "sweat", title: "tools.ipw", desc: "tools.ipwD", perSpace: true },
-  { id: "light", emoji: "bulb", title: "tools.light", desc: "tools.lightD", perSpace: true },
-  { id: "climate", emoji: "cyclone", title: "tools.climate", desc: "tools.climateD", wide: true, perSpace: true },
-  { id: "ask", emoji: "book", title: "tools.ask", desc: "tools.askD", wide: true, perSpace: true, needsSample: true },
-  { id: "equipment", emoji: "plug", title: "tools.equipment", desc: "tools.equipmentD", wide: true },
-  { id: "data", emoji: "notebook", title: "tools.data", desc: "tools.dataD" },
-  { id: "reperes", emoji: "compass", title: "tools.reperes", desc: "tools.reperesD" },
-  { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD", wide: true },
+  { id: "nutrition", emoji: "testTube", title: "tools.nutrition", desc: "tools.nutritionD", perSpace: true, group: "daily", tone: "water" },
+  { id: "irrigation", emoji: "droplet", title: "tools.irrigation", desc: "tools.irrigationD", perSpace: true, group: "daily", tone: "water" },
+  { id: "ph", emoji: "scales", title: "tools.ph", desc: "tools.phD", perSpace: true, group: "daily", tone: "water" },
+  { id: "calendar", emoji: "calendar", title: "tools.calendar", desc: "tools.calendarD", group: "daily", tone: "neutral" },
+  { id: "ask", emoji: "book", title: "tools.ask", desc: "tools.askD", perSpace: true, needsSample: true, group: "daily", tone: "neutral" },
+  { id: "light", emoji: "bulb", title: "tools.light", desc: "tools.lightD", perSpace: true, group: "room", tone: "leaf" },
+  { id: "climate", emoji: "thermometer", title: "tools.climate", desc: "tools.climateD", perSpace: true, group: "room", tone: "leaf" },
+  { id: "ipw", emoji: "sweat", title: "tools.ipw", desc: "tools.ipwD", perSpace: true, group: "room", tone: "leaf" },
+  { id: "equipment", emoji: "plug", title: "tools.equipment", desc: "tools.equipmentD", group: "setup", tone: "neutral" },
+  { id: "reperes", emoji: "compass", title: "tools.reperes", desc: "tools.reperesD", group: "setup", tone: "neutral" },
+  { id: "data", emoji: "notebook", title: "tools.data", desc: "tools.dataD", group: "setup", tone: "neutral" },
+  { id: "start", emoji: "sprout", title: "tools.start", desc: "tools.startD" },
+  { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD" },
+]
+const GROUPS: { id: Group; title: MessageKey }[] = [
+  { id: "daily", title: "tools.gDaily" },
+  { id: "room", title: "tools.gRoom" },
+  { id: "setup", title: "tools.gSetup" },
 ]
 
-const row = "flex min-h-16 w-full items-center gap-3.5 border-b border-line py-3 text-left"
+const row = "flex min-h-[54px] w-full items-center gap-3.5 py-1.5 text-left"
 
 /** List of tools; a tool opens in place with a back link. Route: #tools/irrigation… (old links #irrigation still work). */
 export function ToolsScreen() {
@@ -100,37 +112,38 @@ export function ToolsScreen() {
 
   return (
     <>
-      <ScreenHero emoji="toolbox" title={t("tools.title")}>
-        <p className="mt-1 text-[0.8125rem] leading-snug text-fg-2">{t("tools.subtitle")}</p>
-      </ScreenHero>
-      {/* One list of rows (lot 10h); the Calendar first, now that it has no tab. */}
-      <ul className="border-t border-line" id="tools-list">
-        <li>
-          <button onClick={() => navigate({ tab: "calendar" }, { push: true })} className={row} id="tool-calendar">
-            <LineIcon name="calendar" size={26} />
-            <span className="min-w-0 flex-1">
-              <b className="block text-[0.9375rem] font-semibold">{t("tools.calendar")}</b>
-              <span className="block text-[0.78125rem] leading-snug text-fg-3">{t("tools.calendarD")}</span>
-            </span>
-            <ChevronRight className="size-5 shrink-0 text-fg-3" />
-          </button>
-        </li>
-        {TOOLS.filter((tool) => !tool.needsSample || sample).map((tool) => {
-          const ready = !tool.lot
-          return (
-            <li key={tool.id}>
-              <button onClick={() => setOpen(tool.id)} className={row}>
-                <LineIcon name={tool.emoji} size={26} className={ready ? undefined : "opacity-70"} />
-                <span className="min-w-0 flex-1">
-                  <b className="block text-[0.9375rem] font-semibold">{t(tool.title)}</b>
-                  <span className="block text-[0.78125rem] leading-snug text-fg-3">{t(tool.desc)}</span>
-                </span>
-                {ready ? <ChevronRight className="size-5 shrink-0 text-fg-3" /> : <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>}
-              </button>
-            </li>
-          )
-        })}
-      </ul>
+      <ScreenHero emoji="toolbox" title={t("tools.title")} />
+      <div className="flex flex-col gap-7" id="tools-list">
+        {GROUPS.map((g) => (
+          <section key={g.id} aria-labelledby={`tools-${g.id}`} data-group={g.id}>
+            <h2 id={`tools-${g.id}`} className="mb-1 font-num text-[0.75rem] font-semibold tracking-[0.12em] text-fg-3 uppercase">
+              {t(g.title)}
+            </h2>
+            <ul>
+              {TOOLS.filter((tool) => tool.group === g.id && (!tool.needsSample || sample)).map((tool) => {
+                const ready = !tool.lot
+                // The Calendar has no tab since lot 10h: it opens over Outils, back returns here.
+                const go = () => (tool.id === "calendar" ? navigate({ tab: "calendar" }, { push: true }) : setOpen(tool.id))
+                return (
+                  <li key={tool.id}>
+                    <button onClick={go} className={row} id={`tool-${tool.id}`}>
+                      <LineIcon name={tool.emoji} size={24} tone={tool.tone} className={ready ? undefined : "opacity-70"} />
+                      <span className="min-w-0 flex-1">
+                        <b className="block text-[0.9375rem] font-semibold">{t(tool.title)}</b>
+                        <span className="block text-[0.78125rem] leading-snug text-fg-3">{t(tool.desc)}</span>
+                      </span>
+                      {ready ? <ChevronRight className="size-5 shrink-0 text-fg-3" /> : <Chip>{t("app.comingLot", { n: tool.lot! })}</Chip>}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))}
+        <p className="text-[0.8125rem] text-fg-3" id="tools-foot">
+          {t("tools.foot")}
+        </p>
+      </div>
     </>
   )
 }

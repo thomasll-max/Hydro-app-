@@ -1,5 +1,12 @@
 # Changelog
 
+## Lot 10k2a — Outils en trois groupes (19/10/2026)
+- Outils se range en trois groupes : **Chaque jour** (Nutrition, Arrosage, pH, Calendrier), **Régler la pièce** (Lumière, Climat, Pulvérisation) et **Mon installation** (Équipement, Repères Athena, Sauvegarde).
+- Des mots simples sous chaque outil (« La recette du bidon », « Doses et horaires du jour », « Combien de Balance verser »…) ; le jargon reste dans l'outil.
+- Icônes au trait colorées par sujet : couleur « eau » pour le bidon et l'arrosage, « plante » pour la pièce.
+- Premiers pas et Réglages quittent la liste : ils sont dans l'engrenage en haut (qui gagne « Premiers pas → »). La phrase « Calculs testés… » disparaît.
+- 353 tests.
+
 ## Lot 10k1b — Aujourd'hui calme (19/10/2026)
 Constat de Thomas : « plein d'infos éparpillées, ça donne mal à la tête ». Aujourd'hui suit maintenant la planche validée : un seul endroit où poser le regard.
 - **« Bonjour Thomas. »** devient le titre de l'écran.

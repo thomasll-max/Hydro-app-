@@ -177,7 +177,7 @@ with sync_playwright() as p:
     c["toolsFirst"] = pg.locator("#tools-list button").first.inner_text().split("\n")[0]
     pg.click("#tool-calendar"); pg.wait_for_timeout(1200)
     c["fromTools"] = h(); pg.go_back(); pg.wait_for_timeout(1000); c["backTools"] = h()
-    if c["allCal"] != "#calendar" or c["toolsFirst"] != "Calendrier" or c["fromTools"] != "#calendar" or c["backTools"] != "#tools": errors.append(f"calendar accesses {c}")
+    if c["allCal"] != "#calendar" or c["toolsFirst"] != "Nutrition" or c["fromTools"] != "#calendar" or c["backTools"] != "#tools": errors.append(f"calendar accesses {c}")
     pg.get_by_role("tab", name="Journal").click(); pg.wait_for_timeout(1000)
     pg.click("#display-menu"); pg.wait_for_timeout(500)
     pg.click("#all-settings"); pg.wait_for_timeout(1200)

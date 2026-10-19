@@ -70,9 +70,14 @@ describe("lot 3 — automatic deadlines", () => {
     const gw = d.find((x) => x.kind === "greatWhite")!
     expect([gw.date, gw.spaceId, gw.source, deadlineTitle("fr", gw)]).toEqual(["2026-11-10", COLUMN_ID, "label", "Great White sur les racines au transfert · Cycle 1"])
     expect(d.some((x) => x.kind === "propagationEnd" && x.date === "2026-11-10")).toBe(true)
-    // Once transferred, both disappear.
-    const after = deadlines(grow({ plannedTransferDate: "2026-11-10", transfers: [{ date: "2026-11-10", from: COLUMN_ID, to: FLOWER_ID }], spaceId: FLOWER_ID }), "2026-11-11")
-    expect(after.some((x) => x.kind === "greatWhite" || x.kind === "propagationEnd")).toBe(false)
+    // Once transferred, the end of propagation disappears; the move itself brings Great White (lot 10b, decision of
+    // Thomas), done when the transfer recorded the product.
+    const moved = grow({ plannedTransferDate: "2026-11-10", transfers: [{ date: "2026-11-10", from: COLUMN_ID, to: FLOWER_ID }], spaceId: FLOWER_ID })
+    const after = deadlines(moved, "2026-11-11")
+    expect(after.some((x) => x.kind === "propagationEnd")).toBe(false)
+    expect(deadlineState(after.find((x) => x.kind === "greatWhite")!).done).toBe(false)
+    const noted = deadlines({ ...moved, events: [{ schemaVersion: 2, id: "t", date: "2026-11-10", type: "transfer", cycleId: "cycle-1", products: [{ productId: "great-white" }], createdAt: NOW }] }, "2026-11-11")
+    expect(deadlineState(noted.find((x) => x.kind === "greatWhite")!).done).toBe(true)
   })
 
   it("12/12, Fade (S8, add-on on), flush and harvest from the cycle dates", () => {

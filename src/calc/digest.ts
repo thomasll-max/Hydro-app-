@@ -2,7 +2,7 @@
 // v1 (lot 2b): per space, the latest climate, today's planned watering, the last entry, the reservoir autonomy.
 // Later batches add reminders (3), nutrition (4)…  The Claude version stores the result in digest/latest.
 import type { Equipment, EquipmentAssignment, Grow, Site, Space } from "@/model/grow"
-import type { Cycle, Entry, IsoDate, Mix } from "@/model/types"
+import type { Cycle, Entry, GrowEvent, IsoDate, Mix } from "@/model/types"
 import type { Lang } from "@/i18n/types"
 import { formatDayMonth, formatNumber, translate } from "@/i18n/core"
 import { groupBySite } from "@/model/grow-ops"
@@ -29,6 +29,8 @@ export type DigestData = {
   /** Lot 3: reminders (and the state of automatic deadlines), products used by deadlines. */
   reminders?: Reminder[]
   customProducts?: CustomProduct[]
+  /** Lot 10b: events (a Fade or flush event, a transfer with Great White) close their deadline. */
+  events?: GrowEvent[]
 }
 
 export type DigestLine = { kind: "climate" | "watering" | "lastEntry" | "reservoir" | "stage" | "reminder" | "deadline"; text: string; warn?: boolean }

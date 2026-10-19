@@ -19,6 +19,8 @@ export type DeadlineSource = "athena" | "user" | "estimate" | "label" | "spec"
 
 /** Flow to be measured again after this many days (spec §4quater). */
 export const FLOW_CHECK_DAYS = 60
+/** A move older than this no longer brings the Great White reminder (it goes on the roots at the move). */
+export const GREAT_WHITE_DAYS = 14
 
 export type Deadline = {
   /** Stable id: same deadline, same key (used for state and for the .ics UID). */
@@ -31,7 +33,12 @@ export type Deadline = {
   productId?: string
   vars: Record<string, string | number>
   source: DeadlineSource
+  /** Already done according to the data (lot 10b): the tank of the phase or the event is recorded. Shown as done. */
+  doneBy?: "event" | "mix"
 }
+
+/** Days before the planned date from which a tank or an event counts for that deadline (tank made a little early). */
+const EARLY_DAYS = 3
 
 export type CalendarData = DigestData & { reminders?: Reminder[]; customProducts?: CustomProduct[]; concentrateStocks?: ConcentrateStock[]; sprays?: Spray[] }
 
@@ -46,21 +53,42 @@ export function deadlines(data: CalendarData, today: IsoDate): Deadline[] {
     if (!space) continue
     const base = { cycleId: c.id, spaceId: space.id }
     const vars = { cycle: c.name }
+    const evs = (data.events ?? []).filter((e) => e.cycleId === c.id)
+    const tanks = data.mixes.filter((m) => m.cycleId === c.id || m.spaceIds?.includes(space.id))
+    /** Fade / flush done: their event, or a tank of that phase made from a few days before the planned date. */
+    const doneBy = (type: "fade" | "flush", from: IsoDate, isTank: (m: (typeof tanks)[number]) => boolean): Pick<Deadline, "doneBy"> => {
+      const early = addDays(from, -EARLY_DAYS)
+      if (evs.some((e) => e.type === type && e.date >= early)) return { doneBy: "event" }
+      if (tanks.some((m) => m.date >= early && isTank(m))) return { doneBy: "mix" }
+      return {}
+    }
     if (!c.harvestDate) {
       if (!c.flipDate && c.plannedFlipDate) out.push({ key: `flip_${c.id}`, kind: "flip", date: c.plannedFlipDate, ...base, vars, source: "user" })
       const nut = spaceNutrition(data.grow?.nutrition ? { nutrition: data.grow.nutrition } : null, space)
       const fade = fadeStart(c)
-      if (fade && nut.addons.includes("fade")) out.push({ key: `fade_${c.id}`, kind: "fade", date: fade, ...base, vars: { ...vars, week: 8 }, source: "athena" })
+      if (fade && nut.addons.includes("fade"))
+        out.push({ key: `fade_${c.id}`, kind: "fade", date: fade, ...base, vars: { ...vars, week: 8 }, source: "athena", ...doneBy("fade", fade, (m) => !!m.items?.some((i) => i.id === "fade" && i.qty)) })
       // Next IPW spray of the running protocol, only while allowed (until flowering S3) and if IPW is switched on.
       if (nut.addons.includes("ipw")) {
         const next = nextIpw(data.sprays ?? [], space.id, ipwLastDay(c.flipDate))
         if (next) out.push({ key: `ipw_${space.id}_${next.date}`, kind: "ipw", date: next.date, ...base, vars: { ...vars, space: space.name }, source: "athena" })
       }
       const flush = flushStart(c)
-      if (flush) out.push({ key: `flush_${c.id}`, kind: "flush", date: flush, ...base, vars, source: "athena" })
+      if (flush) out.push({ key: `flush_${c.id}`, kind: "flush", date: flush, ...base, vars, source: "athena", ...doneBy("flush", flush, (m) => m.kind === "flush" || m.phase === "flush") })
       const harvest = plannedHarvest(c)
       if (harvest) out.push({ key: `harvest_${c.id}`, kind: "harvest", date: harvest, ...base, vars, source: "user" })
       const moved = !!c.transferDate || (c.transfers ?? []).some((t) => !t.partial)
+      // A transfer is a move made on the day (lot 10b, decision of Thomas): it brings the Great White reminder, done
+      // when the transfer (or a repotting) recorded the product. Only for a recent move: one application per move.
+      const lastMove = (c.transfers ?? []).filter((t) => !t.partial).sort((a, b) => a.date.localeCompare(b.date)).at(-1)
+      if (lastMove && lastMove.date >= addDays(today, -GREAT_WHITE_DAYS)) {
+        for (const p of data.customProducts ?? []) {
+          if (p.application !== "roots" || p.onEvent !== "transfer" || p.inactive) continue
+          const applied = evs.some((e) => (e.type === "transfer" || e.type === "transplant") && e.date >= lastMove.date && e.products?.some((x) => x.productId === p.id))
+          out.push({ key: `greatWhite_${c.id}_${p.id}_${lastMove.date}`, kind: "greatWhite", date: lastMove.date, ...base, productId: p.id, vars: { ...vars, product: p.name }, source: "label", ...(applied ? { doneBy: "event" as const } : {}) })
+        }
+      }
+      // Old cycles (before lot 10b) with a planned transfer date that has not happened yet.
       if (c.plannedTransferDate && !moved) {
         out.push({ key: `propagationEnd_${c.id}`, kind: "propagationEnd", date: c.plannedTransferDate, ...base, vars, source: "user" })
         for (const p of data.customProducts ?? []) {
@@ -133,5 +161,5 @@ export type DeadlineState = { done: boolean; date: IsoDate; snoozed: boolean }
 export function deadlineState(d: Deadline, reminders: Reminder[] = []): DeadlineState {
   const st = reminders.find((r) => r.id === autoStateId(d.key))
   const moved = st?.snoozed?.[d.date]
-  return { done: !!st?.done?.length, date: moved ? moved.slice(0, 10) : d.date, snoozed: !!moved }
+  return { done: !!st?.done?.length || !!d.doneBy, date: moved ? moved.slice(0, 10) : d.date, snoozed: !!moved }
 }

@@ -50,8 +50,9 @@ export function buildProgram(c: ProgramInput, stage: SteerStage, photoperiodH = 
   const on = toMin(c.lightsOn)
   const L = photoperiodH * 60
   const off = on + L
-  const shot = Math.round(potPctToMl(c.potVolumeL, c.shotPct))
-  const sec = (ml: number) => (c.flowMlPerMin && c.waterMode === "auto" ? Math.round(shotSeconds(ml, c.flowMlPerMin)) : undefined)
+  // Pot volume unknown: times only, no volume (never a guessed pot).
+  const shot = c.potVolumeL ? Math.round(potPctToMl(c.potVolumeL, c.shotPct)) : undefined
+  const sec = (ml?: number) => (ml != null && c.flowMlPerMin && c.waterMode === "auto" ? Math.round(shotSeconds(ml, c.flowMlPerMin)) : undefined)
   const n = Math.max(1, Math.round(c.p1Shots))
   const gap = Math.max(5, c.p1IntervalMin)
   const rows: ProgramRow[] = [{ time: hm(on), minutes: on, phase: "P0", kind: "lightsOn" }]
@@ -59,7 +60,7 @@ export function buildProgram(c: ProgramInput, stage: SteerStage, photoperiodH = 
 
   if (stage === "inst") {
     // Small doses near the stem while roots have not reached the pot edges (no runoff aimed).
-    const small = Math.min(300, Math.max(100, Math.round((c.potVolumeL * 13.3) / 10) * 10))
+    const small = c.potVolumeL ? Math.min(300, Math.max(100, Math.round((c.potVolumeL * 13.3) / 10) * 10)) : undefined
     ;[on + 120, on + L * 0.5].forEach((m, i) =>
       push({ minutes: Math.round(m), phase: "INST", kind: "inst", n: i + 1, total: 2, ml: small, seconds: sec(small), noteKey: "onlyIfLighter" }),
     )
@@ -136,7 +137,7 @@ export type SensorPlan = {
 /** Generative phases trigger at the morning base; vegetative and bulking at the peak minus 2 points. Durations use the formula, not Bonorum's seconds table (off by ×10). */
 export function sensorPlan(c: Pick<Cycle, "lightsOn" | "potVolumeL" | "flowMlPerMin">, phase: SensorPhase, base: number | null, peak: number | null, p2Pct: number): SensorPlan {
   const P = SENSOR[phase]
-  const p2Ml = Math.round(potPctToMl(c.potVolumeL, p2Pct))
+  const p2Ml = Math.round(potPctToMl(c.potVolumeL ?? 0, p2Pct))
   const p1Ml = p2Ml * 2
   const sec = (ml: number) => (c.flowMlPerMin ? shotSeconds(ml, c.flowMlPerMin) : undefined)
   const trigger = P.trigger === "base" ? base : peak != null ? peak - 2 : null

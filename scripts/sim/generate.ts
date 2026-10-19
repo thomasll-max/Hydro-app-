@@ -81,7 +81,8 @@ for (const p of plans) {
     transfers: [],
     cultivars: p.cultivars,
     germinationDate: p.germ,
-    plannedTransferDate: p.transfer,
+    // Lot 10b: "Passer en végé" tapped on day 15 in the Colonne; no planned transfer any more (a transfer is a move).
+    ...(addDays(p.germ, 14) <= LAST ? { vegDate: addDays(p.germ, 14) } : {}),
     plannedFlipDate: p.flip,
     plannedDryingDays: 10,
     flowerWeeks: 9,
@@ -102,7 +103,7 @@ for (const p of plans) {
     createdAt: created,
     updatedAt: created,
   }
-  if (p.transfer <= LAST) c = { ...transferCycle(c, FLOWER_ID, p.transfer, iso(p.transfer, 10)), transferDate: p.transfer }
+  if (p.transfer <= LAST) c = transferCycle(c, FLOWER_ID, p.transfer, iso(p.transfer, 10))
   if (p.flip <= LAST) c.flipDate = p.flip
   if (harvested(p)) {
     c = { ...transferCycle(c, DRY_ID, p.harvest, iso(p.harvest, 18), { note: "Branches suspendues au séchoir" }), harvestDate: p.harvest }
@@ -290,13 +291,14 @@ for (let d = START; d <= LAST; d = addDays(d, 1)) {
     // Lumière
     const hours = st.key === "seedling" || st.key === "veg" ? 18 : 12
     e.photoperiodH = hours
-    const colVeg = space === COLUMN_ID && daysBetween(c.germinationDate!, d) >= 14 // en vrai : de la végé dans la Colonne
-    e.ppfd = Math.round(colVeg ? between(430, 520) : inBand(t.ppfd!.lo, t.ppfd!.hi, 0))
-    if (!colVeg && t.dli && e.ppfd * hours * 0.0036 > t.dli.hi) e.ppfd = Math.floor(t.dli.hi / (hours * 0.0036)) - 5
-    if (!colVeg && t.dli && e.ppfd * hours * 0.0036 < t.dli.lo) e.ppfd = Math.ceil(t.dli.lo / (hours * 0.0036)) + 5
+    // Lot 10b: veg in the Colonne is veg ("Passer en végé"), judged against veg targets like any other day. The old
+    // special case (PPFD 430–520, RH 62–68 % against seedling targets) worked around the app having no veg there.
+    const colVeg = space === COLUMN_ID && st.key === "veg"
+    e.ppfd = Math.round(inBand(t.ppfd!.lo, t.ppfd!.hi, 0))
+    if (t.dli && e.ppfd * hours * 0.0036 > t.dli.hi) e.ppfd = Math.floor(t.dli.hi / (hours * 0.0036)) - 5
+    if (t.dli && e.ppfd * hours * 0.0036 < t.dli.lo) e.ppfd = Math.ceil(t.dli.lo / (hours * 0.0036)) + 5
     e.lightPct = space === COLUMN_ID ? (colVeg ? 100 : 60) : st.key === "veg" ? 70 : 100
     e.lightHeightCm = space === COLUMN_ID ? 35 : 45
-    if (colVeg) e.rh = Math.round(between(62, 68))
 
     // Solution
     const mix = lastMix[space]
@@ -335,7 +337,7 @@ for (let d = START; d <= LAST; d = addDays(d, 1)) {
     // Plante
     const age = daysBetween(c.germinationDate!, d)
     const fd = st.flowerDay ?? 0
-    e.heightCm = Math.round(st.key === "seedling" ? 4 + age * 0.6 : st.key === "veg" ? 26 + (age - 35) * 1.2 : Math.min(95, 34 + fd * 2.2) + between(-2, 2))
+    e.heightCm = Math.round(st.key === "seedling" ? 4 + age * 0.6 : st.key === "veg" ? Math.max(4 + age * 0.6, 26 + (age - 35) * 1.2) : Math.min(95, 34 + fd * 2.2) + between(-2, 2))
 
     // Propagation
     if (space === COLUMN_ID && age <= 10) {

@@ -3,7 +3,7 @@
 // The grow, sites, spaces and equipment live in ./grow.ts.
 import type { Transfer } from "./grow"
 
-export const SCHEMA = { cycle: 3, plant: 2, entry: 2, event: 2, mix: 4 } as const
+export const SCHEMA = { cycle: 4, plant: 2, entry: 2, event: 2, mix: 4 } as const
 
 export type IsoDate = string // "2026-10-18"
 export type Substrate = "coco" | "soil" | "mix7030"
@@ -23,11 +23,15 @@ export type Cycle = {
   transfers?: Transfer[]
   archived?: boolean
   cultivars: string[]
+  /** Start of the cycle: germination (or cutting). */
   germinationDate?: IsoDate
-  transferDate?: IsoDate // into the flowering space
+  /** "Passer en végé" (lot 10b): the day the vegetative stage starts, in any space. */
+  vegDate?: IsoDate
+  /** Old cycles (before lot 10b): moved into the flowering space, read as the start of veg when vegDate is absent. */
+  transferDate?: IsoDate
   flipDate?: IsoDate // 12/12 — flowering is counted from here
   plannedFlipDate?: IsoDate // reminder only
-  /** End of propagation: planned move to the next space (reminder only; Great White at the roots). */
+  /** Old field (before lot 10b, no longer offered): planned end of propagation. A transfer is now just a move. */
   plannedTransferDate?: IsoDate
   /** Planned drying length after the harvest, in days (end-of-drying reminder). */
   plannedDryingDays?: number
@@ -35,8 +39,9 @@ export type Cycle = {
   harvestDate?: IsoDate
   substrate: Substrate
   waterMode: WaterMode
-  potVolumeL: number
-  potCount: number
+  /** Pots of the cycle: from the space's equipment or typed; absent = "donnée manquante" (never guessed). */
+  potVolumeL?: number
+  potCount?: number
   flowMlPerMin?: number // measured, per pot
   lights: string
   lightsOn: string // "06:00"
@@ -162,7 +167,7 @@ export type Entry = {
   updatedAt: string
 }
 
-export const EVENT_TYPES = ["flip", "transplant", "fade", "flush", "harvest", "transfer", "equipment", "other"] as const
+export const EVENT_TYPES = ["veg", "flip", "transplant", "fade", "flush", "harvest", "transfer", "equipment", "other"] as const
 export type EventType = (typeof EVENT_TYPES)[number]
 export type GrowEvent = {
   schemaVersion: number

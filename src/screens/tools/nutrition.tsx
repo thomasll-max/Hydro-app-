@@ -70,7 +70,7 @@ export function NutritionTool() {
   const firstCycle = !cycle || cycleNumber(cycle) <= 1
   const lineMixes = mixes.filter((m) => !m.line || m.line === cat.id)
   const last = lineMixes[0]
-  const forecast = cycle ? tankForecast(mixes, entries, cycle.potCount) : null
+  const forecast = cycle?.potCount ? tankForecast(mixes, entries, cycle.potCount) : null
   const suggested = forecast ? suggestedVolume(forecast.perDayL, reservoirL ?? 120) : null
 
   const [phaseId, setPhaseId] = useState(cyclePhase.id)

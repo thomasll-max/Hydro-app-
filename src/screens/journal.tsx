@@ -88,7 +88,7 @@ export function JournalScreen() {
           <div className="flex flex-wrap gap-1.5">
             <Chip tone="primary">{stageLine(t, s)}</Chip>
             <Chip>{`${t(`mode.${cycle.waterMode}Short`)} · ${t(`substrate.${cycle.substrate}`)}`}</Chip>
-            <Chip>{`${cycle.potCount} × ${num(cycle.potVolumeL)} L`}</Chip>
+            {cycle.potCount && cycle.potVolumeL ? <Chip>{`${cycle.potCount} × ${num(cycle.potVolumeL)} L`}</Chip> : null}
           </div>
           <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[13px]">
             <Fact k={t("cycleForm.germination")} v={cycle.germinationDate && dm(cycle.germinationDate)} />

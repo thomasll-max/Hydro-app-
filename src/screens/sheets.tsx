@@ -2,34 +2,33 @@ import { useEffect, useState } from "react"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { AreaField, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
+import { AreaField, Grid, NumField, Sheet, TextField } from "@/components/hydro/form"
 import { ConfirmDelete } from "@/components/hydro/confirm"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { RootProductsField, useRootProducts } from "./root-products"
-import { TARGET } from "@/store"
-import { spaceIrrigation } from "@/equipment/calc"
-import { EVENT_TYPES, SCHEMA, type Cycle, type EventType, type GrowEvent, type Mix, type Plant, type PlantId, type Substrate, type WaterMode } from "@/model/types"
+import { EVENT_TYPES, SCHEMA, type Cycle, type EventType, type GrowEvent, type Mix, type Plant, type PlantId } from "@/model/types"
 
-/** Defaults for cycle 1 — each one from the setup or the fiche (Athena / RAIN). Flow is left empty: it must be measured. */
+/**
+ * Defaults of a new cycle, each one sourced (Athena or the spec). Nothing about pots, pump or lamps: those come from
+ * the space's equipment, or stay empty (lot 10b: never Thomas's 15 L × 4 for someone else).
+ */
 export function defaultCycle(): Cycle {
   const now = new Date().toISOString()
   return {
     schemaVersion: SCHEMA.cycle,
     id: "cycle-1",
     name: "Cycle 1",
-    cultivars: ["Cherry Limeade"],
+    cultivars: [],
     flowerWeeks: 9, // Athena program S1–S9
-    substrate: "coco", // UGro Rhiza, 100 % coco
-    waterMode: "auto", // RAIN pump on the Controller AI+ Control Plug
-    potVolumeL: 15,
-    potCount: 4,
-    lights: "IONFRAME EVO4 300 W · IONBEAM S16",
-    lightsOn: "06:00",
-    shotPct: 3, // Athena: start at 3 % ≈ 450 mL in 15 L
-    p1Shots: 5, // "Plan d'arrosage" default; adjust until runoff flows
+    substrate: "coco", // Athena coco program (the app's catalogs)
+    waterMode: "auto",
+    lights: "",
+    lightsOn: "06:00", // spec default, changed in the space settings
+    shotPct: 3, // Athena: start at 3 % of the pot
+    p1Shots: 5, // "Plan d'arrosage" starting value; adjust until runoff flows
     p1IntervalMin: 20, // Athena: 15–30 min
     p0DelayMin: 90, // Athena: 1–2 h
     nutrientLine: "athena-pro",
@@ -82,164 +81,6 @@ export function useSaver(onDone: () => void) {
     }
   }
   return { busy, run }
-}
-
-export function CycleSheet({
-  open,
-  onOpenChange,
-  harvestOnly,
-  cycleId,
-  spaceId,
-}: {
-  open: boolean
-  onOpenChange: (o: boolean) => void
-  harvestOnly?: boolean
-  /** "new" creates another cycle; an id edits that cycle; absent edits the active one. */
-  cycleId?: string
-  spaceId?: string
-}) {
-  const { t } = useSettings()
-  const { cycle: active, cycles, spaces, space: curSpace, saveCycle, equipment, assignments } = useGrow()
-  const cycle = cycleId === "new" ? null : ((cycleId ? cycles.find((c) => c.id === cycleId) : active) ?? null)
-  const show = useShow()
-  const [c, setC] = useState<Cycle>(defaultCycle)
-  const [s, setS] = useState<Record<string, string>>({})
-  const { busy, run } = useSaver(() => onOpenChange(false))
-
-  const NUM_FIELDS = ["flowerWeeks", "potVolumeL", "potCount", "flowMlPerMin", "shotPct", "p1Shots", "p1IntervalMin", "p0DelayMin", "leafOffsetC", "plannedDryingDays"] as const
-  const H_FIELDS = ["wetG", "dryG", "watts", "dryingDays", "jarRh"] as const
-
-  useEffect(() => {
-    if (!open) return
-    const fresh = (): Cycle => {
-      const d = defaultCycle()
-      const sid = spaceId ?? curSpace?.id
-      // Thomas's first cycle is prefilled in the Claude version only; friends start blank, pots from the space's equipment.
-      if (!cycles.length && TARGET === "artifact") return { ...d, spaceId: sid }
-      const base = { ...d, id: cycles.length ? newId("cy") : d.id, name: `Cycle ${cycles.length + 1}`, cultivars: [], spaceId: sid }
-      return TARGET === "artifact" ? base : { ...base, lights: "" }
-    }
-    const base = cycle ?? fresh()
-    setC(base)
-    const st: Record<string, string> = { cultivars: base.cultivars.join(", ") }
-    for (const k of NUM_FIELDS) st[k] = show(base[k] as number | undefined)
-    for (const k of H_FIELDS) st[`h_${k}`] = show(base.harvest?.[k])
-    if (!cycle && TARGET === "local") {
-      // Pots of a new cycle come from the space's equipment, else stay empty to be typed.
-      const irr = base.spaceId ? spaceIrrigation(base.spaceId, todayIso(), equipment, assignments) : null
-      st.potVolumeL = show(irr?.potL.ok ? irr.potL.value : undefined)
-      st.potCount = show(irr?.potCount)
-    }
-    setS(st)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open])
-
-  const txt = (k: keyof Cycle) => (v: string) => setC((x) => ({ ...x, [k]: v || undefined }))
-  const sv = (k: string) => (v: string) => setS((x) => ({ ...x, [k]: v }))
-
-  const save = () =>
-    run(async () => {
-      if (badNums(s, [...NUM_FIELDS, ...H_FIELDS.map((k) => `h_${k}`)]).length) throw new Error(t("safe.fixFields"))
-      const next: Cycle = { ...c, cultivars: (s.cultivars ?? "").split(",").map((x) => x.trim()).filter(Boolean) }
-      // Local version: no default pots for a new cycle (nothing is guessed).
-      if (TARGET === "local" && !cycle && (!parseNum(s.potVolumeL) || !parseNum(s.potCount))) throw new Error(t("onb.issue.cyclePots"))
-      for (const k of NUM_FIELDS) {
-        const v = parseNum(s[k])
-        ;(next as Record<string, unknown>)[k] = v ?? (k === "flowMlPerMin" ? undefined : (defaultCycle()[k] as number))
-      }
-      const h: NonNullable<Cycle["harvest"]> = { ...(c.harvest ?? {}) }
-      for (const k of H_FIELDS) h[k] = parseNum(s[`h_${k}`])
-      next.harvest = Object.values(h).some((v) => v != null && v !== "") ? h : undefined
-      await saveCycle(next)
-    })
-
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange} title={harvestOnly ? t("cycleForm.harvestTitle") : cycle ? t("journal.editCycle") : t("journal.create")} footer={<SaveBar busy={busy} onSave={save} />}>
-      {!harvestOnly && (
-        <>
-          <Group title={t("cycleForm.title")}>
-            <div className="flex flex-col gap-2.5">
-              <TextField id="c-name" label={t("cycleForm.name")} value={c.name} onChange={(v) => setC((x) => ({ ...x, name: v }))} />
-              <TextField id="c-cult" label={t("cycleForm.cultivars")} hint={t("cycleForm.cultivarsHint")} value={s.cultivars ?? ""} onChange={sv("cultivars")} />
-              {spaces.length > 0 && !cycle && (
-                <Seg<string>
-                  label={t("cycleForm.space")}
-                  value={c.spaceId}
-                  onChange={(v) => setC((x) => ({ ...x, spaceId: v }))}
-                  options={spaces.map((x) => ({ value: x.id, label: x.name }))}
-                />
-              )}
-            </div>
-          </Group>
-          <Group title={t("cycleForm.dates")}>
-            <Grid>
-              <TextField id="c-germ" type="date" label={t("cycleForm.germination")} value={c.germinationDate ?? ""} onChange={txt("germinationDate")} />
-              <TextField id="c-ptrans" type="date" label={t("cycleForm.plannedTransfer")} hint={t("cycleForm.plannedTransferHint")} value={c.plannedTransferDate ?? ""} onChange={txt("plannedTransferDate")} />
-              <TextField id="c-trans" type="date" label={t("cycleForm.transfer")} value={c.transferDate ?? ""} onChange={txt("transferDate")} />
-              <TextField id="c-pflip" type="date" label={t("cycleForm.plannedFlip")} value={c.plannedFlipDate ?? ""} onChange={txt("plannedFlipDate")} />
-              <TextField id="c-flip" type="date" label={t("cycleForm.flip")} value={c.flipDate ?? ""} onChange={txt("flipDate")} />
-              <NumField id="c-fw" integer label={t("cycleForm.flowerWeeks")} hint={t("cycleForm.flowerWeeksHint")} value={s.flowerWeeks ?? ""} onChange={sv("flowerWeeks")} />
-              <TextField id="c-harv" type="date" label={t("cycleForm.harvestDate")} value={c.harvestDate ?? ""} onChange={txt("harvestDate")} />
-              <NumField id="c-pdry" integer label={t("cycleForm.plannedDrying")} value={s.plannedDryingDays ?? ""} onChange={sv("plannedDryingDays")} />
-            </Grid>
-          </Group>
-          <Group title={t("cycleForm.setup")}>
-            <div className="flex flex-col gap-2.5">
-              <Seg<Substrate>
-                label={t("cycleForm.substrate")}
-                value={c.substrate}
-                onChange={(v) => setC((x) => ({ ...x, substrate: v }))}
-                options={(["coco", "soil", "mix7030"] as const).map((v) => ({ value: v, label: t(`substrate.${v}`) }))}
-              />
-              <Seg<WaterMode>
-                label={t("cycleForm.waterMode")}
-                value={c.waterMode}
-                onChange={(v) => setC((x) => ({ ...x, waterMode: v }))}
-                options={(["auto", "manual"] as const).map((v) => ({ value: v, label: t(`mode.${v}`) }))}
-              />
-              <Grid>
-                <NumField id="c-pv" label={t("cycleForm.potVolume")} value={s.potVolumeL ?? ""} onChange={sv("potVolumeL")} />
-                <NumField id="c-pc" integer label={t("cycleForm.potCount")} value={s.potCount ?? ""} onChange={sv("potCount")} />
-              </Grid>
-              <NumField id="c-flow" integer label={t("cycleForm.flow")} hint={t("cycleForm.flowHint")} value={s.flowMlPerMin ?? ""} onChange={sv("flowMlPerMin")} />
-              <TextField id="c-lights" label={t("cycleForm.lights")} value={c.lights} onChange={(v) => setC((x) => ({ ...x, lights: v }))} />
-              <Grid>
-                <TextField id="c-on" type="time" label={t("cycleForm.lightsOn")} value={c.lightsOn} onChange={(v) => setC((x) => ({ ...x, lightsOn: v || "06:00" }))} />
-                <NumField id="c-leaf" label={t("cycleForm.leafOffset")} value={s.leafOffsetC ?? ""} onChange={sv("leafOffsetC")} />
-              </Grid>
-            </div>
-          </Group>
-          {c.waterMode === "auto" && (
-            <Group title={t("cycleForm.schedule")}>
-              <Grid>
-                <NumField id="c-shot" label={t("cycleForm.shotPct")} hint={t("cycleForm.shotPctHint")} value={s.shotPct ?? ""} onChange={sv("shotPct")} />
-                <NumField id="c-p1" integer label={t("cycleForm.p1Shots")} value={s.p1Shots ?? ""} onChange={sv("p1Shots")} />
-                <NumField id="c-p1i" integer label={t("cycleForm.p1Interval")} hint={t("cycleForm.p1IntervalHint")} value={s.p1IntervalMin ?? ""} onChange={sv("p1IntervalMin")} />
-                <NumField id="c-p0" integer label={t("cycleForm.p0Delay")} hint={t("cycleForm.p0DelayHint")} value={s.p0DelayMin ?? ""} onChange={sv("p0DelayMin")} />
-              </Grid>
-            </Group>
-          )}
-        </>
-      )}
-      {(harvestOnly || c.harvestDate) && (
-        <Group title={t("cycleForm.harvestTitle")}>
-          <div className="flex flex-col gap-2.5">
-            {harvestOnly && <TextField id="c-harv2" type="date" label={t("cycleForm.harvestDate")} value={c.harvestDate ?? ""} onChange={txt("harvestDate")} />}
-            <Grid>
-              <NumField id="h-wet" label={t("cycleForm.wet")} value={s.h_wetG ?? ""} onChange={sv("h_wetG")} />
-              <NumField id="h-dry" label={t("cycleForm.dry")} value={s.h_dryG ?? ""} onChange={sv("h_dryG")} />
-              <NumField id="h-w" integer label={t("cycleForm.watts")} value={s.h_watts ?? ""} onChange={sv("h_watts")} />
-              <NumField id="h-dd" integer label={t("cycleForm.dryingDays")} value={s.h_dryingDays ?? ""} onChange={sv("h_dryingDays")} />
-              <TextField id="h-cure" type="date" label={t("cycleForm.curingStart")} value={c.harvest?.curingStart ?? ""} onChange={(v) => setC((x) => ({ ...x, harvest: { ...x.harvest, curingStart: v || undefined } }))} />
-              <NumField id="h-rh" label={t("cycleForm.jarRh")} value={s.h_jarRh ?? ""} onChange={sv("h_jarRh")} />
-            </Grid>
-            <AreaField id="h-dn" label={t("cycleForm.dryingNotes")} value={c.harvest?.dryingNotes ?? ""} onChange={(v) => setC((x) => ({ ...x, harvest: { ...x.harvest, dryingNotes: v || undefined } }))} />
-            <AreaField id="h-tast" label={t("cycleForm.tasting")} value={c.harvest?.tasting ?? ""} onChange={(v) => setC((x) => ({ ...x, harvest: { ...x.harvest, tasting: v || undefined } }))} />
-          </div>
-        </Group>
-      )}
-    </Sheet>
-  )
 }
 
 export function PlantSheet({ open, onOpenChange, plantId }: { open: boolean; onOpenChange: (o: boolean) => void; plantId: PlantId }) {

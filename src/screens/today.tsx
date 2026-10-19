@@ -26,6 +26,8 @@ import { drybackMethodOf } from "@/model/entry"
 import { BackupReminder } from "./backup-reminder"
 import { StartCard } from "./tools/start"
 import type { MessageKey } from "@/i18n/types"
+import { LastHarvest, StepCard } from "./cycle-steps"
+import { nextStep } from "@/calc/steps"
 
 function useNowMinutes() {
   const now = () => {
@@ -60,7 +62,8 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
   const advice = last && tg ? oneCorrection(last, { ...tg, ...(last.targets as object) } as DayTargets, cycle!.waterMode) : null
 
   if (!ready) return <p className="py-10 text-center text-fg-3">{t("app.loading")}</p>
-  if (!cycle || !s)
+  // A harvested cycle is no longer running: the space offers to log the harvest and to start the next cycle.
+  if (!cycle || !s || s.key === "harvested")
     return (
       <>
         <ScreenHero emoji="sprout" eyebrow={space?.name} title={t("today.emptyTitle")} />
@@ -74,6 +77,9 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
           </Card>
         </Reveal>
         <Reveal i={1} className="mt-3">
+          <LastHarvest spaceId={space?.id} />
+        </Reveal>
+        <Reveal i={2} className="mt-3">
           <UpcomingCard spaceIds={space ? new Set([space.id]) : null} />
         </Reveal>
       </>
@@ -140,6 +146,12 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
           </div>
         </div>
       </Reveal>
+
+      {nextStep(cycle, today) && (
+        <Reveal i={0} className="mb-3">
+          <StepCard cycle={cycle} />
+        </Reveal>
+      )}
 
       <div className="grid grid-cols-2 gap-2.5">
         <Reveal i={1}>

@@ -73,7 +73,7 @@ export function IrrigationTool() {
   const flowerWeek = stage === cycleStage && cs?.flowerWeek ? cs.flowerWeek : stage === "str" ? 2 : undefined
   const tg = dayTargets(STEER_TO_STAGE[stage], { mode, substrate, flowerWeek, line: cat.id })
   const currentManual = manualRow(cat, STEER_TO_STAGE[stage], flowerWeek)
-  const potCount = eq?.potCount ?? base.potCount
+  const potCount = eq?.potCount ?? base.potCount ?? 0
   const shotMl = Math.round(input.potVolumeL * 10 * input.shotPct)
   const ml = (v: number) => (v >= 1000 ? `${num(v / 1000, 1)} L` : `${num(v)} mL`)
   const dur = (s?: number) => (s == null ? "—" : s >= 60 ? `${Math.floor(s / 60)} min ${String(Math.round(s % 60)).padStart(2, "0")} s` : `${num(Math.round(s))} s`)

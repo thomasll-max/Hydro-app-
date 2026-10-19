@@ -1,7 +1,8 @@
 // One place that opens the bottom sheets, from any screen (FAB, Today, Journal).
 import * as React from "react"
 import { EntrySheet, type EntryInit } from "@/screens/entry-sheet"
-import { CycleSheet, EventSheet, MixSheet, PlantSheet } from "@/screens/sheets"
+import { EventSheet, MixSheet, PlantSheet } from "@/screens/sheets"
+import { CycleSheet } from "@/screens/cycle-sheet"
 import { QuickSheet } from "@/screens/quick-sheet"
 import { ReminderSheet, type ReminderInit } from "@/screens/reminder-sheet"
 import type { GrowEvent, Mix, PlantId } from "@/model/types"

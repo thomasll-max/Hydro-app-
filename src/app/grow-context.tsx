@@ -15,6 +15,7 @@ import { digestDocs, staleDigestIds, type Digest } from "@/calc/digest"
 import { byStr, readable, validDoc } from "@/model/validate"
 import { writeAll } from "@/store/doc-store"
 import { loadDraft } from "@/lib/onboarding"
+import { autoEventOps } from "@/calc/steps"
 
 const byDateDesc = <T extends { date: string; id: string }>(a: T, b: T) => (a.date === b.date ? (a.id < b.id ? 1 : -1) : a.date < b.date ? 1 : -1)
 const byOrder = <T extends { order: number }>(a: T, b: T) => (a.order ?? 0) - (b.order ?? 0)
@@ -350,20 +351,10 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
         const next: Cycle = { ...c, spaceId: c.spaceId ?? space?.id, schemaVersion: SCHEMA.cycle, updatedAt: now }
         const prev = cycles.find((x) => x.id === c.id)
         await need().set(`cycles/${c.id}`, next)
-        // Dates become events (vertical markers on charts) the first time they are set.
-        const evs: [keyof Cycle, GrowEvent["type"]][] = [
-          ["flipDate", "flip"],
-          ["transferDate", "transplant"],
-          ["harvestDate", "harvest"],
-        ]
-        for (const [k, type] of evs) {
-          const date = next[k] as string | undefined
-          if (date && date !== (prev?.[k] as string | undefined)) {
-            const id = `${c.id}_auto-${type}`
-            await need().set(`events/${id}`, { schemaVersion: SCHEMA.event, id, date, type, cycleId: c.id, spaceId: next.spaceId, createdAt: now })
-          }
-        }
-        if (settings.activeCycleId !== c.id) setActiveCycle(c.id)
+        // Dates are events (vertical markers on charts): created, moved (note and Great White kept) or removed with them.
+        for (const [id, ev] of autoEventOps(prev, next, all.events, now)) await (ev ? need().set(`events/${id}`, ev) : need().delete(`events/${id}`))
+        // Only a new cycle becomes the active one: editing another cycle leaves the app where it was (lot 10b).
+        if (!prev && settings.activeCycleId !== c.id) setActiveCycle(c.id)
       },
       savePlant: async (p) => need().set(`plants/${p.id}`, { ...p, schemaVersion: SCHEMA.plant, updatedAt: stamp() }),
       saveEntry: async (e) => {

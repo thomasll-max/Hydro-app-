@@ -29,7 +29,7 @@ export type StageInfo = {
 }
 
 /** Athena precision table: flowering weeks 1–4 stretch, 5–7 bulking, 8–9 finish; coco flush = last 3 days. */
-export function stageOn(cycle: Pick<Cycle, "germinationDate" | "transferDate" | "flipDate" | "flowerWeeks" | "harvestDate">, date: IsoDate): StageInfo {
+export function stageOn(cycle: Pick<Cycle, "germinationDate" | "vegDate" | "transferDate" | "flipDate" | "flowerWeeks" | "harvestDate">, date: IsoDate): StageInfo {
   if (cycle.harvestDate && date >= cycle.harvestDate) return { key: "harvested", day: 0, week: 0 }
   if (cycle.flipDate && date >= cycle.flipDate) {
     const day = daysBetween(cycle.flipDate, date) + 1
@@ -41,8 +41,9 @@ export function stageOn(cycle: Pick<Cycle, "germinationDate" | "transferDate" | 
   if (cycle.germinationDate && date >= cycle.germinationDate) {
     const day = daysBetween(cycle.germinationDate, date) + 1
     const week = Math.ceil(day / 7)
-    const inRain = cycle.transferDate && date >= cycle.transferDate
-    return { key: inRain ? "veg" : "seedling", day, week }
+    // Veg from "Passer en végé" (lot 10b), in any space; old cycles: from the transfer into the flowering space.
+    const vegFrom = cycle.vegDate ?? cycle.transferDate
+    return { key: vegFrom && date >= vegFrom ? "veg" : "seedling", day, week }
   }
   return { key: "notStarted", day: 0, week: 0 }
 }

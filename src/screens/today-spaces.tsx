@@ -22,8 +22,8 @@ import { UpcomingCard } from "./calendar-parts"
 function useDigestData(): DigestData {
   const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks, sprays } = useGrow()
   return useMemo(
-    () => ({ grow, spaces, sites, cycles, entries: all.entries, mixes: all.mixes, equipment, assignments, reminders, customProducts, concentrateStocks, sprays }),
-    [grow, spaces, sites, cycles, all.entries, all.mixes, equipment, assignments, reminders, customProducts, concentrateStocks, sprays],
+    () => ({ grow, spaces, sites, cycles, entries: all.entries, mixes: all.mixes, events: all.events, equipment, assignments, reminders, customProducts, concentrateStocks, sprays }),
+    [grow, spaces, sites, cycles, all.entries, all.mixes, all.events, equipment, assignments, reminders, customProducts, concentrateStocks, sprays],
   )
 }
 

@@ -27,7 +27,7 @@ import { TARGET } from "@/store"
 import { CURRENT_BUILD, formatVersion } from "@/lib/version"
 
 export function SettingsTool() {
-  const { t, dm, saveState, setActiveCycle, locale } = useSettings()
+  const { t, dm, saveState, locale } = useSettings()
   const g = useGrow()
   const ed = useEditors()
   const [spaceSheet, setSpaceSheet] = useState<{ open: boolean; space?: Space }>({ open: false })
@@ -179,10 +179,7 @@ export function SettingsTool() {
               return (
                 <li key={c.id} className="flex items-center gap-1 border-t border-line first:border-t-0">
                   <button
-                    onClick={() => {
-                      setActiveCycle(c.id)
-                      ed.openCycle({ cycleId: c.id })
-                    }}
+                    onClick={() => ed.openCycle({ cycleId: c.id })}
                     className="flex min-h-14 min-w-0 flex-1 items-center gap-2.5 py-2 text-left"
                   >
                     <SpaceDot color={sp?.color} className="size-3" />
@@ -300,7 +297,7 @@ function TransferSheet({ open, onOpenChange, cycle }: { open: boolean; onOpenCha
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
   if (!cycle) return null
-  const labels = Array.from({ length: cycle.potCount }, (_, i) => `P${i + 1}`)
+  const labels = Array.from({ length: cycle.potCount ?? 4 }, (_, i) => `P${i + 1}`)
   return (
     <Sheet
       open={open}

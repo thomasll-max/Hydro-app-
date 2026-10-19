@@ -31,7 +31,7 @@ export type Reminder =
 
 export function reminders(c: Cycle, mixes: Mix[], entries: Entry[], today: IsoDate): Reminder[] {
   const out: Reminder[] = []
-  const tank = tankForecast(mixes, entries, c.potCount)
+  const tank = c.potCount ? tankForecast(mixes, entries, c.potCount) : null
   if (tank && Number.isFinite(tank.daysLeft)) {
     // Next tank: same volume as the last one, made ~5–7 days of solution at a time (RAIN manual).
     out.push({ kind: "tank", inDays: Math.max(0, Math.floor(tank.daysLeft)), litres: Math.round(tank.mix.volumeL) })

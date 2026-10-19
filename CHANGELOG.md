@@ -1,5 +1,18 @@
 # Changelog
 
+## Lot 10b1 — Cycles : création minimale, étapes en un geste (19/10/2026)
+Passe de corrections, points 24 à 30 de `docs/audit-2026-10-19.md` (le lot 10b est coupé en 10b1 et 10b2).
+- **Créer un cycle** (décision de Thomas) : nom, variété(s), espace, **date de départ**. Le reste est replié : « Dates prévues (facultatif) » (12/12 prévu, semaines de floraison, séchage) et « Arrosage et matériel », **prérempli depuis l'équipement de l'espace** (pots, débit, lampes, mode : pompe présente = automatique). Sans équipement, pots et débit restent vides (« donnée manquante ») : le formulaire ne recopie plus jamais le cycle de Thomas (Cherry Limeade, 4 pots de 15 L, lampes).
+- **Étapes en un geste le jour J** sur Aujourd'hui : carte « Étape suivante » avec **Passer en végé**, **Passer en 12/12**, **Récolter**, chacune avec son événement automatique et **Annuler** dans le message. La végé commence au bouton, dans n'importe quel espace (`Cycle.vegDate`) : la végé en Colonne n'est plus vue comme un semis. Les anciens cycles gardent la végé au transfert.
+- **Récolte prévue ≈ …** (12/12 + semaines de floraison) affichée sur la carte et dans la fiche, jamais écrite comme récolte ; le champ réel s'appelle « Jour de la récolte ». Après « Récolter », l'espace propose « Noter la récolte (poids, séchage) ».
+- **Transfert** = un déplacement le jour même (Réglages → Cycles → Transférer), plus de date de transfert à prévoir. Il amène le rappel **Great White**, coché tout seul si le transfert a noté le produit. L'ancien champ « Transfert prévu » reste visible seulement s'il était rempli.
+- **Champ vidé** : une fiche existante garde sa valeur précédente ; pots et débit vides restent vides ; plus de 15 L, 4 pots, 9 semaines ou −2 inventés.
+- **Événements automatiques** (végé, 12/12, rempotage, récolte) : supprimés quand la date est effacée, déplacés avec la date en gardant la note et les produits (Great White).
+- **Cycle actif** : seule la création d'un cycle le rend actif ; enregistrer ou ouvrir un autre cycle ne déplace plus toute l'app.
+- **Fade et rinçage** se cochent tout seuls dès que le bac de la phase (Fade dans la recette, bac de rinçage) ou l'événement est enregistré.
+- Simulation d'un an (intermédiaire) : **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 28/28 anomalies signalées, Fade et rinçage ne traînent plus ; 8 échéances traînent encore (débit de la pompe, concentré presque vide), traitées en 10b2.
+- 245 tests (9 nouveaux, `calc/lot10b.test.ts` ; test du lot 3 adapté à la décision Great White) ; parcours `scripts/e2e-10b.py` ; `e2e-3.py` (transfert réel au lieu du transfert prévu) et `e2e-8c.py` (formulaire replié) adaptés ; 2b, 4b, 5a, 6a, 8b repassés.
+
 ## Lot 10a — Sécurité des données : rien ne doit se perdre (19/10/2026)
 Passe de corrections, points 1 à 23 de `docs/audit-2026-10-19.md`.
 - **Une erreur de lecture n'est plus jamais une base vide** : `list()` lève l'erreur, les abonnements appellent `onError` au lieu de rendre un état vide. Une lecture ratée affiche « Lecture des données impossible » avec **Réessayer**, et le grow de départ n'est semé qu'après des lectures réussies et vraiment vides (`grow/main`, espaces et cycles relus juste avant).

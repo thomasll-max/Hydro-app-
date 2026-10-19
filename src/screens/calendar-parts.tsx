@@ -23,9 +23,9 @@ import { cn } from "@/lib/utils"
 export function useCalendarData(): CalendarData & { tz: string } {
   const { grow, spaces, sites, cycles, all, equipment, assignments, reminders, customProducts, concentrateStocks, sprays } = useGrow()
   return useMemo(() => {
-    const d: CalendarData = { grow, spaces, sites, cycles, entries: all.entries, mixes: all.mixes, equipment, assignments, reminders, customProducts, concentrateStocks, sprays }
+    const d: CalendarData = { grow, spaces, sites, cycles, entries: all.entries, mixes: all.mixes, events: all.events, equipment, assignments, reminders, customProducts, concentrateStocks, sprays }
     return { ...d, tz: growTimeZone(d) }
-  }, [grow, spaces, sites, cycles, all.entries, all.mixes, equipment, assignments, reminders, customProducts, concentrateStocks, sprays])
+  }, [grow, spaces, sites, cycles, all.entries, all.mixes, all.events, equipment, assignments, reminders, customProducts, concentrateStocks, sprays])
 }
 
 /** Spaces covered by the top selector (null = all). */

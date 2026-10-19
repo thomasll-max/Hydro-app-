@@ -1,4 +1,4 @@
-"""Lot 3 walk-through at 390 px: a recurring reminder, planned transfer (Great White), month, agenda, day sheet,
+"""Lot 3 walk-through at 390 px: a recurring reminder, a transfer without Great White (lot 10b), month, agenda, day sheet,
 Fait / Reporter, Today's "À venir" and the Bonjour card, .ics export (zip in the Claude build).
 Usage: PYTHONPATH=scripts python3 scripts/e2e-3.py dist-preview/index.html <out dir>"""
 import sys, pathlib, json, zipfile, datetime
@@ -38,16 +38,16 @@ with sync_playwright() as p:
     pg.wait_for_selector("text=Enregistré", timeout=10000)
     pg.wait_for_timeout(800)
 
-    # Planned transfer of cycle 1 (Colonne) in 5 days → end of propagation + Great White.
-    pg.get_by_role("button", name="Colonne").first.click()
-    pg.get_by_role("tab", name="Journal").click()
-    pg.wait_for_timeout(1000)
-    pg.get_by_role("button", name="Modifier").first.click()
-    pg.wait_for_selector("#c-ptrans")
-    pg.fill("#c-ptrans", (today + datetime.timedelta(days=5)).isoformat())
+    # Lot 10b (decision of Thomas): no planned transfer; moving cycle 1 (Colonne → Floraison) on the day brings the
+    # Great White reminder when the product was not ticked at the move.
+    pg.goto(f"file://{page_file}#settings"); pg.wait_for_timeout(1800)
+    pg.get_by_role("button", name="Transférer").first.click()
+    pg.wait_for_selector("#rp-great-white")
+    pg.click("#rp-great-white")
     pg.get_by_role("button", name="Enregistrer").click()
-    pg.wait_for_selector("text=Enregistré", timeout=10000)
+    pg.wait_for_selector("text=Cycle transféré", timeout=10000)
     pg.wait_for_timeout(800)
+    pg.goto(f"file://{page_file}#today"); pg.wait_for_timeout(1500)
 
     pg.get_by_role("button", name="Tous").first.click()
     pg.get_by_role("tab", name="Calendrier").click()

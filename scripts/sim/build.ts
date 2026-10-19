@@ -27,6 +27,7 @@ export function asOf(D: IsoDate) {
       const c: Cycle = structuredClone(c0)
       c.transfers = (c.transfers ?? []).filter((t) => before(t.date))
       if (!before(c.transferDate)) delete c.transferDate
+      if (!before(c.vegDate)) delete c.vegDate
       if (!before(c.flipDate)) delete c.flipDate
       if (!before(c.harvestDate)) {
         delete c.harvestDate

@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -32,6 +32,8 @@
 - [x] Lot 8e : numéro de version, bannière « Nouvelle version disponible » (221 tests)
 - [x] Lot 10a : sécurité des données (236 tests, artefact v28)
 - [ ] Lot 10b : cycles et stades (création de cycle minimale, étapes en un geste)
+  - [x] Lot 10b1 : points 24–30 (245 tests, artefact v29)
+  - [ ] Lot 10b2 : points 31–39, puis simulation d'un an
 - [ ] Lot 10c : calculs Athena
 - [ ] Lot 10d : navigation, saisie, graphiques
 - [ ] Lot 10e : accessibilité, textes, assistant, option « Autre marque »
@@ -42,7 +44,7 @@
 - Scripts de simulation : `scripts/sim/`.
 - Point de reprise : premier point non coché de l'audit.
 - **Branche** (décision de la session du 19/10, Thomas absent) : la session est configurée sur `claude/hydro-passe-10a-10e-pcm10n`. Le prompt demande « push sur main » et `CLAUDE.md` autorise le push direct : chaque lot est poussé **sur cette branche et sur `main`** (mêmes commits), donc pas de PR à ouvrir.
-- Simulation d'un an : résultats notés dans « Lot 10b — notes » et « Lot 10e — notes ».
+- Simulation d'un an : résultats notés dans « Lot 10b2 — notes » et « Lot 10e — notes » (intermédiaire dans « Lot 10b1 — notes »).
 
 ## Lot 10a — notes
 - Stockage (`store/`) : `list()` lève l'erreur ; `watchDoc` / `watchCollection` prennent un `onError` et ne rendent plus jamais un état vide sur erreur ; `batch(ops)` (une transaction IndexedDB, une notification par collection) et `writeAll` (par paquets de 200, avec progression). `MemoryStore` enregistre (`persist`) **avant** de changer la mémoire. `LocalStore` : ouverture d'IndexedDB limitée à 6 s, sinon `volatile` (mémoire seule, bandeau rouge) ; `BroadcastChannel("hydro-docs")` rejoue les écritures dans les autres onglets.
@@ -62,6 +64,21 @@
 ```bash
 npm run preview:build && npm run build:local
 PYTHONPATH=scripts python3 scripts/e2e-10a.py dist-preview/index.html dist-local <dossier>
+```
+
+## Lot 10b1 — notes
+- Lot 10b coupé en **10b1** (24–30) et **10b2** (31–39) : trop gros pour un seul commit.
+- Modèle : `Cycle.vegDate` (« Passer en végé »), `SCHEMA.cycle = 4`, `potVolumeL` / `potCount` **facultatifs** (absents = « donnée manquante » : programme d'arrosage sans volume, pas de prévision de bidon). `EVENT_TYPES` gagne `veg`. `stageOn` : végé à partir de `vegDate`, sinon (anciens cycles) de `transferDate`.
+- `calc/steps.ts` (pur, testé) : `nextStep`, `applyStep`, `undoStep`, `expectedHarvest`, `autoEventOps` (création, déplacement, suppression des événements `{cycle}_auto-{type}`), `equipmentPrefill`. `screens/cycle-sheet.tsx` remplace l'ancien `CycleSheet` ; `screens/cycle-steps.tsx` : `StepCard` (Aujourd'hui) et `LastHarvest`.
+- `defaultCycle()` ne garde que des valeurs sourcées (9 semaines Athena, 3 % / 15–30 min / 1–2 h Athena, 5 doses = valeur de départ déjà signalée, −2 °C et 06:00 du cahier des charges). Plus de Cherry Limeade, 15 L × 4 ni lampes de Thomas.
+- **Décisions prises seul** : « Récolter » ne déplace pas le cycle vers un espace de séchage (à faire avec Transférer si besoin) ; le bouton « Récolter » est proposé pendant toute la floraison mais reste discret (contour) jusqu'à 7 jours de la récolte prévue ; un cycle récolté n'est plus affiché comme « en cours » sur Aujourd'hui ; ouvrir un cycle dans Réglages ne le rend plus actif ; le rappel Great White suit un transfert de moins de 14 jours (`GREAT_WHITE_DAYS`), une seule application par déplacement ; Fade / rinçage comptent un bac ou un événement à partir de 3 jours avant la date prévue (`EARLY_DAYS`).
+- Simulateur (`scripts/sim/`) adapté au nouveau parcours : « Passer en végé » au jour 15 en Colonne, plus de `plannedTransferDate` ni de `transferDate` (le transfert est un déplacement). Le cas particulier « végé dans la Colonne » (PPFD 430–520, HR 62–68 % jugés avec les cibles de semis) est retiré : ces jours sont maintenant de la végé et tirés dans les cibles de végé comme les autres jours (sinon 47 alertes VPD « fausses » venaient du simulateur, pas de l'app). Hauteur en végé continue avec le semis.
+
+### Commandes (lot 10b)
+```bash
+npm run preview:build
+PYTHONPATH=scripts python3 scripts/e2e-10b.py dist-preview/index.html <dossier>
+npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts <dossier>
 ```
 
 ## Règles de relais
@@ -122,7 +139,7 @@ PYTHONPATH=scripts python3 scripts/e2e-10a.py dist-preview/index.html dist-local
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a
+npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale

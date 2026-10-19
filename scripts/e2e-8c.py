@@ -46,10 +46,10 @@ with sync_playwright() as p:
 
     # Cycle line: a blank cycle form in the local version (no prefilled values from Thomas's grow).
     pg.click("#start-cycle"); pg.wait_for_selector("#c-name", timeout=5000)
+    # Lot 10b: 4 fields; pots, lamps… folded and prefilled from the space's equipment (empty here: nothing guessed).
+    pg.get_by_role("button", name="Arrosage et matériel").click(); pg.wait_for_timeout(400)
     checks["cycleForm"] = {k: pg.input_value(k) for k in ["#c-cult", "#c-pv", "#c-pc", "#c-lights"]}
     shot(pg, "03-cycle-form.png")
-    pg.get_by_role("button", name="Enregistrer").click(); pg.wait_for_timeout(600)
-    checks["cycleNeedsPots"] = pg.locator("text=Indique le volume et le nombre de pots").count() > 0
     pg.fill("#c-germ", "2026-10-15"); pg.fill("#c-pv", "18"); pg.fill("#c-pc", "2")
     pg.get_by_role("button", name="Enregistrer").click(); pg.wait_for_timeout(1200)
     checks["afterCycle"] = items(pg)

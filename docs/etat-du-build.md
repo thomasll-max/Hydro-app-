@@ -30,6 +30,17 @@
 - [x] Lot 8c : guide de démarrage « Premiers pas » (211 tests)
 - [x] Lot 8d : méthode de mesure du dryback par espace, correctif runoff (216 tests)
 - [x] Lot 8e : numéro de version, bannière « Nouvelle version disponible » (221 tests)
+- [ ] Lot 10a : sécurité des données
+- [ ] Lot 10b : cycles et stades (création de cycle minimale, étapes en un geste)
+- [ ] Lot 10c : calculs Athena
+- [ ] Lot 10d : navigation, saisie, graphiques
+- [ ] Lot 10e : accessibilité, textes, assistant, option « Autre marque »
+
+## Lot 10 : passe de corrections (19/10/2026)
+- Source : `docs/audit-2026-10-19.md`, avec 84 points tirés de la simulation d'un an, de 4 audits et des retours des testeurs. Les points faits y sont cochés ✅.
+- Prompt de la session : `docs/prompt-passe-10.md`. Décisions de Thomas : voir ce prompt.
+- Scripts de simulation : `scripts/sim/`.
+- Point de reprise : premier point non coché de l'audit.
 
 ## Règles de relais
 1. **Une seule session à la fois** sur le code. Si deux tournent quand même : avant chaque commit **et** chaque republication, `git fetch`, se remettre sur `main`, relancer tous les tests et publier un build qui contient le travail de l'autre.

@@ -62,11 +62,12 @@ export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "prima
  * small drawings come back as landmarks on Aujourd'hui and the main screens; Outils keeps plain titles).
  */
 export function Label({ emoji, mark, children, className }: { emoji?: EmojiName; mark?: boolean; children: ReactNode; className?: string }) {
-  const title = <h2 className={cn("display text-[1.25rem] leading-tight font-semibold", className)}>{children}</h2>
+  const title = <h2 className={cn("display min-w-0 text-[1.25rem] leading-tight font-semibold", className)}>{children}</h2>
   if (!mark || !emoji) return title
+  // Very narrow screens (zoom 200 %): the drawing steps aside, the words keep the room.
   return (
     <div className="flex min-w-0 items-center gap-2.5">
-      <Emoji name={emoji} size={24} />
+      <Emoji name={emoji} size={24} className="max-[260px]:hidden" />
       {title}
     </div>
   )

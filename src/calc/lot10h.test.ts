@@ -172,7 +172,7 @@ describe("lot 10h2 — écrans « instrument »", () => {
   it("sections sans cadre (trait fin et titre Fraunces), le cadre pour ce qui est à part (lot 10j : les espaces)", () => {
     const card = read("src/components/ui/card.tsx")
     expect(card).toMatch(/border-t border-line pt-4/)
-    expect(read("src/components/hydro/primitives.tsx")).toMatch(/<h2 className=\{cn\("display text-\[1\.25rem\]/)
+    expect(read("src/components/hydro/primitives.tsx")).toMatch(/<h2 className=\{cn\("display min-w-0 text-\[1\.25rem\]/)
     expect(read("src/screens/today-spaces.tsx")).toMatch(/<Card framed/)
     expect(read("src/index.css")).not.toMatch(/text-transform: uppercase/)
   })

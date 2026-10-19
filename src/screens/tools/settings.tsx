@@ -58,7 +58,9 @@ export function SettingsTool() {
       <Reveal i={0} className="mb-3">
         <Card className="gap-3">
           <div className="flex items-center justify-between">
-            <Label emoji="gear">{t("growSet.display")}</Label>
+            <Label emoji="gear" mark>
+              {t("growSet.display")}
+            </Label>
             {saveState !== "idle" && (
               <span className={cn("flex items-center gap-1 text-[0.75rem] font-semibold", saveState === "saved" ? "text-primary" : "text-fg-3")}>
                 {saveState === "saved" ? <Check className="size-3.5" /> : <CloudOff className="size-3.5" />}
@@ -77,7 +79,9 @@ export function SettingsTool() {
 
       <Reveal i={1} className="mb-3">
         <Card className="gap-2.5">
-          <Label emoji="pottedPlant">{t("growSet.grow")}</Label>
+          <Label emoji="pottedPlant" mark>
+            {t("growSet.grow")}
+          </Label>
           <div onBlur={() => name.trim() && name !== g.grow?.name && saveGrow({ name: name.trim() })}>
             <TextField id="g-name" label={t("growSet.name")} value={name} onChange={setName} />
           </div>
@@ -92,7 +96,9 @@ export function SettingsTool() {
 
       <Reveal i={2} className="mb-3">
         <Card className="gap-2.5">
-          <Label emoji="testTube">{t("growSet.nutrition")}</Label>
+          <Label emoji="testTube" mark>
+            {t("growSet.nutrition")}
+          </Label>
           <NutritionFields value={g.grow?.nutrition ?? g.nutrition} onChange={(n) => saveGrow({ nutrition: n })} idPrefix="g" />
         </Card>
       </Reveal>
@@ -100,7 +106,9 @@ export function SettingsTool() {
       <Reveal i={3} className="mb-3">
         <Card className="gap-1.5">
           <div className="flex items-center justify-between">
-            <Label emoji="herb">{t("growSet.spaces")}</Label>
+            <Label emoji="herb" mark>
+              {t("growSet.spaces")}
+            </Label>
             <AddBtn onClick={() => setSpaceSheet({ open: true })}>{t("space.add")}</AddBtn>
           </div>
           {g.spaces.length === 0 && <p className="text-[0.78125rem] text-fg-3">{t("space.empty")}</p>}
@@ -152,7 +160,9 @@ export function SettingsTool() {
       <Reveal i={4} className="mb-3">
         <Card className="gap-1.5">
           <div className="flex items-center justify-between">
-            <Label emoji="compass">{t("site.title")}</Label>
+            <Label emoji="compass" mark>
+              {t("site.title")}
+            </Label>
             <AddBtn onClick={() => setSiteSheet({ open: true })}>{t("site.add")}</AddBtn>
           </div>
           {g.sites.length === 0 ? (
@@ -175,7 +185,9 @@ export function SettingsTool() {
       <Reveal i={5} className="mb-3">
         <Card className="gap-1.5">
           <div className="flex items-center justify-between">
-            <Label emoji="sprout">{t("growSet.cycles")}</Label>
+            <Label emoji="sprout" mark>
+              {t("growSet.cycles")}
+            </Label>
             <AddBtn onClick={() => ed.openCycle({ cycleId: "new" })}>{t("growSet.newCycle")}</AddBtn>
           </div>
           <ul>

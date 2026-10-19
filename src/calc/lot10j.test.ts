@@ -118,3 +118,26 @@ describe("lot 10j1 — Aujourd'hui : cadres par espace, dessins, ordre", () => {
     expect(translate("fr", "pill.drying")).toBe("Séchage")
   })
 })
+
+describe("lot 10j2 — autres écrans", () => {
+  it("Journal : les filtres dans une feuille derrière « Filtres », les actifs en une ligne avec « Effacer »", () => {
+    const j = read("src/screens/journal.tsx")
+    const sheet = j.slice(j.indexOf("<Sheet"), j.indexOf("</Sheet>"))
+    expect((sheet.match(/<FilterRow/g) ?? []).length).toBe(4)
+    expect(j.slice(j.indexOf("</Sheet>"))).not.toMatch(/<FilterRow/)
+    expect(j).toMatch(/id="journal-filters"/)
+    expect(j).toMatch(/id="journal-filter-summary"/)
+    expect(translate("fr", "journal.filtersShow", { n: 1 })).toBe("Voir 1 saisie")
+    expect(translate("fr", "journal.filtersShow", { n: 12 })).toBe("Voir 12 saisies")
+    expect(translate("de", "journal.filtersShow", { n: 12 })).toBe("12 Einträge anzeigen")
+    expect(translate("fr", "journal.clear")).toBe("Effacer")
+  })
+  it("titres avec leur dessin : Journal, chaque graphique, groupes des Réglages ; Outils inchangé", () => {
+    expect((read("src/screens/journal.tsx").match(/ mark>/g) ?? []).length).toBeGreaterThanOrEqual(6)
+    const charts = read("src/screens/charts.tsx")
+    expect(charts).toMatch(/<Label emoji=\{CURVE_EMOJI\[c\]\} mark>/)
+    expect(charts).toMatch(/const CURVE_EMOJI: Record<CurveId, EmojiName>/)
+    expect((read("src/screens/tools/settings.tsx").match(/<Label emoji="\w+" mark>/g) ?? []).length).toBe(6)
+    expect(read("src/screens/tools.tsx")).not.toMatch(/ mark[ >]/)
+  })
+})

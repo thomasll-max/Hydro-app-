@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react"
 import { Loading } from "@/components/hydro/wordmark"
-import { CalendarPlus, ChevronRight, FlaskConical, Layers, Pencil, Plus } from "lucide-react"
+import { CalendarPlus, ChevronRight, FlaskConical, Layers, Pencil, Plus, SlidersHorizontal } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -17,7 +17,8 @@ import { PLANT_IDS, type Entry, type StageKey } from "@/model/types"
 import { PhotoThumb } from "./entry-sheet"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { cn } from "@/lib/utils"
-import { tertiary } from "@/components/hydro/styles"
+import { secondary, tertiary } from "@/components/hydro/styles"
+import { Sheet } from "@/components/hydro/form"
 
 const PAGE = 12
 
@@ -26,6 +27,7 @@ export function JournalScreen() {
   const { ready, cycle, plants, all, spaces, selection, photoUrl, space } = useGrow()
   const ed = useEditors()
   const [filter, setFilter] = useState<EntryFilter>(NO_FILTER)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [shown, setShown] = useState(PAGE)
   // The journal follows the space selector: one space, one room, or everything.
   const scope = useMemo(
@@ -64,6 +66,17 @@ export function JournalScreen() {
   )
   const list = useMemo(() => filterEntries(entries, live).sort(journalOrder), [entries, live])
   const filtered = live.space !== "all" || live.plant !== "all" || live.tag !== "all" || live.stage !== "all"
+  const canFilter = multi || hasPlants || stagesPresent.length > 1 || tagsPresent.length > 0
+  // The active filters in one line (lot 10j): « Floraison · Végé ».
+  const tagKey = tagsPresent.find((k) => k.split(".")[1] === live.tag)
+  const summary = [
+    live.space !== "all" && scope.find((x) => x.id === live.space)?.name,
+    live.plant !== "all" && (live.plant === "room" ? t("entry.wholeSpace") : live.plant),
+    live.stage !== "all" && t(`stage.${live.stage}` as never),
+    live.tag !== "all" && tagKey && t(tagKey as never),
+  ]
+    .filter(Boolean)
+    .join(" · ")
 
   if (!ready) return <Loading label={t("app.loading")} />
 
@@ -93,10 +106,13 @@ export function JournalScreen() {
 
       {/* Cycle */}
       {showCycle && cycle && s && (
-      <Reveal i={0} className="mb-3">
-        <Card className="gap-3">
+      <Reveal i={0} className="mb-4">
+        {/* The cycle is an object apart: it keeps a frame (lot 10j). */}
+        <Card framed className="gap-3" id="journal-cycle">
           <div className="flex items-center justify-between">
-            <Label emoji="sprout">{t("journal.cycle")}</Label>
+            <Label emoji="sprout" mark>
+              {t("journal.cycle")}
+            </Label>
             <Button variant="link" size="sm" className="px-0" onClick={() => ed.openCycle()}>
               <Pencil /> {t("common.edit")}
             </Button>
@@ -122,7 +138,9 @@ export function JournalScreen() {
       {showCycle && space?.modules.plants && (
       <Reveal i={1} className="mb-3">
         <Card>
-          <Label emoji="pottedPlant">{t("journal.plants")}</Label>
+          <Label emoji="pottedPlant" mark>
+            {t("journal.plants")}
+          </Label>
           <div className="mt-2.5 grid grid-cols-4 gap-2">
             {potIds.map((id) => {
               const p = plants.find((x) => x.label === id)
@@ -161,10 +179,48 @@ export function JournalScreen() {
       {/* History */}
       <Reveal i={3} className="mb-3">
         <Card>
-          <div className="flex items-baseline justify-between">
-            <Label emoji="book">{t("journal.history")}</Label>
+          <div className="flex items-center justify-between">
+            <Label emoji="book" mark>
+              {t("journal.history")}
+            </Label>
             <span className="font-mono text-[0.75rem] text-fg-3">{list.length === 1 ? t("journal.entryOne") : t("journal.entries", { n: list.length })}</span>
           </div>
+          {/* Filters folded behind one button (lot 10j); the active ones in one line, with « Effacer ». */}
+          {canFilter && (
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1" id="journal-filter-bar">
+              <button type="button" id="journal-filters" aria-haspopup="dialog" onClick={() => setFiltersOpen(true)} className={cn(secondary, "px-3")}>
+                <SlidersHorizontal className="size-4" /> {t("journal.filters")}
+              </button>
+              {filtered && (
+                <>
+                  <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium" id="journal-filter-summary">
+                    {summary}
+                  </span>
+                  <button type="button" className={tertiary} onClick={() => setFilter(NO_FILTER)}>
+                    {t("journal.clear")}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+          <Sheet
+            open={filtersOpen}
+            onOpenChange={setFiltersOpen}
+            title={t("journal.filters")}
+            dirty={false}
+            footer={
+              <div className="flex items-center gap-3">
+                {filtered && (
+                  <button type="button" className={tertiary} onClick={() => setFilter(NO_FILTER)}>
+                    {t("journal.clear")}
+                  </button>
+                )}
+                <Button className="h-12 flex-1" onClick={() => setFiltersOpen(false)}>
+                  {t("journal.filtersShow", { n: list.length })}
+                </Button>
+              </div>
+            }
+          >
           {multi && (
             <FilterRow
               label={t("journal.filterSpace")}
@@ -197,6 +253,7 @@ export function JournalScreen() {
               options={[{ v: "all", l: t("common.all") }, ...tagsPresent.map((k) => ({ v: k.split(".")[1], l: t(k as never) }))]}
             />
           )}
+          </Sheet>
           <ul className="mt-1">
             {dayGroups(list.slice(0, shown)).map((g) => (
               <DayRow
@@ -232,7 +289,7 @@ export function JournalScreen() {
           <Accordion type="multiple">
             <AccordionItem value="events" className="border-line">
               <AccordionTrigger className="py-3.5 hover:no-underline">
-                <Label emoji="scissors">{`${t("journal.events")} · ${events.length}`}</Label>
+                <Label emoji="calendar" mark>{`${t("journal.events")} · ${events.length}`}</Label>
               </AccordionTrigger>
               <AccordionContent>
                 {events.length === 0 ? (
@@ -256,7 +313,7 @@ export function JournalScreen() {
             </AccordionItem>
             <AccordionItem value="mixes" className="border-line">
               <AccordionTrigger className="py-3.5 hover:no-underline">
-                <Label emoji="testTube">{`${t("journal.mixes")} · ${mixes.length}`}</Label>
+                <Label emoji="testTube" mark>{`${t("journal.mixes")} · ${mixes.length}`}</Label>
               </AccordionTrigger>
               <AccordionContent>
                 {mixes.length === 0 ? (
@@ -282,7 +339,9 @@ export function JournalScreen() {
             {cycle && (
             <AccordionItem value="harvest" className="border-0">
               <AccordionTrigger className="py-3.5 hover:no-underline">
-                <Label emoji="jar">{t("journal.harvest")}</Label>
+                <Label emoji="jar" mark>
+                  {t("journal.harvest")}
+                </Label>
               </AccordionTrigger>
               <AccordionContent className="flex flex-col gap-2">
                 {h && (
@@ -315,10 +374,11 @@ function Fact({ k, v, warn }: { k: string; v?: string | false; warn?: boolean })
   )
 }
 
+/** One filter of the Journal, in its sheet (lot 10j): the name above, the choices wrapping. */
 function FilterRow({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; l: string }[] }) {
   return (
-    <div role="radiogroup" aria-label={label} className="no-scrollbar mt-2 flex items-center gap-1.5 overflow-x-auto">
-      <span aria-hidden="true" className="w-12 shrink-0 text-[0.75rem] font-semibold text-fg-3">
+    <div role="radiogroup" aria-label={label} className="mt-1 mb-4 flex flex-wrap items-center gap-2">
+      <span aria-hidden="true" className="w-full text-[0.8125rem] font-semibold text-fg-2">
         {label}
       </span>
       {options.map((o) => (

@@ -27,7 +27,7 @@ Journal en une minute · Crop steering · Nutrition · Calendrier · Graphiques 
 | | |
 |---|---|
 | ☀️ **Aujourd'hui** | La semaine en une bande, puis « Bonjour Thomas. » et le matin **en lignes courtes** (un petit dessin, le stade, les arrosages prévus, le réservoir, le climat, la valeur à droite, en orange si elle demande l'attention), la liste « À faire » à cocher, et **une carte par espace** (son carré de couleur avec le dessin du stade, ses relevés avec la zone cible, l'âge du bidon). Dans un espace : les **relevés** comme sur un instrument et **une seule correction à faire** quand quelque chose sort de la cible. |
-| 📓 **Journal** | Une saisie en moins d'une minute, préremplie depuis la veille. Dryback, % de runoff, VPD et DLI calculés automatiquement. Saisie rapide de tous les espaces d'un coup. |
+| 📓 **Journal** | Une saisie en moins d'une minute, préremplie depuis la veille. Dryback, % de runoff, VPD et DLI calculés automatiquement. Saisie rapide de tous les espaces d'un coup. Historique en une ligne par jour, filtres (espace, plante, stade, tag) rangés derrière un bouton « Filtres ». |
 | 🏠 **Espaces modulables** | Tentes, rooms, serres de germination, séchoir… en nombre illimité. Chaque espace n'active que ses modules (climat, lumière, arrosage, nutrition, propagation, séchage). Plusieurs cycles en parallèle, transferts même partiels. |
 | 🔌 **Équipement** | Lampes, réservoirs, pompes, extracteurs, contenants. Ils alimentent les calculs : PPFD estimé, W/m², hauteur libre, durée des doses, autonomie du réservoir, renouvellement d'air, g/W. |
 | 💧 **Arrosage et crop steering** | Programme P0 → P3 ou méthode manuelle, durée de pompe à partir du débit mesuré, mode capteur. Dryback mesuré par **pesée** ou par **capteur** (échelles séparées). |

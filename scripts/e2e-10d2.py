@@ -3,7 +3,7 @@ with a gap of three weeks, plant entries, a daily reminder):
 - Graphiques: « Cycle » follows the current cycle (not the 2025 one), « Tout » goes back to the first value, a line
   breaks across the gap, each chart has a name for screen readers, the overlay shows one space with its own colours,
   the top selector wins over the spaces ticked below;
-- Journal: labelled filter rows, the space entry before the plants, no stray « 0 », filters reset with the selector;
+- Journal: labelled filter rows in the « Filtres » sheet (lot 10j) and their one-line summary, the space entry before the plants, no stray « 0 », filters reset with the selector;
 - Aujourd'hui: the daily reminder is listed once;
 - Nutrition: the tank just saved is shown, pH labels say « avant / après Balance ».
 Usage: npm run preview:build && PYTHONPATH=scripts python3 scripts/e2e-10d2.py dist-preview/index.html <out dir>"""
@@ -73,9 +73,13 @@ with sync_playwright() as p:
 
     # Journal
     pg.get_by_role("tab", name="Journal").click(); pg.wait_for_timeout(1200)
+    # Lot 10j: the filters are behind « Filtres » (a sheet); the active ones are summed up in one line.
+    pg.click("#journal-filters"); pg.wait_for_timeout(700)
     checks["filterLabels"] = [x for x in ["Espace", "Tag"] if pg.locator("[role=radiogroup] span", has_text=x).count()]
     pg.get_by_role("radiogroup", name="Espace").get_by_role("radio", name="Colonne").click(); pg.wait_for_timeout(300)
     pg.get_by_role("radiogroup", name="Tag").get_by_role("radio", name="Griffes").click(); pg.wait_for_timeout(300)
+    pg.locator("[data-slot=drawer-content] button", has_text="Voir").click(); pg.wait_for_timeout(600)
+    checks["filterSummary"] = pg.locator("#journal-filter-summary").inner_text()
     checks["filteredRows"] = pg.locator("ul li button", has_text="Colonne").count()
     pg.get_by_role("group", name="Espace affiché").get_by_role("button", name="Floraison").click(); pg.wait_for_timeout(800)
     checks["afterSelector"] = pg.locator("text=Aucune saisie avec ces filtres").count() == 0 and pg.locator("text=Hauteur").count() > 0
@@ -108,7 +112,7 @@ print("errors:", errors[:5])
 ok = (
     checks["cycleRange"].startswith("du ") and "2025" not in checks["cycleRange"] and checks["allRange"] != checks["cycleRange"]
     and checks["drybackLines"] == 2 and "valeurs" in (checks["chartName"] or "") and checks["overlayPicker"] > 0
-    and checks["selectorWins"] == ["Colonne"] and checks["filterLabels"] == ["Espace", "Tag"] and checks["filteredRows"] > 0
+    and checks["selectorWins"] == ["Colonne"] and checks["filterLabels"] == ["Espace", "Tag"] and checks["filteredRows"] > 0 and checks["filterSummary"] == "Colonne · Griffes"
     and checks["afterSelector"] and checks["roomFirst"] and checks["noStrayZero"] and checks["reminderLines"] == 1
     and checks["phLabels"] == ["pH avant Balance", "pH après Balance"] and "enregistré à l'instant" in checks["lastTank"] and not errors
 )

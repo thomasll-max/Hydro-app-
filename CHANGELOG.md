@@ -1,5 +1,11 @@
 # Changelog
 
+## Lot 10j2 — Journal, Graphiques et Réglages plus clairs (19/10/2026)
+- **Filtres du Journal** rangés derrière un bouton « Filtres » qui ouvre une feuille (espace, plante, stade, tag) ; les filtres actifs tiennent en une ligne (« Colonne · Griffes ») avec « Effacer ».
+- Les titres du Journal, de chaque graphique et des groupes des Réglages retrouvent leur petit dessin (📖 Historique, 💦 Dryback, 🧪 EC runoff, 🌡️ Température…). Outils ne change pas.
+- La carte du cycle du Journal retrouve son cadre, comme les cartes d'espace.
+- 330 tests.
+
 ## Lot 10j1 — Aujourd'hui plus clair (19/10/2026)
 Constat de Thomas après 10h : « on a perdu fort en clarté ». Les petits dessins et les cadres reviennent là où ils aident.
 - **Le matin en lignes courtes** : « Bonjour Thomas. », une petite ligne « 3 espaces · dernière saisie hier », puis une ligne par idée avec un petit dessin (stade, arrosage, réservoir, climat, rappels) et la valeur à droite (« 2,3 L/pot », « ≈ 2 j », « VPD 0,96 »). Ce qui demande l'attention : seule la valeur passe en orange. Un espace vide tient en une ligne discrète. Mêmes informations qu'avant ; le texte envoyé par la tâche du matin ne change pas.

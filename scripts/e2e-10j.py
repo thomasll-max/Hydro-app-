@@ -8,7 +8,9 @@ Colonne, Séchage), FR / EN / DE, light and dark, 390 and 360 px:
 - one frame per space (surface, 1 px line, radius 14), nothing framed inside, no coloured edge; a 42 px square tinted
   with the space colour with the stage drawing; the stage pill; up to 4 readings with a 15 px drawing;
 - section titles of Aujourd'hui with their drawing; nothing wider than the screen, no label cut;
-- captures of « Tous » and of a space.
+- captures of « Tous » and of a space;
+10j2: the Journal filters behind « Filtres » (a sheet, the choices wrapping, nothing cut), the active ones in one line
+with « Effacer »; drawings on the titles of the Journal, the charts and the Réglages groups; Outils unchanged.
 Usage: npm run build:local && PYTHONPATH=scripts python3 scripts/e2e-10j.py dist-local <sim dir> <out dir>"""
 import sys, json, pathlib, threading, http.server, functools, socketserver, re
 from playwright.sync_api import sync_playwright
@@ -108,6 +110,41 @@ with sync_playwright() as p:
                 cut = pg.evaluate(CUT)
                 if cut: errors.append(f"{tag} space cut {cut}")
                 pg.screenshot(path=str(out / f"espace-{lang}-{theme}-{w}.png"), full_page=True)
+                # 10j2: Journal (all spaces), its filters in a sheet.
+                pg.get_by_role("group").first.get_by_role("button", name=all_, exact=True).click(); pg.wait_for_timeout(800)
+                pg.get_by_role("tab", name="Journal").click(); pg.wait_for_timeout(1500)
+                pg.wait_for_selector("#journal-filters", timeout=10000); pg.wait_for_timeout(300)
+                jr = pg.evaluate("""() => ({ rows: document.querySelectorAll('main [role=radiogroup]').length, button: !!document.querySelector('#journal-filters'), titles: [...document.querySelectorAll('main h2')].filter((h) => h.parentElement.querySelector(':scope > img')).length })""")
+                if jr["rows"] or not jr["button"] or jr["titles"] < 3: errors.append(f"{tag} journal {jr}")
+                pg.click("#journal-filters"); pg.wait_for_timeout(800)
+                sheet = pg.evaluate("""() => { const d = document.querySelector('[data-slot=drawer-content]'); return { groups: d.querySelectorAll('[role=radiogroup]').length, scroll: [...d.querySelectorAll('[role=radiogroup]')].some((g) => g.scrollWidth > g.clientWidth + 1) } }""")
+                if sheet["groups"] < 2 or sheet["scroll"]: errors.append(f"{tag} filters sheet {sheet}")
+                cut = pg.evaluate(CUT)
+                if cut: errors.append(f"{tag} filters cut {cut}")
+                if w == 360: pg.screenshot(path=str(out / f"filtres-{lang}-{theme}.png"))
+                pg.locator("[data-slot=drawer-content] [role=radiogroup]").first.get_by_role("radio").nth(1).click(); pg.wait_for_timeout(300)
+                pg.locator("[data-slot=drawer-content] [data-slot=drawer-footer] button").last.click(); pg.wait_for_timeout(700)
+                summ = pg.locator("#journal-filter-summary")
+                if not summ.count() or not summ.inner_text().strip(): errors.append(f"{tag} filter summary missing")
+                sw = pg.evaluate("document.documentElement.scrollWidth")
+                if sw > w: errors.append(f"{tag} journal overflow {sw}")
+                pg.screenshot(path=str(out / f"journal-{lang}-{theme}-{w}.png"))
+                # Charts and Réglages: a drawing on each chart title and group title.
+                for name, hash_, least in [("charts", "#charts", 1), ("settings", "#tools/settings", 5)]:
+                    pg.goto(url + hash_); pg.wait_for_timeout(1800)
+                    count = """() => [...document.querySelectorAll('main h2')].filter((h) => h.parentElement.querySelector(':scope > img[alt=""]')).length"""
+                    for _ in range(10):
+                        n = pg.evaluate(count)
+                        if n >= least: break
+                        pg.wait_for_timeout(500)
+                    if n < least: errors.append(f"{tag} {name} titles with a drawing {n}")
+                    sw = pg.evaluate("document.documentElement.scrollWidth")
+                    if sw > w: errors.append(f"{tag} {name} overflow {sw}")
+                    cut = pg.evaluate(CUT)
+                    if cut: errors.append(f"{tag} {name} cut {cut}")
+                    if w == 390: pg.screenshot(path=str(out / f"{name}-{lang}-{theme}.png"), full_page=name == "settings")
+                pg.goto(url + "#tools"); pg.wait_for_timeout(1200)
+                if pg.evaluate("document.querySelectorAll('main h2 + img, main img + h2').length"): errors.append(f"{tag} Outils got drawings")
                 ctx.close()
     # A line to watch: no entry in Floraison for a week; only its value takes « à surveiller ».
     for theme in ["dark", "light"]:

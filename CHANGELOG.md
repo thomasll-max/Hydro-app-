@@ -1,5 +1,14 @@
 # Changelog
 
+## Lot 10f2 — Direction visuelle (19/10/2026)
+Consigne de Thomas : ça ne doit pas faire « app générée par une IA ».
+- **Fonds teintés** : vert-noir en thème sombre, blanc cassé verdâtre en thème clair. Contraste vérifié dans les deux thèmes.
+- **Deux verts qui ont un sens** : vert eau pour tout ce qui touche à l'eau (arrosage, runoff, réservoir, EC et pH de la solution), vert feuille pour la plante (stade, hauteur, levée). Même règle dans les pastilles, les icônes et les courbes. Orange et rouge restent pour les alertes.
+- **Icônes au trait fin** dans l'interface courante ; les illustrations 3D restent dans l'assistant, « Premiers pas » et les écrans vides.
+- **Retiré** : le halo en haut de l'écran, les barres translucides, les ombres et lueurs colorées, la bordure animée du conseil du jour, l'apparition en fondu de chaque carte, les chiffres qui défilent.
+- Textes plus sobres, sans point d'exclamation.
+- Captures du README refaites. 294 tests.
+
 ## Lot 10f1 — Identité « hydro. » : police, logo, icône (19/10/2026)
 Le nom reste Hydro ; le logo s'écrit « hydro. ». Lot 10f coupé en 10f1 (police, logo, icône) et 10f2 (direction visuelle).
 - **Fraunces** (direction « Serre ») pour le logo et ce qui se lit comme un titre : titres d'écran, noms des stades, titres des feuilles, « Bonjour » de la carte du matin, noms d'espaces sur les cartes. Figtree reste pour le texte, JetBrains Mono pour les chiffres ; les valeurs principales des cartes sont un cran plus grosses.

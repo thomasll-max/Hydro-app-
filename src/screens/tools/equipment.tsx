@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Seg } from "@/components/hydro/form"
 import { Emoji } from "@/components/hydro/emoji"
+import { LineIcon } from "@/components/hydro/line-icon"
 import { Chip, Label, Reveal, SourceNote } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -170,7 +171,7 @@ export function EquipmentTool() {
               {library.map((e) => (
                 <li key={e.id} className="border-t border-line first:border-t-0">
                   <button onClick={() => open({ item: e })} className="flex min-h-11 w-full items-center gap-2.5 py-1.5 text-left">
-                    <Emoji name="bulb" size={26} />
+                    <LineIcon name="bulb" size={22} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[0.875rem] font-semibold">{e.name}</span>
                       <span className="block truncate text-[0.75rem] text-fg-3">{specLine(e, t, num)}</span>
@@ -310,7 +311,7 @@ function DragRow({ item, controls, onOpen, sub }: { item: Equipment; controls: D
         <GripVertical className="size-4.5" />
       </span>
       <button onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-2.5 py-1.5 text-left">
-        <Emoji name={TYPE_EMOJI[item.type]} size={28} />
+        <LineIcon name={TYPE_EMOJI[item.type]} size={22} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[0.875rem] font-semibold">
             {item.name}

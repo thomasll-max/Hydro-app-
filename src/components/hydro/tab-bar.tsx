@@ -14,7 +14,7 @@ export const TABS: { id: TabId; label: MessageKey; Icon: typeof House }[] = [
   { id: "tools", label: "nav.tools", Icon: FlaskConical },
 ]
 
-/** Frosted-glass bottom bar; the active pill slides between tabs (Motion layoutId). */
+/** Opaque bottom bar (lot 10f2: no frosted look, no drop shadow); the active pill slides between tabs (Motion layoutId). */
 export function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabId) => void }) {
   const { t } = useSettings()
   return (
@@ -24,7 +24,7 @@ export function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabI
     >
       <div
         role="tablist"
-        className="glass pointer-events-auto mx-auto grid h-[68px] max-w-[456px] grid-cols-5 rounded-[24px] border border-line-strong p-1 shadow-card short:h-[52px]"
+        className="pointer-events-auto mx-auto grid h-[68px] max-w-[456px] grid-cols-5 rounded-[24px] border border-line-strong bg-surface p-1 short:h-[52px]"
       >
         {TABS.map(({ id, label, Icon }) => {
           const on = id === active
@@ -48,7 +48,7 @@ export function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabI
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
-              <Icon className="size-[21px]" strokeWidth={2} />
+              <Icon className="size-[22px]" strokeWidth={1.5} />
               <span className="max-w-full truncate tracking-[-0.02em] short:sr-only">{t(label)}</span>
             </button>
           )

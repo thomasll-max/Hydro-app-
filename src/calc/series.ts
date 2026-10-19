@@ -27,6 +27,13 @@ export const CURVES = [
 ] as const
 export type CurveId = (typeof CURVES)[number]
 
+/** Two greens with a meaning (lot 10f2): water green for watering, runoff, reservoir and the solution; leaf green for the plant. */
+const WATER_CURVES: CurveId[] = ["dryback", "drybackSensor", "ecIn", "ecRunoff", "phIn", "phRunoff", "balance", "volume", "runoffPct", "use", "reservoir"]
+const PLANT_CURVES: CurveId[] = ["height", "germination"]
+export function curveTone(c: CurveId): "water" | "leaf" | "neutral" {
+  return WATER_CURVES.includes(c) ? "water" : PLANT_CURVES.includes(c) ? "leaf" : "neutral"
+}
+
 export type CurveDef = {
   id: CurveId
   unit: string

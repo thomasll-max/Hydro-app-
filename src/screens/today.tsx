@@ -4,11 +4,10 @@ import { SpaceToday, AllToday } from "./today-spaces"
 import { motion } from "motion/react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BorderBeam } from "@/components/magicui/border-beam"
 import { NumberTicker } from "@/components/magicui/number-ticker"
 import { ArcGauge } from "@/components/hydro/arc-gauge"
 import { Spark } from "@/components/hydro/spark"
-import { Emoji } from "@/components/hydro/emoji"
+import { LineIcon } from "@/components/hydro/line-icon"
 import { Chip, Chips, Dot, Label, Reveal, ScreenHero, SourceNote } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
@@ -113,19 +112,23 @@ function CultureToday({ extra }: { extra?: React.ReactNode }) {
     <>
       <ScreenHero emoji={s.flowerWeek ? "blossom" : s.key === "seedling" || s.key === "notStarted" ? "sprout" : "herb"} eyebrow={`${space ? `${space.name} · ` : ""}${t("today.cycle", { name: cycle.name, cultivar: cycle.cultivars[0] ?? "" })}`} title={stageLine(t, s)}>
         <Chips>
-          {tg?.steer && <Chip tone="primary">{`${t(`stage.${s.key}`)} · ${t(`steerChip.${tg.steer}`)}`}</Chip>}
-          {!tg?.steer && s.key !== "notStarted" && <Chip tone="primary">{t(`stage.${s.key}`)}</Chip>}
-          <Chip>{`${t(`mode.${cycle.waterMode}Short`)} · ${t(`substrate.${cycle.substrate}`).toLowerCase()}`}</Chip>
+          {tg?.steer && <Chip tone="leaf">{`${t(`stage.${s.key}`)} · ${t(`steerChip.${tg.steer}`)}`}</Chip>}
+          {!tg?.steer && s.key !== "notStarted" && <Chip tone="leaf">{t(`stage.${s.key}`)}</Chip>}
+          <Chip tone="water">{`${t(`mode.${cycle.waterMode}Short`)} · ${t(`substrate.${cycle.substrate}`).toLowerCase()}`}</Chip>
         </Chips>
       </ScreenHero>
       {extra}
 
       {/* One correction */}
       <Reveal i={0} className="mb-3">
-        <div className="relative overflow-hidden rounded-xl border border-line bg-surface shadow-card">
-          {advice && <BorderBeam size={90} duration={4} colorFrom={advice.status === "bad" ? "var(--bad)" : "var(--warn)"} colorTo="transparent" borderWidth={1.5} />}
+        <div className={cn("relative overflow-hidden rounded-xl border bg-surface", advice ? (advice.status === "bad" ? "border-bad/60" : "border-warn/60") : "border-line")}>
           <div className="flex items-center gap-3 px-3.5 py-3">
-            <Emoji name={advice ? (advice.metric.startsWith("ph") || advice.metric === "vpd" ? "thermometer" : advice.metric === "dli" ? "bulb" : "droplet") : last ? "pottedPlant" : "notebook"} size={38} />
+            <LineIcon
+              name={advice ? (advice.metric.startsWith("ph") || advice.metric === "vpd" ? "thermometer" : advice.metric === "dli" ? "bulb" : "droplet") : last ? "pottedPlant" : "notebook"}
+              size={28}
+              tone={advice ? "neutral" : undefined}
+              className={advice ? (advice.status === "bad" ? "text-bad" : "text-warn") : undefined}
+            />
             <div className="min-w-0">
               <b className="block text-[0.90625rem] font-semibold">
                 {advice ? t(`${advice.key}.title` as MessageKey) : last ? t("today.allGood") : t("today.noEntryTitle")}

@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { Check, Clock3, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
-import { Emoji } from "@/components/hydro/emoji"
+import { LineIcon } from "@/components/hydro/line-icon"
 import { Label } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -109,7 +109,7 @@ export function ItemRow({ i, showWhen = true, onOpen }: { i: CalItem; showWhen?:
   return (
     <li className={cn("flex items-center gap-2.5 border-t border-line py-2 first:border-t-0", i.done && "opacity-55")}>
       <button type="button" onClick={open} disabled={!open} className="flex min-w-0 flex-1 items-center gap-2.5 py-1 text-left disabled:cursor-default">
-        <Emoji name={itemEmoji(i)} size={28} />
+        <LineIcon name={itemEmoji(i)} size={22} />
         <span className="min-w-0">
           <span className={cn("block truncate text-[0.84375rem] font-medium", i.done && "line-through decoration-fg-3")}>{itemTitle(settings.lang, i)}</span>
           <span className={cn("flex items-center gap-1.5 truncate text-[0.75rem]", i.overdue || (i.type === "reminder" && i.late) ? "font-semibold text-warn" : "text-fg-3")}>

@@ -8,16 +8,17 @@
 
 :root {
   /* light (bare :root = complete palette) */
-  --page: #fafafa;
-  --surface: #ffffff;
-  --surface-2: #f3f4f3;
-  --glass: rgba(255, 255, 255, 0.92);
-  --line: #ededed;
-  --line-strong: #dfdfdf;
-  --fg: #171717;
-  --fg-2: #555555;
+  /* Tinted grounds (lot 10f2): off-white with a hint of green rather than pure white. */
+  --page: #f4f6f4;
+  --surface: #fcfdfc;
+  --surface-2: #eff2f0;
+  --glass: #fcfdfc;
+  --line: #e3e8e4;
+  --line-strong: #d3dad5;
+  --fg: #141a17;
+  --fg-2: #4a524e;
   /* Text colours ≥ 4.5:1 on page, surface and surface-2, and on their own 12 % tint (lot 10e). */
-  --fg-3: #666666;
+  --fg-3: #5c6560;
   --primary: #0c7049;
   --primary-deep: #24b47e;
   --on-primary: #ffffff;
@@ -26,11 +27,13 @@
   --info: #1f6fc2;
   --phase-3: #7c55e0;
   /* Identity (lot 10f): water green (the drop) and leaf green (the dot). Graphics ≥ 3:1 on the page. */
-  --water: #1f9e68;
+  --water: #1a9462;
   --leaf: #4f9a2a;
+  /* The same two greens as text (≥ 4.5:1 on page, surface and surface-2). */
+  --water-ink: #0c7049;
+  --leaf-ink: #3a7a1d;
   --track: #eceeed;
-  --glow: rgba(36, 180, 126, 0.14);
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 28px -16px rgba(0, 0, 0, 0.22);
+  --shadow: 0 1px 2px rgba(20, 26, 23, 0.05);
   /* 8 space colours, ≥ 4.5:1 on the light surface */
   --space-emerald: #13845a;
   --space-sky: #1f6fc2;
@@ -74,17 +77,17 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-app-theme="light"]) {
-    --page: #171717;
-    --surface: #1c1c1c;
-    --surface-2: #232323;
-    --glass: rgba(36, 36, 36, 0.92);
-    --line: rgba(255, 255, 255, 0.08);
-    --line-strong: rgba(255, 255, 255, 0.14);
-    --fg: #f5f5f5;
-    --fg-2: #b2b2b2;
-    --fg-3: #9a9a9a;
+    --page: #0f1512;
+    --surface: #18201c;
+    --surface-2: #1e2823;
+    --glass: #18201c;
+    --line: #26302b;
+    --line-strong: #33403a;
+    --fg: #eef2ef;
+    --fg-2: #c2cdc7;
+    --fg-3: #a7b3ad;
     --primary: #3ecf8e;
-    --on-primary: #0b1f15;
+    --on-primary: #0f1512;
     --primary-deep: #24b47e;
     --warn: #f5a524;
     --bad: #ff5a4e;
@@ -92,9 +95,10 @@
     --phase-3: #b38cff;
     --water: #3ecf8e;
     --leaf: #8bd450;
+    --water-ink: #3ecf8e;
+    --leaf-ink: #8bd450;
     --track: rgba(255, 255, 255, 0.07);
-    --glow: rgba(62, 207, 142, 0.18);
-    --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+    --shadow: none;
     --picker-filter: invert(1);
     --space-emerald: #3ecf8e;
     --space-sky: #5aa9ff;
@@ -109,17 +113,17 @@
 }
 :root[data-theme="dark"]:not([data-app-theme="light"]),
 :root[data-app-theme="dark"] {
-  --page: #171717;
-  --surface: #1c1c1c;
-  --surface-2: #232323;
-  --glass: rgba(36, 36, 36, 0.92);
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.14);
-  --fg: #f5f5f5;
-  --fg-2: #b2b2b2;
-  --fg-3: #9a9a9a;
+  --page: #0f1512;
+  --surface: #18201c;
+  --surface-2: #1e2823;
+  --glass: #18201c;
+  --line: #26302b;
+  --line-strong: #33403a;
+  --fg: #eef2ef;
+  --fg-2: #c2cdc7;
+  --fg-3: #a7b3ad;
   --primary: #3ecf8e;
-  --on-primary: #0b1f15;
+  --on-primary: #0f1512;
   --primary-deep: #24b47e;
   --warn: #f5a524;
   --bad: #ff5a4e;
@@ -127,9 +131,10 @@
   --phase-3: #b38cff;
   --water: #3ecf8e;
   --leaf: #8bd450;
+  --water-ink: #3ecf8e;
+  --leaf-ink: #8bd450;
   --track: rgba(255, 255, 255, 0.07);
-  --glow: rgba(62, 207, 142, 0.18);
-  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+  --shadow: none;
   --picker-filter: invert(1);
   --space-emerald: #3ecf8e;
   --space-sky: #5aa9ff;
@@ -186,6 +191,10 @@ body {
   --color-bad: var(--bad);
   --color-info: var(--info);
   --color-phase-3: var(--phase-3);
+  --color-water: var(--water);
+  --color-leaf: var(--leaf);
+  --color-water-ink: var(--water-ink);
+  --color-leaf-ink: var(--leaf-ink);
   --color-track: var(--track);
   --radius-sm: var(--r-sm);
   --radius-md: var(--r-md);
@@ -254,6 +263,11 @@ body {
   }
 }
 
+/* Thin line icons (lot 10f2): every Lucide icon left at its default weight is drawn at 1.5, like the leaf's vein. */
+svg.lucide[stroke-width="2"] {
+  stroke-width: 1.5;
+}
+
 @layer utilities {
   /* Fraunces with the SOFT axis at 100; opsz stays automatic (font-optical-sizing). */
   .display {
@@ -306,10 +320,9 @@ body {
     letter-spacing: 0.7px;
     color: var(--fg-3);
   }
+  /* Opaque since lot 10f2 (no frosted glass). */
   .glass {
     background: var(--glass);
-    backdrop-filter: blur(18px) saturate(1.4);
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
   }
   .no-scrollbar {
     scrollbar-width: none;
@@ -319,14 +332,6 @@ body {
   }
 }
 
-@keyframes float-y {
-  50% {
-    transform: translateY(-4px);
-  }
-}
-.float-y {
-  animation: float-y 5s ease-in-out infinite;
-}
 
 @media (prefers-reduced-motion: reduce) {
   *,

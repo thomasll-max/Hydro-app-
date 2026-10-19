@@ -1,7 +1,7 @@
 // Aujourd'hui, version locale : rappel de sauvegarde tous les 7 jours (spec §3, §12). Nothing is stored on a server,
 // so a lost phone means a lost grow unless a backup exists somewhere.
 import { Card } from "@/components/ui/card"
-import { Emoji } from "@/components/hydro/emoji"
+import { LineIcon } from "@/components/hydro/line-icon"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { todayIso } from "@/calc/stage"
@@ -19,7 +19,7 @@ export function BackupReminder() {
   if (!d.due) return null
   return (
     <Card className="mb-3 flex-row items-center gap-3 border-warn/35 px-4 py-3" id="backup-reminder">
-      <Emoji name="notebook" size={34} />
+      <LineIcon name="notebook" size={26} />
       <div className="min-w-0 flex-1">
         <b className="block text-[0.875rem] font-semibold">{d.days == null ? t("backupRem.never") : t("backupRem.days", { n: d.days })}</b>
         <span className="block text-[0.75rem] text-fg-2">{t("backupRem.why")}</span>

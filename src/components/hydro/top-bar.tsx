@@ -59,7 +59,7 @@ export function ThemeSwitch({ wide }: { wide?: boolean } = {}) {
 
 export function TopBar() {
   return (
-    <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 bg-background/80 backdrop-blur-md short:static">
+    <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 bg-background short:static">
       <div className="mx-auto flex max-w-[480px] items-center justify-between gap-2 py-2.5 pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
         <Wordmark size={26} />
         <DisplayMenu />

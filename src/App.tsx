@@ -58,7 +58,6 @@ function Shell() {
 
   return (
     <div className="relative min-h-full">
-      <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 h-[360px] bg-[radial-gradient(closest-side,var(--glow),transparent)] [inset-inline:-30%]" />
       <TopBar />
       <UpdateBanner />
       {TARGET === "artifact" && storeKind === "local" && (

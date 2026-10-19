@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Emoji } from "@/components/hydro/emoji"
+import { LineIcon } from "@/components/hydro/line-icon"
 import { Chip, ComingSoon, Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -109,7 +109,7 @@ export function ToolsScreen() {
             <Reveal key={tool.id} i={i} className={tool.wide ? "col-span-2" : undefined}>
               <button onClick={() => setOpen(tool.id)} className="block h-full w-full text-left">
                 <Card className={tool.wide ? "h-full flex-row items-center gap-3.5 px-4 py-4" : "h-full gap-2 px-3.5 py-3.5"}>
-                  <Emoji name={tool.emoji} size={tool.wide ? 52 : 40} className={ready ? undefined : "opacity-80 grayscale-[35%]"} />
+                  <LineIcon name={tool.emoji} size={tool.wide ? 30 : 26} className={ready ? undefined : "opacity-70"} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <b className="text-[0.9375rem] font-semibold">{t(tool.title)}</b>

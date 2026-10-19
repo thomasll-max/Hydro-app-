@@ -134,7 +134,6 @@ export function Onboarding() {
 
   return (
     <div ref={top} className="relative min-h-full">
-      <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 h-[360px] bg-[radial-gradient(closest-side,var(--glow),transparent)] [inset-inline:-30%]" />
       <main
         id="onboarding"
         className="relative mx-auto max-w-[480px] pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-[calc(env(safe-area-inset-bottom,0px)+120px)] pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]"

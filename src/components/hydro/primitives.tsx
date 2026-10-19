@@ -1,31 +1,32 @@
 import type { ReactNode } from "react"
-import { BlurFade } from "@/components/magicui/blur-fade"
 import { cn } from "@/lib/utils"
 import type { Status } from "@/lib/geometry"
 import type { EmojiName } from "@/assets/emoji"
 import { Emoji } from "./emoji"
+import { LineIcon } from "./line-icon"
 
+/**
+ * Screen title. Since lot 10f2 there is no illustration next to it (the 3D emojis stay for the assistant, empty
+ * states and rare moments): `emoji` is kept by the call sites but no longer drawn.
+ */
 export function ScreenHero({
-  emoji,
   eyebrow,
   title,
   children,
 }: {
-  emoji: EmojiName
+  emoji?: EmojiName
   eyebrow?: string
   title: string
   children?: ReactNode
 }) {
   return (
-    <BlurFade className="mt-1.5 mb-4 flex items-center gap-3.5">
-      {/* Very narrow screen (zoom 200 %): the title keeps the room, the illustration goes (lot 10e). */}
-      <Emoji name={emoji} size={64} className="float-y drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)] max-[20rem]:hidden" />
+    <div className="mt-2 mb-4 flex items-center gap-3.5">
       <div className="min-w-0">
         {eyebrow && <div className="eyebrow">{eyebrow}</div>}
         <h1 className="display mt-0.5 text-[1.75rem] leading-[1.1] [overflow-wrap:anywhere]">{title}</h1>
         {children}
       </div>
-    </BlurFade>
+    </div>
   )
 }
 
@@ -33,7 +34,7 @@ export function Chips({ children }: { children: ReactNode }) {
   return <div className="mt-2 flex flex-wrap gap-1.5">{children}</div>
 }
 
-export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "primary" | "warn"; children: ReactNode }) {
+export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "primary" | "warn" | "water" | "leaf"; children: ReactNode }) {
   return (
     <span
       className={cn(
@@ -41,6 +42,8 @@ export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "prima
         tone === "neutral" && "border-line bg-surface-2 text-fg-2",
         tone === "primary" && "border-primary/35 bg-primary/10 text-primary",
         tone === "warn" && "border-warn/35 bg-warn/10 text-warn",
+        tone === "water" && "border-water/40 bg-water/10 text-water-ink",
+        tone === "leaf" && "border-leaf/45 bg-leaf/10 text-leaf-ink",
       )}
     >
       {children}
@@ -51,7 +54,7 @@ export function Chip({ tone = "neutral", children }: { tone?: "neutral" | "prima
 export function Label({ emoji, children, className }: { emoji?: EmojiName; children: ReactNode; className?: string }) {
   return (
     <div className={cn("eyebrow flex items-center gap-1.5", className)}>
-      {emoji && <Emoji name={emoji} size={18} />}
+      {emoji && <LineIcon name={emoji} size={17} />}
       <span>{children}</span>
     </div>
   )
@@ -71,13 +74,12 @@ export function Dot({ status }: { status: Status }) {
   )
 }
 
-/** Card entrance used across screens (Magic UI BlurFade, staggered). */
-export function Reveal({ i = 0, className, children }: { i?: number; className?: string; children: ReactNode }) {
-  return (
-    <BlurFade delay={0.06 * i} offset={10} direction="up" blur="4px" duration={0.5} className={className}>
-      {children}
-    </BlurFade>
-  )
+/**
+ * Card wrapper. Until lot 10f the cards faded in one after the other; that systematic entrance is gone (only screen
+ * transitions and action feedback move). `i` is kept by the call sites.
+ */
+export function Reveal({ className, children }: { i?: number; className?: string; children: ReactNode }) {
+  return <div className={className}>{children}</div>
 }
 
 export function SourceNote({ children }: { children: ReactNode }) {
@@ -87,9 +89,8 @@ export function SourceNote({ children }: { children: ReactNode }) {
 /** Polished empty state for a tab or tool that arrives in a later batch ("Arrive au lot X"). Never a broken page. */
 export function ComingSoon({ emoji, title, lot, body, foot }: { emoji: EmojiName; title: string; lot: string; body: string; foot?: string }) {
   return (
-    <div className="relative overflow-hidden rounded-[var(--r-xl)] border border-line bg-surface px-5 py-6 text-center shadow-card">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -top-16 h-40 bg-[radial-gradient(closest-side,var(--glow),transparent)]" />
-      <Emoji name={emoji} size={84} className="float-y relative mx-auto drop-shadow-[0_10px_18px_rgba(0,0,0,0.3)]" />
+    <div className="relative overflow-hidden rounded-[var(--r-xl)] border border-line bg-surface px-5 py-6 text-center">
+      <Emoji name={emoji} size={84} className="relative mx-auto" />
       <div className="relative mt-3 inline-flex">
         <Chip tone="primary">{lot}</Chip>
       </div>

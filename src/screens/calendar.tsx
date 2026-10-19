@@ -7,6 +7,7 @@ import { motion } from "motion/react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Emoji } from "@/components/hydro/emoji"
+import { LineIcon } from "@/components/hydro/line-icon"
 import { Label, Reveal, ScreenHero, SourceNote } from "@/components/hydro/primitives"
 import { Seg, Sheet, TagChip } from "@/components/hydro/form"
 import { SpaceDot } from "@/components/hydro/space-pill"
@@ -256,7 +257,7 @@ function AgendaView({ filter, onDay }: { filter: Filter; onDay: (d: IsoDate) => 
     return (
       <Reveal i={2}>
         <Card className="items-center px-5 py-7 text-center">
-          <Emoji name="alarm" size={64} className="float-y" />
+          <Emoji name="alarm" size={64} />
           <b className="mt-1 text-[1rem]">{journal ? t("cal.journalEmpty") : t("cal.empty")}</b>
           {!journal && <p className="max-w-[34ch] text-[0.8125rem] leading-[1.5] text-fg-2">{t("cal.agendaEmpty")} {t("cal.emptyBody")}</p>}
         </Card>
@@ -313,7 +314,7 @@ function JournalLines({ x }: { x: DayData }) {
       {x.entries.map((e) => (
         <li key={e.id} className="border-t border-line first:border-t-0">
           <button type="button" onClick={() => ed.openEntry({ date: e.date, spaceId: e.spaceId, plantId: e.plantId })} className="flex w-full items-center gap-2.5 py-2 text-left">
-            <Emoji name="notebook" size={26} />
+            <LineIcon name="notebook" size={22} />
             <span className="min-w-0">
               <span className="flex items-center gap-1.5 text-[0.84375rem] font-medium">
                 <SpaceDot color={sp(e.spaceId)?.color} /> {sp(e.spaceId)?.name ?? "—"}
@@ -327,7 +328,7 @@ function JournalLines({ x }: { x: DayData }) {
       ))}
       {x.mixes.map((m) => (
         <li key={m.id} className="flex items-center gap-2.5 border-t border-line py-2 first:border-t-0">
-          <Emoji name="testTube" size={26} />
+          <LineIcon name="testTube" size={22} />
           <span className="text-[0.84375rem] font-medium">
             {t("cal.mixLine", { litres: num(m.volumeL) })}
             {m.ec != null && <span className="font-normal text-fg-3"> · EC {num(m.ec, 1)}</span>}
@@ -337,7 +338,7 @@ function JournalLines({ x }: { x: DayData }) {
       ))}
       {x.events.map((e) => (
         <li key={e.id} className="flex items-center gap-2.5 border-t border-line py-2 first:border-t-0">
-          <Emoji name="book" size={26} />
+          <LineIcon name="book" size={22} />
           <span className="min-w-0 text-[0.84375rem] font-medium">
             {t(`event.${e.type}` as MessageKey)}
             {sp(e.spaceId) && <span className="font-normal text-fg-3"> · {sp(e.spaceId)!.name}</span>}

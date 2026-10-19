@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AreaField, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
-import { Emoji } from "@/components/hydro/emoji"
+import { LineIcon } from "@/components/hydro/line-icon"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
@@ -233,7 +233,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
                 e.type === ty ? "border-primary/45 bg-primary/10 text-fg" : "border-line bg-surface-2 text-fg-2",
               )}
             >
-              <Emoji name={TYPE_EMOJI[ty]} size={24} />
+              <LineIcon name={TYPE_EMOJI[ty]} size={20} />
               <span className="line-clamp-2">{t(`equip.types.${ty}`)}</span>
             </button>
           ))}
@@ -245,7 +245,7 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
           <div className="flex flex-wrap gap-1.5">
             {library.map((m) => (
               <button key={m.id} type="button" onClick={() => fromModel(m)} className="flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3.5 text-[0.8125rem] font-semibold text-fg-2">
-                <Emoji name="bulb" size={18} /> {m.name}
+                <LineIcon name="bulb" size={17} /> {m.name}
               </button>
             ))}
           </div>

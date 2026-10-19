@@ -40,7 +40,7 @@ export function Fab({ label, onClick }: { label: string; onClick: () => void }) 
           aria-label={label}
           tabIndex={hidden ? -1 : 0}
           className={cn(
-            "flex h-[52px] items-center gap-2 rounded-full bg-primary px-[18px] text-[0.90625rem] font-bold text-primary-foreground shadow-[0_10px_30px_-6px_color-mix(in_srgb,var(--primary)_60%,transparent)] focus-visible:outline-offset-4 short:size-12 short:justify-center short:px-0",
+            "flex h-[52px] items-center gap-2 rounded-full bg-primary px-[18px] text-[0.90625rem] font-bold text-primary-foreground shadow-[0_2px_6px_rgba(0,0,0,0.25)] focus-visible:outline-offset-4 short:size-12 short:justify-center short:px-0",
             hidden ? "pointer-events-none" : "pointer-events-auto",
           )}
         >

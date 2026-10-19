@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import { Glossary } from "@/components/hydro/info"
 import { Card } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Emoji } from "@/components/hydro/emoji"
+import { LineIcon } from "@/components/hydro/line-icon"
 import { Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { PH_TARGETS, STEERING, type Source } from "@/data/reference"
@@ -139,7 +139,7 @@ function Section({ value, emoji, title, desc, children }: { value: string; emoji
     <AccordionItem value={value} className="border-line">
       <AccordionTrigger className="items-center py-3.5 hover:no-underline">
         <span className="flex items-center gap-3">
-          <Emoji name={emoji} size={30} />
+          <LineIcon name={emoji} size={22} />
           <span>
             <span className="block text-[0.90625rem] font-semibold">{title}</span>
             {desc && <span className="block text-[0.75rem] font-normal text-fg-3">{desc}</span>}

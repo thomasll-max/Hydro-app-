@@ -30,6 +30,7 @@ import {
   type CurveId,
   type Period,
   type Series,
+  curveTone,
 } from "@/calc/series"
 import { drybackMethodOf } from "@/model/entry"
 import type { MessageKey } from "@/i18n/types"
@@ -282,7 +283,12 @@ function CurveChart({ series, spaces, events, curve, name }: { series: Series[];
   const summary = useSummary()
   const rows = useMemo(() => chartRows(series), [series])
   const def = CURVE_DEFS[curve]
-  const config = Object.fromEntries(spaces.map((s) => [`s:${s.id}`, { label: s.name, color: spaceColor(s.color) }]))
+  // Water curves in water green, plant curves in leaf green (band, and the line when one space is shown); several
+  // spaces keep their own colours so the lines can be told apart.
+  const kind = curveTone(curve)
+  const tone = kind === "water" ? "var(--water)" : kind === "leaf" ? "var(--leaf)" : "var(--fg-3)"
+  const lineColor = (s: Space) => (spaces.length === 1 && kind !== "neutral" ? tone : spaceColor(s.color))
+  const config = Object.fromEntries(spaces.map((s) => [`s:${s.id}`, { label: s.name, color: lineColor(s) }]))
   const label = series.map((s) => summary(s, name, spaces.find((x) => x.id === s.spaceId)?.name ?? "")).join(" ")
   return (
     <div role="img" aria-label={label}>
@@ -291,14 +297,14 @@ function CurveChart({ series, spaces, events, curve, name }: { series: Series[];
         <CartesianGrid vertical={false} strokeDasharray="3 5" stroke="var(--line)" />
         <XAxis dataKey="date" tickFormatter={(d: string) => dm(d)} tick={axisTick} tickLine={false} axisLine={false} minTickGap={24} />
         <YAxis tick={axisTick} tickLine={false} axisLine={false} width={44} domain={["auto", "auto"]} tickFormatter={(v: number) => num(v, def.decimals > 1 ? 1 : def.decimals)} />
-        <Area dataKey="band" type="stepAfter" stroke="none" fill="var(--primary)" fillOpacity={0.12} isAnimationActive={false} connectNulls />
+        <Area dataKey="band" type="stepAfter" stroke="none" fill={tone} fillOpacity={0.14} isAnimationActive={false} connectNulls />
         {events.map((e) => (
           <ReferenceLine key={e.id} x={e.date} stroke="var(--fg-3)" strokeDasharray="2 4" strokeOpacity={0.7} />
         ))}
         {/* One line per piece: a gap of more than GAP_DAYS is left blank. */}
         {spaces.flatMap((s) =>
           pieceKeys(series.find((x) => x.spaceId === s.id)?.points ?? [], `s:${s.id}`).map((k) => (
-            <Line key={k} dataKey={k} name={s.name} type="monotone" stroke={spaceColor(s.color)} strokeWidth={2} dot={rows.length < 20 ? { r: 2.5 } : false} connectNulls isAnimationActive={false} />
+            <Line key={k} dataKey={k} name={s.name} type="monotone" stroke={lineColor(s)} strokeWidth={2} dot={rows.length < 20 ? { r: 2.5 } : false} connectNulls isAnimationActive={false} />
           )),
         )}
         <ChartTooltip

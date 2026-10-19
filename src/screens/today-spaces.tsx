@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react"
 import { ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Emoji } from "@/components/hydro/emoji"
+import { LineIcon } from "@/components/hydro/line-icon"
 import { Chip, Dot, Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -86,9 +86,8 @@ export function BonjourCard({ only }: { only?: string }) {
   if (!spaces.length) return null
   return (
     <Card className="relative gap-2 overflow-hidden">
-      <div aria-hidden="true" className="pointer-events-none absolute -top-10 -right-8 size-36 rounded-full bg-[radial-gradient(closest-side,rgba(245,165,36,0.22),transparent)]" />
       <div className="relative flex items-center gap-2.5">
-        <Emoji name="sun" size={34} className="float-y" />
+        <LineIcon name="sun" size={24} />
         <b className="display text-[1.1875rem] leading-tight">{digest.title}</b>
       </div>
       <div className="relative flex flex-col gap-2.5">
@@ -218,7 +217,7 @@ function AutonomyTag({ a }: { a: Autonomy }) {
   const d = Math.floor(a.days.value)
   return (
     <span className={cn("flex items-center gap-1 font-semibold", d <= 1 || a.tooOld ? "text-warn" : "text-fg-2")}>
-      <Emoji name="bucket" size={16} /> {t("today.resDays", { n: num(d) })}
+      <LineIcon name="bucket" size={16} /> {t("today.resDays", { n: num(d) })}
     </span>
   )
 }

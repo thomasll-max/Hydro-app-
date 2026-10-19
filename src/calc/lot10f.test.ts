@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import fs from "node:fs"
 import path from "node:path"
 import { DROP_PATH, LEAF_PATH, VEIN_PATH } from "@/components/hydro/wordmark"
+import { curveTone } from "@/calc/series"
 
 const root = path.resolve(import.meta.dirname, "../..")
 const read = (f: string) => fs.readFileSync(path.join(root, f), "utf8")
@@ -33,5 +34,32 @@ describe("lot 10f — identité « hydro. »", () => {
     expect(purposes).toContain("icon-512.png:any")
     for (const f of ["icon-192.png", "icon-512.png", "apple-touch-icon.png", "icon-maskable-512.png", "favicon.svg", "favicon-32.png"]) expect(fs.existsSync(path.join(root, "pwa", f))).toBe(true)
     expect(read("pwa/sw.js")).toContain('const CACHE = "hydro-v2"')
+  })
+})
+
+describe("lot 10f2 — direction visuelle", () => {
+  it("plus de halo, de verre dépoli ni de lueur colorée", () => {
+    const css = read("src/index.css")
+    expect(css).not.toMatch(/--glow/)
+    expect(css).not.toMatch(/backdrop-filter/)
+    expect(read("src/App.tsx")).not.toMatch(/radial-gradient/)
+    expect(read("src/components/hydro/tab-bar.tsx")).not.toMatch(/\bglass\b|shadow-card/)
+    expect(read("src/components/hydro/fab.tsx")).not.toMatch(/color-mix\(in_srgb,var\(--primary\)/)
+  })
+
+  it("fonds teintés : vert-noir en sombre, blanc cassé verdâtre en clair", () => {
+    const css = read("src/index.css")
+    expect(css).toMatch(/--page: #f4f6f4;/)
+    expect(css.match(/--page: #0f1512;/g)?.length).toBe(2)
+    expect(css.match(/--surface: #18201c;/g)?.length).toBe(2)
+    expect(css.match(/--line: #26302b;/g)?.length).toBe(2)
+  })
+})
+
+describe("lot 10f2 — deux verts qui ont un sens", () => {
+  it("courbes : eau en vert eau, plante en vert feuille, climat et lumière neutres", () => {
+    for (const c of ["dryback", "ecRunoff", "phIn", "reservoir", "use"] as const) expect(curveTone(c)).toBe("water")
+    for (const c of ["height", "germination"] as const) expect(curveTone(c)).toBe("leaf")
+    for (const c of ["vpd", "temp", "dli"] as const) expect(curveTone(c)).toBe("neutral")
   })
 })

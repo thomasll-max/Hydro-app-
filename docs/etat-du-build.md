@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1 ; 38 = lot 10f2)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -42,9 +42,9 @@
   - [x] Lot 10e1 : points 71–75, accessibilité visuelle (281 tests, artefact v34)
   - [x] Lot 10e2 : points 76–84, textes, assistant, ARIA (286 tests, artefact v35)
   - [x] Lot 10e3 : option « Autre marque / je dose moi-même », simulation finale (288 tests, artefact v36)
-- [ ] Lot 10f : identité hydro.
+- [x] Lot 10f : identité hydro.
   - [x] Lot 10f1 : police Fraunces, logo « hydro. », icône d'app (291 tests, artefact v37)
-  - [ ] Lot 10f2 : direction visuelle (point 5)
+  - [x] Lot 10f2 : direction visuelle (294 tests, artefact v38)
 - [ ] Lot 10g : motif goutte et écran de démarrage
 - [ ] Lot 10f/10g : en cours (session planifiée, 2026-10-19 13:17 UTC)
 
@@ -101,6 +101,17 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 - Premiers pas : pots demandés seulement si l'arrosage de l'espace est automatique (cycle en automatique, sinon pompe dans l'espace) ; lampe cochée avec ses watts (`StartItem.canStart` pour « Démarrer aujourd'hui »).
 - Carte Bonjour : un cycle « automatique » dans un espace sans pompe (quand le grow liste ses pompes) est traité comme arrosé à la main. Pas de dose ni de programme inventés pour le rinçage (eau osmosée, EC < 0,1 : fiche Athena).
 - **Simulation d'un an (fin de 10b, 19/10)** : 479 saisies vérifiées, 28/28 anomalies signalées, **0 jour de végé jugée comme un semis** (96 avant), 0 fausse alerte, 0 plantage, 364 matins rejoués ; **4 échéances traînent** (12 avant) : toutes « mesurer le débit » (11 matins chacune), car le simulateur ne remesure la pompe qu'aux transferts (71 jours) alors que la règle du cahier des charges est 60 jours. Je n'ai pas changé ce comportement du simulateur : le rappel est juste. Passage navigateur (`browse.py`, 9 dates × 13 écrans) : aucune erreur console, aucun débordement (le seul « Infinity » relevé est la marque AC Infinity).
+
+## Lot 10f2 — notes
+- **Fonds teintés** : sombre #0f1512 (page), #18201c (surfaces), #1e2823 (surface 2), bordures #26302b / #33403a, textes #eef2ef / #c2cdc7 / #a7b3ad ; clair #f4f6f4 (page), #fcfdfc, #eff2f0, bordures #e3e8e4 / #d3dad5, textes #141a17 / #4a524e / #5c6560. 0 défaut de contraste (axe-core, `scripts/e2e-10e.py`) sur les cinq onglets et la saisie, en clair et en sombre.
+- **Deux verts** : `--water` / `--leaf` (graphismes, ≥ 3:1 ; clair #1a9462 au lieu de #1f9e68, qui faisait 2,97:1 sur la surface 2) et `--water-ink` / `--leaf-ink` (texte, ≥ 4,5:1). Utilitaires Tailwind `text-water`, `bg-leaf/10`… Pastilles `Chip tone="water" | "leaf"` (stade en vert feuille, mode d'arrosage en vert eau sur Aujourd'hui). Icônes : `toneOf` dans `line-icon.tsx`. Graphiques : `curveTone(curve)` (`calc/series.ts`) colore la bande cible, et la courbe quand un seul espace est affiché. **Décision prise seule** : avec plusieurs espaces, chaque courbe garde la couleur de son espace, et la vue « toutes les courbes d'un espace » garde une couleur par courbe (sinon on ne les distingue plus).
+- **Icônes au trait** : `LineIcon` (Lucide, trait 1,5) remplace les emojis 3D dans l'interface courante (listes du calendrier, outils, Repères, équipement, carte Bonjour, conseil du jour, rappel de sauvegarde). Règle CSS : toute icône Lucide laissée à son trait par défaut est dessinée à 1,5. Les emojis 3D restent dans l'assistant, « Premiers pas », les écrans vides (`ComingSoon`, calendrier vide, équipement vide). `ScreenHero` n'a plus d'illustration (prop `emoji` gardée par les appels, ignorée).
+- **Retiré** : halo radial (`--glow`, App et assistant), halo orange de la carte Bonjour, barre d'onglets et barre du haut translucides (opaques), ombres colorées (bouton « Saisie du jour », bandeau de mise à jour), `BorderBeam` (bordure animée du conseil : bordure orange ou rouge fixe), apparition en fondu de chaque carte (`Reveal` est un simple `div`), flottement des emojis, compteurs qui défilent depuis 0 (`NumberTicker` affiche la valeur tout de suite). Restent : la transition entre onglets, la pastille d'onglet qui glisse, l'appui du bouton, le changement de mois.
+- Textes : plus de point d'exclamation (« {name} est prêt. ») ; « Tout est dans la cible. ».
+- Captures du README refaites (`docs/screenshots/`).
+- Publication de l'artefact (v37) : refusée une première fois parce que cette session n'avait pas vu la version en ligne ; vérifié qu'elle était le build du lot 10e3 (hors `<style>` et hors numéro de version), puis republiée **sans** `force` (accepté une fois la version en ligne lue).
+- `scripts/e2e-8c.py` : une erreur « ERR_TUNNEL_CONNECTION_FAILED » s'affiche parce que son contexte « version Claude » ne sert pas les polices localement (Google Fonts injoignable dans le bac à sable) ; ce n'est pas une erreur de l'app, toutes ses vérifications passent.
+- 294 tests (3 nouveaux).
 
 ## Lot 10f1 — notes
 - Session planifiée du 19/10 (Thomas absent). Lot 10f coupé en **10f1** (points 1 à 4 : police, logo, icône) et **10f2** (point 5 : direction visuelle), comme le permet le prompt.
@@ -238,7 +249,7 @@ npx -y tsx scripts/sim/build.ts <dossier> && npx -y tsx scripts/sim/validate.ts 
 ### Commandes
 ```bash
 npm ci
-npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1, 281 au lot 10d2, 286 au lot 10e2, 288 au lot 10e3, 291 au lot 10f1
+npm test                          # tests (Vitest), 221 au lot 8e, 236 au lot 10a, 245 au lot 10b1, 254 au lot 10b2, 266 au lot 10c, 272 au lot 10d1, 281 au lot 10d2, 286 au lot 10e2, 288 au lot 10e3, 291 au lot 10f1, 294 au lot 10f2
 npx tsc --noEmit -p .
 npm run build                     # dist/hydro.html (à publier sur l'artefact)
 VITE_TARGET=local npm run build   # version locale

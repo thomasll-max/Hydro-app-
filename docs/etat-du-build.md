@@ -28,7 +28,7 @@
   - [x] Lot 7a : « Autre marque » devient une vraie recette perso (337 tests, artefact v46)
   - [x] Lot 7b : « à la main » et produits perso dans Athena (340 tests, artefact v47)
 - [ ] Lot 10k : interface « calme » : Aujourd'hui, Outils, Journal par semaines, Graphiques (prompt `docs/prompt-lot-10k.md`, avant 11 et 12)
-- [ ] Lot 10l : page d'un espace et saisie du jour, version calme (prompt à venir, après validation de Thomas)
+- [ ] Lot 10l : page d'un espace et saisie du jour, version calme (prompt `docs/prompt-lot-10l.md`, juste après 10k)
 - [ ] Lot 11 : saisie vocale, dicter le journal à Claude (après 10k et 10l ; prompt `docs/prompt-lot-11.md`)
 - [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)
 - [x] Lot 8b : assistant de premier lancement, guides (205 tests)

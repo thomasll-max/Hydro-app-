@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Grid, NumField, Seg } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { badNums, parseNum } from "@/calc/formulas"
@@ -239,7 +239,7 @@ export function IrrigationTool() {
               {t("irr.sensorSave")}
             </Button>
             <ul className="flex flex-col gap-1.5 text-[0.75rem] leading-[1.45] text-fg-3">
-              {(["sNote1", "sNote2", "sNote3", "sNote4"] as const).map((k) => (
+              {(["sNote1", "sNote2", "sFormula", "sNote4"] as const).map((k) => (
                 <li key={k}>{t(`irr.${k}`)}</li>
               ))}
             </ul>
@@ -247,7 +247,6 @@ export function IrrigationTool() {
         </Reveal>
       )}
 
-      <SourceNote>{t("irr.sources")}</SourceNote>
     </div>
   )
 }

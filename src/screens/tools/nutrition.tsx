@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Grid, NumField } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
@@ -429,7 +429,6 @@ function LineNutrition() {
 
       <ConcentrateCard cat={cat} conc={conc} i={4} />
       <CustomProductsCard i={5} />
-      <SourceNote>{t("nut.sourceLine", { source: cat.source })}</SourceNote>
     </div>
   )
 }

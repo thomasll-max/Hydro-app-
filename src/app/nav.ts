@@ -9,7 +9,7 @@ import { useSyncExternalStore } from "react"
 
 export const TAB_IDS = ["today", "journal", "calendar", "charts", "tools"] as const
 export type TabId = (typeof TAB_IDS)[number]
-export const TOOL_IDS = ["start", "irrigation", "nutrition", "ph", "ipw", "light", "climate", "ask", "equipment", "data", "reperes", "settings", "varieties"] as const
+export const TOOL_IDS = ["start", "irrigation", "nutrition", "ph", "ipw", "light", "climate", "ask", "equipment", "data", "reperes", "settings", "varieties", "about"] as const
 export type ToolId = (typeof TOOL_IDS)[number]
 export type Route = {
   tab: TabId

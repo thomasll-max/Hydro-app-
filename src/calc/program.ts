@@ -139,7 +139,7 @@ export type SensorPlan = {
   rows: ProgramRow[]
 }
 
-/** Generative phases trigger at the morning base; vegetative and bulking at the peak minus 2 points. Durations use the formula, not Bonorum's seconds table (off by ×10). */
+/** Generative phases trigger at the morning base; vegetative and bulking at the peak minus 2 points. Durations are calculated with the formula volume ÷ flow. */
 export function sensorPlan(c: Pick<Cycle, "lightsOn" | "potVolumeL" | "flowMlPerMin">, phase: SensorPhase, base: number | null, peak: number | null, p2Pct: number): SensorPlan {
   const P = SENSOR[phase]
   const p2Ml = Math.round(potPctToMl(c.potVolumeL ?? 0, p2Pct))

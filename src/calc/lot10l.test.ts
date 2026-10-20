@@ -68,8 +68,8 @@ describe("lot 10l1 — page d'un espace (calculs purs)", () => {
 
 describe("lot 10l1 — page d'un espace : l'écran", () => {
   const page = read("src/screens/space-page.tsx")
-  it("ordre fixe : en-tête, état, relevés, arrosage, réservoir, à faire, sources ; plus de résumé « Bonjour »", () => {
-    const order = ["id=\"space-head\"", "<StateBlock", "<Readings", "<WaterToday", "<Reservoir", "<Todo", "<Sources"].map((x) => page.indexOf(x))
+  it("ordre fixe : en-tête, état, relevés, arrosage, réservoir, à faire ; plus de résumé « Bonjour » (les sources : l'ⓘ des relevés, lot 13)", () => {
+    const order = ["id=\"space-head\"", "<StateBlock", "<Readings", "<WaterToday", "<Reservoir", "<Todo"].map((x) => page.indexOf(x))
     expect(order.every((i) => i > 0)).toBe(true)
     expect([...order].sort((a, b) => a - b)).toEqual(order)
     expect(page).not.toMatch(/Bonjour|hello|ScreenHero/)

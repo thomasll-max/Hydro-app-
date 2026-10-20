@@ -1,5 +1,12 @@
 # Changelog
 
+## Lot 13 — Sources discrètes et page « À propos » (20/10/2026)
+- **Plus de lignes « Sources : … »** sous les outils et les écrans. À la place, un **petit ⓘ** à côté du titre (Arrosage, Nutrition, pH / Balance, Pulvérisation, Lumière, Climat, Repères, le calendrier, et « Relevés » sur la page d'un espace) : il dit d'où viennent les chiffres, une source par ligne, puis « Toutes les sources → ».
+- Ce qui change la lecture d'un chiffre reste visible à côté de lui : « estimation », « débit à mesurer », « perso, non vérifié », « échelle capteur ».
+- **Page « À propos »** (Réglages, dernière ligne, ou le menu de l'engrenage) : la version, sur quoi Hydro s'appuie (Athena Handbook avec ses pages, le mode capteur d'après le guide de Bonorum, les formules, les repères courants, ce que tu saisis), les crédits techniques avec leurs licences, un avertissement et la vie privée (ce qui reste où, ce qui part vers Claude et quand).
+- Le mode capteur ne dit plus rien du tableau de Bonorum : « Durées calculées avec la formule volume ÷ débit. » Les noms de source quittent les libellés : « Repères Athena » devient « Repères ». Les noms des produits Athena restent.
+- 468 tests.
+
 ## Correctif — « Ajouter une photo » (20/10/2026)
 - Le bouton « Ajouter une photo » de Demander à Claude ne s'ouvrait pas dans l'app Claude : toucher le bouton ouvre maintenant directement le choix de la photo (appareil photo ou galerie). Même chose pour la photo de la saisie du jour.
 - Outils : l'icône de Variétés est neutre, comme les autres outils de « Mon installation » (seuls les outils d'arrosage et de réglage de la pièce sont en couleur).

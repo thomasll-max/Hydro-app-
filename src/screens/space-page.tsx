@@ -2,6 +2,7 @@
 // the header (tinted square, name, cycle, the stage in a pill), one framed state block (the verdict of the last entry and
 // the next step of the cycle), the readings (four big, the rest on one line), the day's watering in two lines, the
 // reservoir, À faire ici, the sources. A section without object for the space is not shown; each number once.
+import { SourceInfo } from "@/components/hydro/source-info"
 import { Fragment, useMemo, type ReactNode } from "react"
 import { Check, ChevronRight, NotebookPen } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -47,6 +48,7 @@ export function SpacePage({ space }: { space: Space }) {
     () => (running ? targetsFor(today, cycle!) : null),
     [running, cycle, s?.key, s?.flowerWeek, targetsFor], // eslint-disable-line react-hooks/exhaustive-deps
   )
+  const sources = useTargetSources(running && !dryingRoom ? cycle! : undefined, tg)
   const room = entries.filter((e) => !e.plantId)
   const last: Entry | undefined = dryingRoom ? ctx.last : room[0]
   // À faire ici: the next 7 days, without the step the state block already offers (« Passer en 12/12 · dans 2 j »).
@@ -97,7 +99,7 @@ export function SpacePage({ space }: { space: Space }) {
       {dryingRoom ? (
         <DryingReadings last={last} day={dryDay} total={drying?.plannedDryingDays} />
       ) : (
-        running && <Readings space={space} last={last} lastTg={last?.targets ?? tg ?? undefined} when={last ? dm(last.date) : undefined} />
+        running && <Readings space={space} last={last} lastTg={last?.targets ?? tg ?? undefined} when={last ? dm(last.date) : undefined} sources={sources} phEstimate={tg?.phRunoff?.src === "estimate"} />
       )}
 
       {running && !dryingRoom && space.modules.irrigation && <WaterToday cycle={cycle!} last={last} />}
@@ -110,19 +112,28 @@ export function SpacePage({ space }: { space: Space }) {
         </Reveal>
       )}
 
-      {running && !dryingRoom && <Sources cycle={cycle!} tg={tg} />}
     </div>
   )
 }
 
 /** A section title, with its small link on the right (« 07/02 · Graphiques → », « Programme → »). */
-function SectionHead({ title, link, onLink, id }: { title: string; link?: string; onLink?: () => void; id?: string }) {
+function SectionHead({ title, link, onLink, id, info }: { title: string; link?: string; onLink?: () => void; id?: string; info?: ReactNode }) {
+  const head = (
+    <h2 id={id} className="display text-[1.1875rem] leading-tight">
+      {title}
+    </h2>
+  )
   return (
     // The link goes under the title when they do not fit side by side (German, 200 % zoom).
     <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-x-3">
-      <h2 id={id} className="display text-[1.1875rem] leading-tight">
-        {title}
-      </h2>
+      {info ? (
+        <div className="flex items-center gap-1">
+          {head}
+          <span className="ml-2.5 flex">{info}</span>
+        </div>
+      ) : (
+        head
+      )}
       {link && (
         <button type="button" onClick={onLink} className="-my-3 ml-auto min-h-11 text-right text-[0.8125rem] font-semibold text-fg-2 hover:text-fg">
           <NumText quiet>{link}</NumText>
@@ -209,7 +220,23 @@ function NoCycleBlock({ space }: { space: Space }) {
 }
 
 /** Relevés: the four values that drive the watering, big with their target bar; the rest on one line. */
-function Readings({ space, last, lastTg, when }: { space: Space; last?: Entry; lastTg?: Partial<Record<"dryback" | "ecRunoff" | "runoffPct" | "phRunoff", Pick<Target, "lo" | "hi">>>; when?: string }) {
+function Readings({
+  space,
+  last,
+  lastTg,
+  when,
+  sources = [],
+  phEstimate,
+}: {
+  space: Space
+  last?: Entry
+  lastTg?: Partial<Record<"dryback" | "ecRunoff" | "runoffPct" | "phRunoff", Pick<Target, "lo" | "hi">>>
+  when?: string
+  /** Where the day's targets come from (lot 13: the ⓘ beside the title). */
+  sources?: string[]
+  /** The pH target is an estimate (70/30 mix): said beside it, not only in the ⓘ. */
+  phEstimate?: boolean
+}) {
   const { t, num } = useSettings()
   const bySensor = ["acinfinity", "sensor"].includes(drybackMethodOf(space))
   const also: [string, ReactNode][] = []
@@ -220,7 +247,7 @@ function Readings({ space, last, lastTg, when }: { space: Space; last?: Entry; l
   return (
     <Reveal i={2}>
       <section id="readings" aria-labelledby="readings-title">
-        <SectionHead id="readings-title" title={t("today.readings")} link={when ? `${when} · ${t("sp.charts")}` : t("sp.charts")} onLink={() => navigate({ tab: "charts" })} />
+        <SectionHead id="readings-title" title={t("today.readings")} link={when ? `${when} · ${t("sp.charts")}` : t("sp.charts")} onLink={() => navigate({ tab: "charts" })} info={sources.length ? <SourceInfo id="space" lines={sources} /> : undefined} />
         {/* Without an entry yet the four readings show « — » with the day's target: what to aim for. */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-[18px]">
           {bySensor ? (
@@ -230,7 +257,7 @@ function Readings({ space, last, lastTg, when }: { space: Space; last?: Entry; l
           )}
           <Reading label={t("today.ecRunoff")} term="ec" value={last?.ecRunoff} target={lastTg?.ecRunoff} decimals={1} max={12} />
           <Reading label={t("today.runoff")} term="runoff" value={last?.runoffPct} target={lastTg?.runoffPct} unit="%" decimals={0} />
-          <Reading label={t("today.phRunoff")} value={last?.phRunoff} target={lastTg?.phRunoff} metric="phRunoff" decimals={1} />
+          <Reading label={t("today.phRunoff")} value={last?.phRunoff} target={lastTg?.phRunoff} metric="phRunoff" decimals={1} note={phEstimate ? t("nut.estimate") : undefined} />
         </div>
         {also.length > 0 && (
           <p id="readings-also" className="mt-3.5 text-[0.8125rem] leading-snug text-fg-3">
@@ -385,11 +412,14 @@ function Propagation({ entries, cycle }: { entries: Entry[]; cycle?: Cycle }) {
   )
 }
 
-/** Sources: one quiet line at the bottom (the targets actually used today, the measured flow). */
-function Sources({ cycle, tg }: { cycle: Cycle; tg: DayTargets | null }) {
+/** Lot 13: where the day's targets come from (the targets actually used today, the measured flow), one per line in the ⓘ
+ *  beside « Relevés ». What changes the reading stays visible elsewhere: the flow to measure under the program, the
+ *  estimate beside the pH. */
+function useTargetSources(cycle: Cycle | undefined, tg: DayTargets | null): string[] {
   const { t, num } = useSettings()
+  if (!cycle) return []
   const srcs = new Set(Object.values(tg ?? {}).flatMap((v) => (v && typeof v === "object" && "src" in v ? [(v as Target).src] : [])))
-  const list = [
+  return [
     srcs.has("athena") && t("today.srcAthena"),
     srcs.has("spec") && t("today.srcSpec"),
     srcs.has("common") && t("today.srcCommon"),
@@ -397,11 +427,5 @@ function Sources({ cycle, tg }: { cycle: Cycle; tg: DayTargets | null }) {
     srcs.has("user") && t("today.srcUser"),
     srcs.has("estimate") && t("today.srcEstimate"),
     cycle.waterMode === "auto" && (cycle.flowMlPerMin ? t("today.srcFlow", { flow: num(cycle.flowMlPerMin / 1000, 1) }) : t("today.srcFlowMissing")),
-  ].filter(Boolean)
-  if (!list.length) return null
-  return (
-    <p id="space-sources" className="-mt-3 text-[0.75rem] leading-[1.5] text-fg-3">
-      {t("today.sources", { list: list.join(" · ") })}
-    </p>
-  )
+  ].filter((x): x is string => !!x)
 }

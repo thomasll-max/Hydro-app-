@@ -6,7 +6,7 @@ import { Check } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { NumField, Seg } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
@@ -187,7 +187,6 @@ export function IpwTool() {
           )}
         </Card>
       </Reveal>
-      <SourceNote>{t("ipw.sources")}</SourceNote>
     </div>
   )
 }

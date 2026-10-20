@@ -237,6 +237,18 @@ export function SettingsTool() {
       )}
       <LockCard i={9} />
       <ResetCard i={9} />
+      {/* Lot 13: the last line, À propos (sources, credits, privacy). */}
+      <Reveal i={10} className="mb-3">
+        <Card className="py-1">
+          <button type="button" id="settings-about" onClick={() => navigate({ tab: "tools", tool: "about" }, { push: true })} className="flex min-h-14 w-full items-center gap-2.5 text-left">
+            <span className="min-w-0 flex-1">
+              <span className="block text-[0.90625rem] font-semibold">{t("about.title")}</span>
+              <span className="block text-[0.75rem] text-fg-3">{t("about.desc")}</span>
+            </span>
+            <ChevronRight aria-hidden="true" className="size-4.5 shrink-0 text-fg-3" />
+          </button>
+        </Card>
+      </Reveal>
       <p className="mt-4 text-center text-[0.75rem] text-fg-3 tabular-nums" id="app-version">
         {t("growSet.version", { v: formatVersion(CURRENT_BUILD, locale) })}
       </p>

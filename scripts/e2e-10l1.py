@@ -5,7 +5,7 @@ FR / EN / DE, light and dark, 390 and 360 px, as on the planche « Les menus »:
   without the consequence), Relevés (38 %, 4,0, 11 %, 6,0 with their target, then « VPD 0,96 · EC entrée 3,0 · DLI 31 ·
   25° / 59 % »), Arrosage du jour in two lines (« ✓ P1 · 5/5 doses faites », « 11:20 prochaine dose · P2 1/4 · 450 mL »),
   Réservoir (« 33 L sur 120 L », « ≈ 2 j · 12,5 L/jour »), À faire ici (3 at most, without the 12/12 nor the space's
-  name), the sources; fixed order, no « Bonjour », no overflow, nothing cut; 200 % zoom (195 px) without overflow;
+  name), the sources in the ⓘ beside « Relevés » (lot 13); fixed order, no « Bonjour », no overflow, nothing cut; 200 % zoom (195 px) without overflow;
 - the step in one tap, then « Annuler »; « Graphiques → » and « Programme → » open their screen;
 - an entry out of target: the block says the correction, in « à surveiller » or « alerte »;
 - Séchage: no state block nor pill, T°, HR, VPD and the day of drying; Colonne (propagation): its section only.
@@ -28,7 +28,7 @@ CUT = """() => [...document.querySelectorAll('button, [role=tab], [role=radio], 
 PAGE = """() => {
   const q = (s) => document.querySelector(s)
   const txt = (s) => q(s)?.innerText.split(String.fromCharCode(10)).filter((x) => x.trim()).join(' | ') ?? null
-  const ids = ['space-head', 'space-status', 'propagation', 'readings', 'water-today', 'reservoir', 'space-todo', 'space-sources']
+  const ids = ['space-head', 'space-status', 'propagation', 'readings', 'water-today', 'reservoir', 'space-todo']
   return {
     order: [...document.querySelectorAll(ids.map((i) => '#' + i).join(','))].map((e) => e.id),
     tile: q('#space-head [data-space-tile]')?.getBoundingClientRect().width,
@@ -39,7 +39,7 @@ PAGE = """() => {
     also: q('#readings-also')?.textContent ?? null, link: txt('#readings-title + button'),
     water: [...document.querySelectorAll('#water-today [data-water]')].map((w) => w.textContent),
     reservoir: txt('#reservoir'), todo: [...document.querySelectorAll('#space-todo li')].map((l) => l.innerText.split(String.fromCharCode(10)).join(' | ')),
-    sources: q('#space-sources')?.textContent ?? null,
+    sources: q('#info-space') ? (q('#info-space').getBoundingClientRect().width >= 44 ? 'ok' : 'small') : null,
     frames: [...document.querySelectorAll('main section, main [data-slot=card]')].filter((e) => getComputedStyle(e).borderTopWidth !== '0px' && e.id !== 'start-card').map((e) => e.id),
     filled: [...document.querySelectorAll('main button')].filter((b) => b.dataset.variant === 'default' || /\\bbg-primary\\b/.test(b.className)).length,
     hello: !!q('#hello, #bonjour'),
@@ -93,12 +93,12 @@ with sync_playwright() as p:
                 ctx, pg = open_sim(b, lang, theme, w)
                 c = pg.evaluate(PAGE)
                 rd = c["readings"]
-                ok = (c["order"] == ["space-head", "space-status", "readings", "water-today", "reservoir", "space-todo", "space-sources"] and c["tile"] == 48 and c["name"] == "Floraison"
+                ok = (c["order"] == ["space-head", "space-status", "readings", "water-today", "reservoir", "space-todo"] and c["tile"] == 48 and c["name"] == "Floraison"
                       and c["sub"] == e["sub"] and (c["pill"] or "").replace(" ", " ") == e["pill"] and c["status"] == "ok" and c["state"] == e["ok"] and c["stateSub"] == e["stateSub"]
                       and c["step"] and c["step"][0] == "step-flip" and c["step"][1] == e["step"] and c["step"][2] == "1px" and "→" not in c["step"][1]
                       and len(rd) == 4 and rd[0].split(" | ")[1].replace(" ", " ") == "38 %" and rd[1].split(" | ")[1] in ("4,0", "4.0") and rd[3].split(" | ")[1] in ("6,0", "6.0")
                       and (c["also"] or "").replace(" ", " ") == e["also"] and c["water"] == e["water"] and c["reservoir"] and e["res"] in c["reservoir"].replace(" ", " ")
-                      and 1 <= len(c["todo"]) <= 3 and not any("12/12" in x or "Floraison" in x for x in c["todo"]) and c["sources"] and c["link"] == e["link"]
+                      and 1 <= len(c["todo"]) <= 3 and not any("12/12" in x or "Floraison" in x for x in c["todo"]) and c["sources"] == "ok" and c["link"] == e["link"]
                       and c["frames"] == ["space-status"] and c["filled"] == 0 and not c["hello"])
                 if not ok: errors.append(f"{tag} {json.dumps(c, ensure_ascii=False)[:1500]}")
                 sw = pg.evaluate("document.documentElement.scrollWidth")

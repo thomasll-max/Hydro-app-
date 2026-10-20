@@ -20,6 +20,9 @@ import { AskTool } from "./tools/ask"
 import { DataTool } from "./tools/data"
 import { StartTool } from "./tools/start"
 import { VarietiesTool } from "./tools/varieties"
+import { AboutTool } from "./tools/about"
+import { SourceInfo, infoLines } from "@/components/hydro/source-info"
+import { getCatalog, isOwnLine } from "@/data/nutrients"
 import { useSample } from "@/lib/sample"
 import { navigate, useRoute, type ToolId } from "@/app/nav"
 
@@ -45,6 +48,7 @@ const TOOLS: Tool[] = [
   { id: "data", emoji: "notebook", title: "tools.data", desc: "tools.dataD", group: "setup", tone: "neutral" },
   { id: "start", emoji: "sprout", title: "tools.start", desc: "tools.startD" },
   { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD" },
+  { id: "about", emoji: "book", title: "about.title", desc: "about.desc" },
 ]
 const GROUPS: { id: Group; title: MessageKey }[] = [
   { id: "daily", title: "tools.gDaily" },
@@ -54,10 +58,13 @@ const GROUPS: { id: Group; title: MessageKey }[] = [
 
 const row = "flex min-h-[54px] w-full items-center gap-3.5 py-1.5 text-left"
 
+/** Lot 13: the tools that show where their figures come from, in a small ⓘ beside their title (no more « Sources : » line). */
+export const INFO_TOOLS = ["irrigation", "nutrition", "ph", "ipw", "light", "climate", "reperes"] as const
+
 /** List of tools; a tool opens in place with a back link. Route: #tools/irrigation… (old links #irrigation still work). */
 export function ToolsScreen() {
   const { t } = useSettings()
-  const { space } = useGrow()
+  const { space, nutrition } = useGrow()
   const sample = useSample()
   const route = useRoute()
   const open = route.tool ?? null
@@ -69,12 +76,19 @@ export function ToolsScreen() {
 
   if (open) {
     const tool = TOOLS.find((x) => x.id === open)!
+    const info = (INFO_TOOLS as readonly string[]).includes(open)
+      ? open === "nutrition"
+        ? isOwnLine(nutrition.line)
+          ? t("info.own")
+          : t("info.nutrition", { source: getCatalog(nutrition.line).source })
+        : t(`info.${open as Exclude<(typeof INFO_TOOLS)[number], "nutrition">}`)
+      : ""
     return (
       <>
         <button onClick={() => setOpen(null)} className="-ml-1 mb-1 flex h-11 items-center gap-1 rounded-[10px] pr-3 text-[0.875rem] font-semibold text-fg-2 hover:text-fg">
           <ChevronLeft className="size-5" /> {t("tools.back")}
         </button>
-        <ScreenHero emoji={tool.emoji} title={t(tool.title)}>
+        <ScreenHero emoji={tool.emoji} title={t(tool.title)} info={info ? <SourceInfo id={open} lines={infoLines(info)} /> : undefined}>
           <p className="mt-1 text-[0.8125rem] leading-snug text-fg-2">{t(tool.desc)}</p>
           {tool.perSpace && space && (
             <p className="mt-1 flex items-center gap-1.5 text-[0.75rem] font-semibold text-fg-2">
@@ -108,6 +122,8 @@ export function ToolsScreen() {
           <SettingsTool />
         ) : open === "varieties" ? (
           <VarietiesTool variety={route.variety} />
+        ) : open === "about" ? (
+          <AboutTool />
         ) : (
           <GuideScreen embedded />
         )}

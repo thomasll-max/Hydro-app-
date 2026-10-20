@@ -47,7 +47,8 @@ describe("lot 10k1a — typographie droite", () => {
 
   it("Fraunces seulement dans le logo « hydro. » (et l'écran de démarrage, qui l'affiche)", () => {
     const users = sources.filter((f) => /font-display|logo-font|Fraunces/.test(read(f)))
-    expect(users.sort()).toEqual(["src/components/hydro/wordmark.tsx", "src/fonts-local.css", "src/index.css"])
+    // src/data/credits.ts only names the font in À propos (lot 13).
+    expect(users.sort()).toEqual(["src/components/hydro/wordmark.tsx", "src/data/credits.ts", "src/fonts-local.css", "src/index.css"])
     expect(read("src/components/hydro/wordmark.tsx")).toMatch(/logo-font inline-flex/)
   })
 
@@ -198,7 +199,7 @@ describe("lot 10k2a — Outils en trois groupes", () => {
     const T = (k: string) => translate("fr", `tools.${k}` as never)
     expect([T("nutrition"), T("nutritionD"), T("irrigation"), T("irrigationD"), T("ph"), T("phD"), T("calendar"), T("calendarD")]).toEqual(["Nutrition", "La recette du bidon", "Arrosage", "Doses et horaires du jour", "pH", "Combien de Balance verser", "Calendrier", "Rappels et échéances"])
     expect([T("light"), T("lightD"), T("climate"), T("climateD")]).toEqual(["Lumière", "Intensité et hauteur de lampe", "Climat", "Température, humidité, VPD"])
-    expect([T("equipment"), T("equipmentD"), T("reperes"), T("reperesD"), T("data"), T("dataD")]).toEqual(["Équipement", "Lampes, réservoirs, pompes", "Repères Athena", "Les tableaux du Handbook", "Sauvegarde", "Exporter, importer"])
+    expect([T("equipment"), T("equipmentD"), T("reperes"), T("reperesD"), T("data"), T("dataD")]).toEqual(["Équipement", "Lampes, réservoirs, pompes", "Repères", "Les tableaux de référence", "Sauvegarde", "Exporter, importer"])
     expect([T("gDaily"), T("gRoom"), T("gSetup"), T("foot")]).toEqual(["Chaque jour", "Régler la pièce", "Mon installation", "Premiers pas et Réglages : dans l'engrenage en haut."])
     for (const l of ["en", "de"] as const) for (const k of ["gDaily", "gRoom", "gSetup", "foot"]) expect(translate(l, `tools.${k}` as never)).not.toMatch(/^tools\./)
   })

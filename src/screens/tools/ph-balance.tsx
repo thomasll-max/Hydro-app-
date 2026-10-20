@@ -6,7 +6,7 @@ import { Minus, Plus, RotateCcw } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Grid, NumField } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { parseNum } from "@/calc/formulas"
@@ -195,7 +195,6 @@ function BalanceTool() {
           </ul>
         </Card>
       </Reveal>
-      <SourceNote>{t("phb.sources")}</SourceNote>
     </div>
   )
 }

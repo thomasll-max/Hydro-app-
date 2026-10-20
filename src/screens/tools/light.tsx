@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Grid, NumField } from "@/components/hydro/form"
-import { Chip, Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
+import { Chip, Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { badNums, parseNum } from "@/calc/formulas"
@@ -205,7 +205,6 @@ export function LightTool() {
           {space.lightMap && <p className="text-[0.75rem] text-fg-3">{t("lgt.mapDate", { date: space.lightMap.date.slice(8, 10) + "/" + space.lightMap.date.slice(5, 7) })}</p>}
         </Card>
       </Reveal>
-      <SourceNote>{t("lgt.sources")}</SourceNote>
     </div>
   )
 }

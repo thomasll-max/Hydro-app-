@@ -12,6 +12,8 @@ import { dosingToConc } from "@/screens/tools/nutrition-settings"
 import type { EmojiName } from "@/assets/emoji"
 import { cn } from "@/lib/utils"
 import { getCatalog } from "@/data/nutrients"
+import { openAbout } from "@/components/hydro/source-info"
+import { tertiary } from "@/components/hydro/styles"
 
 /** Outils → Repères. Embedded in the Tools screen (hero hidden there). */
 export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
@@ -55,9 +57,7 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
                 ])}
                 highlight={(i) => pro[i].ec >= 2 && pro[i].ec <= 2.5}
               />
-              <Src>
-                {t("guide.dosingNote")} {t("guide.srcAthena")}
-              </Src>
+              <Src>{t("guide.dosingNote")}</Src>
             </Section>
 
             <Section value="ph" emoji="thermometer" title={t("guide.ph")} desc={t("guide.phD")}>
@@ -86,7 +86,6 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
                   t(`guide.${r.steer}`),
                 ])}
               />
-              <Src>{t("guide.srcAthena")}</Src>
             </Section>
 
             <Section value="manual" emoji="droplet" title={t("guide.manual")} desc={t("guide.manualD")}>
@@ -99,14 +98,12 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
                 ])}
                 highlight={(i) => i === 1}
               />
-              <Src>
-                {t("guide.s1Note")} {t("guide.srcAthena")}
-              </Src>
+              <Src>{t("guide.s1Note")}</Src>
             </Section>
 
             <Section value="notes" emoji="bulb" title={t("guide.notes")}>
               <ul className="flex flex-col gap-2 text-[0.8125rem] leading-[1.45] text-fg-2">
-                {(["note1", "note2", "note3", "note4"] as const).map((n) => (
+                {(["note1", "note2", "note3"] as const).map((n) => (
                   <li key={n} className="flex gap-2">
                     <span className="mt-[7px] size-[5px] shrink-0 rounded-[2px] bg-fg-3" aria-hidden="true" />
                     {t(`guide.${n}`)}
@@ -118,18 +115,16 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
             <Section value="glossary" emoji="book" title={t("glossary.title")} desc={t("glossary.titleD")}>
               <Glossary />
             </Section>
-
-            <Section value="sources" emoji="book" title={t("guide.sources")}>
-              <ul className="flex flex-col gap-1.5 text-[0.8125rem] text-fg-2">
-                {(["srcAthena", "srcRain", "srcBonorum", "srcMaker", "srcEstimate"] as const).map((s) => (
-                  <li key={s}>{t(`guide.${s}`)}</li>
-                ))}
-              </ul>
-            </Section>
           </Accordion>
         </Card>
       </Reveal>
       <p className="mt-3 text-center text-[0.75rem] text-fg-3">{t("guide.blendedSoon")}</p>
+      {/* Lot 13: the sources of these tables are in À propos (and in the ⓘ beside the title). */}
+      <div className="mt-1 flex justify-center">
+        <button type="button" id="reperes-sources" className={tertiary} onClick={openAbout}>
+          {t("info.all")}
+        </button>
+      </div>
     </>
   )
 }

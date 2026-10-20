@@ -15,12 +15,15 @@ export function ScreenHero({
   eyebrow,
   title,
   tile,
+  info,
   children,
 }: {
   emoji?: EmojiName
   eyebrow?: string
   title: string
   tile?: { color?: SpaceColor; emoji: EmojiName }
+  /** The small ⓘ of the sources (lot 13), beside the title. */
+  info?: ReactNode
   children?: ReactNode
 }) {
   return (
@@ -28,7 +31,14 @@ export function ScreenHero({
       {tile && <SpaceTile color={tile.color} emoji={tile.emoji} size={52} />}
       <div className="min-w-0">
         {eyebrow && <div className="eyebrow">{eyebrow}</div>}
-        <h1 className="display mt-0.5 text-[1.75rem] leading-[1.1] [overflow-wrap:anywhere]">{title}</h1>
+        {info ? (
+          <div className="flex items-center gap-1">
+            <h1 className="display mt-0.5 min-w-0 text-[1.75rem] leading-[1.1] [overflow-wrap:anywhere]">{title}</h1>
+            <span className="ml-2.5 flex shrink-0">{info}</span>
+          </div>
+        ) : (
+          <h1 className="display mt-0.5 text-[1.75rem] leading-[1.1] [overflow-wrap:anywhere]">{title}</h1>
+        )}
         {children}
       </div>
     </div>

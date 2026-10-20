@@ -8,7 +8,8 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Emoji } from "@/components/hydro/emoji"
 import { LineIcon } from "@/components/hydro/line-icon"
-import { Label, Reveal, ScreenHero, SourceNote } from "@/components/hydro/primitives"
+import { Label, Reveal, ScreenHero } from "@/components/hydro/primitives"
+import { SourceInfo, infoLines } from "@/components/hydro/source-info"
 import { Seg, Sheet, TagChip } from "@/components/hydro/form"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -103,7 +104,7 @@ export function CalendarScreen() {
       <button onClick={goBack} className="-ml-1 mb-1 flex h-11 items-center gap-1 rounded-[10px] pr-3 text-[0.875rem] font-semibold text-fg-2 hover:text-fg" id="cal-back">
         <ChevronLeft className="size-5" /> {t("cal.back")}
       </button>
-      <ScreenHero emoji="calendar" eyebrow={eyebrow} title={t("nav.calendar")} />
+      <ScreenHero emoji="calendar" eyebrow={eyebrow} title={t("nav.calendar")} info={<SourceInfo id="calendar" lines={infoLines(t("info.calendar"))} />} />
       <Reveal i={0} className="mb-2.5 flex flex-wrap items-center gap-2">
         <Seg<View> className="min-w-[9.5rem] flex-1" label={t("cal.view")} value={view} onChange={setView} options={[{ value: "month", label: t("cal.month") }, { value: "agenda", label: t("cal.agenda") }]} />
         <Button onClick={() => ed.openReminder({ spaceId: selection.kind === "space" ? selection.space.id : undefined })} className="h-11 shrink-0 px-4 text-[0.875rem]" aria-label={t("cal.add")}>
@@ -121,7 +122,6 @@ export function CalendarScreen() {
       <Reveal i={5} className="mt-3">
         <ExportCard />
       </Reveal>
-      <SourceNote>{t("cal.sources")}</SourceNote>
       <DaySheet date={day} filter={filter} onClose={() => setDay(null)} />
     </>
   )

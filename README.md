@@ -37,6 +37,7 @@ Journal en une minute · Crop steering · Nutrition · Calendrier · Graphiques 
 | 📅 **Calendrier** | Rappels récurrents, échéances automatiques (12/12, Fade, rinçage, récolte, bidon à refaire…) et export vers le calendrier du téléphone (.ics). Il s'ouvre depuis la date en haut de l'écran, « Tout le calendrier → » d'Aujourd'hui ou Outils. |
 | 📈 **Graphiques** | Vues toutes prêtes (Arrosage, Solution, Climat, Lumière, Plante, ou « Perso »), un graphique par courbe avec sa cible et la dernière valeur en grand, segments droits, bande de cible du jour, bidons en pointillé ; « Comparer… » jusqu'à 4 espaces. |
 | 🔒 **Verrou** | Un PIN à l'ouverture et après quelques minutes ailleurs (l'empreinte ou le visage dans l'app installée). Un écran de confidentialité, pas un chiffrement, et l'app le dit. |
+| ℹ️ **Sources et À propos** | Chaque chiffre reste traçable sans encombrer l'écran : un petit ⓘ à côté du titre d'un outil dit d'où viennent ses chiffres. La page **À propos** (Réglages, ou le menu de l'engrenage) réunit les sources avec leurs pages, les crédits techniques et leurs licences, un avertissement et ce qui part vers Claude. |
 | 🌍 **Partout** | Français / anglais / allemand, thème clair / sombre, conçu pour une main et un écran de téléphone : quatre onglets en bas (Aujourd'hui, Journal, Graphiques, Outils) avec le « + » au milieu (saisie du jour, saisie rapide, bidon, événement) ; Outils rangé en trois groupes (chaque jour, la pièce, l'installation). |
 
 <div align="center">

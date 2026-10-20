@@ -1,6 +1,6 @@
 """Lot 10k2 (Outils) in the browser, preview build (Thomas's grow), FR / EN / DE, light and dark, 390 and 360 px:
 - three groups in this order, small capital titles: « Chaque jour » (Nutrition, Arrosage, pH, Calendrier), « Régler la
-  pièce » (Lumière, Climat, Pulvérisation), « Mon installation » (Équipement, Repères Athena, Variétés (lot 12c), Sauvegarde);
+  pièce » (Lumière, Climat, Pulvérisation), « Mon installation » (Équipement, Repères (sans « Athena » depuis le lot 13), Variétés (lot 12c), Sauvegarde);
 - rows of at least 54 px, line icons coloured by subject (« eau », « plante », neutral), no 3D drawing, no line between
   rows; Premiers pas and Réglages not listed, the line « … dans l'engrenage en haut. » at the bottom, no « Calculs testés »;
 - the Calendar opens over Outils and back returns; #tools/start and #tools/settings still open; the gear menu opens
@@ -42,9 +42,9 @@ LIST = """() => {
 }"""
 
 WANT = {
-    "fr": [["Chaque jour", ["Nutrition", "Arrosage", "pH", "Calendrier"]], ["Régler la pièce", ["Lumière", "Climat", None]], ["Mon installation", ["Équipement", "Repères Athena", "Variétés", "Sauvegarde"]]],
-    "en": [["Every day", ["Nutrition", "Irrigation", "pH", "Calendar"]], ["Set up the room", ["Light", "Climate", None]], ["My setup", ["Equipment", "Athena guide", "Varieties", "Backup"]]],
-    "de": [["Jeden Tag", ["Düngung", "Bewässerung", "pH", "Kalender"]], ["Den Raum einstellen", ["Licht", "Klima", None]], ["Meine Ausstattung", ["Ausrüstung", "Athena-Richtwerte", "Sorten", "Backup"]]],
+    "fr": [["Chaque jour", ["Nutrition", "Arrosage", "pH", "Calendrier"]], ["Régler la pièce", ["Lumière", "Climat", None]], ["Mon installation", ["Équipement", "Repères", "Variétés", "Sauvegarde"]]],
+    "en": [["Every day", ["Nutrition", "Irrigation", "pH", "Calendar"]], ["Set up the room", ["Light", "Climate", None]], ["My setup", ["Equipment", "Reference guide", "Varieties", "Backup"]]],
+    "de": [["Jeden Tag", ["Düngung", "Bewässerung", "pH", "Kalender"]], ["Den Raum einstellen", ["Licht", "Klima", None]], ["Meine Ausstattung", ["Ausrüstung", "Richtwerte", "Sorten", "Backup"]]],
 }
 TONES = [["water", "water", "water", "neutral"], ["leaf", "leaf", "leaf"], ["neutral", "neutral", "neutral", "neutral"]]
 START = {"fr": "Premiers pas", "en": "Getting started", "de": "Erste Schritte"}

@@ -150,6 +150,17 @@ export function DisplayMenu() {
             </button>
             <button
               type="button"
+              id="menu-about"
+              className={tertiary}
+              onClick={() => {
+                setOpen(false)
+                navigate({ tab: "tools", tool: "about" }, { push: true })
+              }}
+            >
+              {t("about.menu")}
+            </button>
+            <button
+              type="button"
               id="menu-start"
               className={tertiary}
               onClick={() => {

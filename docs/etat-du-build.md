@@ -147,6 +147,11 @@ Constat de Thomas après 10j : « toujours un effet plein d'infos éparpillées,
 6. Lignes de graphique honnêtes : segments droits.
 7. Typographie droite : Fraunces seulement dans le logo et l'écran de démarrage ; titres en Geologica 700 (−0,02 em) ; texte en Figtree ; tous les chiffres en Geologica à chasse fixe (plus de JetBrains Mono) ; liens de titre de section petits (≈ 13 px, Figtree 600).
 
+## Mise en ligne Netlify du 20/10/2026 (demandée par Thomas)
+- **hydrotom.netlify.app** sert le code jusqu'au **lot 14b** avec le correctif du micro. Deux publications ce jour-là : `7a52659` à 11:19 UTC (lancée côté Netlify par Thomas) puis `3387094` « Mise en ligne [deploy] » à 11:25 UTC (poussé par la session, contenu identique : **un crédit de trop**). Avant de pousser un `[deploy]`, regarder dans Netlify si une publication du même commit vient d'avoir lieu.
+- Vérifié avant : tests unitaires, simulation d'un an, régression navigateur complète (verte jusqu'à 10l1 dans l'ordre, puis 10k4, 10l2, 11a, 11b, 12a, 12b, 12c en parallèle ; 12d, 13, 14, 14b passés sur le même code).
+- **À tester par Thomas sur la version installée** : le verrou avec l'empreinte ou le visage (Réglages → Verrouiller l'app), la dictée (micro autorisé depuis le correctif).
+
 ## Correctif du 20/10 — le micro sur Netlify (avant la mise en ligne demandée par Thomas)
 - `netlify.toml` envoyait `Permissions-Policy: … microphone=() …`, qui **interdit le micro** à la page : sur Netlify, la dictée de la version installée (lot 11b) n'aurait jamais pu écouter. Les tests navigateur servent l'app sans ces en-têtes et ne pouvaient pas le voir. Devenu `microphone=(self)` (Hydro seulement, comme `camera=(self)` pour les photos). `src/calc/netlify.test.ts` vérifie maintenant ces en-têtes (micro et appareil photo pour l'app, empreinte jamais bloquée) et la règle « construit seulement sur un commit [deploy] ».
 

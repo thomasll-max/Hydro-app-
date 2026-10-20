@@ -3,6 +3,7 @@
 // Claude version, the first-launch assistant in the local version.
 import { writeAll, type BatchOp, type DocStore, type PhotoStore } from "@/store/doc-store"
 import { COLLECTIONS } from "@/model/grow"
+import { clearThumbs } from "./thumbs"
 
 /** Browser keys kept by a reset (display only). */
 const KEEP = new Set(["hydro.ui"])
@@ -34,6 +35,8 @@ export async function resetData(
   // Photos: all at once on the phone; one by one in the artifact (ids from the journal). A failed one is skipped.
   if (photos?.clear) await photos.clear()
   else if (photos?.remove) for (const id of photoIds(entries)) await photos.remove(id).catch(() => {})
+  // The thumbnails kept on this device (lot 12b) go with them.
+  await clearThumbs().catch(() => {})
   await writeAll(store, ops, onProgress)
   // grow/main last: while it exists the app does not seed a new grow in the middle of the reset.
   await writeAll(store, grow, (n) => onProgress?.(ops.length + n))

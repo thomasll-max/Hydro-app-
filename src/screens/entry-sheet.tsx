@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { AlarmClockPlus, Camera, Loader2, Mic, MoreHorizontal, Trash2, X } from "lucide-react"
+import { AlarmClockPlus, Camera, Loader2, Mic, MoreHorizontal, Tag, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -17,6 +17,8 @@ import { mergeVoice, readVoiceReply, voiceCount, voiceKeys, voicePrompt, type Vo
 import { parseVoice } from "@/calc/voice-rules"
 import { useSample, type SampleError } from "@/lib/sample"
 import { VoicePanel } from "./voice-panel"
+import { MissingPhoto } from "@/components/hydro/missing-photo"
+import { TagsEditor } from "./photo-tags"
 import { equipmentAt } from "@/equipment/calc"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { badNums, parseNum } from "@/calc/formulas"
@@ -67,6 +69,9 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const [obs, setObs] = useState<{ tag: ObsTag; severity: Severity }[]>([])
   const [acts, setActs] = useState<ActionTag[]>([])
   const [photos, setPhotos] = useState<string[]>([])
+  // Tags of the photos (lot 12b), saved with the entry; the photo whose tags are open.
+  const [photoTags, setPhotoTags] = useState<NonNullable<Entry["photoTags"]>>({})
+  const [tagging, setTagging] = useState<string | null>(null)
   const [note, setNote] = useState("")
   const [existing, setExisting] = useState<Entry | null>(null)
   const [busy, setBusy] = useState(false)
@@ -159,7 +164,10 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     if (!keep.has("mixId")) setMixId(src.mixId ?? (found ? "" : (mixes[0]?.id ?? "")))
     if (!keep.has("obs")) setObs(src.observations ?? [])
     if (!keep.has("acts")) setActs(src.actions ?? [])
-    if (!keep.has("photos")) setPhotos(src.photos ?? [])
+    if (!keep.has("photos")) {
+      setPhotos(src.photos ?? [])
+      setPhotoTags(src.photoTags ?? {})
+    }
     if (!keep.has("note")) setNote(src.note ?? "")
     // An entry saved again keeps its own time (or none); a new one of today takes the current time (lot 10d).
     const d = new Date()
@@ -182,6 +190,8 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     e.observations = obs.length ? obs : undefined
     e.actions = acts.length ? acts : undefined
     e.photos = photos.length ? photos : undefined
+    const tags = Object.fromEntries(Object.entries(photoTags).filter(([id, x]) => photos.includes(id) && (x.obs?.length || x.free?.length)))
+    e.photoTags = Object.keys(tags).length ? tags : undefined
     e.note = note.trim() || undefined
     // A dictation went into this entry (lot 11): its trace, the words apart from the note.
     if (dictated) {
@@ -617,6 +627,8 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
                   key={id}
                   id={id}
                   url={photoUrl}
+                  tagged={!!(photoTags[id]?.obs?.length || photoTags[id]?.free?.length)}
+                  onOpen={() => setTagging(id)}
                   onRemove={() => {
                     touch("photos")
                     setPhotos((p) => p.filter((x) => x !== id))
@@ -635,6 +647,25 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
           </div>
         )}
         <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => onFiles(e.target.files).finally(() => (e.target.value = ""))} />
+        {/* The tags of a photo, from its thumbnail (lot 12b): kept with the entry, saved with it. */}
+        <Sheet open={!!tagging} onOpenChange={(o) => !o && setTagging(null)} title={t("ph.tagsOf")} dirty={false} footer={<Button className="h-12 w-full" onClick={() => setTagging(null)}>{t("common.close")}</Button>}>
+          {tagging && (
+            <div className="flex flex-col gap-3 pb-2">
+              <PhotoThumb id={tagging} url={photoUrl} size={120} />
+              <TagsEditor
+                entry={build()}
+                photoId={tagging}
+                local={{
+                  tags: photoTags[tagging] ?? {},
+                  set: (x) => {
+                    touch("photos")
+                    setPhotoTags((m) => ({ ...m, [tagging]: x }))
+                  },
+                }}
+              />
+            </div>
+          )}
+        </Sheet>
       </Group>
     </>
   )
@@ -833,19 +864,34 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   )
 }
 
-export function PhotoThumb({ id, url, onRemove, size = 80 }: { id: string; url: (id: string) => Promise<string>; onRemove?: () => void; size?: number }) {
+export function PhotoThumb({ id, url, onRemove, onOpen, tagged, size = 80 }: { id: string; url: (id: string) => Promise<string>; onRemove?: () => void; onOpen?: () => void; tagged?: boolean; size?: number }) {
   const { t } = useSettings()
   const [src, setSrc] = useState("")
+  // A photo the entry refers to but that cannot be read (partial backup, lot 12b): a warning instead of an empty frame.
+  const [missing, setMissing] = useState(false)
   useEffect(() => {
     let live = true
-    url(id).then((u) => live && setSrc(u))
+    setMissing(false)
+    url(id).then((u) => {
+      if (!live) return
+      setSrc(u)
+      if (!u) setMissing(true)
+    })
     return () => {
       live = false
     }
   }, [id, url])
   return (
-    <div className="relative shrink-0 overflow-hidden rounded-md border border-line bg-surface-2" style={{ width: size, height: size }}>
-      {src && <img src={src} alt="" className="size-full object-cover" loading="lazy" />}
+    <div className="relative shrink-0 overflow-hidden rounded-md border border-line bg-surface-2" style={{ width: size, height: size }} data-thumb={id}>
+      {missing ? <MissingPhoto small /> : src && <img src={src} alt="" className="size-full object-cover" loading="lazy" onError={() => setMissing(true)} />}
+      {/* Its tags (lot 12b): a corner of its own, away from « Retirer la photo ». */}
+      {onOpen && !missing && (
+        <button type="button" onClick={onOpen} aria-label={t("ph.tagsOf")} aria-pressed={!!tagged} className="absolute bottom-0 left-0 flex size-11 items-end justify-start p-1" data-tags-open>
+          <span className={cn("flex size-6 items-center justify-center rounded-full text-white", tagged ? "bg-water" : "bg-black/60")}>
+            <Tag className="size-3.5" />
+          </span>
+        </button>
+      )}
       {onRemove && (
         <button type="button" onClick={onRemove} aria-label={t("entry.removePhoto")} className="absolute top-0 right-0 flex size-11 items-start justify-end p-1">
           <span className="flex size-6 items-center justify-center rounded-full bg-black/60 text-white">

@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 12b — Galerie photo et frise (20/10/2026)
+- **Photos**, en haut du Journal : toutes tes photos regroupées par semaine du cycle (« Floraison S3 »), avec la date sur chaque vignette. Filtres par espace, cycle, plante et étiquette.
+- **Une photo en grand** : balaye à gauche ou à droite pour passer à la suivante ; dessous, les valeurs et la note de ce jour-là.
+- **Étiquettes de photo** : les observations du Journal, et tes propres étiquettes (« stretch », « trichomes », « racines »…), proposées ensuite. Depuis la photo en grand, ou dès la prise de photo dans la saisie.
+- **La frise** : une photo par semaine pour un cycle ou une plante, l'une après l'autre avec un curseur. Le « time-lapse », sans montage. « Photo de la semaine » choisit celle qui représente sa semaine.
+- Les miniatures sont faites une fois et gardées : la galerie reste rapide avec 300 photos. Une photo qui manque sur l'appareil (sauvegarde partielle) l'annonce au lieu d'une case vide.
+- 441 tests.
+
 ## Lot 12a — Bilan de récolte et comparaison de cycles (20/10/2026)
 - **Le bilan d'un cycle récolté**, ouvert depuis le Journal (« Bilan » sur la ligne du cycle), Réglages → cycles ou la carte de la dernière récolte. Rien de nouveau à saisir : tout vient de ce que l'app a déjà.
   - **Résultat** : poids sec et humide, g par watt (la puissance de la récolte, sinon les lampes de l'espace), g par plante, g par m². Sans donnée : « donnée manquante », jamais d'estimation.

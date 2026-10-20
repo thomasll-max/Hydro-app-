@@ -130,7 +130,8 @@ function useCycleSub() {
 
 function Review({ cycle }: { cycle: Cycle }) {
   const { t, num, dm, dmy, settings } = useSettings()
-  const { cycles, allSpaces, spaces, customProducts } = useGrow()
+  const { cycles, allSpaces, spaces, customProducts, all } = useGrow()
+  const photoCount = useMemo(() => all.entries.reduce((n, e) => n + (e.cycleId === cycle.id ? (e.photos?.length ?? 0) : 0), 0), [all.entries, cycle.id])
   const ed = useEditors()
   const rv = useReview(cycle)
   const txt = useRowText()
@@ -220,6 +221,11 @@ function Review({ cycle }: { cycle: Cycle }) {
           <button type="button" className={secondary} onClick={() => setPick(true)} id="review-compare">
             {t("rv.compare")}
           </button>
+          {photoCount > 0 && (
+            <button type="button" className={secondary} onClick={() => navigate({ tab: "journal", photos: cycle.id }, { push: true })} id="review-photos">
+              {t("ph.openN", { n: photoCount })}
+            </button>
+          )}
           <button type="button" className={secondary} onClick={exportCsv} disabled={busy} id="review-csv">
             {t("rv.csv")}
           </button>

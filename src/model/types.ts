@@ -57,6 +57,8 @@ export type Cycle = {
   tapEc?: number // tap water EC, measured once
   sensor?: { phase?: "veg" | "gen" | "bulk" | "ripe"; base?: number; peak?: number; p2Pct?: number } // VPD: leaf temperature = air + offset (default −2)
   harvest?: Harvest
+  /** « Photo de la semaine » (lot 12b): the photo chosen for a week of the strip, by « {P1|all}/{monday} ». */
+  weekPhotos?: Record<string, string>
   createdAt: string
   updatedAt: string
 }
@@ -165,6 +167,8 @@ export type Entry = {
   observations?: { tag: ObsTag; severity: Severity }[]
   actions?: ActionTag[]
   photos?: string[] // asset ids
+  /** Tags of each photo (lot 12b): the observation tags, and free tags (« trichomes », « racines »…). */
+  photoTags?: Record<string, { obs?: ObsTag[]; free?: string[] }>
   note?: string
   /** Filled by a dictation (lot 11): `source` says so, `dictation` keeps the words, apart from the note. */
   source?: "voice"

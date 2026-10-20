@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react"
 import { Loading } from "@/components/hydro/wordmark"
-import { ChevronDown, ChevronRight, Plus, Search, SlidersHorizontal, X } from "lucide-react"
+import { Camera, ChevronDown, ChevronRight, Plus, Search, SlidersHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
@@ -15,11 +15,13 @@ import { PhotoThumb } from "./entry-sheet"
 import { WeekCard } from "./journal-weeks"
 import { WeekPage } from "./journal-week"
 import { ReviewPage } from "./cycle-review"
+import { GalleryPage, StripPage } from "./gallery"
 import { navigate, useRoute } from "@/app/nav"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { cn } from "@/lib/utils"
 import { iconButton, tertiary } from "@/components/hydro/styles"
 import { Sheet, TextField } from "@/components/hydro/form"
+import { FilterRow } from "@/components/hydro/filter-row"
 
 const WEEKS = 8
 
@@ -34,6 +36,8 @@ export function JournalScreen() {
   const { t } = useSettings()
   if (!ready) return <Loading label={t("app.loading")} />
   if (route.review) return <ReviewPage cycleId={route.review} vs={route.vs} />
+  if (route.photos) return <GalleryPage cycleId={route.photos === "all" ? undefined : route.photos} />
+  if (route.strip) return <StripPage cycleId={route.strip} plant={route.plant} />
   if (route.week) {
     const [spaceId, monday] = route.week.split("/")
     return <WeekPage spaceId={spaceId} monday={monday} day={route.day} />
@@ -85,6 +89,7 @@ function JournalWeeks() {
     [all.mixes, ids, cycle],
   )
   const spaceOf = (id?: string) => spaces.find((x) => x.id === id)
+  const photoCount = useMemo(() => all.entries.reduce((n, e) => n + (e.photos?.length ?? 0), 0), [all.entries])
 
   const tagsPresent = useMemo(() => {
     const s = new Set<string>()
@@ -153,6 +158,12 @@ function JournalWeeks() {
   return (
     <>
       <ScreenHero emoji="notebook" title={t("journal.title")} />
+      {/* The photo gallery, at the top of the Journal (lot 12b). */}
+      {photoCount > 0 && (
+        <button type="button" className={cn(tertiary, "-mt-2 mb-3")} onClick={() => navigate({ tab: "journal", photos: "all" }, { push: true })} id="journal-photos">
+          <Camera className="size-4" strokeWidth={1.8} /> {t("ph.openN", { n: photoCount })}
+        </button>
+      )}
 
       {one && !spaceCycles.length && (
         <Reveal i={0} className="mb-4">
@@ -345,32 +356,6 @@ function JournalWeeks() {
         </Sheet>
       )}
     </>
-  )
-}
-
-/** One filter of the Journal, in its sheet (lot 10j): the name above, the choices wrapping. */
-function FilterRow({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { v: string; l: string }[] }) {
-  return (
-    <div role="radiogroup" aria-label={label} className="mt-1 mb-4 flex flex-wrap items-center gap-2">
-      <span aria-hidden="true" className="w-full text-[0.8125rem] font-semibold text-fg-2">
-        {label}
-      </span>
-      {options.map((o) => (
-        <button
-          key={o.v}
-          role="radio"
-          aria-checked={value === o.v}
-          onClick={() => onChange(o.v)}
-          className={cn(
-            // The pill shape is kept for the Journal filters only (lot 10h); the active one is filled.
-            "hit h-9 shrink-0 rounded-full border px-3 text-[0.75rem] font-semibold whitespace-nowrap",
-            value === o.v ? "border-fg bg-fg text-background" : "border-line-strong text-fg-2",
-          )}
-        >
-          {o.l}
-        </button>
-      ))}
-    </div>
   )
 }
 

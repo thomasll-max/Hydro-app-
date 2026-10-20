@@ -61,7 +61,7 @@ Journal en une minute · Crop steering · Nutrition · Calendrier · Graphiques 
 
 La cible se choisit avec `VITE_TARGET=claude|local`. Les écrans et les calculs sont communs ; seule la couche de stockage change (`src/store/`).
 
-**Mises à jour automatiques :** un push sur `main` reconstruit la version locale sur Netlify (`netlify.toml`). La version Claude est republiée sur l'artefact à la fin de chaque lot.
+**Mises en ligne :** Netlify ne reconstruit la version locale que sur un commit qui porte `[deploy]` (`netlify.toml`, crédits limités), et seulement après le parcours complet d'un nouvel utilisateur (`scripts/e2e-15.py`) au vert. La version Claude est republiée sur l'artefact à la fin de chaque lot.
 
 ---
 
@@ -74,6 +74,7 @@ npm run dev                       # serveur de développement
 npm run build                     # version Claude → dist/hydro.html
 npm run build:local               # version locale → dist-local/
 npm run preview:build             # aperçu local avec images intégrées → dist-preview/
+PYTHONPATH=scripts python3 scripts/e2e-15.py dist-local /tmp/e2e15   # parcours d'un nouvel utilisateur (avant une mise en ligne)
 ```
 
 Node 22 recommandé.
@@ -104,6 +105,7 @@ pwa/               manifeste, icônes et service worker de la version locale
 
 - **Aucune valeur inventée.** Chaque dose, cible ou caractéristique affiche sa source (page du Handbook, fiche fabricant, étiquette, repère courant ou estimation). Pas de source → champ vide ou « donnée manquante ».
 - **Pas de mélange entre gammes.** Un test vérifie que Pro Line et Blended ne se croisent jamais.
+- **Pas de valeur absurde.** Chaque mesure a sa plage plausible (pH 3–9, T° 5–40 °C…) : hors plage, le message s'écrit sous le champ et rien n'est enregistré. Une ancienne valeur hors plage reste dans les données, marquée « valeur douteuse », hors des calculs.
 - **Calculs hors des écrans.** Toute la logique est dans des modules purs, couverts par les tests.
 - **Une saisie, moins d'une minute.** Sinon personne ne tient un journal tout un cycle.
 

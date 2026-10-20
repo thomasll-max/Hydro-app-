@@ -18,7 +18,8 @@ Ces fichiers sont la source de vérité. Il n'est pas nécessaire d'avoir accès
   - tests verts ;
   - captures ;
   - republication de `dist/hydro.html` sur **le même artefact** https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC, **sans redéclarer les capacités** ;
-  - mise à jour de `CHANGELOG.md` **et** de `docs/etat-du-build.md` dans le même commit.
+  - mise à jour de `CHANGELOG.md` **et** de `docs/etat-du-build.md` dans le même commit ;
+  - **avant chaque mise en ligne Netlify** (`[deploy]`) : `npm run build:local && PYTHONPATH=scripts python3 scripts/e2e-15.py dist-local <dossier>` doit être vert (parcours complet d'un nouvel utilisateur, FR et EN, profil vide, sans erreur console).
 - Si la republication est refusée parce que la version en ligne vient d'une autre session : vérifie qu'elle correspond au build du dernier commit de `main` (en comparant hors `<style>`), demande l'accord explicite de Thomas, puis publie avec `force: true`.
 - **N'invente aucune valeur** (dose, caractéristique d'équipement…). Pas de source → champ vide ou « donnée manquante ».
 - Ne mélange jamais Pro Line et Blended.

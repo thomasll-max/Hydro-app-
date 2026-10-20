@@ -1,5 +1,9 @@
 # Changelog
 
+## Lot 15d — Parcours complet d'un nouvel utilisateur (20/10/2026)
+- Un test de bout en bout rejoue tout le chemin d'un nouvel ami, profil vide, en français puis en anglais, sur téléphone : l'assistant complet (cycle sans pots), l'assistant passé (espace puis cycle), une saisie juste puis une saisie absurde, un bidon Pro Line puis un bidon Blended dans un autre espace, le calendrier, un rappel, Réglages, À propos, la sauvegarde exportée puis réimportée, et un rechargement de la page. Il doit être vert avant chaque mise en ligne.
+- 502 tests.
+
 ## Lot 15c — Premiers pas, après l'assistant (20/10/2026)
 - Le bandeau Premiers pas garde la casse du texte : « ta lampe : watts réels (et PPF ou efficacité si tu les as) », plus « ppf ».
 - Les pots tapés seulement à l'étape « Premier cycle » de l'assistant deviennent les pots de l'espace : « Tes pots » se coche (lampe, pots et cycle saisis dans l'assistant : 3/7). Même chose pour des pots tapés dans la feuille d'un cycle quand l'espace n'en a pas encore.

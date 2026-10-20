@@ -9,11 +9,11 @@ console error. To run before each Netlify release.
    Aujourd'hui; with no space at all, the cycle sheet creates it;
 3. a valid day's entry → the Journal (week, week page), Graphiques and « Maintenant » agree;
 4. absurd values (morning 24 kg, peak 20 kg, pH runoff 13,1, T° 400) → refused, a message under each field, the dryback
-   « — » with a cue; the same in the quick entry; an entry saved before 15b with such values: kept, marked « valeur
-   douteuse » in the Journal, left out of the charts and « Maintenant »;
+   « — » with a cue, then corrected and saved; an entry saved before 15b with such values: kept, marked « valeur
+   douteuse » in the Journal (week list and week page), left out of the charts and « Maintenant »;
 5. a new tank: Pro Line in the first space (an EC of 13 refused under the field first), then Blended in another space
    created from Réglages with its own line, never a Pro product in it; the quick entry refuses a T° of 400;
-6. calendar, a reminder (in À faire), Réglages, À propos, the backup exported then imported (« Remplacer »);
+6. calendar, a reminder (in the agenda), Réglages, À propos, the backup exported then imported (« Remplacer »);
 7. the page reloaded: everything is still there.
 Usage: npm run build:local && PYTHONPATH=scripts python3 scripts/e2e-15.py dist-local <out dir> [fr,en]"""
 import sys, json, pathlib, threading, http.server, functools, socketserver, datetime

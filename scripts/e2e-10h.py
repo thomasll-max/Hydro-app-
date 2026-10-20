@@ -37,7 +37,7 @@ def open_entry(pg, lang="fr"):
     pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_timeout(600)  # the « + » opens a small sheet since lot 10k3
     full = pg.get_by_role("button", name="Saisie complète" if lang == "fr" else "Full entry")
     if full.count(): full.first.click()
-    pg.wait_for_selector("#e-date"); pg.wait_for_timeout(800)
+    pg.wait_for_selector("#e-when"); pg.wait_for_timeout(800)
 
 
 with sync_playwright() as p:
@@ -94,14 +94,17 @@ with sync_playwright() as p:
         c["bad"] = pg.evaluate("""() => { const i = document.querySelector('#e-tempDay'); const m = document.querySelector('#e-tempDay-err'); return [getComputedStyle(i.parentElement).boxShadow, m && getComputedStyle(m).color] }""")
         if rgb(PALETTE[theme]["--warn"]) not in c["bad"][0] or c["bad"][1] != rgb(PALETTE[theme]["--warn"]): errors.append(f"{theme} typo {c['bad']}")
         pg.fill("#e-tempDay", "24"); pg.wait_for_timeout(200)
+        # Since lot 10l2 the space and the plant are behind « tout l'espace ▾ ».
+        if pg.locator("#e-scope").count() and not pg.locator("#e-scope-panel").count(): pg.click("#e-scope"); pg.wait_for_timeout(300)
         c["seg"] = pg.evaluate("""() => { const g = document.querySelector('[data-slot=drawer-content] [role=radiogroup]'); if (!g) return null; const on = g.querySelector('[data-state=on]'); const s = getComputedStyle(on); return { radius: getComputedStyle(g).borderRadius, gap: getComputedStyle(g).columnGap, bg: s.backgroundColor, fg: s.color } }""")
         if not c["seg"] or c["seg"]["radius"] != "10px" or c["seg"]["bg"] != rgb(PALETTE[theme]["--fg"]) or c["seg"]["fg"] != rgb(PALETTE[theme]["--page"]): errors.append(f"{theme} segmented {c['seg']}")
         main = pg.get_by_role("button", name="Enregistrer", exact=True)
         c["main"] = main.evaluate("(el) => { const s = getComputedStyle(el); return [s.borderRadius, s.boxShadow, Math.round(el.getBoundingClientRect().height), s.backgroundColor] }")
         if c["main"][0] != "10px" or "inset" not in c["main"][1] or c["main"][2] != 48 or c["main"][3] != rgb(PALETTE[theme]["--water"]): errors.append(f"{theme} main button {c['main']}")
-        sec = pg.locator("[data-slot=drawer-content] [data-variant=outline]").first
-        c["secondary"] = sec.evaluate("(el) => { const s = getComputedStyle(el); return [s.borderRadius, s.borderTopWidth, s.backgroundColor] }")
-        if c["secondary"] != ["10px", "1px", "rgba(0, 0, 0, 0)"]: errors.append(f"{theme} secondary {c['secondary']}")
+        # A secondary button: « Reprendre hier » when yesterday's values are there (lot 10l2), else none in the entry.
+        sec = pg.locator("[data-slot=drawer-content] [data-variant=outline]")
+        c["secondary"] = sec.first.evaluate("(el) => { const s = getComputedStyle(el); return [s.borderRadius, s.borderTopWidth, s.backgroundColor] }") if sec.count() else None
+        if c["secondary"] is not None and c["secondary"] != ["10px", "1px", "rgba(0, 0, 0, 0)"]: errors.append(f"{theme} secondary {c['secondary']}")
         pg.screenshot(path=str(out / f"entry-{theme}.png"))
         checks[theme] = c
         ctx.close()

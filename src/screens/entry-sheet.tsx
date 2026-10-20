@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { AlarmClockPlus, Camera, Loader2, Trash2, X } from "lucide-react"
+import { AlarmClockPlus, Camera, Loader2, MoreHorizontal, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { AreaField, Computed, Grid, Group, NumField, Seg, Sheet, TagChip, TextField } from "@/components/hydro/form"
+import { AreaField, Grid, Group, NumField, Seg, Sheet, TagChip, TextField } from "@/components/hydro/form"
 import { ConfirmDelete } from "@/components/hydro/confirm"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
@@ -11,10 +11,13 @@ import { useEditors } from "@/app/editors"
 import { blankEntry, CARRIED, derive, drybackMethodOf, entryHasContent, entryId, HINTED, previousEntry, resumeFrom } from "@/model/entry"
 import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, type ActionTag, type Entry, type ObsTag, type PlantId, type Severity } from "@/model/types"
 import { equipmentAt } from "@/equipment/calc"
-import { SpaceDot } from "@/components/hydro/space-pill"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { badNums, parseNum } from "@/calc/formulas"
-import { status } from "@/calc/advice"
+import { bandCell, bandKeys, type BandKey } from "@/calc/entry-day"
+import { NNBSP } from "@/components/hydro/value"
+import { InfoTip, type Term } from "@/components/hydro/info"
+import { iconButton } from "@/components/hydro/styles"
+import { cn } from "@/lib/utils"
 import { addDays, todayIso } from "@/calc/stage"
 import type { MessageKey } from "@/i18n/types"
 
@@ -24,8 +27,11 @@ export type EntryInit = { date?: string; plantId?: PlantId; spaceId?: string; va
 type NumKey = (typeof CARRIED)[number] | (typeof HINTED)[number]
 const NUMS: NumKey[] = [...CARRIED.filter((k) => k !== "mixId"), ...HINTED] as NumKey[]
 
+/** The glossary entry of each result of the band (lot 10e2: the jargon keeps its explanation). */
+const BAND_TERM: Record<BandKey, Term> = { dryback: "dryback", drybackSensor: "drybackSensor", runoffPct: "runoff", vpd: "vpd", dli: "dli" }
+
 export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpenChange: (o: boolean) => void; init: EntryInit }) {
-  const { t, num, range, dm, show } = useSettings()
+  const { t, num, range, dm, show, locale } = useSettings()
   const ed = useEditors()
   const { spaces, space: curSpace, all, cycleIn, equipment, assignments, saveEntry, deleteEntry, targetsFor, uploadPhoto, photoUrl, deletePhotos } = useGrow()
   const [spaceId, setSpaceId] = useState(init.spaceId ?? curSpace?.id ?? "")
@@ -55,6 +61,20 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const [existing, setExisting] = useState<Entry | null>(null)
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(0)
+  // Lot 10l2: date and time behind « modifier », space and plant behind « tout l'espace ▾ », Rappel and Supprimer in « ⋯ ».
+  const [whenOpen, setWhenOpen] = useState(false)
+  const [scopeOpen, setScopeOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [askDelete, setAskDelete] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!menuOpen) return
+    const away = (e: PointerEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener("pointerdown", away)
+    return () => document.removeEventListener("pointerdown", away)
+  }, [menuOpen])
   const fileRef = useRef<HTMLInputElement>(null)
   // Photos sent during this visit: removed again if the sheet closes without saving (lot 10a, no orphan files).
   const fresh = useRef<Set<string>>(new Set())
@@ -76,6 +96,9 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     if (!open) return
     setDate(init.date ?? todayIso())
     setPlantId(init.plantId)
+    setWhenOpen(false)
+    setScopeOpen(false)
+    setMenuOpen(false)
     setSpaceId(init.spaceId ?? curSpace?.id ?? spaces[0]?.id ?? "")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, init.date, init.plantId, init.spaceId])
@@ -132,12 +155,6 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
 
   const tg = targetsFor(date, cycle)
   const live = space ? derive(build(), cycle?.leafOffsetC) : null
-  const st = (k: "vpd" | "dryback" | "runoffPct" | "dli") => {
-    const v = live?.[k]
-    const r = tg?.[k]
-    return v != null && r ? status(v, r) : undefined
-  }
-  const fmt = (v: number | undefined, d: number, unit = "") => (v == null ? "—" : `${num(v, d)}${unit}`)
 
   const set = (k: NumKey) => (v: string) => {
     touch(k)
@@ -158,7 +175,20 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   }
   const nf = (k: NumKey, label: MessageKey, opts: { integer?: boolean } = {}) => {
     if ((HINTED as readonly string[]).includes(k) && prev?.[k] != null) greyed.push(k as (typeof HINTED)[number])
-    return <NumField id={`e-${k}`} label={t(label)} value={f[k] ?? ""} onChange={set(k)} placeholder={(HINTED as readonly string[]).includes(k) ? show(prev?.[k] as number | undefined) : undefined} hint={(HINTED as readonly string[]).includes(k) ? hint(k) : undefined} hintMono integer={opts.integer} unit={k === "ecIn" || k === "ecRunoff" ? "mS/cm" : undefined} />
+    const hinted = (HINTED as readonly string[]).includes(k)
+    return (
+      <NumField
+        id={`e-${k}`}
+        label={t(label)}
+        value={f[k] ?? ""}
+        onChange={set(k)}
+        ghost={hinted && prev?.[k] != null ? show(prev[k] as number) : undefined}
+        hint={hinted ? hint(k) : undefined}
+        hintMono
+        integer={opts.integer}
+        unit={k === "ecIn" || k === "ecRunoff" ? "mS/cm" : undefined}
+      />
+    )
   }
 
   const cycleObs = (tag: ObsTag) => {
@@ -214,64 +244,27 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
 
   if (!space) return null
   const plantIds = PLANT_IDS.slice(0, Math.max(1, Math.min(PLANT_IDS.length, cycle?.potCount ?? 4)))
-  const computed = [
-    on("climate") && <Computed key="v" term="vpd" label={t("entry.vpd")} value={fmt(live?.vpd, 2)} status={st("vpd")} />,
-    on("irrigation") && method === "weight" && <Computed key="d" term="dryback" label={t("entry.dryback")} value={fmt(live?.dryback, 0, " %")} status={st("dryback")} />,
-    // Sensor scale: no status against Athena's weighing targets.
-    on("irrigation") && bySensor && <Computed key="ds" term="drybackSensor" label={t("entry.drybackSensor")} value={fmt(live?.drybackSensor, 0, " %")} />,
-    on("irrigation") && <Computed key="r" term="runoff" label={t("entry.runoffPct")} value={fmt(live?.runoffPct, 0, " %")} status={st("runoffPct")} />,
-    on("light") && <Computed key="l" term="dli" label={t("entry.dli")} value={fmt(live?.dli, 1)} status={st("dli")} />,
-  ].filter(Boolean)
-  // The fields first: they list the greyed values "Reprendre hier" can fill.
+  // The band of results, computed while typing (lot 10l2): « plante » in target, « à surveiller » out, « — » missing.
+  const band = bandKeys(space.modules, method)
+  const bandLabel: Record<BandKey, string> = { dryback: t("entry.dryback"), drybackSensor: t("entry.drybackSensor"), runoffPct: t("entry.runoffPct"), vpd: t("entry.vpd"), dli: t("entry.dli") }
+  const bandText = (k: BandKey, v: number) => (k === "vpd" ? num(v, 2) : k === "dli" ? num(v, 1) : `${num(v)}${NNBSP}%`)
+  const choose = spaces.length > 1 || (on("plants") && !!cycle)
+  const dayLabel = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short" }).format(new Date(`${date || todayIso()}T12:00:00`))
+  // What the folded line holds, said on it (« hauteur · reste du bidon »).
+  const moreList = [on("plants") && t("entry.moreHeight"), hasReservoir && t("entry.moreReservoir")].filter(Boolean).join(" · ") || t("entry.moreSettings")
+  // The fields first: they list the faint values « Reprendre hier » can take.
   const fields = (
     <>
-      {computed.length > 0 && (
-        <div className="sticky top-0 z-10 -mx-4 mt-3 bg-background px-4 py-2">
-          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(max(4.5rem, calc((100% - ${computed.length - 1} * 0.375rem) / ${computed.length})), 1fr))` }} aria-live="polite">
-            {computed}
-          </div>
-        </div>
-      )}
-
-      {on("climate") && (
-        <Group title={t("entry.climate")}>
-          <Grid cols={3}>
-            {nf("tempDay", "entry.tempDay")}
-            {nf("tempNight", "entry.tempNight")}
-            {nf("rh", "entry.rh")}
-          </Grid>
-        </Group>
-      )}
-      {on("propagation") && (
-        <Group title={t("entry.propagation")}>
-          <Grid>
-            {nf("sownCount", "entry.sown", { integer: true })}
-            {nf("germinatedCount", "entry.germinated", { integer: true })}
-          </Grid>
-          <div className="mt-2 border-y border-line">
-            <SwitchRow
-              id="e-dome"
-              label={t("entry.dome")}
-              checked={domeOn}
-              onChange={(v) => {
-                touch("domeOn")
-                setDomeOn(v)
-              }}
-            />
-          </div>
-        </Group>
-      )}
       {on("irrigation") && (
         <>
           <Group
+            id="e-sec-water"
             title={t("entry.irrigation")}
             aside={
               method === "weight" && tg?.dryback ? (
-                <span className="text-[0.75rem] text-fg-3">
-                  {t("today.dryback")} {range(tg.dryback.lo, tg.dryback.hi)} %
-                </span>
+                <span className="text-[0.78125rem] font-medium text-fg-3">{t("entry.targetDryback", { range: range(tg.dryback.lo, tg.dryback.hi) })}</span>
               ) : bySensor ? (
-                <span className="text-[0.75rem] text-fg-3">{sensorLabel}</span>
+                <span className="text-[0.78125rem] font-medium text-fg-3">{sensorLabel}</span>
               ) : undefined
             }
           >
@@ -289,7 +282,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
               </p>
             )}
           </Group>
-          <Group title={t("entry.runoffSection")} aside={tg?.phRunoff && <span className="text-[0.75rem] text-fg-3">pH {range(tg.phRunoff.lo, tg.phRunoff.hi, 1)}</span>}>
+          <Group id="e-sec-runoff" title={t("entry.runoffSection")} aside={tg?.phRunoff && <span className="text-[0.78125rem] font-medium text-fg-3">{t("entry.targetPh", { range: range(tg.phRunoff.lo, tg.phRunoff.hi, 1) })}</span>}>
             <Grid>
               {nf("ecRunoff", "entry.ecRunoff")}
               {nf("phRunoff", "entry.phRunoff")}
@@ -297,19 +290,51 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
           </Group>
         </>
       )}
-      {(hasReservoir || on("plants")) && (
-        <Group title={hasReservoir && on("plants") ? `${t("entry.plant")} · ${t("entry.reservoir")}` : hasReservoir ? t("entry.reservoir") : t("entry.plant")}>
-          <Grid>
-            {on("plants") && nf("heightCm", "entry.height")}
-            {hasReservoir && nf("reservoirL", "entry.reservoirL")}
+      {on("climate") && (
+        <Group id="e-sec-climate" title={t("entry.climate")}>
+          <Grid cols={3}>
+            {nf("tempDay", "entry.tempDay")}
+            {nf("tempNight", "entry.tempNight")}
+            {nf("rh", "entry.rh")}
           </Grid>
         </Group>
       )}
+      {on("propagation") && (
+        <Group id="e-sec-propagation" title={t("entry.propagation")}>
+          <Grid>
+            {nf("sownCount", "entry.sown", { integer: true })}
+            {nf("germinatedCount", "entry.germinated", { integer: true })}
+          </Grid>
+          <div className="mt-2 border-y border-line">
+            <SwitchRow
+              id="e-dome"
+              label={t("entry.dome")}
+              checked={domeOn}
+              onChange={(v) => {
+                touch("domeOn")
+                setDomeOn(v)
+              }}
+            />
+          </div>
+        </Group>
+      )}
 
-      <Accordion type="single" collapsible className="mt-3 border-y border-line">
-        <AccordionItem value="carried" className="border-0">
-          <AccordionTrigger className="py-3 text-[0.8125rem] font-semibold hover:no-underline">{t("entry.carried")}</AccordionTrigger>
+      {/* One folded line: the plant, the reservoir and the settings carried from the day before. */}
+      <Accordion type="single" collapsible className="mt-5 border-y border-line">
+        <AccordionItem value="more" className="border-0">
+          <AccordionTrigger id="e-more" className="py-3 text-[0.90625rem] font-semibold hover:no-underline">
+            <span className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3">
+              <span>{t("entry.more")}</span>
+              <span className="text-[0.78125rem] font-normal text-fg-3">{moreList}</span>
+            </span>
+          </AccordionTrigger>
           <AccordionContent className="flex flex-col gap-3 pb-3">
+            {(hasReservoir || on("plants")) && (
+              <Grid>
+                {on("plants") && nf("heightCm", "entry.height")}
+                {hasReservoir && nf("reservoirL", "entry.reservoirL")}
+              </Grid>
+            )}
             {(on("irrigation") || on("nutrition")) && (
               <Grid>
                 {on("irrigation") && nf("volumePerPotMl", "entry.volumePerPot", { integer: true })}
@@ -318,18 +343,20 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
                 {on("nutrition") && nf("phIn", "entry.phIn")}
               </Grid>
             )}
-            {on("nutrition") && <div className="flex flex-col gap-1">
-              <span className="text-[0.75rem] font-medium text-fg-2">{t("entry.mix")}</span>
-              <Seg<string>
-                label={t("entry.mix")}
-                value={mixId || "none"}
-                onChange={(v) => {
-                  touch("mixId")
-                  setMixId(v === "none" ? "" : v)
-                }}
-                options={[{ value: "none", label: t("entry.noMix") }, ...mixes.slice(0, 3).map((m) => ({ value: m.id, label: `${dm(m.date)} · ${num(m.volumeL)} L` }))]}
-              />
-            </div>}
+            {on("nutrition") && (
+              <div className="flex flex-col gap-1">
+                <span className="text-[0.75rem] font-medium text-fg-2">{t("entry.mix")}</span>
+                <Seg<string>
+                  label={t("entry.mix")}
+                  value={mixId || "none"}
+                  onChange={(v) => {
+                    touch("mixId")
+                    setMixId(v === "none" ? "" : v)
+                  }}
+                  options={[{ value: "none", label: t("entry.noMix") }, ...mixes.slice(0, 3).map((m) => ({ value: m.id, label: `${dm(m.date)} · ${num(m.volumeL)} L` }))]}
+                />
+              </div>
+            )}
             <Grid>
               {on("light") && nf("lightPct", "entry.lightPct", { integer: true })}
               {on("light") && nf("lightHeightCm", "entry.lightHeight", { integer: true })}
@@ -402,89 +429,159 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       </Group>
     </>
   )
+  // « Reprendre hier » while a field on screen still shows yesterday's value faint.
+  const ghostsLeft = greyed.some((k) => !(f[k] ?? "").trim())
+  const link = "font-semibold text-fg-2 underline decoration-water decoration-[1.5px] underline-offset-[3px] hover:text-fg"
   return (
-    <Sheet
-      open={open}
-      onOpenChange={onOpenChange}
-      title={t("entry.title")}
-      description={existing ? t("entry.existing") : undefined}
-      // Values carried from the quick entry are not saved yet: closing asks first.
-      dirty={Object.values(init.values ?? {}).some((x) => x?.trim()) || undefined}
-      footer={
-        <div className="flex flex-wrap gap-2">
-          {existing && (
-            <ConfirmDelete
-              onConfirm={async () => {
-                await deleteEntry(existing.id)
-                if (existing.photos?.length) deletePhotos(existing.photos)
-                toast(t("common.deleted"))
-                onOpenChange(false)
-              }}
-              trigger={
-                <Button variant="outline" size="icon-lg" className="size-12" aria-label={t("entry.deleteEntry")}>
-                  <Trash2 className="size-5 text-bad" />
-                </Button>
-              }
-            />
-          )}
-          <Button
-            variant="outline"
-            onClick={() => save(true)}
-            disabled={busy || !date || uploading > 0}
-            className="h-12 px-4 text-[0.875rem] font-semibold short:w-12 short:px-0"
-            aria-label={`${t("common.save")} + ${t("cal.addShort")}`}
-          >
-            <AlarmClockPlus className="size-4.5" /> <span className="short:sr-only">{t("cal.addShort")}</span>
-          </Button>
-          <Button onClick={() => save()} disabled={busy || !date || uploading > 0} className="h-12 min-w-[6rem] flex-1">
+    <>
+      <Sheet
+        open={open}
+        onOpenChange={onOpenChange}
+        title={t("entry.titleFor", { space: space.name })}
+        big
+        // Values carried from the quick entry are not saved yet: closing asks first.
+        dirty={Object.values(init.values ?? {}).some((x) => x?.trim()) || undefined}
+        head={
+          <div className="mt-1 text-[0.8125rem] leading-snug text-fg-3" id="e-head">
+            <span className="font-num font-medium">{dayLabel}</span>
+            {time && (
+              <>
+                {" · "}
+                <span className="font-num font-medium">{time}</span>
+              </>
+            )}{" "}
+            <button type="button" id="e-when" aria-expanded={whenOpen} onClick={() => setWhenOpen((x) => !x)} className={cn("hit", link)}>
+              {t("entry.edit")}
+            </button>
+            {choose && (
+              <>
+                {" · "}
+                <button type="button" id="e-scope" aria-expanded={scopeOpen} onClick={() => setScopeOpen((x) => !x)} className={cn("hit", link)}>
+                  {plantId ?? t("entry.scopeAll")} ▾
+                </button>
+              </>
+            )}
+            {existing && <span className="block">{t("entry.existing")}</span>}
+          </div>
+        }
+        actions={
+          <div className="relative -mt-1" ref={menuRef}>
+            <button type="button" id="e-menu" aria-label={t("entry.menu")} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((x) => !x)} className={iconButton}>
+              <MoreHorizontal className="size-5" />
+            </button>
+            {menuOpen && (
+              <div role="menu" className="absolute top-11 right-0 z-30 flex w-[244px] flex-col rounded-[14px] border border-line-strong bg-surface p-1.5 shadow-card">
+                <button
+                  type="button"
+                  role="menuitem"
+                  id="e-remind"
+                  disabled={busy || !date || uploading > 0}
+                  onClick={() => {
+                    setMenuOpen(false)
+                    save(true)
+                  }}
+                  className="flex min-h-11 items-center gap-2.5 rounded-[10px] px-2.5 text-left text-[0.875rem] font-semibold hover:bg-surface-2 disabled:opacity-50"
+                >
+                  <AlarmClockPlus className="size-4.5 shrink-0" /> {t("entry.saveRemind")}
+                </button>
+                {existing && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    id="e-delete"
+                    onClick={() => {
+                      setMenuOpen(false)
+                      setAskDelete(true)
+                    }}
+                    className="flex min-h-11 items-center gap-2.5 rounded-[10px] px-2.5 text-left text-[0.875rem] font-semibold text-bad hover:bg-surface-2"
+                  >
+                    <Trash2 className="size-4.5 shrink-0" /> {t("entry.deleteEntry")}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        }
+        footer={
+          <Button id="e-save" onClick={() => save()} disabled={busy || !date || uploading > 0} className="h-12 w-full">
             {busy && <Loader2 className="animate-spin" />}
             {t("common.save")}
           </Button>
-        </div>
-      }
-    >
-      <Grid>
-        <TextField id="e-date" type="date" label={`${t("entry.date")} · ${t("common.required")}`} value={date} onChange={setDate} />
-        <TextField
-          id="e-time"
-          type="time"
-          label={t("entry.time")}
-          value={time}
-          onChange={(v) => {
-            touch("time")
-            setTime(v)
-          }}
-        />
-      </Grid>
-      {spaces.length > 1 && (
-        <div className="mt-2.5">
-          <Seg<string> label={t("entry.space")} value={space.id} onChange={setSpaceId} options={spaces.map((x) => ({ value: x.id, label: x.name }))} />
-        </div>
-      )}
-      <p className="mt-1.5 flex items-center gap-1.5 text-[0.75rem] text-fg-3">
-        <SpaceDot color={space.color} /> {cycle ? t("entry.forCycle", { space: space.name, cycle: cycle.name }) : t("entry.noCycle", { space: space.name })}
-      </p>
-      {on("plants") && cycle && (
-        <div className="mt-2.5">
-          <Seg<string>
-            label={t("entry.scope")}
-            value={plantId ?? "room"}
-            onChange={(v) => setPlantId(v === "room" ? undefined : (v as PlantId))}
-            options={[{ value: "room", label: t("entry.wholeSpace") }, ...plantIds.map((p) => ({ value: p, label: p }))]}
-          />
-        </div>
-      )}
-
-      {greyed.length > 0 && (
-        <div className="mt-2.5 flex items-center gap-3">
-          <p className="min-w-0 flex-1 text-[0.75rem] leading-snug text-fg-3">{t("entry.resumeHint")}</p>
-          <Button type="button" variant="link" size="sm" onClick={resume} className="shrink-0 px-0 text-[0.8125rem]">
+        }
+      >
+        {whenOpen && (
+          <div className="mb-2" id="e-when-panel">
+            <Grid>
+              <TextField id="e-date" type="date" label={`${t("entry.date")} · ${t("common.required")}`} value={date} onChange={setDate} />
+              <TextField
+                id="e-time"
+                type="time"
+                label={t("entry.time")}
+                value={time}
+                onChange={(v) => {
+                  touch("time")
+                  setTime(v)
+                }}
+              />
+            </Grid>
+          </div>
+        )}
+        {scopeOpen && (
+          <div className="mb-2 flex flex-col gap-2.5" id="e-scope-panel">
+            {spaces.length > 1 && <Seg<string> label={t("entry.space")} value={space.id} onChange={setSpaceId} options={spaces.map((x) => ({ value: x.id, label: x.name }))} />}
+            {on("plants") && cycle && (
+              <Seg<string>
+                label={t("entry.scope")}
+                value={plantId ?? "room"}
+                onChange={(v) => setPlantId(v === "room" ? undefined : (v as PlantId))}
+                options={[{ value: "room", label: t("entry.wholeSpace") }, ...plantIds.map((p) => ({ value: p, label: p }))]}
+              />
+            )}
+          </div>
+        )}
+        {band.length > 0 && (
+          <div
+            id="e-band"
+            aria-live="polite"
+            className="sticky top-0 z-10 -mx-4 grid gap-2 border-y border-line bg-surface px-4 py-2.5"
+            style={{ gridTemplateColumns: `repeat(${band.length}, minmax(0, 1fr))` }}
+          >
+            {band.map((k) => {
+              const c = bandCell(k, live, tg)
+              return (
+                <div key={k} className="flex min-w-0 flex-col gap-0.5" data-band={k} data-status={c.status}>
+                  <span className="flex min-w-0 items-center gap-1 text-[0.75rem] text-fg-3">
+                    <span className="truncate">{bandLabel[k]}</span>
+                    <InfoTip term={BAND_TERM[k]} />
+                  </span>
+                  <b className={cn("font-num text-[1.125rem] leading-tight font-semibold tabular-nums", c.status === "ok" && "text-leaf-ink", c.status === "warn" && "text-warn", c.status === "bad" && "text-bad")}>
+                    {c.value == null ? "—" : bandText(k, c.value)}
+                  </b>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {ghostsLeft && (
+          <Button type="button" variant="outline" id="e-resume" onClick={resume} className="mt-4 h-11 w-full text-[0.875rem] font-semibold">
             {t("entry.resume")}
           </Button>
-        </div>
+        )}
+        {fields}
+      </Sheet>
+      {existing && (
+        <ConfirmDelete
+          open={askDelete}
+          onOpenChange={setAskDelete}
+          onConfirm={async () => {
+            await deleteEntry(existing.id)
+            if (existing.photos?.length) deletePhotos(existing.photos)
+            toast(t("common.deleted"))
+            onOpenChange(false)
+          }}
+        />
       )}
-      {fields}
-    </Sheet>
+    </>
   )
 }
 

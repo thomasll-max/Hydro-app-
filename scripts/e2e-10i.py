@@ -81,7 +81,7 @@ with sync_playwright() as p:
             pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_timeout(700)
             full = pg.locator("[data-slot=drawer-content] button", has_text="Vollständiger Eintrag")
             if full.count(): full.first.click()
-            pg.wait_for_selector("#e-date"); pg.wait_for_timeout(900)
+            pg.wait_for_selector("#e-when"); pg.wait_for_timeout(900)
             cut = pg.evaluate(CUT)
             if cut: errors.append(f"{tag} entry: cut {cut}")
             pg.fill("#e-tempDay", "24,5"); pg.wait_for_timeout(200)

@@ -14,11 +14,22 @@ import {
 import { useSettings } from "@/app/settings-context"
 
 /** Deletion always asks first (shadcn AlertDialog). A failed deletion says so (lot 10a). */
-export function ConfirmDelete({ trigger, onConfirm }: { trigger: ReactNode; onConfirm: () => void | Promise<void> }) {
+export function ConfirmDelete({
+  trigger,
+  onConfirm,
+  open,
+  onOpenChange,
+}: {
+  trigger?: ReactNode
+  onConfirm: () => void | Promise<void>
+  /** Opened from elsewhere (a menu item, lot 10l2) instead of a trigger. */
+  open?: boolean
+  onOpenChange?: (o: boolean) => void
+}) {
   const { t } = useSettings()
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
       <AlertDialogContent className="max-w-[340px] rounded-[14px] border-line-strong bg-surface">
         <AlertDialogHeader>
           <AlertDialogTitle>{t("common.confirmTitle")}</AlertDialogTitle>

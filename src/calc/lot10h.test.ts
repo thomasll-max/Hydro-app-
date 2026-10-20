@@ -117,7 +117,7 @@ describe("lot 10h — champs « instrument »", () => {
   it("« hier 25,3 » sous le champ, bouton « Copier les valeurs d'hier »", () => {
     expect(translate("fr", "entry.hint", { v: "25,3" })).toBe("hier 25,3")
     expect(translate("en", "entry.hint", { v: "25.3" })).toBe("yesterday 25.3")
-    expect(translate("fr", "entry.resume")).toBe("Copier les valeurs d'hier")
+    expect(translate("fr", "entry.resume")).toBe("Reprendre hier") // lot 10l2 (« Copier les valeurs d'hier » before)
   })
 })
 

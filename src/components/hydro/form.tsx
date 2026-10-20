@@ -29,6 +29,9 @@ export function Sheet({
   children,
   footer,
   dirty,
+  head,
+  actions,
+  big,
 }: {
   open: boolean
   onOpenChange: (o: boolean) => void
@@ -39,6 +42,12 @@ export function Sheet({
   footer?: ReactNode
   /** Unsaved changes. By default: something was typed or picked since the sheet opened. */
   dirty?: boolean
+  /** A line under the title instead of the description (the day's entry: date, time, scope, lot 10l2). */
+  head?: ReactNode
+  /** Buttons before the close button (the day's entry: « ⋯ »). */
+  actions?: ReactNode
+  /** A bigger title (≈ 24 px, the day's entry). */
+  big?: boolean
 }) {
   const { t } = useSettings()
   const [touched, setTouched] = useState(false)
@@ -89,9 +98,11 @@ export function Sheet({
         >
           <DrawerHeader className="flex-row items-start gap-2 pb-2 text-left! md:text-left">
             <div className="min-w-0 flex-1">
-              <DrawerTitle className="display text-[1.3125rem] leading-tight">{title}</DrawerTitle>
+              <DrawerTitle className={cn("display leading-tight [overflow-wrap:anywhere]", big ? "text-[1.5rem]" : "text-[1.3125rem]")}>{title}</DrawerTitle>
               {description ? <DrawerDescription>{description}</DrawerDescription> : <DrawerDescription className="sr-only">{title}</DrawerDescription>}
+              {head}
             </div>
+            {actions}
             <button
               type="button"
               onClick={tryClose}
@@ -130,7 +141,7 @@ export function Sheet({
 export function Group({ title, aside, children, className, id }: { title: string; aside?: ReactNode; children: ReactNode; className?: string; id?: string }) {
   return (
     <section id={id} className={cn("mt-4 scroll-mt-4 first:mt-1", className)}>
-      <div className="mb-2 flex items-center justify-between gap-2">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
         <h3 className="display text-[1.0625rem] leading-tight">{title}</h3>
         {aside}
       </div>
@@ -169,12 +180,18 @@ export function NumField({
   unit,
   hintMono,
   className,
+  ghost,
 }: {
   id: string
   label: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
+  /**
+   * Yesterday's value, shown very faint in the empty field (lot 10l2): touching the field takes it (selected, so typing
+   * replaces it). Never saved unless taken or typed.
+   */
+  ghost?: string
   hint?: string
   /** The hint is a value (« hier 25,3 »): written in mono. */
   hintMono?: boolean
@@ -202,11 +219,18 @@ export function NumField({
           autoComplete="off"
           enterKeyHint="next"
           value={value}
-          placeholder={placeholder}
+          placeholder={ghost ?? placeholder}
+          data-ghost={ghost && !value ? "" : undefined}
+          onClick={(e) => {
+            if (!ghost || value) return
+            const el = e.currentTarget
+            onChange(ghost)
+            requestAnimationFrame(() => el.select())
+          }}
           aria-invalid={bad || undefined}
           aria-describedby={bad ? `${id}-err` : undefined}
           onChange={(e) => onChange(e.target.value.replace(/[^\d.,-]/g, ""))}
-          className={cn(fieldCls, "h-12 font-num text-[1.625rem] font-medium tabular-nums")}
+          className={cn(fieldCls, "h-12 font-num text-[1.625rem] font-medium tabular-nums", ghost && "placeholder:text-fg-3/35")}
         />
         {u && (
           <span aria-hidden="true" className="shrink-0 font-num text-[0.8125rem] text-fg-3">

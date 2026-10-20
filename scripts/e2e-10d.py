@@ -9,6 +9,7 @@ Usage: npm run preview:build && npm run build:local && PYTHONPATH=scripts python
 import sys, json, pathlib, time, threading, http.server, functools, socketserver
 from playwright.sync_api import sync_playwright
 from fonts import serve_fonts
+from entry_ui import when
 
 page_file = pathlib.Path(sys.argv[1]).resolve()
 out = pathlib.Path(sys.argv[2]); out.mkdir(parents=True, exist_ok=True)
@@ -53,29 +54,29 @@ with sync_playwright() as p:
     checks["quickEmptyRefused"] = pg.locator("text=Rien à enregistrer").count() > 0
     first = pg.locator("input[id^=q-][id$=-t]").first
     first.fill("23,5")
-    pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-date"); pg.wait_for_timeout(500)
+    pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-when"); pg.wait_for_timeout(500)
     checks["carried"] = pg.input_value("#e-tempDay")
     pg.screenshot(path=str(out / "01-carried.png"))
 
     # 3. Back with typed values: asks first; « Continuer » keeps the sheet.
     pg.go_back(); pg.wait_for_timeout(600)
-    checks["backAsks"] = [pg.locator("text=Abandonner la saisie ?").count() > 0, pg.locator("#e-date").count() == 1]
+    checks["backAsks"] = [pg.locator("text=Abandonner la saisie ?").count() > 0, pg.locator("#e-when").count() == 1]
     pg.screenshot(path=str(out / "02-back-asks.png"))
     pg.get_by_role("button", name="Continuer").click(); pg.wait_for_timeout(400)
     checks["kept"] = pg.input_value("#e-tempDay")
 
     # 4. Date change keeps typed values.
     pg.fill("#e-rh", "61")
-    d = pg.input_value("#e-date")
-    pg.fill("#e-date", "2026-10-10"); pg.wait_for_timeout(500)
+    d = when(pg) or pg.input_value("#e-date")
+    when(pg) or pg.fill("#e-date", "2026-10-10"); pg.wait_for_timeout(500)
     checks["dateKeeps"] = [pg.input_value("#e-tempDay"), pg.input_value("#e-rh"), d != "2026-10-10"]
-    pg.fill("#e-date", d); pg.wait_for_timeout(400)
+    when(pg) or pg.fill("#e-date", d); pg.wait_for_timeout(400)
 
     # 5. ✕ asks, « Abandonner » closes; back then stays in the app.
     pg.get_by_role("button", name="Fermer").first.click(); pg.wait_for_timeout(400)
     checks["closeAsks"] = pg.locator("text=Abandonner la saisie ?").count() > 0
     pg.get_by_role("button", name="Abandonner").click(); pg.wait_for_timeout(800)
-    checks["closed"] = pg.locator("#e-date").count() == 0
+    checks["closed"] = pg.locator("#e-when").count() == 0
     checks["afterCloseUrl"] = pg.url.startswith(start)
 
     # 6. Untouched sheet: back closes it at once.
@@ -85,17 +86,17 @@ with sync_playwright() as p:
 
     # 7. « Reprendre hier » in a full entry: an entry the day before, then today's.
     pg.click("#tab-plus"); pg.click("#add-quick"); pg.wait_for_timeout(600)
-    pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-date"); pg.wait_for_timeout(500)
-    today = pg.input_value("#e-date")
+    pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-when"); pg.wait_for_timeout(500)
+    today = when(pg) or pg.input_value("#e-date")
     yday = pg.evaluate("(d) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() - 1); return x.toISOString().slice(0, 10) }", today)
-    pg.fill("#e-date", yday); pg.wait_for_timeout(300)
+    when(pg) or pg.fill("#e-date", yday); pg.wait_for_timeout(300)
     pg.fill("#e-tempDay", "21"); pg.fill("#e-rh", "58")
     pg.get_by_role("button", name="Enregistrer", exact=True).click()
-    pg.wait_for_selector("#e-date", state="detached", timeout=5000); pg.wait_for_timeout(600)
+    pg.wait_for_selector("#e-when", state="detached", timeout=5000); pg.wait_for_timeout(600)
     checks["noDialogAfterSave"] = pg.locator("text=Abandonner la saisie ?").count() == 0
     pg.click("#tab-plus"); pg.click("#add-quick"); pg.wait_for_timeout(600)
-    pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-date"); pg.wait_for_timeout(500)
-    resume = pg.get_by_role("button", name="Copier les valeurs d'hier")
+    pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-when"); pg.wait_for_timeout(500)
+    resume = pg.get_by_role("button", name="Reprendre hier")
     checks["resumeShown"] = resume.count() > 0
     if resume.count():
         before = pg.input_value("#e-tempDay")

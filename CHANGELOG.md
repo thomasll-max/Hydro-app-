@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 10l2a — La saisie du jour, plus calme (20/10/2026)
+Planche « Les menus » : la saisie tient sur un écran qu'on lit de haut en bas.
+- **En-tête** : « Saisie · Floraison », et une seule ligne « dim. 8 févr. · 08:30 modifier · tout l'espace ▾ ». La date, l'heure, le choix de l'espace et des plantes ne s'ouvrent que si tu les touches. « ⋯ » en haut à droite : « Enregistrer et ajouter un rappel », et « Supprimer cette saisie » quand tu en modifies une.
+- **Les résultats en direct**, collés sous l'en-tête pendant que tu descends : dryback, runoff, VPD, DLI, calculés pendant la frappe, en vert dans la cible, en orange hors cible, « — » tant qu'il manque une valeur.
+- **Les valeurs d'hier en fantôme** dans les champs : touche un champ pour reprendre sa valeur seule (tu peux taper par-dessus), ou **« Reprendre hier »** pour toutes les reprendre. Rien n'est enregistré que tu n'aies tapé ou repris.
+- **Dans l'ordre** : Arrosage (avec la cible de dryback), Runoff (avec la cible de pH), Climat sur trois colonnes, puis une ligne repliée « Plante, réservoir, réglages ». En bas, un seul bouton « Enregistrer ».
+- 390 tests.
+
 ## Lot 10l1 — La page d'un espace, version calme (20/10/2026)
 Planche « Les menus » validée par Thomas : chaque information de l'espace a sa section, une seule fois, dans un ordre fixe.
 - **En-tête** : le carré de la couleur de l'espace avec le dessin du stade, le nom en grand, « Cycle 2 · Melonade Runtz » dessous, et le stade dans une pilule verte à droite (« Végé S6 · J41 »).

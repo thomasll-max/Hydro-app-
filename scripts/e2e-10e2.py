@@ -26,7 +26,7 @@ with sync_playwright() as p:
     checks["tabCurrent"] = pg.locator("[role=tab][aria-current=page]").inner_text().strip()
     checks["displayName"] = pg.locator("#display-menu").get_attribute("aria-label")
     # Entry sheet: the (i) of VPD.
-    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-date"); pg.wait_for_timeout(500)
+    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-when"); pg.wait_for_timeout(500)
     pg.get_by_role("button", name="Qu'est-ce que VPD ?").first.click(); pg.wait_for_timeout(400)
     checks["vpdTip"] = pg.locator("[data-radix-popper-content-wrapper]").inner_text()[:60]
     pg.screenshot(path=str(out / "01-info.png"))

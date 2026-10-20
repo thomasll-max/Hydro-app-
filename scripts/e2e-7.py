@@ -113,7 +113,7 @@ with sync_playwright() as p:
         pg.goto(f"file://{page_file}"); pg.wait_for_timeout(1800)
         pg.get_by_role("group").first.get_by_role("button", name="Colonne").click(); pg.wait_for_timeout(1000)
         pg.click("#tab-plus"); pg.wait_for_timeout(600); pg.click("#add-entry"); pg.wait_for_timeout(900)
-        if not pg.locator("#e-ecIn").is_visible(): pg.locator("[role=dialog] button[aria-expanded=false]", has_text="veille").first.click(); pg.wait_for_timeout(500)
+        if not pg.locator("#e-ecIn").is_visible(): pg.click("#e-more"); pg.wait_for_timeout(500)
         pg.wait_for_selector("#e-ecIn")
         pg.fill("#e-ecIn", v); pg.wait_for_timeout(200)
         pg.get_by_role("button", name="Enregistrer", exact=True).last.click(); pg.wait_for_timeout(1200)

@@ -35,7 +35,7 @@ with sync_playwright() as p:
     def open_entry():
         pg.goto(f"file://{page_file}"); pg.wait_for_timeout(2000)
         pg.get_by_role("button", name=SPACE).first.click(); pg.wait_for_timeout(600)
-        pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-date")
+        pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-when")
         pg.wait_for_timeout(500)
 
     def ids():

@@ -35,20 +35,20 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}"); pg.wait_for_timeout(2500)
     pg.click("#tab-plus"); pg.click("#add-quick"); pg.wait_for_timeout(600)
     # Several spaces and "Tous" selected: the quick entry (from the « + » sheet since lot 10k3); its link opens the full entry.
-    pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-date")
+    pg.get_by_role("button", name="Saisie complète").first.click(); pg.wait_for_selector("#e-when")
     pg.wait_for_timeout(400)
     pg.get_by_role("button", name="Enregistrer", exact=True).click(); pg.wait_for_timeout(600)
-    checks["emptyRefused"] = pg.locator("text=Rien à enregistrer").count() > 0 and pg.locator("#e-date").count() == 1
+    checks["emptyRefused"] = pg.locator("text=Rien à enregistrer").count() > 0 and pg.locator("#e-when").count() == 1
     pg.screenshot(path=str(out / "01-empty-refused.png"))
     pg.fill("#e-tempDay", "2,4,5"); pg.wait_for_timeout(200)
     checks["badFlagged"] = pg.locator("#e-tempDay-err").inner_text()
     checks["ariaInvalid"] = pg.get_attribute("#e-tempDay", "aria-invalid")
     pg.get_by_role("button", name="Enregistrer", exact=True).click(); pg.wait_for_timeout(600)
-    checks["badBlocked"] = pg.locator("#e-date").count() == 1
+    checks["badBlocked"] = pg.locator("#e-when").count() == 1
     pg.screenshot(path=str(out / "02-bad-number.png"))
     pg.fill("#e-tempDay", "24,5")
     pg.get_by_role("button", name="Enregistrer", exact=True).click()
-    pg.wait_for_selector("#e-date", state="detached", timeout=5000)
+    pg.wait_for_selector("#e-when", state="detached", timeout=5000)
     checks["goodSaved"] = True
     ctx.close()
 

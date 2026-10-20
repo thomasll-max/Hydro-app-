@@ -11,6 +11,7 @@ Usage: npm run preview:build && npm run build:local && PYTHONPATH=scripts python
 import sys, json, pathlib, threading, http.server, functools, socketserver, re, time
 from playwright.sync_api import sync_playwright
 from fonts import serve_fonts
+from entry_ui import when
 
 page_file = pathlib.Path(sys.argv[1]).resolve()
 out = pathlib.Path(sys.argv[2]); out.mkdir(parents=True, exist_ok=True)
@@ -111,8 +112,8 @@ def weeks_pass(b):
                     # A day of the strip opens the week page on its card; the card opens the entry; back, back.
                     pg.locator("[data-week][data-open] [data-strip] button").nth(4).click(); pg.wait_for_selector("#week-page", timeout=8000); pg.wait_for_timeout(500)
                     checks["stripHash"] = pg.evaluate("location.hash")
-                    pg.click("[data-day='2026-02-06']"); pg.wait_for_selector("#e-date", timeout=8000)
-                    checks["stripDay"] = pg.input_value("#e-date")
+                    pg.click("[data-day='2026-02-06']"); pg.wait_for_selector("#e-when", timeout=8000)
+                    checks["stripDay"] = when(pg) or pg.input_value("#e-date")
                     pg.go_back(); pg.wait_for_timeout(800); pg.go_back(); pg.wait_for_selector("[data-week]", timeout=8000); pg.wait_for_timeout(400)
                     # The other days of the week page unfold.
                     pg.click("[data-week][data-open] [data-see-week]"); pg.wait_for_selector("#week-more", timeout=8000)
@@ -155,7 +156,7 @@ with sync_playwright() as p:
             if cut: errors.append(f"{tag} cut {cut}")
             pg.screenshot(path=str(out / f"plus-{lang}-{theme}.png"))
             opened = {}
-            for row, sel in [("entry", "#e-date"), ("quick", "input[id^=q-]"), ("mix", "[data-slot=drawer-content] input"), ("event", "[data-slot=drawer-content] input")]:
+            for row, sel in [("entry", "#e-when"), ("quick", "input[id^=q-]"), ("mix", "[data-slot=drawer-content] input"), ("event", "[data-slot=drawer-content] input")]:
                 pg.click(f"#add-{row}"); pg.wait_for_timeout(900)
                 opened[row] = [pg.locator("#add-menu").count(), pg.locator(sel).count() > 0]
                 pg.go_back(); pg.wait_for_timeout(900)

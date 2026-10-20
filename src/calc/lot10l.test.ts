@@ -7,6 +7,9 @@ import { addDays } from "./stage"
 import { fr } from "@/i18n/fr"
 import { en } from "@/i18n/en"
 import { de } from "@/i18n/de"
+import { bandCell, bandKeys } from "./entry-day"
+import { blankEntry, derive, entryHasContent, resumeFrom } from "@/model/entry"
+import type { Entry } from "@/model/types"
 
 const root = path.resolve(import.meta.dirname, "../..")
 const read = (f: string) => fs.readFileSync(path.join(root, f), "utf8")
@@ -88,5 +91,68 @@ describe("lot 10l1 — page d'un espace : l'écran", () => {
   it("textes dans les trois langues", () => {
     for (const l of [fr, en, de]) for (const k of ["allGood", "nothing", "charts", "program", "todo", "waterDone", "waterNext"] as const) expect(l.sp[k].length).toBeGreaterThan(2)
     expect(fr.sp.waterDone).toBe("{phase} · {n}/{total} doses faites")
+  })
+})
+
+describe("lot 10l2a — saisie du jour : la bande des résultats (calculs purs)", () => {
+  it("les résultats qui ont un sens pour l'espace : dryback (ou capteur), runoff, VPD, DLI", () => {
+    expect(bandKeys({ irrigation: true, climate: true, light: true }, "weight")).toEqual(["dryback", "runoffPct", "vpd", "dli"])
+    expect(bandKeys({ irrigation: true, climate: true }, "acinfinity")).toEqual(["drybackSensor", "runoffPct", "vpd"])
+    expect(bandKeys({ climate: true }, "weight")).toEqual(["vpd"]) // un séchoir
+    expect(bandKeys({}, "weight")).toEqual([])
+  })
+  it("calcul en direct, « — » tant qu'une valeur manque, couleur selon les cibles du jour", () => {
+    const tg = { dryback: { lo: 25, hi: 50, src: "athena" }, runoffPct: { lo: 8, hi: 16, src: "athena" }, vpd: { lo: 0.8, hi: 1.2, src: "common" } } as never
+    const blank = { schemaVersion: 2, id: "x", date: "2026-02-08", spaceId: "f", createdAt: "x", updatedAt: "x" } as Entry
+    // Seul le pot du matin est tapé : pas de dryback.
+    expect(bandCell("dryback", derive({ ...blank, weightMorningKg: 8.2 }), tg)).toEqual({})
+    const live = derive({ ...blank, weightMorningKg: 8.17, weightPeakKg: 13.11, volumePerPotMl: 3500, runoffMl: 700, tempDay: 25.4, rh: 59 })
+    expect(bandCell("dryback", live, tg)).toEqual({ value: 37.7, status: "ok" })
+    expect(bandCell("runoffPct", live, tg)).toEqual({ value: 20, status: "warn" })
+    expect(bandCell("vpd", live, tg).value).toBeGreaterThan(0)
+    // Le dryback capteur a sa propre échelle : jamais de couleur contre les cibles Athena.
+    expect(bandCell("drybackSensor", derive({ ...blank, sensorPeakPct: 50, sensorMorningPct: 40 }), tg)).toEqual({ value: 20 })
+    expect(bandCell("dli", live, null)).toEqual({})
+  })
+  it("valeurs de la veille : en fantôme seulement ; rien d'enregistré sans les taper ou les reprendre", () => {
+    const prev = { schemaVersion: 2, id: "p", date: "2026-02-07", spaceId: "f", createdAt: "x", updatedAt: "x", tempDay: 25.4, rh: 59, runoffMl: 382 } as Entry
+    const fresh = blankEntry("2026-02-08", { spaceId: "f" }, prev)
+    // Une saisie neuve ne reprend pas les mesures d'hier : rien à enregistrer tant que rien n'est tapé ou repris.
+    expect(fresh.tempDay).toBeUndefined()
+    expect(entryHasContent(fresh, fresh)).toBe(false)
+    // « Reprendre hier » : seulement les champs à l'écran encore vides.
+    expect(resumeFrom({ tempDay: "", rh: "61" }, prev, ["tempDay", "rh"], (v) => String(v).replace(".", ","))).toEqual({ values: { tempDay: "25,4", rh: "61" }, filled: ["tempDay"] })
+    const form = read("src/components/hydro/form.tsx")
+    expect(form).toMatch(/placeholder=\{ghost \?\? placeholder\}/)
+    expect(form).toMatch(/if \(!ghost \|\| value\) return[\s\S]{0,80}onChange\(ghost\)/)
+  })
+})
+
+describe("lot 10l2a — saisie du jour : la feuille", () => {
+  const sheet = read("src/screens/entry-sheet.tsx")
+  it("en-tête : « Saisie · Floraison », une ligne date · heure « modifier » · « tout l'espace ▾ », menu « ⋯ »", () => {
+    expect(fr.entry.titleFor).toBe("Saisie · {space}")
+    expect(sheet).toMatch(/id="e-when"/)
+    expect(sheet).toMatch(/id="e-scope"/)
+    expect(sheet).toMatch(/id="e-menu"/)
+    // Date, heure, espace et plante ne sont plus dans la vue principale.
+    expect(sheet).toMatch(/\{whenOpen && \(/)
+    expect(sheet).toMatch(/\{scopeOpen && \(/)
+  })
+  it("bande des résultats collée sous l'en-tête et annoncée ; « Reprendre hier » ; un seul bouton plein en bas", () => {
+    expect(sheet).toMatch(/id="e-band"\s+aria-live="polite"\s+className="sticky top-0/)
+    expect(sheet).toMatch(/id="e-resume"/)
+    expect(sheet).not.toMatch(/resumeHint/)
+    const footer = sheet.slice(sheet.indexOf("footer={"), sheet.indexOf("footer={") + 300)
+    expect(footer.match(/<Button/g)?.length).toBe(1)
+    expect(footer).not.toMatch(/AlarmClockPlus|Trash2/)
+  })
+  it("ordre des champs : Arrosage, Runoff, Climat, puis la ligne repliée « Plante, réservoir, réglages »", () => {
+    const at = (x: string) => sheet.indexOf(x)
+    expect(at('id="e-sec-water"')).toBeLessThan(at('id="e-sec-runoff"'))
+    expect(at('id="e-sec-runoff"')).toBeLessThan(at('id="e-sec-climate"'))
+    expect(at('id="e-sec-climate"')).toBeLessThan(at('id="e-more"'))
+    expect(at('id="e-more"')).toBeLessThan(at('nf("heightCm"'))
+    expect(fr.entry.more).toBe("Plante, réservoir, réglages")
   })
 })

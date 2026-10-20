@@ -6,6 +6,7 @@ import json, sys, time, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from playwright.sync_api import sync_playwright
 from fonts import serve_fonts
+from entry_ui import when
 
 base, out = sys.argv[1], pathlib.Path(sys.argv[2]); out.mkdir(parents=True, exist_ok=True)
 errors = []
@@ -22,14 +23,16 @@ DAYS = [  # date, tempDay, rh, morning, peak, runoffMl, ecRO, phRO, height
 def fill_entry(pg, d):
     date, temp, rh, morning, peak, ro, ec, ph, h = d
     pg.click("#tab-plus"); pg.click("#add-entry")
-    pg.wait_for_selector("#e-date")
-    pg.fill("#e-date", date)
+    pg.wait_for_selector("#e-when")
+    when(pg) or pg.fill("#e-date", date)
     pg.wait_for_timeout(150)
     for sel, v in [("#e-tempDay", temp), ("#e-rh", rh), ("#e-weightMorningKg", morning), ("#e-weightPeakKg", peak),
                    ("#e-runoffMl", ro), ("#e-ecRunoff", ec), ("#e-phRunoff", ph), ("#e-heightCm", h)]:
+        # Since lot 10l2 the height is in the folded line « Plante, réservoir, réglages ».
+        if sel == "#e-heightCm" and not pg.locator(sel).count(): pg.click("#e-more"); pg.wait_for_selector(sel)
         pg.fill(sel, str(v).replace(".", ","))
     pg.get_by_role("button", name="Enregistrer", exact=True).click()
-    pg.wait_for_selector("#e-date", state="detached", timeout=5000)
+    pg.wait_for_selector("#e-when", state="detached", timeout=5000)
 
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -58,21 +61,21 @@ with sync_playwright() as p:
 
     # Entries (first one also sets the carried settings)
     pg.get_by_role("tab", name="Aujourd'hui").click(); pg.wait_for_timeout(300)
-    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-date")
-    pg.fill("#e-date", DAYS[0][0]); pg.wait_for_timeout(150)
-    pg.get_by_role("button", name="Réglages repris de la veille").click()
+    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-when")
+    when(pg) or pg.fill("#e-date", DAYS[0][0]); pg.wait_for_timeout(150)
+    pg.click("#e-more")
     for sel, v in [("#e-volumePerPotMl", "2700"), ("#e-ecIn", "2,4"), ("#e-phIn", "5,9"), ("#e-lightPct", "80"), ("#e-ppfd", "850"), ("#e-photoperiodH", "12")]:
         pg.fill(sel, v)
     date, temp, rh, morning, peak, ro, ec, ph, h = DAYS[0]
     for sel, v in [("#e-tempDay", temp), ("#e-rh", rh), ("#e-weightMorningKg", morning), ("#e-weightPeakKg", peak), ("#e-runoffMl", ro), ("#e-ecRunoff", ec), ("#e-phRunoff", ph), ("#e-heightCm", h)]:
         pg.fill(sel, str(v).replace(".", ","))
-    pg.get_by_role("button", name="Enregistrer", exact=True).click(); pg.wait_for_selector("#e-date", state="detached")
+    pg.get_by_role("button", name="Enregistrer", exact=True).click(); pg.wait_for_selector("#e-when", state="detached")
 
     for d in DAYS[1:-1]:
         fill_entry(pg, d)
     # Last one: check prefill and time it
-    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-date")
-    pg.fill("#e-date", DAYS[-1][0]); pg.wait_for_timeout(200)
+    pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_selector("#e-when")
+    when(pg) or pg.fill("#e-date", DAYS[-1][0]); pg.wait_for_timeout(200)
     prefill = pg.evaluate("['e-volumePerPotMl','e-ecIn','e-phIn','e-ppfd'].map(id => document.getElementById(id)?.value ?? '(closed)')")
     placeholder = pg.get_attribute("#e-tempDay", "placeholder")
     pg.get_by_role("button", name="Pointes brûlées").click()

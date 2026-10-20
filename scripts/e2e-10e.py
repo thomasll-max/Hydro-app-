@@ -61,7 +61,7 @@ with sync_playwright() as p:
                 pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_timeout(600)
                 if pg.get_by_role("button", name="Saisie complète").count():
                     pg.get_by_role("button", name="Saisie complète").first.click()
-                pg.wait_for_selector("#e-date"); pg.wait_for_timeout(1500)
+                pg.wait_for_selector("#e-when"); pg.wait_for_timeout(1500)
             else:
                 go(pg, tab); pg.wait_for_timeout(1800)
             r = {}
@@ -92,7 +92,7 @@ with sync_playwright() as p:
     pg.click("#tab-plus"); pg.click("#add-entry"); pg.wait_for_timeout(600)
     if pg.get_by_role("button", name="Saisie complète").count():
         pg.get_by_role("button", name="Saisie complète").first.click()
-    pg.wait_for_selector("#e-date"); pg.wait_for_timeout(800)
+    pg.wait_for_selector("#e-when"); pg.wait_for_timeout(800)
     # The invisible 44 px tap areas (::after) are not content: left out of the overflow measure.
     pg.add_style_tag(content=".hit::after, .hit-sq::after { display: none !important }")
     zoom["entryOverflow"] = pg.evaluate("""() => [...document.querySelectorAll('[data-slot=drawer-content] *')].filter((el) => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX !== 'auto' && getComputedStyle(el).overflowX !== 'scroll' && el.clientWidth > 0 && !el.closest('.truncate, [class*=truncate], [class*=sr-only]')).map((el) => `${el.tagName}.${String(el.className).slice(0, 40)} ${el.scrollWidth}>${el.clientWidth}`).slice(0, 8)""")

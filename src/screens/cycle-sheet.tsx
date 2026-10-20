@@ -11,6 +11,7 @@ import { newId, useGrow } from "@/app/grow-context"
 import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { equipmentPrefill, expectedHarvest } from "@/calc/steps"
+import { spaceIrrigation, withPots } from "@/equipment/calc"
 import { freeColor, newSpace, spaceNutrition } from "@/model/grow-ops"
 import { TEMPLATES, type TemplateId } from "@/model/grow"
 import { PLANT_IDS, type Cycle, type PlantId, type Substrate, type WaterMode } from "@/model/types"
@@ -61,8 +62,8 @@ export function CycleSheet({
   cycleId?: string
   spaceId?: string
 }) {
-  const { t, dm } = useSettings()
-  const { cycle: active, cycles, spaces, allSpaces, space: curSpace, saveCycle, saveSpace, equipment, assignments, grow } = useGrow()
+  const { t, dm, num, settings } = useSettings()
+  const { cycle: active, cycles, spaces, allSpaces, space: curSpace, saveCycle, saveSpace, saveEquipment, assignEquipment, equipment, assignments, grow } = useGrow()
   const cycle = cycleId === "new" ? null : ((cycleId ? cycles.find((c) => c.id === cycleId) : active) ?? null)
   const show = useShow()
   const [c, setC] = useState<Cycle>(defaultCycle)
@@ -176,6 +177,13 @@ export function CycleSheet({
       if (!h.reviewNote?.trim()) h.reviewNote = undefined
       next.harvest = Object.values(h).some((v) => v != null && v !== "") ? h : undefined
       await saveCycle(next)
+      // Pots typed here become the space's pots when it has none (lot 15c): watering and Premiers pas read them there.
+      if (sid && next.potVolumeL && !spaceIrrigation(sid, todayIso(), equipment, assignments).containerId) {
+        const v = next.potVolumeL
+        const pots = withPots(undefined, { volumeL: v, count: next.potCount, substrate: next.substrate, id: newId("eq-"), now: new Date().toISOString(), name: t("irr.potsName", { v: num(v, v % 1 ? 1 : 0) }), decimal: settings.lang === "fr" ? "," : "." })
+        await saveEquipment(pots)
+        await assignEquipment(pots.id, sid, todayIso(), next.potCount)
+      }
     })
   }
 

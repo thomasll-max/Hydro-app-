@@ -1,5 +1,11 @@
 # Changelog
 
+## Lot 15c — Premiers pas, après l'assistant (20/10/2026)
+- Le bandeau Premiers pas garde la casse du texte : « ta lampe : watts réels (et PPF ou efficacité si tu les as) », plus « ppf ».
+- Les pots tapés seulement à l'étape « Premier cycle » de l'assistant deviennent les pots de l'espace : « Tes pots » se coche (lampe, pots et cycle saisis dans l'assistant : 3/7). Même chose pour des pots tapés dans la feuille d'un cycle quand l'espace n'en a pas encore.
+- Après « Terminer », l'assistant ouvre **Aujourd'hui** (le bandeau Premiers pas y est), plus Outils → Premiers pas.
+- 502 tests.
+
 ## Lot 15b — Les valeurs absurdes ne passent plus (20/10/2026)
 - **Toute saisie** (saisie du jour, saisie rapide, dictée) a maintenant les plages plausibles de la dictée : pH 3–9, EC 0–6 (EC runoff 0–15), T° 5–40, HR 10–100, pot 0–50 kg, hauteur 0–400 cm… Hors plage : « Hors plage : entre 3 et 9. » sous le champ, la page y va, et l'enregistrement attend la correction (pas de case « forcer »).
 - **Pot pic plus léger que le matin** : « Le pic doit être plus lourd que le matin : inversés ? » sous les deux champs, et le dryback n'est pas calculé.

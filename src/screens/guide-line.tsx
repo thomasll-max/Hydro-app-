@@ -5,7 +5,7 @@ import { X } from "lucide-react"
 import { Emoji } from "@/components/hydro/emoji"
 import { useSettings } from "@/app/settings-context"
 import { setStartHidden, startHidden, startProgress } from "@/calc/getting-started"
-import { lowerWord } from "@/i18n/core"
+import { lowerFirst } from "@/i18n/core"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
 import { iconButton, secondary } from "@/components/hydro/styles"
@@ -26,7 +26,7 @@ export function GuideLine() {
       {/* Narrow screens (zoom 200 %): the button and × go under the text. */}
       <div className="min-w-0 flex-1 basis-[7.5rem]">
         <b className="block text-[0.875rem] leading-tight font-semibold">{title}</b>
-        <span className="line-clamp-2 block text-[0.78125rem] leading-snug text-fg-2">{t("calm.startNext", { what: lowerWord(settings.lang, t(`start.i.${next.id}` as MessageKey)) })}</span>
+        <span className="line-clamp-2 block text-[0.78125rem] leading-snug text-fg-2">{t("calm.startNext", { what: lowerFirst(settings.lang, t(`start.i.${next.id}` as MessageKey)) })}</span>
         <span role="progressbar" aria-label={title} aria-valuemin={0} aria-valuemax={total} aria-valuenow={done} className="mt-[7px] block h-1 overflow-hidden rounded-[2px] bg-line">
           <span className="block h-full rounded-[2px] bg-leaf" style={{ width: `${Math.round((done / total) * 100)}%` }} />
         </span>

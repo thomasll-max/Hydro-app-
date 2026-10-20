@@ -194,7 +194,12 @@ export function draftDocs(d: Draft, p: { now: string; today: IsoDate; id: (prefi
       place(item("lamp", name, { lamp: { ...(g.lampW ? { watts: g.lampW } : {}) } }))
       lampsIn.set(ds.key, [name])
     }
-    if (g.potL) place(withPots(undefined, { volumeL: g.potL, count: g.potN ? Math.round(g.potN) : undefined, id: p.id("eq-"), now: p.now, name: p.names.pots(g.potL) }), g.potN ? Math.round(g.potN) : undefined)
+    // The pots typed for the first cycle are this space's pots when the equipment step left them empty (lot 15c: the
+    // watering and Premiers pas read them from the space's equipment).
+    const own = d.cycle?.spaceKey === ds.key && !g.potL && d.cycle.potL && d.cycle.potL > 0 ? d.cycle : null
+    const potL = own ? own.potL : g.potL
+    const potN = own ? own.potN : g.potN
+    if (potL) place(withPots(undefined, { volumeL: potL, count: potN ? Math.round(potN) : undefined, id: p.id("eq-"), now: p.now, name: p.names.pots(potL) }), potN ? Math.round(potN) : undefined)
     if (g.tankL) place(item("reservoir", p.names.tank(g.tankL), { reservoir: { usableL: g.tankL } }))
     if (g.extName?.trim() || g.extM3h) place(item("extractor", g.extName?.trim() || p.names.extractor, { extractor: { ...(g.extM3h ? { m3h: g.extM3h } : {}) } }))
   })

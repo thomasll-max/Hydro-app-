@@ -8,6 +8,11 @@ export const dictionaries: Record<Lang, Messages> = { fr, en, de }
 export const locales: Record<Lang, string> = { fr: "fr-FR", en: "en-US", de: "de-DE" }
 /** A word put in lower case mid-sentence; German nouns keep their capital (lot 10i). */
 export const lowerWord = (lang: Lang, s: string) => (lang === "de" ? s : s.toLowerCase())
+/**
+ * A phrase put mid-sentence (lot 15c): only its first letter goes to lower case, an acronym (« PPF », « EC ») and the rest
+ * keep theirs; German keeps its capitals.
+ */
+export const lowerFirst = (lang: Lang, s: string) => (lang === "de" || /^\p{Lu}{2}/u.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1))
 
 /** French and German write « 2,4 » (decimal comma), English « 2.4 » (lot 10i). */
 export const decimalComma = (lang: Lang) => lang !== "en"

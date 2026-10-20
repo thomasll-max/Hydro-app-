@@ -36,8 +36,11 @@ with sync_playwright() as p:
     pg.fill("#onb-lampw-0", "240"); pg.click("#onb-next")  # watts only: the lamp line stays open
     for _ in range(3): pg.click("#onb-next")
     pg.click("#onb-finish")
-    pg.wait_for_selector("#start-list", timeout=10000)
-    checks["landsOnGuide"] = pg.evaluate("location.hash")
+    # Lot 15c: « Terminer » opens Aujourd'hui, with the Premiers pas banner; the guide stays one tap away.
+    pg.wait_for_selector("#start-card", timeout=10000)
+    checks["landsOnToday"] = pg.evaluate("location.hash") in ("", "#") and pg.locator("#hello").count() == 1
+    if not checks["landsOnToday"]: errors.append("assistant did not open Aujourd'hui")
+    pg.evaluate("location.hash = '#tools/start'"); pg.wait_for_selector("#start-list", timeout=10000)
     checks["count"] = pg.inner_text("#start-count")
     checks["items"] = items(pg)
     checks["overflow"] = pg.evaluate("document.documentElement.scrollWidth > innerWidth")

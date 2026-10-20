@@ -148,8 +148,9 @@ export function Onboarding() {
       })
       saveDraft(null)
       toast.success(t("onb.ready", { name: draft.name.trim() }))
-      // Next: the getting-started guide (what to enter, then how the app works).
-      navigate({ tab: "tools", tool: "start" })
+      // Next: Aujourd'hui, where the Premiers pas banner shows the next step (lot 15c; the guide itself left the tools list
+      // in lot 10k2a and stays one tap away in the gear menu).
+      navigate({ tab: "today" })
     } catch (e) {
       toast.error(t("common.saveError", { reason: (e as Error).message }))
       setBusy(false)

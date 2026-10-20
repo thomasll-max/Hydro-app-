@@ -1,7 +1,9 @@
 """Lot 15: a new user's whole path on the local build (the friends' version), empty profile, FR then EN, 390 px, no
 console error. To run before each Netlify release.
-1. full assistant, with a cycle and without pots → Aujourd'hui shows the space and the cycle; on the way, every error is
-   written under its field, which is scrolled to and focused (empty name, empty date, pots at 0, « 15,5 », a future date);
+1. full assistant, with a cycle and without pots → « Terminer » opens Aujourd'hui, which shows the space and the cycle
+   and the Premiers pas banner in its own casing (« PPF »); on the way, every error is written under its field, which is
+   scrolled to and focused (empty name, empty date, pots at 0, « 15,5 », a future date); 1b: a lamp at the equipment step
+   and pots typed only at the cycle step → lamp, pots and cycle ticked in Premiers pas (3/7);
 2. assistant skipped → « Créer un espace » → the cycle sheet opens in it → the cycle appears; the same errors in the
    sheet (empty name, empty date, a typo in a folded field); a cycle saved without a space (before 15a) gets one from
    Aujourd'hui; with no space at all, the cycle sheet creates it;
@@ -51,13 +53,13 @@ W = {
            "pots": "Pots : des nombres plus grands que zéro, ou laisse vide.", "bad": "Nombre invalide", "lost": "Cycle sans espace : choisir son espace",
            "newSpace": "Créer un espace", "first": "Floraison", "range": "Hors plage : entre {} et {}.", "swapped": "Le pic doit être plus lourd que le matin : inversés ?",
            "doubtful": "Valeur douteuse, hors des calculs", "dec": ",", "addSpace": "Ajouter un espace", "custom": "Propres à cet espace", "reminder": "Rappel",
-           "replace": "Remplacer", "import": "Importer", "imported": "Import terminé"},
+           "replace": "Remplacer", "import": "Importer", "imported": "Import terminé", "start": "Premiers pas · 3/7", "nextFlow": "le débit de ta pompe"},
     "en": {"cycleNow": "Create the first cycle", "save": "Save", "setup": "Watering and gear", "newCycle": "New cycle",
            "needStart": "Enter the start date of the cycle.", "cycleName": "Give the cycle a name.", "needName": "Give the space a name.",
            "pots": "Pots: numbers above zero, or leave empty.", "bad": "Invalid number", "lost": "Cycle without a space: pick its space",
            "newSpace": "Create a space", "first": "Flower", "range": "Out of range: between {} and {}.", "swapped": "The peak must be heavier than the morning: swapped?",
            "doubtful": "Doubtful value, left out of the calculations", "dec": ".", "addSpace": "Add a space", "custom": "Specific to this space", "reminder": "Reminder",
-           "replace": "Replace", "import": "Import", "imported": "Import done"},
+           "replace": "Replace", "import": "Import", "imported": "Import done", "start": "Getting started · 3/7", "nextFlow": "your pump's flow"},
 }
 TODAY = datetime.date.today().isoformat()
 YESTERDAY = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
@@ -154,6 +156,12 @@ with sync_playwright() as p:
         pg.click("#onb-next"); pg.wait_for_timeout(300)
         pg.click("#onb-finish")
         pg.wait_for_selector("#onboarding", state="detached", timeout=10000); pg.wait_for_timeout(1200)
+        # « Terminer » opens Aujourd'hui (lot 15c), with the banner in its own casing.
+        c["afterFinish"] = pg.evaluate("location.hash")
+        if c["afterFinish"] not in ("", "#") or not pg.locator("#hello").count(): errors.append(f"{tag} after Terminer {c['afterFinish']!r}")
+        banner = pg.locator("#start-card").inner_text() if pg.locator("#start-card").count() else ""
+        c["banner"] = banner.replace("\n", " | ")
+        if "PPF" not in banner: errors.append(f"{tag} banner casing {banner!r}")
         pg.goto(url); pg.wait_for_timeout(1800)
         spaces = pg.evaluate(DOCS, "spaces")
         cycles = pg.evaluate(DOCS, "cycles")
@@ -337,6 +345,24 @@ with sync_playwright() as p:
         kept = pg.evaluate(DOC, f"entries/{YESTERDAY}_{sid}") or {}
         if kept.get("phRunoff") != 13.1: errors.append(f"{tag} old doubtful entry lost {kept}")
         shot(pg, f"7-apres-rechargement-{lang}.png")
+        ctx.close()
+
+        # 1b. A lamp at the equipment step, pots typed only at the cycle step: Premiers pas ticks lamp, pots and cycle.
+        tag = f"{lang}/1b"
+        ctx, pg = fresh(b, lang, tag)
+        pg.click("#onb-start"); pg.fill("#onb-name", "Grow 1b")
+        pg.click("#onb-next"); pg.wait_for_timeout(250)  # → spaces
+        pg.click("#onb-next"); pg.wait_for_timeout(250)  # → equipment
+        pg.fill("#onb-lampw-0", "240")
+        for _ in range(3): pg.click("#onb-next"); pg.wait_for_timeout(250)  # equipment, modules, nutrition → cycle
+        pg.get_by_role("radio", name=w["cycleNow"], exact=True).click(); pg.wait_for_timeout(200)
+        pg.fill("#onb-c-potl", f"15{w['dec']}5"); pg.fill("#onb-c-potn", "4")
+        pg.click("#onb-next"); pg.wait_for_timeout(300); pg.click("#onb-finish")
+        pg.wait_for_selector("#onboarding", state="detached", timeout=10000); pg.wait_for_timeout(1500)
+        banner = pg.locator("#start-card").inner_text() if pg.locator("#start-card").count() else ""
+        c["banner1b"] = banner.replace("\n", " | ")
+        if w["start"] not in banner or w["nextFlow"] not in banner: errors.append(f"{tag} Premiers pas {banner!r}")
+        shot(pg, f"1b-premiers-pas-{lang}.png")
         ctx.close()
 
         # 2. Assistant skipped: a space first, then its cycle.

@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react"
 import { ImagePlus, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { AreaField } from "@/components/hydro/form"
 import { Label, Reveal, SourceNote, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
@@ -25,7 +25,6 @@ export function AskTool() {
   const images = useSampleImages()
   // The photo to send with the next question: its JPEG, a preview, and what is known about it.
   const [photo, setPhoto] = useState<{ blob: Blob; url: string; meta: AskPhoto } | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
   useEffect(() => {
     // A photo handed by the gallery (« Demander à Claude » on a photo).
     const p = takePendingPhoto()
@@ -119,25 +118,26 @@ export function AskTool() {
               </button>
             </div>
           )}
+          {/* A label around the file field: touching it opens the phone's picker itself (a click sent by code is not
+              always let through in the Claude app), and « image/* » like the day's entry (a list of types can keep
+              the picker shut). The photo is turned into a JPEG before it goes. */}
           {images && !photo && (
-            <>
-              <Button variant="outline" className="h-11 self-start" onClick={() => fileRef.current?.click()} id="ask-photo-add">
-                <ImagePlus className="size-4" /> {t("ask.photoAdd")}
-              </Button>
+            <label className={cn(buttonVariants({ variant: "outline" }), "h-11 cursor-pointer self-start has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-water")} id="ask-photo-add">
+              <ImagePlus className="size-4" /> {t("ask.photoAdd")}
               <input
-                ref={fileRef}
                 type="file"
-                accept={images.mediaTypes.join(",") || "image/*"}
-                hidden
+                accept="image/*"
+                className="sr-only"
                 onChange={async (e) => {
                   const f = e.target.files?.[0]
                   e.target.value = ""
                   if (!f) return
                   const blob = await compressPhoto(f)
+                  if (!blob.type.startsWith("image/")) return setErr(t("ask.error"))
                   setPhoto({ blob, url: URL.createObjectURL(blob), meta: { date: todayIso(), space: space.name } })
                 }}
               />
-            </>
+            </label>
           )}
           {err && <Notice>{err}</Notice>}
           <div className="flex gap-2">

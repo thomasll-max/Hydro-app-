@@ -183,7 +183,8 @@ with sync_playwright() as p:
             pg.goto(f"file://{preview}#journal"); pg.wait_for_timeout(800)
             pg.click("#tab-plus"); pg.wait_for_timeout(400); pg.click("#add-entry"); pg.wait_for_selector("#e-when"); pg.wait_for_timeout(500)
             if pg.locator("#e-note-open").count(): pg.click("#e-note-open"); pg.wait_for_timeout(200)
-            pg.locator("[data-slot=drawer-content] input[type=file]").set_input_files(files=[{"name": "p.png", "mimeType": "image/png", "buffer": png()}]); pg.wait_for_timeout(1500)
+            with pg.expect_file_chooser(timeout=5000) as fc: pg.click("#e-photo-add")
+            fc.value.set_files(files=[{"name": "p.png", "mimeType": "image/png", "buffer": png()}]); pg.wait_for_timeout(1500)
             pg.click("#e-save"); pg.wait_for_timeout(1000)
             pg.goto(f"file://{preview}#journal/photos"); pg.wait_for_selector("#gallery-page"); pg.wait_for_timeout(800)
             pg.locator("[data-photo]").first.click(); pg.wait_for_selector("#photo-viewer"); pg.wait_for_timeout(500)
@@ -192,7 +193,9 @@ with sync_playwright() as p:
             ctx.close()
             continue
         # The photo added in the tool, sent as an image with the question and its rules.
-        pg.locator("#ask-photo-add + input[type=file]").set_input_files(files=[{"name": "feuille.png", "mimeType": "image/png", "buffer": png()}]); pg.wait_for_timeout(800)
+        # A real tap on « Ajouter une photo » opens the picker (not only a field filled by the test).
+        with pg.expect_file_chooser(timeout=5000) as fc: pg.click("#ask-photo-add")
+        fc.value.set_files(files=[{"name": "feuille.png", "mimeType": "image/png", "buffer": png()}]); pg.wait_for_timeout(800)
         prev = pg.locator("#ask-photo").inner_text()
         pg.fill("#ask-q", "Pourquoi ces feuilles jaunissent ?")
         pg.screenshot(path=str(out / "claude-photo-fr.png"))
@@ -207,7 +210,8 @@ with sync_playwright() as p:
         pg.goto(f"file://{preview}#journal"); pg.wait_for_timeout(800)
         pg.click("#tab-plus"); pg.wait_for_timeout(400); pg.click("#add-entry"); pg.wait_for_selector("#e-when"); pg.wait_for_timeout(500)
         if pg.locator("#e-note-open").count(): pg.click("#e-note-open"); pg.wait_for_timeout(200)
-        pg.locator("[data-slot=drawer-content] input[type=file]").set_input_files(files=[{"name": "p.png", "mimeType": "image/png", "buffer": png()}]); pg.wait_for_timeout(1500)
+        with pg.expect_file_chooser(timeout=5000) as fc: pg.click("#e-photo-add")
+        fc.value.set_files(files=[{"name": "p.png", "mimeType": "image/png", "buffer": png()}]); pg.wait_for_timeout(1500)
         pg.click("#e-save"); pg.wait_for_timeout(1000)
         pg.goto(f"file://{preview}#journal/photos"); pg.wait_for_selector("#gallery-page"); pg.wait_for_timeout(800)
         pg.locator("[data-photo]").first.click(); pg.wait_for_selector("#viewer-ask"); pg.wait_for_timeout(300)

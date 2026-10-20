@@ -91,6 +91,9 @@ describe("lot 12c — photo pour Claude", () => {
     const ask = readFileSync("src/screens/tools/ask.tsx", "utf8")
     expect(ask).toMatch(/const images = useSampleImages\(\)/)
     expect(ask).toMatch(/\{images && !photo && \(/)
+    // The picker opens from a label around the field, for any image (the Claude app keeps it shut otherwise).
+    expect(ask).toMatch(/<label[^>]*id="ask-photo-add"/)
+    expect(ask).toMatch(/accept="image\/\*"/)
     expect(ask).toMatch(/images: \[sent\.blob\]/)
     expect(readFileSync("src/screens/gallery.tsx", "utf8")).toMatch(/\{images && !broken && \(/)
     expect(readFileSync("src/lib/sample.ts", "utf8")).toMatch(/l\?\.images \?/)

@@ -103,7 +103,6 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     document.addEventListener("pointerdown", away)
     return () => document.removeEventListener("pointerdown", away)
   }, [menuOpen])
-  const fileRef = useRef<HTMLInputElement>(null)
   // Photos sent during this visit: removed again if the sheet closes without saving (lot 10a, no orphan files).
   const fresh = useRef<Set<string>>(new Set())
   // What was typed or picked since the sheet opened: kept when the date, the plant or the space changes (lot 10d).
@@ -635,18 +634,19 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
                   }}
                 />
               ))}
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="flex size-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line-strong text-[0.75rem] font-semibold text-fg-2"
+              {/* A label of the file field: touching it opens the phone's picker itself (lot 12c: a click sent by code is
+                  not always let through in the Claude app). */}
+              <label
+                className="flex size-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line-strong text-[0.75rem] font-semibold text-fg-2 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-water"
+                id="e-photo-add"
               >
                 {uploading ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
                 {uploading ? t("entry.uploading") : t("entry.addPhoto")}
-              </button>
+                <input id="e-photo-input" type="file" accept="image/*" multiple className="sr-only" onChange={(e) => onFiles(e.target.files).finally(() => (e.target.value = ""))} />
+              </label>
             </div>
           </div>
         )}
-        <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => onFiles(e.target.files).finally(() => (e.target.value = ""))} />
         {/* The tags of a photo, from its thumbnail (lot 12b): kept with the entry, saved with it. */}
         <Sheet open={!!tagging} onOpenChange={(o) => !o && setTagging(null)} title={t("ph.tagsOf")} dirty={false} footer={<Button className="h-12 w-full" onClick={() => setTagging(null)}>{t("common.close")}</Button>}>
           {tagging && (

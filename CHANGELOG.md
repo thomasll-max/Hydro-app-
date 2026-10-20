@@ -11,7 +11,7 @@
 ## Lot 12c — Fiche variété et photo pour Claude (20/10/2026)
 - **Outils → Variétés** : chaque variété de ta grow, avec **tes notes** (phénotypes, comportement, odeur, stretch ; une info du breeder seulement comme note, avec sa source), **ses cycles** (poids sec par plante, floraison réelle, lien vers le bilan) et **la frise de ses photos**. Rien qui vienne d'une base publique : seulement ce que tu as vécu.
 - Les noms de variété mènent à leur fiche (bilan, cycle, plante). Une variété écrite de deux façons (« Blue Zushi » / « blue zushi ») est regroupée, et l'app propose de **fusionner** les orthographes ; rien n'est renommé sans toi.
-- **Une photo pour Claude** (version Claude) : prête, mais elle demande une autorisation de plus pour l'artefact (envoyer des images à Claude). En attendant ton accord, le bouton n'apparaît pas.
+- **Une photo pour Claude** (version Claude) : « Ajouter une photo » dans Demander à Claude, ou « Demander à Claude » sur une photo de la galerie. Claude décrit ce qu'il voit, le relie à tes mesures et propose des pistes, sans jamais présenter un diagnostic comme certain ; il dit quand la photo ne suffit pas. L'autorisation d'envoyer des images a été ajoutée avec ton accord : claude.ai te la redemande à la prochaine question.
 - 449 tests.
 
 ## Lot 12b — Galerie photo et frise (20/10/2026)

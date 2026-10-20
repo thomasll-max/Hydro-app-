@@ -1,5 +1,16 @@
 # Changelog
 
+## Lot 10l1 — La page d'un espace, version calme (20/10/2026)
+Planche « Les menus » validée par Thomas : chaque information de l'espace a sa section, une seule fois, dans un ordre fixe.
+- **En-tête** : le carré de la couleur de l'espace avec le dessin du stade, le nom en grand, « Cycle 2 · Melonade Runtz » dessous, et le stade dans une pilule verte à droite (« Végé S6 · J41 »).
+- **Un seul bloc encadré** : le verdict de la dernière saisie (« Tout est dans la cible · Rien à corriger · saisie du 07/02 », ou la correction déjà calculée par l'app, en orange ou en rouge), et dedans le **bouton d'étape** à contour : « Passer en 12/12 » à gauche, « dans 2 j › » à droite. Le texte « J1 floraison → » disparaît. Le bouton n'apparaît que si l'étape est proche (dans la semaine, ou sans date prévue pour la végé et le 12/12) ; la récolte se propose dans sa dernière semaine, et se note toujours depuis le cycle.
+- **Relevés** : « 07/02 · Graphiques → » à droite du titre, **quatre** lectures en grand avec leur barre de cible (dryback ou dryback capteur, EC runoff, runoff, pH runoff), le reste sur une ligne : « VPD 0,96 · EC entrée 3,0 · DLI 31 · 25° / 59 % ». Sans saisie, les quatre lectures montrent « — » avec la cible du jour.
+- **Arrosage du jour** en deux lignes : « ✓ P1 · 5/5 doses faites » et « 11:20 prochaine dose · P2 1/4 · 450 mL ». Toute la liste est dans l'outil Arrosage (« Programme → »).
+- **Réservoir** : une barre, « 33 L sur 120 L », « ≈ 2 j · 12,5 L/jour · estimé » (orange sous le seuil d'alerte).
+- **À faire ici** : trois tâches au plus, sans répéter l'étape du bloc ni le nom de l'espace, puis « Tout le calendrier → ».
+- Les sources sur une ligne en bas. Un séchoir montre T°, HR, VPD et le jour de séchage (« J7/10 ») ; un espace de propagation, sa levée et son dôme.
+- 384 tests.
+
 ## Lot 10k4 — Graphiques calmes (19/10/2026)
 - Les 17 pilules disparaissent : **des vues toutes prêtes** en onglets sous le titre : **Arrosage** (dryback, dryback capteur s'il y en a, runoff, EC runoff), **Solution** (EC et pH entrée, pH runoff, Balance), **Climat** (T°, HR, VPD), **Lumière** (PPFD, DLI), **Plante** (hauteur, levée). Une vue sans aucune donnée pour l'espace n'apparaît pas.
 - **La période sur une ligne** : 7 j · 30 j · Cycle · Tout, et à droite **« Comparer… »** : une feuille pour mettre jusqu'à 4 espaces sur les mêmes graphiques. L'espace suit l'onglet du haut.

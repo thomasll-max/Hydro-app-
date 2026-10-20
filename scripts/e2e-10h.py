@@ -140,8 +140,10 @@ with sync_playwright() as p:
         if not ec or ec["status"] not in ("warn", "bad") or ec["tick"] != rgb(PALETTE[theme]["--" + ec["status"]]): errors.append(f"{theme} EC reading {ec}")
         c["frames"] = pg.evaluate("""() => [...document.querySelectorAll('main [data-slot=card]')].filter((el) => getComputedStyle(el).borderLeftWidth !== '0px' && el.id !== 'start-card').length""")
         if c["frames"]: errors.append(f"{theme} framed sections {c['frames']}")
-        c["step"] = pg.evaluate("""() => { const b = document.querySelector('button[id^=step-]'); return b ? [b.textContent, getComputedStyle(b).borderTopWidth, getComputedStyle(b.lastElementChild).fontFamily.split(',')[0]] : null }""")
-        if not c["step"] or "→" not in c["step"][0] or c["step"][1] != "1px" or "Geologica" not in c["step"][2]: errors.append(f"{theme} step {c['step']}")
+        # Since lot 10l1: the state block is the page's only frame; the step (when near) is an outlined button in it, without
+        # the consequence (« J1 floraison → »).
+        c["step"] = pg.evaluate("""() => { const b = document.querySelector('#space-status button[id^=step-]'); return { block: getComputedStyle(document.querySelector('#space-status')).borderTopWidth, step: b ? [b.textContent, getComputedStyle(b).borderTopWidth] : null } }""")
+        if c["step"]["block"] != "1px" or (c["step"]["step"] and ("→" in c["step"]["step"][0] or c["step"]["step"][1] != "1px")): errors.append(f"{theme} step {c['step']}")
         pg.screenshot(path=str(out / f"space-{theme}.png"), full_page=True)
         pg.get_by_role("tab", name="Journal").click(); pg.wait_for_timeout(1500)
         # Since lot 10k3: one card per week, the running one open, the strip of 7 days, the ranges in the number font.

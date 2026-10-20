@@ -2,7 +2,7 @@
 - start screen (#splash, dark ground, drop + « hydro. ») shown while the data load, gone once they are read;
 - manifest background_color / theme_color #0d1310;
 - loading drop: with prefers-reduced-motion the text « Chargement… » is visible;
-- reservoir gauge (drop filled to the share of litres left, the number next to it) on a space with a tank;
+- reservoir on a space with a tank: a bar filled to the share of litres left (the drop gauge until lot 10l1), « 33 L sur 120 L »;
 - charts: a mark on the days of a tank, with its legend (a dotted vertical line since lot 10k4).
 Usage: npm run build:local && npx -y tsx scripts/sim/build.ts <sim dir> &&
        PYTHONPATH=scripts python3 scripts/e2e-10g.py dist-local <sim dir> <out dir>"""
@@ -55,18 +55,18 @@ with sync_playwright() as p:
     html = pg.evaluate("""(() => { const d = document.createElement('div'); d.innerHTML = '<span class="sr-only motion-reduce:not-sr-only" id="probe">x</span>'; document.body.append(d); const w = document.querySelector('#probe').getBoundingClientRect().width; d.remove(); return w })()""")
     checks["reducedMotionTextWidth"] = html
     if not html or html < 2: errors.append("loading text hidden under reduced motion")
-    # Reservoir gauge in a space with a tank.
+    # Reservoir in a space with a tank: since lot 10l1 a bar filled in « eau » (the drop gauge before), « 33 L sur 120 L ».
     found = None
     for name in ["Floraison", "Colonne"]:
         pg.goto(url); pg.wait_for_timeout(1500)
         btn = pg.locator("header button", has_text=name)
         if not btn.count(): continue
         btn.first.click(); pg.wait_for_timeout(1200)
-        if pg.locator("#res-gauge").count():
+        if pg.locator("#res-bar").count():
             found = name; break
-    checks["gauge"] = found and pg.evaluate("(() => { const g = document.querySelector('#res-gauge'); return { text: g.innerText, svg: !!g.querySelector('svg'), mono: getComputedStyle(g.querySelector('.tabular')).fontFamily } })()")
-    if not found or "%" not in checks["gauge"]["text"] or "Geologica" not in checks["gauge"]["mono"]: errors.append(f"gauge {checks['gauge']}")
-    else: pg.evaluate("document.querySelector('#res-gauge').scrollIntoView({block: 'center'})"); pg.wait_for_timeout(300); pg.screenshot(path=str(out / "gauge.png"))
+    checks["gauge"] = found and pg.evaluate("(() => { const g = document.querySelector('#reservoir'); const fill = g.querySelector('#res-bar > span'); return { text: g.innerText, fill: fill.style.width, num: getComputedStyle(g.querySelector('.font-num')).fontFamily } })()")
+    if not found or " L" not in checks["gauge"]["text"] or not checks["gauge"]["fill"].endswith("%") or "Geologica" not in checks["gauge"]["num"]: errors.append(f"gauge {checks['gauge']}")
+    else: pg.evaluate("document.querySelector('#reservoir').scrollIntoView({block: 'center'})"); pg.wait_for_timeout(300); pg.screenshot(path=str(out / "gauge.png"))
     # Charts: a dotted vertical line on tank days, and the legend says so (lot 10k4; a water drop before).
     pg.goto(url + "#charts"); pg.reload(); pg.wait_for_timeout(2500)
     checks["tankMarks"] = pg.locator("[data-tank]").count()

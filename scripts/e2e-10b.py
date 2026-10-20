@@ -3,7 +3,7 @@
 - "Passer en végé" / "Passer en 12/12" in one tap on Today, with "Annuler"; the expected harvest is shown;
 - "Récolter": the cycle is harvested, the space offers to log the harvest.
 Usage: npm run preview:build && PYTHONPATH=scripts python3 scripts/e2e-10b.py dist-preview/index.html <out dir>"""
-import sys, json, pathlib
+import sys, json, pathlib, datetime
 from playwright.sync_api import sync_playwright
 from fonts import serve_fonts
 
@@ -45,10 +45,18 @@ with sync_playwright() as p:
     checks["undoBackToVeg"] = pg.locator("#step-veg").count() == 1
     pg.click("#step-veg"); pg.wait_for_timeout(800)
     pg.click("#step-flip"); pg.wait_for_timeout(1000)
-    checks["expected"] = pg.inner_text("#step-expected") if pg.locator("#step-expected").count() else None
-    checks["harvestDiscreet"] = "outline" in (pg.get_attribute("#step-harvest", "data-variant") or "") or pg.locator("#step-harvest").count() == 1
+    # Since lot 10l1 the harvest is offered on the page only in its last week: just after the 12/12 it is not; the
+    # harvest is then noted in the cycle form.
+    checks["harvestNotYet"] = pg.locator("#step-harvest").count() == 0
+    if not checks["harvestNotYet"]: errors.append("harvest offered 9 weeks ahead")
     pg.screenshot(path=str(out / "04-today-flowering.png"), full_page=True)
-    pg.click("#step-harvest"); pg.wait_for_timeout(1200)
+    pg.goto(f"file://{page_file}#settings"); pg.wait_for_timeout(2000)
+    # The cycle's own line (the space's line also names it, « … · Blue Zushi 2026 en cours »).
+    pg.locator("span.font-semibold", has_text="Blue Zushi 2026").first.click(); pg.wait_for_selector("#cycle-steps"); pg.wait_for_timeout(300)
+    checks["expected"] = pg.locator("#cycle-steps").inner_text().split("\n")[-1]
+    pg.fill("#c-harv", datetime.date.today().isoformat()); pg.wait_for_timeout(200)
+    pg.get_by_role("button", name="Enregistrer", exact=True).click(); pg.wait_for_timeout(1200)
+    pg.goto(f"file://{page_file}#today"); pg.wait_for_timeout(2000)
     checks["lastHarvest"] = pg.locator("#last-harvest").count() == 1
     pg.screenshot(path=str(out / "05-after-harvest.png"), full_page=True)
 

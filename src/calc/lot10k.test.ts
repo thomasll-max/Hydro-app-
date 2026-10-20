@@ -160,7 +160,8 @@ describe("lot 10k1b — Aujourd'hui calme : l'écran", () => {
     expect(fs.existsSync(path.join(root, "src/screens/week-strip.tsx"))).toBe(false)
     const today = read("src/screens/today.tsx")
     expect(today).not.toMatch(/WeekStrip/)
-    expect(today).toMatch(/<DigestKeeper \/>\n\s*<GuideLine \/>\n\s*\{selection\.kind === "space" \? <SpaceToday space=\{selection\.space\} Culture=\{CultureToday\} \/> : <CalmToday \/>\}/)
+    // Since lot 10l1 a space's tab is its page (space-page.tsx).
+    expect(today).toMatch(/<DigestKeeper \/>\n\s*<GuideLine \/>\n\s*\{selection\.kind === "space" \? <SpacePage key=\{selection\.space\.id\} space=\{selection\.space\} \/> : <CalmToday \/>\}/)
     const guide = read("src/screens/guide-line.tsx")
     expect(guide).toMatch(/role="progressbar"/)
     expect(guide).toMatch(/bg-leaf/)

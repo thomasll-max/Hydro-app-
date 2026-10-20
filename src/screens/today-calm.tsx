@@ -219,7 +219,8 @@ function NowBlock({ now, next, rows }: { now: Now; next?: CalItem; rows: Row[] }
 }
 
 /** À faire: three things at most, then « + N autres · Tout le calendrier → ». No frame, no line between rows. */
-function Todo({ items, showSpace, spaceId }: { items: CalItem[]; showSpace: boolean; spaceId?: string }) {
+/** À faire: 3 lines at most then « Tout le calendrier → ». `here`: the page of a space (lot 10l1, « À faire ici », no backup line). */
+export function Todo({ items, showSpace, spaceId, here }: { items: CalItem[]; showSpace: boolean; spaceId?: string; here?: boolean }) {
   const { t, settings } = useSettings()
   const { spaces } = useGrow()
   const ed = useEditors()
@@ -229,15 +230,15 @@ function Todo({ items, showSpace, spaceId }: { items: CalItem[]; showSpace: bool
   const start = useStartChecklist()
   // The backup is the guide's step while the banner shows it; else a normal line here once due (local version).
   const guideNext = startHidden() ? undefined : startProgress(start).next
-  const backupRow = backup.due && guideNext?.id !== "backup"
+  const backupRow = !here && backup.due && guideNext?.id !== "backup"
   const max = backupRow ? 2 : 3
   const list = items.slice(0, max)
   const more = items.length - list.length
   return (
-    <section id="upcoming" aria-labelledby="upcoming-title" className="flex flex-col">
+    <section id={here ? "space-todo" : "upcoming"} aria-labelledby={here ? "space-todo-title" : "upcoming-title"} className="flex flex-col">
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
-        <h2 id="upcoming-title" className="display text-[1.1875rem] leading-tight">
-          {t("today.upcoming")}
+        <h2 id={here ? "space-todo-title" : "upcoming-title"} className="display text-[1.1875rem] leading-tight">
+          {t(here ? "sp.todo" : "today.upcoming")}
         </h2>
         <button type="button" onClick={() => ed.openReminder({ spaceId })} className="-my-3 min-h-11 shrink-0 text-[0.8125rem] font-semibold text-fg-2 hover:text-fg">
           + {t("cal.addShort")}
@@ -260,11 +261,14 @@ function Todo({ items, showSpace, spaceId }: { items: CalItem[]; showSpace: bool
           )}
           {list.map((i) => {
             const space = showSpace ? spaces.find((s) => s.id === i.spaceId) : undefined
+            // On the page of a space its name is the page's title: never repeated in a line.
+            const own = here ? spaces.find((s) => s.id === spaceId) : undefined
             const late = i.overdue || (i.type === "reminder" && i.late)
             const open = i.type === "reminder" ? () => ed.openReminder({ reminder: i.occ.reminder }) : undefined
             // « Refaire le bidon (≈ 105 L) · Floraison »: the space is said once, in the line under it.
             const title = itemTitle(settings.lang, i)
-            const shortTitle = space && title.endsWith(` · ${space.name}`) ? title.slice(0, -` · ${space.name}`.length) : title
+            const named = space ?? own
+            const shortTitle = named && title.endsWith(` · ${named.name}`) ? title.slice(0, -` · ${named.name}`.length) : title
             return (
               <li key={i.id} className="flex min-h-[50px] items-center gap-3.5" data-item={i.id}>
                 <CheckBox instant checked={false} label={t("cal.done")} onChange={(on) => act.done(i, on)} />

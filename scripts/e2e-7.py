@@ -3,7 +3,7 @@
 three products added with « Partir de l'étiquette » (2 mL per 1 L in veg and flowering S1–8; 4–6 mL per US gallon in veg;
 1 g per 4 L in flowering S3–6); in veg for 40 L: water, 80 mL, 42,3–63,4 mL, not the flowering-only one; « ordre non
 précisé » until a product is moved, then numbered in the new order; flowering S4: the third product appears; the tank
-saved keeps the products and quantities; Today shows no EC / pH zone until targets are typed, then « cible 1,8 »;
+saved keeps the products and quantities; an entry keeps no EC target until targets are typed, then « cible 1,8 » (chart);
 the old free-text note of an « Autre marque » space shows above an empty recipe;
 7b — a product « à la main » (1–2 mL per 1 L, with the organic-products hint in the form): not in the tank, listed under
 it in « À la main, si tu veux » with « 1–2 mL par litre d'arrosoir », « Ajouter un rappel » opens a reminder with its
@@ -107,19 +107,26 @@ with sync_playwright() as p:
     if not saved or [x[0] for x in checks["savedItems"]] != ["Base A", "Bloom C"] or saved[0].get("phase") != "fl4": errors.append(f"saved tank {saved[:1]}")
     pg.screenshot(path=str(out / "03-flower-saved.png"), full_page=True)
 
-    # Today: no zone without targets; « cible 1,8 » once typed (veg and flowering, whatever the stage today).
-    pg.goto(f"file://{page_file}"); pg.wait_for_timeout(1800)
-    pg.get_by_role("group").first.get_by_role("button", name="Colonne").click(); pg.wait_for_timeout(1200)
-    ec_target = lambda: pg.evaluate("""() => [...document.querySelectorAll('#readings [data-status], #readings > div > div')].map((r) => r.textContent).filter((x) => /EC entrée/.test(x))""")
-    checks["ecInBefore"] = ec_target()
+    # The day's targets, once typed: since lot 10l1 the page of a space shows EC entrée on one line without its target;
+    # the target is stored with the entry and read on the chart « EC entrée » (« cible 1,8 · mS/cm »). Before: none.
+    def save_ec(v):
+        pg.goto(f"file://{page_file}"); pg.wait_for_timeout(1800)
+        pg.get_by_role("group").first.get_by_role("button", name="Colonne").click(); pg.wait_for_timeout(1000)
+        pg.click("#tab-plus"); pg.wait_for_timeout(600); pg.click("#add-entry"); pg.wait_for_timeout(900)
+        if not pg.locator("#e-ecIn").is_visible(): pg.locator("[role=dialog] button[aria-expanded=false]", has_text="veille").first.click(); pg.wait_for_timeout(500)
+        pg.wait_for_selector("#e-ecIn")
+        pg.fill("#e-ecIn", v); pg.wait_for_timeout(200)
+        pg.get_by_role("button", name="Enregistrer", exact=True).last.click(); pg.wait_for_timeout(1200)
+        pg.goto(f"file://{page_file}#charts"); pg.wait_for_timeout(1800)
+        if pg.locator("[data-view=solution]").count(): pg.click("[data-view=solution]"); pg.wait_for_timeout(600)
+        return pg.evaluate("""() => document.querySelector('[data-curve=ecIn] header b + span')?.textContent ?? null""")
+    checks["ecInBefore"] = save_ec("2,0")
     pg.goto(f"file://{page_file}#tools/settings"); pg.wait_for_timeout(1500)
     for ph in ["veg", "flower"]:
         pg.fill(f"#g-own-{ph}-ec", "1,8"); pg.fill(f"#g-own-{ph}-phlo", "5,8"); pg.fill(f"#g-own-{ph}-phhi", "6,2")
     pg.wait_for_timeout(1500)
-    pg.goto(f"file://{page_file}"); pg.wait_for_timeout(1800)
-    checks["ecInAfter"] = ec_target()
-    checks["phInAfter"] = pg.evaluate("""() => [...document.querySelectorAll('#readings > div > div')].map((r) => r.textContent).filter((x) => /pH entrée|pH runoff/.test(x))""")
-    if any("cible" in x for x in checks["ecInBefore"]) or not any("cible 1,8" in x for x in checks["ecInAfter"]): errors.append(f"EC targets {checks['ecInBefore']} → {checks['ecInAfter']}")
+    checks["ecInAfter"] = save_ec("2,1")
+    if checks["ecInBefore"] is None or "cible" in checks["ecInBefore"] or "cible 1,8" not in (checks["ecInAfter"] or ""): errors.append(f"EC targets {checks['ecInBefore']} → {checks['ecInAfter']}")
     pg.screenshot(path=str(out / "04-today-targets.png"), full_page=True)
     # Athena again: the product by hand under the Athena recipe, outside it.
     pg.goto(f"file://{page_file}#tools/settings"); pg.wait_for_timeout(1500)

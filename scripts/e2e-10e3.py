@@ -22,7 +22,7 @@ with sync_playwright() as p:
     pg.goto(f"file://{page_file}#tools/settings"); pg.wait_for_timeout(2500)
     nut = pg.locator("#g-nut")
     checks["offered"] = nut.get_by_role("radio", name="Autre marque / je dose moi-même").count() == 1
-    nut.get_by_role("radio", name="Autre marque / je dose moi-même").click(); pg.wait_for_timeout(800)
+    nut.get_by_role("radio", name="Autre marque / je dose moi-même").click(); pg.wait_for_timeout(300); pg.locator("#line-switch-ok").click() if pg.locator("#line-switch-ok").count() else None; pg.wait_for_timeout(800)
     checks["note"] = pg.inner_text("#g-line-note")[:40]
     checks["noAddons"] = nut.get_by_role("button", name="Fade").count() == 0
     pg.screenshot(path=str(out / "01-settings.png"))
@@ -43,7 +43,7 @@ with sync_playwright() as p:
 
     # Back to Athena: the recipe is there again.
     pg.goto(f"file://{page_file}#tools/settings"); pg.wait_for_timeout(1500)
-    pg.locator("#g-nut").get_by_role("radio", name="Athena Pro Line").click(); pg.wait_for_timeout(800)
+    pg.locator("#g-nut").get_by_role("radio", name="Athena Pro Line").click(); pg.wait_for_timeout(300); pg.locator("#line-switch-ok").click() if pg.locator("#line-switch-ok").count() else None; pg.wait_for_timeout(800)
     pg.goto(f"file://{page_file}#tools/nutrition"); pg.wait_for_timeout(1500)
     checks["backToAthena"] = pg.locator("#nut-phases").count() == 1 and pg.locator("#own-tank").count() == 0
     ctx.close()

@@ -18,7 +18,7 @@ import { GROW_SCHEMA, type Site, type Space } from "@/model/grow"
 import { groupBySite, transferCycle } from "@/model/grow-ops"
 import { SCHEMA, type Cycle } from "@/model/types"
 import { cn } from "@/lib/utils"
-import { NutritionFields } from "./nutrition-settings"
+import { NutritionFields, useLineInUse } from "./nutrition-settings"
 import { RootProductsField, useRootProducts } from "@/screens/root-products"
 import { SpaceSheet } from "./space-sheet"
 import { SwitchRow } from "./equipment-shared"
@@ -33,6 +33,7 @@ export function SettingsTool() {
   const { t, dm, saveState, locale } = useSettings()
   const g = useGrow()
   const ed = useEditors()
+  const lineInUse = useLineInUse()
   const [spaceSheet, setSpaceSheet] = useState<{ open: boolean; space?: Space }>({ open: false })
   const [siteSheet, setSiteSheet] = useState<{ open: boolean; site?: Site }>({ open: false })
   const [transfer, setTransfer] = useState<{ open: boolean; cycle?: Cycle }>({ open: false })
@@ -101,7 +102,7 @@ export function SettingsTool() {
           <Label>
             {t("growSet.nutrition")}
           </Label>
-          <NutritionFields value={g.grow?.nutrition ?? g.nutrition} onChange={(n) => saveGrow({ nutrition: n })} idPrefix="g" />
+          <NutritionFields value={g.grow?.nutrition ?? g.nutrition} onChange={(n) => saveGrow({ nutrition: n })} idPrefix="g" confirmSwitch={lineInUse} />
         </Card>
       </Reveal>
 

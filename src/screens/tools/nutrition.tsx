@@ -114,6 +114,10 @@ function LineNutrition() {
     setF((s) => ({ ...s, ec: show(defaultEc(cat, p, firstCycle)) }))
   }
 
+  // The 13 phases of Blended: boxes at least as wide as the longest word (« Vorwässern »), never cut (lot 14a). The
+  // Pro Line's five phases keep their row.
+  const longest = Math.max(...cat.program.flatMap((p) => phaseLabel(p).split(/[\s/-]+/).map((w) => w.length)))
+  const phaseColumns = cat.program.length > 8 ? { fontSize: "0.8125rem", gridTemplateColumns: `repeat(auto-fit,minmax(min(100%,max(4rem,calc(${longest}ch + 1.25rem))),1fr))` } : undefined
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }))
   const conc = cat.ecTable ? dosingToConc(nutrition.dosing) : 0
   const concOptions = cat.ecTable ? [0, ...Object.keys(cat.ecTable.concentrates).map(Number).sort((x, y) => x - y)] : []
@@ -241,7 +245,7 @@ function LineNutrition() {
             <span className="text-[0.75rem] font-medium text-fg-2">{t("nut.phase")}</span>
             {pos && <span className="text-[0.75rem] text-fg-3">{`${t("nut.fromCycle")}${t("common.colon")}${phaseLabel(cyclePhase)}`}</span>}
           </div>
-          <div className={joined()} role="radiogroup" aria-label={t("nut.phase")} id="nut-phases">
+          <div className={joined()} role="radiogroup" aria-label={t("nut.phase")} id="nut-phases" style={phaseColumns}>
             {cat.program.map((p) => (
               <button
                 key={p.id}

@@ -1,6 +1,6 @@
 // Athena Blended (liquids, mL per 10 L). Source: docs/athena-fiche.md — Athena Handbook FR V8:
 // p. 58 (program), p. 60 (manual watering). B before A. Lower EC than the Pro Line: never interchangeable.
-// Hidden in Thomas's version (decision lot 8): engine and tests only.
+// Offered in both versions since lot 14a (it was hidden in Thomas's version until then).
 import type { NutrientCatalog, PhaseDose, ProgramPhase, ValueSource } from "./types"
 
 const P58: ValueSource = { kind: "athena", page: 58 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 14a — Blended partout et choix de la gamme (20/10/2026)
+- **Athena Blended** est maintenant proposée aussi dans la version Claude, à côté de la Pro Line. Les deux gammes ne se mélangent jamais.
+- **Choix de la gamme** dans Réglages, la fiche d'un espace et l'assistant de démarrage : Pro Line, Blended ou ta propre marque, avec une ligne d'explication sous chaque choix.
+- Changer de gamme en cours de cycle demande d'abord : les bidons déjà faits gardent leur gamme, les graphiques ne relient jamais un bidon Pro à un bidon Blended.
+- **Repères** : le programme Blended (p. 58) et son arrosage manuel (p. 60) à côté des tableaux de la Pro Line.
+- En allemand, les cases des 13 phases Blended ne coupent plus « Vorwässern ».
+- 478 tests.
+
 ## Lot 13 — Sources discrètes et page « À propos » (20/10/2026)
 - **Plus de lignes « Sources : … »** sous les outils et les écrans. À la place, un **petit ⓘ** à côté du titre (Arrosage, Nutrition, pH / Balance, Pulvérisation, Lumière, Climat, Repères, le calendrier, et « Relevés » sur la page d'un espace) : il dit d'où viennent les chiffres, une source par ligne, puis « Toutes les sources → ».
 - Ce qui change la lecture d'un chiffre reste visible à côté de lui : « estimation », « débit à mesurer », « perso, non vérifié », « échelle capteur ».

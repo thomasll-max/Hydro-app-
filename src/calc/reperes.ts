@@ -1,5 +1,7 @@
-// Repères: reference tables shown in Outils → Repères. Pro Line only for now (Blended arrives with the friends' version).
+// Repères: reference tables shown in Outils → Repères. Pro Line and, since lot 14a, Blended beside it (each table read
+// from its own line's catalog: never a value of one line in the other's table).
 import { ATHENA_CONC_ML, ATHENA_DOSING } from "@/data/reference"
+import { ATHENA_BLENDED, type ManualPhase, type Per10L, type ProgramPhase } from "@/data/nutrients"
 import { dayTargets } from "./targets"
 import type { Range } from "@/model/types"
 
@@ -29,3 +31,21 @@ export function manualRows(): ManualRow[] {
     row({ kind: "weeks", a: 8, b: 9 }, at("stretch", 8)),
   ]
 }
+
+export type BlendedRow = { phase: ProgramPhase; ab?: Per10L; fade?: Per10L; pk?: Per10L; camg?: Per10L; ec: number }
+
+/** Blended program (p. 58), mL per 10 L: A and B (the same dose each, Grow in veg, Bloom after), PK, CaMg, Fade, EC. */
+export function blendedReferenceRows(): BlendedRow[] {
+  const dose = (p: ProgramPhase, ids: string[]) => p.doses.find((d) => ids.includes(d.product))?.per10L
+  return ATHENA_BLENDED.program
+    .filter((p) => !p.roWater)
+    .map((p) => ({ phase: p, ab: dose(p, ["growA", "bloomA"]), fade: dose(p, ["fade"]), pk: dose(p, ["pk"]), camg: dose(p, ["camg"]), ec: p.ec }))
+}
+
+/** Cleanse in veg and flowering (p. 58), for the note under the Blended table. */
+export function blendedCleanse(): Per10L | undefined {
+  return ATHENA_BLENDED.program.find((p) => p.id === "veg")?.doses.find((d) => d.product === "cleanse")?.per10L
+}
+
+/** Blended manual method by week (p. 60), as the catalog holds it. */
+export const blendedManualRows = (): ManualPhase[] => ATHENA_BLENDED.manual

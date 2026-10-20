@@ -6,12 +6,13 @@ import { LineIcon } from "@/components/hydro/line-icon"
 import { Reveal, ScreenHero } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { PH_TARGETS, STEERING, type Source } from "@/data/reference"
-import { manualRows, proReferenceRows } from "@/calc/reperes"
+import { blendedCleanse, blendedManualRows, blendedReferenceRows, manualRows, proReferenceRows } from "@/calc/reperes"
+import { usePhaseLabel } from "@/screens/tools/nutrition"
 import { useGrow } from "@/app/grow-context"
 import { dosingToConc } from "@/screens/tools/nutrition-settings"
 import type { EmojiName } from "@/assets/emoji"
 import { cn } from "@/lib/utils"
-import { getCatalog } from "@/data/nutrients"
+import { ATHENA_BLENDED, ATHENA_PRO, type Per10L } from "@/data/nutrients"
 import { openAbout } from "@/components/hydro/source-info"
 import { tertiary } from "@/components/hydro/styles"
 
@@ -21,6 +22,10 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
   const { nutrition } = useGrow()
   const conc = dosingToConc(nutrition.dosing) || 226
   const pro = proReferenceRows(conc)
+  const phaseLabel = usePhaseLabel()
+  const per = (v?: Per10L) => (v == null ? "—" : Array.isArray(v) ? range(v[0], v[1]) : num(v))
+  const span = (lo: number, hi: number, d = 1) => (lo === hi ? num(lo, d) : range(lo, hi, d))
+  const cleanse = blendedCleanse()
   const srcTag = (s: Source) =>
     s === "estimate" ? t("guide.tagEstimate") : s === "athena" ? t("guide.tagAthena") : null
 
@@ -35,7 +40,7 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
       <Reveal i={1}>
         <Card>
           <Accordion type="single" collapsible defaultValue="dosing" key={settings.lang}>
-            <Section value="dosing" emoji="testTube" title={t("guide.dosing")} desc={t("guide.dosingD", { line: getCatalog().name })}>
+            <Section value="dosing" emoji="testTube" title={t("guide.dosing")} desc={t("guide.dosingD", { line: ATHENA_PRO.name })}>
               <Table
                 head={[
                   t("guide.ecTarget"),
@@ -58,6 +63,21 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
                 highlight={(i) => pro[i].ec >= 2 && pro[i].ec <= 2.5}
               />
               <Src>{t("guide.dosingNote")}</Src>
+            </Section>
+
+            {/* Lot 14a: the Blended line beside the Pro Line, read from its own catalog (p. 58). */}
+            <Section value="blended" emoji="testTube" title={t("guide.blended")} desc={t("guide.blendedD", { line: ATHENA_BLENDED.name })}>
+              <Table
+                head={[t("guide.stage"), t("guide.colAB"), "PK", <span key="camg" className="normal-case">CaMg</span>, "EC"]}
+                rows={blendedReferenceRows().map((r) => [
+                  phaseLabel(r.phase),
+                  r.ab != null ? per(r.ab) : r.fade != null ? <span key="f" className="whitespace-nowrap">Fade {per(r.fade)}</span> : "—",
+                  per(r.pk),
+                  per(r.camg),
+                  num(r.ec, 1),
+                ])}
+              />
+              <Src>{t("guide.blendedNote", { cleanse: per(cleanse) })}</Src>
             </Section>
 
             <Section value="ph" emoji="thermometer" title={t("guide.ph")} desc={t("guide.phD")}>
@@ -101,6 +121,25 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
               <Src>{t("guide.s1Note")}</Src>
             </Section>
 
+            <Section value="manualBlended" emoji="droplet" title={t("guide.manualBlended")} desc={t("guide.manualBlendedD", { line: ATHENA_BLENDED.name })}>
+              <Table
+                head={[t("guide.stage"), t("guide.ecIn"), t("guide.ecRunoff"), t("today.dryback")]}
+                rows={blendedManualRows().map((m) => [
+                  m.stage === "veg"
+                    ? t("guide.weekVeg")
+                    : m.stage === "flush"
+                      ? t("nut.ph_flush")
+                      : m.weeks![0] === m.weeks![1]
+                        ? t("guide.weekFlower", { w: m.weeks![0] })
+                        : t("guide.weekFlowerRange", { a: m.weeks![0], b: m.weeks![1] }),
+                  span(m.ecIn[0], m.ecIn[1]),
+                  span(m.ecRunoff[0], m.ecRunoff[1]),
+                  `${range(m.dryback[0], m.dryback[1])} %`,
+                ])}
+              />
+              <Src>{t("guide.manualBlendedNote")}</Src>
+            </Section>
+
             <Section value="notes" emoji="bulb" title={t("guide.notes")}>
               <ul className="flex flex-col gap-2 text-[0.8125rem] leading-[1.45] text-fg-2">
                 {(["note1", "note2", "note3"] as const).map((n) => (
@@ -118,7 +157,6 @@ export function GuideScreen({ embedded }: { embedded?: boolean } = {}) {
           </Accordion>
         </Card>
       </Reveal>
-      <p className="mt-3 text-center text-[0.75rem] text-fg-3">{t("guide.blendedSoon")}</p>
       {/* Lot 13: the sources of these tables are in À propos (and in the ⓘ beside the title). */}
       <div className="mt-1 flex justify-center">
         <button type="button" id="reperes-sources" className={tertiary} onClick={openAbout}>

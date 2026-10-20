@@ -27,7 +27,7 @@ describe("lot 6 — séries des graphiques", () => {
   })
   it("Balance : depuis les bidons de l'espace (mL pour 10 L)", () => {
     const mixes: Mix[] = [{ schemaVersion: 4, id: "m", date: "2026-10-12", volumeL: 100, spaceIds: ["a"], balanceAddedMl: 30, createdAt: NOW }]
-    expect(buildSeries("balance", "a", { from: "2026-10-01", to: "2026-10-18" }, { byspace: new Map(), mixes }).points).toEqual([{ date: "2026-10-12", v: 3 }])
+    expect(buildSeries("balance", "a", { from: "2026-10-01", to: "2026-10-18" }, { byspace: new Map(), mixes }).points).toEqual([{ date: "2026-10-12", v: 3, line: "athena-pro" }]) // the tank's line (lot 14a); none written = Pro
   })
   it("comparaison : une colonne par espace, la bande cible du premier", () => {
     const rows = chartRows([

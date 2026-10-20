@@ -1,6 +1,7 @@
 // Charts data (spec §5, lot 6). Pure: entries / tanks / events → one series per curve and per space, with the target
 // band stored on each entry (so a past target stays what it was), events as vertical markers, and downsampling so
 // 20 spaces over 2 years stay fluid on a phone.
+import { DEFAULT_LINE } from "@/data/nutrients"
 import type { Cycle, Entry, GrowEvent, IsoDate, Mix, TargetsSnapshot } from "@/model/types"
 import { addDays, daysBetween } from "./stage"
 import { balanceTotalMl } from "./balance"
@@ -84,7 +85,8 @@ export const MAX_SPACES = 4
 /** Points per series kept for drawing; beyond, days are averaged by bucket. */
 export const MAX_POINTS = 120
 
-export type Point = { date: IsoDate; v: number; lo?: number; hi?: number }
+/** `line`: the nutrient line of the tank a point comes from (curves read from the tanks), lot 14a. */
+export type Point = { date: IsoDate; v: number; lo?: number; hi?: number; line?: string }
 export type Series = { spaceId: string; curve: CurveId; points: Point[] }
 export type Period = "7" | "30" | "cycle" | "all"
 export const PERIODS: Period[] = ["7", "30", "cycle", "all"]
@@ -160,7 +162,7 @@ export function buildSeries(
     for (const m of data.mixes) {
       if (!m.spaceIds?.includes(spaceId) || m.date < range.from || m.date > range.to) continue
       const v = def.fromMixes(m)
-      if (v != null) points.push({ date: m.date, v: round(v, def.decimals) })
+      if (v != null) points.push({ date: m.date, v: round(v, def.decimals), line: m.line ?? DEFAULT_LINE })
     }
     points.sort((a, b) => a.date.localeCompare(b.date))
   } else {
@@ -312,9 +314,11 @@ export function segments(points: Point[], gap = GAP_DAYS, every?: number): { sol
   points.forEach((p, i) => {
     const prev = points[i - 1]
     const d = prev ? daysBetween(prev.date, p.date) : Infinity
-    if (prev && d <= step) solid.at(-1)!.push(p)
+    // Two tanks of different lines (Pro Line, Blended) are never joined: the line starts again (lot 14a).
+    const same = !prev || prev.line === p.line
+    if (prev && same && d <= step) solid.at(-1)!.push(p)
     else {
-      if (prev && d <= Math.max(gap, step)) dotted.push([prev, p])
+      if (prev && same && d <= Math.max(gap, step)) dotted.push([prev, p])
       solid.push([p])
     }
   })

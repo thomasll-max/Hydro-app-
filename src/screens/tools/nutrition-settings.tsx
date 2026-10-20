@@ -1,11 +1,16 @@
 // Line, add-ons and dosing method — used at grow level (Réglages) and per space (override).
+// Lot 14a: both Athena lines everywhere (Pro Line or Blended, never mixed), each choice with its line of explanation;
+// changing line while a cycle runs asks first (the tanks already made keep their line).
 import { useEffect, useRef, useState } from "react"
 import { Grid, NumField, Seg } from "@/components/hydro/form"
 import { useSettings } from "@/app/settings-context"
-import { TARGET } from "@/store"
+import { useGrow } from "@/app/grow-context"
 import { ADDONS as ADDON_DEFS, getCatalog, isOwnLine, OWN_LINE, visibleCatalogs, type AddonId } from "@/data/nutrients"
 import type { DosingMethod, NutritionSettings, OwnTargets } from "@/model/grow"
-import { toggle } from "@/components/hydro/styles"
+import type { MessageKey } from "@/i18n/types"
+import { joined, segment, toggle } from "@/components/hydro/styles"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { cn } from "@/lib/utils"
 import { isBadNum, parseNum } from "@/calc/formulas"
 import type { Range } from "@/model/types"
 
@@ -18,28 +23,96 @@ export function concToDosing(c: number): DosingMethod {
   return c === 113 ? "conc113" : c === 226 ? "conc226" : c === 282 ? "conc282" : "powder"
 }
 
-export function NutritionFields({ value, onChange, idPrefix }: { value: NutritionSettings; onChange: (n: NutritionSettings) => void; idPrefix: string }) {
+/** The line of explanation under each choice (from the Handbook: powders by target EC, or liquids A / B by week). */
+export const LINE_NOTES: Record<string, MessageKey> = { "athena-pro": "growSet.lineProD", "athena-blended": "growSet.lineBlendedD", [OWN_LINE]: "growSet.ownLineShort" }
+
+/** Switching line keeps only the add-ons the new line allows (CaMg / PK never with the Pro Line); another brand has none. */
+export function switchLine(value: NutritionSettings, id: string): NutritionSettings {
+  if (isOwnLine(id)) return { ...value, line: id, addons: [] }
+  const next = getCatalog(id)
+  return { ...value, line: id, addons: (isOwnLine(value.line) ? next.defaultAddons : value.addons).filter((a) => next.addons.includes(a)) }
+}
+
+/**
+ * A cycle is running where these settings apply: in this space, or (grow level) in a space that follows the grow's line.
+ * Changing line then asks first.
+ */
+export function useLineInUse(spaceId?: string): boolean {
+  const { cycles, allSpaces } = useGrow()
+  const running = cycles.filter((c) => !c.harvestDate && !c.archived)
+  if (spaceId) return running.some((c) => c.spaceId === spaceId)
+  return running.some((c) => !allSpaces.find((s) => s.id === c.spaceId)?.nutrition?.line)
+}
+
+export function NutritionFields({ value, onChange, idPrefix, confirmSwitch }: { value: NutritionSettings; onChange: (n: NutritionSettings) => void; idPrefix: string; confirmSwitch?: boolean }) {
   const { t } = useSettings()
   const own = isOwnLine(value.line)
   const line = getCatalog(value.line)
-  const lines = visibleCatalogs(TARGET)
+  const lines = visibleCatalogs()
   const concs = own ? [] : Object.keys(line.ecTable?.concentrates ?? {}).map(Number).sort((a, b) => a - b)
-  // Switching line keeps only the add-ons the new line allows (CaMg / PK never with the Pro Line); another brand has none.
+  const [pending, setPending] = useState<string | null>(null)
+  const apply = (id: string) => onChange(switchLine(value, id))
   const pickLine = (id: string) => {
-    if (isOwnLine(id)) return onChange({ ...value, line: id, addons: [] })
-    const next = getCatalog(id)
-    onChange({ ...value, line: id, addons: (isOwnLine(value.line) ? next.defaultAddons : value.addons).filter((a) => next.addons.includes(a)) })
+    if (id === value.line) return
+    if (confirmSwitch) setPending(id)
+    else apply(id)
   }
-  const options = [...lines.map((l) => ({ value: l.id, label: l.name })), { value: OWN_LINE, label: t("growSet.ownLine") }]
+  const nameOf = (id: string) => (isOwnLine(id) ? t("growSet.ownLine") : getCatalog(id).name)
+  const options = [...lines.map((l) => l.id), OWN_LINE]
   return (
     <div className="flex flex-col gap-3" id={`${idPrefix}-nut`}>
       <div>
-        <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("growSet.line")}</div>
-        <Seg<string> label={t("growSet.line")} value={value.line} onChange={pickLine} options={options} />
+        <div className="mb-1 text-[0.75rem] font-medium text-fg-2" id={`${idPrefix}-line-label`}>
+          {t("growSet.line")}
+        </div>
+        <div className={joined(undefined, "[grid-template-columns:1fr]")} role="radiogroup" aria-labelledby={`${idPrefix}-line-label`} id={`${idPrefix}-lines`}>
+          {options.map((id) => {
+            const on = value.line === id
+            return (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                aria-labelledby={`${idPrefix}-line-${id}`}
+                aria-describedby={`${idPrefix}-line-${id}-d`}
+                data-line={id}
+                onClick={() => pickLine(id)}
+                className={segment(on, "flex-col items-start justify-center gap-0.5 px-3.5 py-2.5 text-left")}
+              >
+                <span id={`${idPrefix}-line-${id}`}>{nameOf(id)}</span>
+                <span id={`${idPrefix}-line-${id}-d`} className={cn("text-[0.75rem] leading-snug font-normal", on ? "opacity-80" : "text-fg-3")}>
+                  {t(LINE_NOTES[id] ?? "growSet.lineBoth")}
+                </span>
+              </button>
+            )
+          })}
+        </div>
         <p className="mt-1 text-[0.75rem] text-fg-3" id={`${idPrefix}-line-note`}>
-          {own ? t("growSet.ownLineD") : lines.length > 1 ? t("growSet.lineBoth") : t("growSet.lineOnly")}
+          {own ? t("growSet.ownLineD") : t("growSet.lineBoth")}
         </p>
       </div>
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent className="max-w-[340px] rounded-[14px] border-line-strong bg-surface" id={`${idPrefix}-line-switch`}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("growSet.switchTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("growSet.switchBody", { from: nameOf(value.line), to: nameOf(pending ?? value.line) })}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row gap-2">
+            <AlertDialogCancel className="h-11 flex-1">{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="h-11 flex-1"
+              id="line-switch-ok"
+              onClick={() => {
+                if (pending) apply(pending)
+                setPending(null)
+              }}
+            >
+              {t("growSet.switchOk")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {own && <OwnTargetsFields value={value.own} onChange={(o) => onChange({ ...value, own: o })} idPrefix={idPrefix} />}
       {!own && <div>
         <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("growSet.addons")}</div>

@@ -21,13 +21,16 @@ import { cn } from "@/lib/utils"
 import { SwitchRow } from "./equipment-shared"
 
 export type SpaceSection = "general" | "nutrition" | "irrigation" | "light" | "air"
-import { NutritionFields } from "./nutrition-settings"
+import { NutritionFields, useLineInUse } from "./nutrition-settings"
 import { joined, secondary, segment } from "@/components/hydro/styles"
 
 export function SpaceSheet({ open, onOpenChange, space, section }: { open: boolean; onOpenChange: (o: boolean) => void; space?: Space; section?: SpaceSection }) {
   const { t, num, settings } = useSettings()
   const { allSpaces, sites, grow, assignments, equipment, saveSpace, saveGrow, addAssignment, cycleIn, saveCycle, saveEquipment, assignEquipment } = useGrow()
   const show = useShow()
+  // Changing line asks first where a cycle runs: this space (its own line), or a space following the grow's line.
+  const growLineInUse = useLineInUse()
+  const spaceLineInUse = useLineInUse(space ? space.id : "-")
   const [s, setS] = useState<Space>(() => newSpace({ id: "x", name: "", template: "flower", order: 0, now: "" }))
   const [dims, setDims] = useState({ l: "", w: "", h: "" })
   const [own, setOwn] = useState(false)
@@ -239,12 +242,12 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
           {!own && growNut && (
             <div className="mt-2.5">
               <p className="mb-2 text-[0.75rem] text-fg-3">{t("space.growNutHint")}</p>
-              <NutritionFields value={growNut} onChange={setGrowNut} idPrefix="spg" />
+              <NutritionFields value={growNut} onChange={setGrowNut} idPrefix="spg" confirmSwitch={growLineInUse} />
             </div>
           )}
           {own && (
             <div className="mt-2.5">
-              <NutritionFields value={{ ...(grow?.nutrition ?? { line: "athena-pro", addons: [], dosing: "conc226" }), ...(s.nutrition ?? {}) }} onChange={(n) => setS((x) => ({ ...x, nutrition: n }))} idPrefix="sp" />
+              <NutritionFields value={{ ...(grow?.nutrition ?? { line: "athena-pro", addons: [], dosing: "conc226" }), ...(s.nutrition ?? {}) }} onChange={(n) => setS((x) => ({ ...x, nutrition: n }))} idPrefix="sp" confirmSwitch={spaceLineInUse} />
             </div>
           )}
         </Group>

@@ -56,7 +56,7 @@ with sync_playwright() as p:
     pg.on("pageerror", lambda e: errors.append(f"PAGEERROR {e}"))
     pg.goto(f"file://{page_file}#tools/settings"); pg.wait_for_timeout(2500)
     pg.evaluate(OLD_NOTE)
-    pg.locator("#g-nut").get_by_role("radio", name=OWN).click(); pg.wait_for_timeout(800)
+    pg.locator("#g-nut").get_by_role("radio", name=OWN).click(); pg.wait_for_timeout(300); pg.locator("#line-switch-ok").click() if pg.locator("#line-switch-ok").count() else None; pg.wait_for_timeout(800)
     checks["targetsOffered"] = pg.locator("#g-own-targets input").count() == 6 and all(not x.input_value() for x in pg.locator("#g-own-targets input").all())
     pg.screenshot(path=str(out / "01-settings-own.png"), full_page=True)
 
@@ -130,7 +130,7 @@ with sync_playwright() as p:
     pg.screenshot(path=str(out / "04-today-targets.png"), full_page=True)
     # Athena again: the product by hand under the Athena recipe, outside it.
     pg.goto(f"file://{page_file}#tools/settings"); pg.wait_for_timeout(1500)
-    pg.locator("#g-nut").get_by_role("radio", name="Athena Pro Line").click(); pg.wait_for_timeout(800)
+    pg.locator("#g-nut").get_by_role("radio", name="Athena Pro Line").click(); pg.wait_for_timeout(300); pg.locator("#line-switch-ok").click() if pg.locator("#line-switch-ok").count() else None; pg.wait_for_timeout(800)
     pg.goto(f"file://{page_file}#tools/nutrition"); pg.wait_for_timeout(1800)
     checks["athenaHand"] = pg.locator("#hand-products li").all_inner_texts()
     checks["athenaOrder"] = pg.locator("#nut-order li").all_inner_texts()

@@ -107,9 +107,9 @@ describe("lot 4a — Blended (p. 58), B avant A", () => {
     expect(r.scaled).toBe(true)
     expect(item(r, "growA")).toMatchObject({ qty: 58, estimate: true })
   })
-  it("menu caché dans la version de Thomas, visible dans la version locale", () => {
-    expect(visibleCatalogs("artifact").map((c) => c.id)).toEqual(["athena-pro"])
-    expect(visibleCatalogs("local").map((c) => c.id)).toContain("athena-blended")
+  it("les deux gammes proposées dans les deux versions (lot 14a)", () => {
+    // Lot 14a: both lines in both versions (Blended was hidden in the Claude version until then).
+    expect(visibleCatalogs().map((c) => c.id)).toEqual(["athena-pro", "athena-blended"])
   })
 })
 

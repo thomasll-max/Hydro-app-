@@ -20,7 +20,7 @@ export const getCatalog = (id?: string): NutrientCatalog => CATALOGS[id ?? DEFAU
 export const OWN_LINE = "own"
 export const isOwnLine = (id?: string | null) => id === OWN_LINE
 
-/** Lines offered in the menus. Blended stays hidden in Thomas's (Claude) version until the friends' version (lot 8). */
-export function visibleCatalogs(target: "artifact" | "local"): NutrientCatalog[] {
-  return target === "local" ? Object.values(CATALOGS) : [ATHENA_PRO]
+/** Lines offered in the menus: both Athena lines in both versions since lot 14a (never mixed in a tank or a space). */
+export function visibleCatalogs(): NutrientCatalog[] {
+  return Object.values(CATALOGS)
 }

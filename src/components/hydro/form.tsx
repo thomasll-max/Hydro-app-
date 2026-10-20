@@ -269,15 +269,20 @@ export function TextField({
   type = "text",
   hint,
   className,
+  inputMode,
+  autoComplete,
 }: {
   id: string
   label: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
-  type?: "text" | "date" | "time"
+  /** « password » for a PIN (lot 12d). */
+  type?: "text" | "date" | "time" | "password"
   hint?: string
   className?: string
+  inputMode?: "numeric" | "text"
+  autoComplete?: string
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-0.5", className)}>
@@ -290,6 +295,8 @@ export function TextField({
           type={type}
           value={value}
           placeholder={placeholder}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
           onChange={(e) => onChange(e.target.value)}
           className={cn(fieldCls, "h-12 text-[1.0625rem]", type !== "text" && "font-num text-[1rem] tabular-nums")}
         />

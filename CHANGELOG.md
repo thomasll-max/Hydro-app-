@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 12d — Verrou (20/10/2026)
+- **Réglages → Verrouiller l'app** : un PIN de 4 à 6 chiffres, demandé à l'ouverture et quand tu reviens après 1, 5 ou 15 minutes ailleurs. Le PIN n'est jamais gardé en clair.
+- Cinq erreurs : 30 secondes d'attente, puis deux fois plus à chaque nouvelle erreur.
+- **Dit honnêtement** : c'est un écran de confidentialité, pas un chiffrement.
+- Dans l'app installée (version des potes), l'empreinte ou le visage peut remplacer le PIN. Dans l'artefact : le PIN seul.
+- **PIN oublié** : la seule issue est « Réinitialiser l'app », qui efface tout. À la création du PIN, l'app te le dit et te propose une sauvegarde tout de suite.
+- 456 tests.
+
 ## Lot 12c — Fiche variété et photo pour Claude (20/10/2026)
 - **Outils → Variétés** : chaque variété de ta grow, avec **tes notes** (phénotypes, comportement, odeur, stretch ; une info du breeder seulement comme note, avec sa source), **ses cycles** (poids sec par plante, floraison réelle, lien vers le bilan) et **la frise de ses photos**. Rien qui vienne d'une base publique : seulement ce que tu as vécu.
 - Les noms de variété mènent à leur fiche (bilan, cycle, plante). Une variété écrite de deux façons (« Blue Zushi » / « blue zushi ») est regroupée, et l'app propose de **fusionner** les orthographes ; rien n'est renommé sans toi.

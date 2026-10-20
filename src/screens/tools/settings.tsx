@@ -23,6 +23,7 @@ import { RootProductsField, useRootProducts } from "@/screens/root-products"
 import { SpaceSheet } from "./space-sheet"
 import { SwitchRow } from "./equipment-shared"
 import { ResetCard } from "./reset-card"
+import { LockCard } from "./lock-card"
 import { InstallTip } from "@/screens/install-tip"
 import { TARGET } from "@/store"
 import { CURRENT_BUILD, formatVersion } from "@/lib/version"
@@ -234,6 +235,7 @@ export function SettingsTool() {
           <InstallTip />
         </Reveal>
       )}
+      <LockCard i={9} />
       <ResetCard i={9} />
       <p className="mt-4 text-center text-[0.75rem] text-fg-3 tabular-nums" id="app-version">
         {t("growSet.version", { v: formatVersion(CURRENT_BUILD, locale) })}

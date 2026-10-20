@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { LockGate } from "@/app/lock"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { Toaster } from "sonner"
 import { SettingsProvider, useSettings } from "@/app/settings-context"
@@ -131,7 +132,10 @@ export default function App() {
     <SettingsProvider>
       <GrowProvider>
         <EditorsProvider>
-          <Shell />
+          {/* Verrouiller l'app (lot 12d): over everything, the morning summary of Aujourd'hui included. */}
+          <LockGate>
+            <Shell />
+          </LockGate>
         </EditorsProvider>
       </GrowProvider>
     </SettingsProvider>

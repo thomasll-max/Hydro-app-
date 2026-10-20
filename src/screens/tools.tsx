@@ -41,7 +41,7 @@ const TOOLS: Tool[] = [
   { id: "ipw", emoji: "sweat", title: "tools.ipw", desc: "tools.ipwD", perSpace: true, group: "room", tone: "leaf" },
   { id: "equipment", emoji: "plug", title: "tools.equipment", desc: "tools.equipmentD", group: "setup", tone: "neutral" },
   { id: "reperes", emoji: "compass", title: "tools.reperes", desc: "tools.reperesD", group: "setup", tone: "neutral" },
-  { id: "varieties", emoji: "herb", title: "tools.varieties", desc: "tools.varietiesD", group: "setup", tone: "leaf" },
+  { id: "varieties", emoji: "herb", title: "tools.varieties", desc: "tools.varietiesD", group: "setup", tone: "neutral" },
   { id: "data", emoji: "notebook", title: "tools.data", desc: "tools.dataD", group: "setup", tone: "neutral" },
   { id: "start", emoji: "sprout", title: "tools.start", desc: "tools.startD" },
   { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD" },

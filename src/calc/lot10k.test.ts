@@ -189,7 +189,7 @@ describe("lot 10k2a — Outils en trois groupes", () => {
   it("icônes au trait colorées par sujet, lignes de 54 px, plus de « Calculs testés »", () => {
     for (const id of ["nutrition", "irrigation", "ph"]) expect(tools).toMatch(new RegExp(`id: "${id}"[^}]*tone: "water"`))
     for (const id of ["light", "climate", "ipw"]) expect(tools).toMatch(new RegExp(`id: "${id}"[^}]*tone: "leaf"`))
-    for (const id of ["calendar", "equipment", "reperes", "data"]) expect(tools).toMatch(new RegExp(`id: "${id}"[^}]*tone: "neutral"`))
+    for (const id of ["calendar", "equipment", "reperes", "varieties", "data"]) expect(tools).toMatch(new RegExp(`id: "${id}"[^}]*tone: "neutral"`))
     expect(tools).toMatch(/min-h-\[54px\]/)
     expect(tools).not.toMatch(/tools\.subtitle/)
     for (const l of [fr, en, de]) expect((l as unknown as { tools: Record<string, string> }).tools.subtitle).toBeUndefined()

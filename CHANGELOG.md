@@ -2,6 +2,7 @@
 
 ## Correctif — « Ajouter une photo » (20/10/2026)
 - Le bouton « Ajouter une photo » de Demander à Claude ne s'ouvrait pas dans l'app Claude : toucher le bouton ouvre maintenant directement le choix de la photo (appareil photo ou galerie). Même chose pour la photo de la saisie du jour.
+- Outils : l'icône de Variétés est neutre, comme les autres outils de « Mon installation » (seuls les outils d'arrosage et de réglage de la pièce sont en couleur).
 
 ## Lot 12d — Verrou (20/10/2026)
 - **Réglages → Verrouiller l'app** : un PIN de 4 à 6 chiffres, demandé à l'ouverture et quand tu reviens après 1, 5 ou 15 minutes ailleurs. Le PIN n'est jamais gardé en clair.

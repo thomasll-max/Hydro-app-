@@ -129,7 +129,7 @@ export const ATHENA_PRO: NutrientCatalog = {
     },
   ],
   ecTable: { grams: PRO_GRAMS, concentrates: PRO_CONCENTRATES, recommended: 226, src: P37 },
-  addons: ["fade", "cleanse", "balance", "ipw"],
+  addons: ["fade", "cleanse", "balance", "ipw", "stack"],
   defaultAddons: ["fade", "cleanse", "balance"],
   manual: [
     { stage: "veg", ecIn: [3.0, 3.0], ph: [5.8, 6.2], ecRunoff: [4, 5], dryback: [30, 40], src: P41 },

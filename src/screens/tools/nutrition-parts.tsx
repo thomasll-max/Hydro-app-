@@ -12,7 +12,8 @@ import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { bagLitres, openStocks, startWaterL, stockStatus } from "@/calc/concentrate"
 import { GROW_SCHEMA, type ConcentrateStock, type CustomProduct } from "@/model/grow"
-import type { NutrientCatalog } from "@/data/nutrients"
+import { isOwnLine, LABEL_ONLY, type NutrientCatalog } from "@/data/nutrients"
+import { labelOnlyOf } from "@/calc/nutrients"
 import { cn } from "@/lib/utils"
 import { secondary, tertiary } from "@/components/hydro/styles"
 import { locales } from "@/i18n/core"
@@ -161,20 +162,24 @@ export function useWeeksText() {
   return (p: CustomProduct): string | null => {
     const u = p.use
     if (!u) return p.weeks ?? null
-    const parts = [u.veg ? t("nut.ph_veg") : null, u.flowerFrom != null ? t("nut.ph_week", { w: u.flowerTo != null && u.flowerTo !== u.flowerFrom ? `${u.flowerFrom}–${u.flowerTo}` : u.flowerFrom }) : null]
+    const parts = [u.clone ? t("nut.pUseClone") : null, u.veg ? t("nut.ph_veg") : null, u.flowerFrom != null ? t("nut.ph_week", { w: u.flowerTo != null && u.flowerTo !== u.flowerFrom ? `${u.flowerFrom}–${u.flowerTo}` : u.flowerFrom }) : null]
     return parts.filter(Boolean).join(", ") || p.weeks || null
   }
 }
 
 export function CustomProductsCard({ i }: { i: number }) {
   const { t, range } = useSettings()
-  const { customProducts } = useGrow()
+  const { customProducts, nutrition } = useGrow()
   const [edit, setEdit] = useState<CustomProduct | null>(null)
+  const [draft, setDraft] = useState<Partial<CustomProduct> | undefined>()
   const [open, setOpen] = useState(false)
-  const openFor = (p: CustomProduct | null) => {
+  const openFor = (p: CustomProduct | null, d?: Partial<CustomProduct>) => {
     setEdit(p)
+    setDraft(d)
     setOpen(true)
   }
+  // Lot 14b: Athena products with no published dose (Proper; Cuts with Blended), offered until the grower has them.
+  const offered = isOwnLine(nutrition.line) ? [] : LABEL_ONLY.filter((x) => x.lines.includes(nutrition.line) && !customProducts.some((p) => labelOnlyOf(p) === x.id))
   const weeks = useWeeksText()
   return (
     <Reveal i={i}>
@@ -187,17 +192,20 @@ export function CustomProductsCard({ i }: { i: number }) {
         </div>
         <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("nut.customD")}</p>
         {customProducts.map((p) => {
+          const athena = labelOnlyOf(p)
           const dose =
             p.application !== "roots"
               ? p.dosePer10L
                 ? t("nut.customDose", { range: range(p.dosePer10L.lo, p.dosePer10L.hi, 1), unit: p.unit })
-                : t("nut.customNoDose")
+                : athena
+                  ? t("nut.lblMissing")
+                  : t("nut.customNoDose")
               : p.dosePerPlant
                 ? t("nut.customPlant", { range: range(p.dosePerPlant.lo, p.dosePerPlant.hi, 1), unit: p.unit })
                 : t("nut.customNoDose")
           const w = weeks(p)
           return (
-            <button key={p.id} type="button" onClick={() => openFor(p)} className="flex items-center justify-between gap-2 border-t border-line pt-2.5 text-left">
+            <button key={p.id} type="button" onClick={() => openFor(p)} data-product={p.id} data-athena={athena} className="flex items-center justify-between gap-2 border-t border-line pt-2.5 text-left">
               <span className="min-w-0">
                 <b className="block text-[0.875rem] font-semibold">
                   {p.name} <span className="font-normal text-fg-3">· {p.application === "tank" ? t("nut.customTank") : p.application === "hand" ? t("nut.customHand") : t("nut.customRoots")}</span>
@@ -207,19 +215,44 @@ export function CustomProductsCard({ i }: { i: number }) {
                   {w ? ` · ${t("nut.customWeeks", { w })}` : ""}
                   {p.inactive ? ` · ${t("nut.customOff")}` : ""}
                 </span>
-                <span className="block text-[0.75rem] text-fg-3">{t("nut.srcLabel")}</span>
+                <span className="block text-[0.75rem] text-fg-3">{athena ? (p.dosePer10L ? t("nut.lblTyped") : "Athena") : t("nut.srcLabel")}</span>
               </span>
               <span className="shrink-0 text-[0.75rem] font-semibold underline decoration-water decoration-[1.5px] underline-offset-4">{t("nut.customEdit")}</span>
             </button>
           )
         })}
+        {offered.length > 0 && (
+          <div className="border-t border-line pt-2.5" id="nut-label-only">
+            <div className="text-[0.84375rem] font-semibold">{t("nut.lbl")}</div>
+            <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("nut.lblD")}</p>
+            {offered.map((x) => (
+              <div key={x.id} className="flex items-center justify-between gap-2 pt-2" data-label-only={x.id}>
+                <span className="min-w-0">
+                  <b className="block text-[0.875rem] font-semibold">
+                    {x.name}
+                    {x.stage === "clone" && <span className="font-normal text-fg-3"> · {t("nut.lblCuts")}</span>}
+                  </b>
+                  <span className="block text-[0.75rem] text-warn">{t("nut.lblMissing")}</span>
+                </span>
+                <button
+                  type="button"
+                  className={tertiary}
+                  id={`lbl-add-${x.id}`}
+                  onClick={() => openFor(null, { name: x.name, brand: "Athena", athena: x.id, application: "tank", unit: "mL", ...(x.stage === "clone" ? { use: { clone: true } } : {}) })}
+                >
+                  {t("nut.lblAdd")}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
-      <CustomProductSheet open={open} onOpenChange={setOpen} product={edit} />
+      <CustomProductSheet open={open} onOpenChange={setOpen} product={edit} draft={draft} />
     </Reveal>
   )
 }
 
-export function CustomProductSheet({ open, onOpenChange, product }: { open: boolean; onOpenChange: (o: boolean) => void; product: CustomProduct | null }) {
+export function CustomProductSheet({ open, onOpenChange, product, draft }: { open: boolean; onOpenChange: (o: boolean) => void; product: CustomProduct | null; draft?: Partial<CustomProduct> }) {
   const { t, range } = useSettings()
   const { saveCustomProduct, deleteCustomProduct } = useGrow()
   const show = useShow()
@@ -227,16 +260,20 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
   const [where, setWhere] = useState<CustomProduct["application"]>("tank")
   const [unit, setUnit] = useState<CustomProduct["unit"]>("mL")
   const [veg, setVeg] = useState(false)
+  const [clone, setClone] = useState(false)
   const [inactive, setInactive] = useState(false)
+  // Proper, Cuts (lot 14b): an Athena product whose dose is not published; the dose comes from the label only.
+  const athena = product ? labelOnlyOf(product) : draft?.athena
   // The label's volume (lot 7a): 1 L, 4 L, 10 L, 1 US gallon, or another one typed.
   const [per, setPer] = useState<LabelVolume | "other">(10)
   const { busy, run } = useSaver(() => onOpenChange(false))
   useEffect(() => {
     if (!open) return
-    const p = product
+    const p = product ?? (draft as CustomProduct | undefined)
     setWhere(p?.application ?? "tank")
     setUnit(p?.unit ?? "mL")
     setVeg(!!p?.use?.veg)
+    setClone(!!p?.use?.clone)
     setInactive(!!p?.inactive)
     const label = p?.labelDose ?? (p?.dosePer10L ? { ...p.dosePer10L, perL: 10 } : undefined)
     setPer(label?.gal ? "gal" : label && (LABEL_VOLUMES as readonly unknown[]).includes(label.perL) ? (label.perL as LabelVolume) : label ? "other" : 10)
@@ -252,7 +289,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
       to: show(p?.use?.flowerTo),
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, product])
+  }, [open, product, draft])
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }))
   const lo = parseNum(f.lo)
   const hi = parseNum(f.hi) ?? lo
@@ -265,7 +302,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
       if (badNums(f, ["lo", "hi", "perL", "from", "to"]).length) throw new Error(t("safe.fixFields"))
       const from = parseNum(f.from)
       const to = parseNum(f.to)
-      const use = veg || from != null ? { ...(veg ? { veg: true } : {}), ...(from != null ? { flowerFrom: from, flowerTo: to ?? from } : {}) } : undefined
+      const use = clone || veg || from != null ? { ...(clone ? { clone: true } : {}), ...(veg ? { veg: true } : {}), ...(from != null ? { flowerFrom: from, flowerTo: to ?? from } : {}) } : undefined
       const base: CustomProduct = {
         schemaVersion: GROW_SCHEMA.customProduct,
         id: product?.id ?? newId("cp-"),
@@ -279,6 +316,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
         ...(f.kind.trim() ? { kind: f.kind.trim() } : {}),
         ...(f.weeks.trim() ? { weeks: f.weeks.trim() } : {}),
         ...(inactive ? { inactive: true } : {}),
+        ...(athena ? { athena } : {}),
         ...(product?.onEvent ? { onEvent: product.onEvent } : where === "roots" ? { onEvent: "transfer" as const } : {}),
       }
       if (where !== "roots") {
@@ -292,8 +330,8 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
     <Sheet
       open={open}
       onOpenChange={onOpenChange}
-      title={product?.name ?? t("nut.pTitle")}
-      description={t("nut.pDesc")}
+      title={product?.name ?? draft?.name ?? t("nut.pTitle")}
+      description={athena ? t("nut.lblMissing") : t("nut.pDesc")}
       footer={<SaveBar busy={busy} onSave={save} onDelete={product ? async () => { await deleteCustomProduct(product.id); onOpenChange(false) } : undefined} />}
     >
       <div className="flex flex-col gap-3">
@@ -343,6 +381,7 @@ export function CustomProductSheet({ open, onOpenChange, product }: { open: bool
         {where === "roots" && <p className="text-[0.75rem] text-fg-3">{t("nut.pPerPlant")}</p>}
         {where !== "roots" && (
           <>
+            <SwitchRow id="p-clone" label={t("nut.pUseClone")} checked={clone} onChange={setClone} />
             <SwitchRow id="p-veg" label={t("nut.pUseVeg")} checked={veg} onChange={setVeg} />
             <Grid>
               <NumField id="p-from" integer label={t("nut.pFlowerFrom")} value={f.from ?? ""} onChange={set("from")} />

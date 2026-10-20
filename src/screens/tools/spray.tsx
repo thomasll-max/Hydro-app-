@@ -19,13 +19,14 @@ import { formatInput, locales } from "@/i18n/core"
 import { cn } from "@/lib/utils"
 import { SaveBar } from "../sheets"
 import { IpwTool } from "./ipw"
+import { StackSprayTool } from "./stack-spray"
 
-type Kind = "ipw" | "mix"
+type Kind = "ipw" | "mix" | "stack"
 const KIND_KEY = "hydro.sprayKind"
 const readKind = (): Kind | null => {
   try {
     const v = localStorage.getItem(KIND_KEY)
-    return v === "ipw" || v === "mix" ? v : null
+    return v === "ipw" || v === "mix" || v === "stack" ? v : null
   } catch {
     return null
   }
@@ -35,7 +36,10 @@ export function SprayTool() {
   const { t } = useSettings()
   const { grow, nutrition } = useGrow()
   // IPW first when it is switched on or no mix exists; the last choice is remembered on this phone.
-  const [kind, setKind] = useState<Kind>(() => readKind() ?? (nutrition.addons.includes("ipw") || !validMixes(grow?.sprayMixes).length ? "ipw" : "mix"))
+  const [picked, setKind] = useState<Kind>(() => readKind() ?? (nutrition.addons.includes("ipw") || !validMixes(grow?.sprayMixes).length ? "ipw" : "mix"))
+  // Stack (lot 14b) is offered when its add-on is on; otherwise a remembered « Stack » shows the IPW tool
+  const stackOn = nutrition.addons.includes("stack")
+  const kind: Kind = picked === "stack" && !stackOn ? "ipw" : picked
   const choose = (k: Kind) => {
     setKind(k)
     try {
@@ -52,10 +56,11 @@ export function SprayTool() {
         onChange={choose}
         options={[
           { value: "ipw", label: t("spray.ipw") },
+          ...(stackOn ? [{ value: "stack" as Kind, label: t("spray.stack") }] : []),
           { value: "mix", label: t("spray.mix") },
         ]}
       />
-      {kind === "ipw" ? <IpwTool /> : <MixTool />}
+      {kind === "ipw" ? <IpwTool /> : kind === "stack" ? <StackSprayTool /> : <MixTool />}
     </div>
   )
 }

@@ -94,7 +94,30 @@ Tolérances : ±1 EC sur le runoff, ±10 % sur le dryback.
   - restauration : 32 mL/L, 2 jours de pulvérisation puis 1 jour de pause, sur 9 jours ;
   - en végé S1–S4 et en floraison **S1–S3 uniquement** ;
   - substrat saturé avant de pulvériser ; ~22 °C et 55–65 % d'HR ; lampes de culture éteintes ; substrat et tiges d'abord, puis feuillage ; 3 à 4 h de séchage avant de rallumer.
-- **Proper** (Athena, « Synganic Terpene Booster », humiques et fulviques) : absent du Handbook V8, aucune dose publiée sur athenaag.com/modified. **Dose et semaines depuis l'étiquette uniquement.**
+- **Proper** (Athena, « Synganic Terpene Booster », humiques et fulviques) : absent du Handbook V8, aucune dose publiée sur athenaag.com/modified. **Dose et semaines depuis l'étiquette uniquement.** Voir aussi « Compléments hors Handbook » ci-dessous (lot 14b).
+
+---
+
+# COMPLÉMENTS HORS HANDBOOK (relevés le 20/10/2026, lot 14b)
+**Pas dans le Handbook V8.** Sources : pages officielles d'Athena, consultées le 20/10/2026. Ne jamais mélanger avec les valeurs du Handbook ci-dessus sans dire d'où elles viennent.
+
+## Stack (gamme « Foliar », ni Pro ni Blended : s'ajoute aux deux)
+Source : page boutique officielle https://store.athenaag.com/stack/ (consultée le 20/10/2026).
+- « Natural plant nutrient made from premium kelp extract » ; aide à corriger de légères carences en potassium ; contient des ingrédients organiques, peut se séparer : **bien agiter**.
+- **Arrosage (root drench)** : **1–2 mL par gallon**, une fois par semaine, dans le bidon de la semaine, **ajouté en dernier** ; peut être combiné avec la recette d'engrais habituelle ; « safe for irrigation systems ».
+- **Pulvérisation foliaire** : **7 mL par gallon**, une fois par semaine, lampes éteintes, laisser sécher avant de rallumer, **pas après la semaine 3 de floraison**.
+- **Période** : de la dernière semaine de végé à la semaine 3 de floraison (ou dès que les plantes ne grandissent plus).
+- Transplantation : 2 mL par gallon (trempage 30–60 s des racines ou dans l'eau après transfert) ; graines : 4 mL par gallon, trempage 1–2 min. *(Relevé ; l'app ne s'en sert pas.)*
+- Compatible avec Athena IPM dans le même pulvérisateur (page https://www.athenaag.com/foliar-line). *(La page dit « IPM » ; l'app appelle « IPW » le protocole du Handbook FR p. 80 du PDF. Le prompt du lot 14 demande de pouvoir combiner Stack avec l'IPW : fait, à vérifier par Thomas que c'est bien le même produit.)*
+- Étiquette et FDS officielles : https://www.athenaag.com/sds-sheets (lien Google Drive, non lu).
+- **Conversion** : 1 gallon US = 3,785 L. L'app affiche l'unité d'origine **et** la valeur en mL/L, arrondie à 2 décimales et marquée « converti » : 1–2 mL/gal = 0,26–0,53 mL/L ; 7 mL/gal = 1,85 mL/L ; 2 mL/gal = 0,53 mL/L ; 4 mL/gal = 1,06 mL/L.
+- **Contradiction** : des revendeurs écrivent « jusqu'à la semaine 4–5 de floraison » pour l'arrosage. La page officielle dit semaine 3 : **on suit l'officiel**, la version revendeur n'est pas affichée.
+
+## Proper (« Synganic Terpene Booster »)
+- **Aucune dose publiée** (Handbook V8, https://www.athenaag.com/modified, absent de la page des étiquettes au 20/10/2026). Produit Athena **sans dose** : l'app le propose (Pro et Blended), la dose et les semaines sont **saisies depuis l'étiquette** et marquées « dose de l'étiquette, saisie par toi ».
+
+## Cuts (Blended, produit pour boutures)
+- Une étiquette existe sur https://www.athenaag.com/sds-sheets, **non lue**. Même traitement que Proper tant qu'aucune dose officielle n'est relevée : proposé (Blended, au stade bouture), **dose à saisir depuis l'étiquette**. **Donnée manquante** : la dose de Cuts.
 
 ---
 

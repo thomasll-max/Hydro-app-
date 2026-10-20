@@ -23,6 +23,8 @@ export const ADDONS: Record<AddonId, AddonDef> = {
   // Blended only: never with the Pro Line.
   camg: { id: "camg", name: "CaMg", application: "tank", lines: ["athena-blended"], src: { kind: "athena", page: 58 } },
   pk: { id: "pk", name: "PK", application: "tank", lines: ["athena-blended"], src: { kind: "athena", page: 58 } },
+  // Lot 14b: outside the Handbook (official Stack page), with both lines; in the tank, by hand or sprayed (athena-extras.ts).
+  stack: { id: "stack", name: "Stack", application: "tank", lines: ["athena-pro", "athena-blended"], src: { kind: "athenaWeb", ref: "stack" } },
 }
 
 /** Cleanse flush: RO water + 26 mL / 10 L, EC < 0.1, pH 6.0–6.4, over the last 3 days in coco. */

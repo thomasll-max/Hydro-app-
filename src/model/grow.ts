@@ -4,6 +4,7 @@
 // sprays/{id}, customProducts/{id}, equipment/{id}, equipmentAssignments/{id}, settings/main (+ digest/latest, Claude).
 import type { DrybackMethod, IsoDate, Range } from "./types"
 import type { AddonId } from "@/data/nutrients/types"
+import type { LabelOnlyId, StackUse } from "@/data/nutrients/athena-extras"
 
 export const GROW_SCHEMA = {
   grow: 1,
@@ -48,7 +49,8 @@ export type { AddonId }
  */
 export type OwnPhaseTargets = { ec?: Range; ph?: Range }
 export type OwnTargets = { veg?: OwnPhaseTargets; flower?: OwnPhaseTargets }
-export type NutritionSettings = { line: string; addons: AddonId[]; dosing: DosingMethod; own?: OwnTargets }
+/** `stack`: how Stack is given when its add-on is on (lot 14b); absent = in the tank. */
+export type NutritionSettings = { line: string; addons: AddonId[]; dosing: DosingMethod; own?: OwnTargets; stack?: StackUse }
 
 export type Grow = {
   schemaVersion: number
@@ -254,7 +256,7 @@ export type Spray = {
   date: IsoDate
   spaceIds: string[]
   cycleId?: string
-  /** "ipw" (Athena), or "mix" (a mix of one's own, `mixId`). */
+  /** "ipw" (Athena), "stack" (Athena, lot 14b), or "mix" (a mix of one's own, `mixId`). */
   product: string
   /** IPW: the protocol's dose. Absent for a mix of one's own (its doses are in `mix`). */
   mlPerL?: number
@@ -263,6 +265,8 @@ export type Spray = {
   mixId?: string
   mix?: { name: string; items: SprayMixItem[] }
   protocol?: "prevention" | "pressure" | "restoration"
+  /** Stack added to the same sprayer as the IPW (lot 14b): its dose per litre (converted from 7 mL/gal). */
+  stackMlPerL?: number
   /** First day of the running protocol (the schedule counts from it). */
   protocolStart?: IsoDate
   /** Checklist ticked before spraying. */
@@ -292,8 +296,11 @@ export type CustomProduct = {
   mixOrder?: number
   /** Weeks of use as written on the label, free text until typed. */
   weeks?: string
-  /** Weeks of use in the tank, typed from the label: in veg, and/or flowering weeks from–to. Empty = not typed. */
-  use?: { veg?: boolean; flowerFrom?: number; flowerTo?: number }
+  /** Weeks of use in the tank, typed from the label: cuttings (lot 14b, Cuts), in veg, and/or flowering weeks from–to.
+   *  Empty = not typed. */
+  use?: { clone?: boolean; veg?: boolean; flowerFrom?: number; flowerTo?: number }
+  /** An Athena product with no published dose (lot 14b: Proper, Cuts): offered by the app, the dose from the label. */
+  athena?: LabelOnlyId
   /** Switched off: kept, but no longer offered in the tank. */
   inactive?: boolean
   /** Event that triggers a one-off use (roots): a reminder is offered when it happens. */

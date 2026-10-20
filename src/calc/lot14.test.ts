@@ -2,11 +2,14 @@
 // space, never mixed (a Blended space never gets a Pro product, and the reverse), the Pro recipes unchanged.
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { mixRecipe } from "./nutrients"
+import { labelOnlyOf, mixRecipe } from "./nutrients"
+import { shownPerL, stackDrenchPer10L, stackSprayMl, stackSprayThisWeek, stackTankThisWeek, stackWindow } from "./stack"
 import { dayTargets } from "./targets"
 import { blendedCleanse, blendedManualRows, blendedReferenceRows } from "./reperes"
 import { segments } from "./series"
-import { ADDONS, ATHENA_BLENDED, ATHENA_PRO, visibleCatalogs, type NutrientCatalog } from "@/data/nutrients"
+import { ADDONS, ATHENA_BLENDED, ATHENA_PRO, GALLON_L, LABEL_ONLY, perGalToPerL, STACK, visibleCatalogs, type NutrientCatalog } from "@/data/nutrients"
+import type { CustomProduct } from "@/model/grow"
+import type { Cycle } from "@/model/types"
 import { switchLine } from "@/screens/tools/nutrition-settings"
 import { fr } from "@/i18n/fr"
 import { en } from "@/i18n/en"
@@ -141,5 +144,136 @@ describe("lot 14a — Repères : les tableaux Blended à côté de ceux de la Pr
       expect(JSON.stringify(d)).not.toMatch(/blendedSoon|lineOnly/)
       expect(d.info.reperes).toMatch(/58/)
     }
+  })
+})
+
+// ---------- 14b: Stack, Proper, Cuts ----------
+
+const cyc = (x: Partial<Cycle> = {}) => ({ germinationDate: "2026-01-01", vegDate: "2026-01-15", flowerWeeks: 9, ...x }) as Cycle
+const stackOn = ["fade", "cleanse", "balance", "stack"] as never[]
+const withStack = (line: string, phaseId: string, stack: { ok: boolean; doneOn?: string } | undefined, addons = stackOn) =>
+  mixRecipe(line, { phaseId, volumeL: 100, addons, stack })
+
+describe("lot 14b — Stack (page officielle, consultée le 20/10/2026)", () => {
+  it("conversions gal → L : 1 gal = 3,785 L ; 1–2 mL/gal = 0,26–0,53 mL/L ; 7 mL/gal = 1,85 ; 2 = 0,53 ; 4 = 1,06", () => {
+    expect(GALLON_L).toBe(3.785)
+    expect([1, 2, 7, 4].map((x) => shownPerL(perGalToPerL(x)))).toEqual([0.26, 0.53, 1.85, 1.06])
+    expect(stackDrenchPer10L().map((x) => Math.round(x * 100) / 100)).toEqual([2.64, 5.28])
+    expect(stackSprayMl(2)).toBe(3.7)
+    expect(STACK.drench.mlPerGal).toEqual([1, 2])
+    expect(STACK.foliar.mlPerGal).toBe(7)
+  })
+
+  it("avec Pro et Blended, désactivé par défaut", () => {
+    for (const c of [ATHENA_PRO, ATHENA_BLENDED]) {
+      expect(c.addons).toContain("stack")
+      expect(c.defaultAddons).not.toContain("stack")
+    }
+    expect(ADDONS.stack.lines).toEqual(["athena-pro", "athena-blended"])
+  })
+
+  it("fenêtre : de la dernière semaine de végé (7 jours avant le 12/12) à la fin de la floraison S3 ; sans date de 12/12 en végé, inconnue", () => {
+    const planned = cyc({ plannedFlipDate: "2026-02-15" })
+    expect(stackWindow(planned, "2026-02-07")).toEqual({ ok: false, reason: "early" })
+    expect(stackWindow(planned, "2026-02-08")).toEqual({ ok: true, until: "2026-03-07" })
+    expect(stackWindow(cyc(), "2026-02-08")).toEqual({ ok: false, reason: "noFlip" })
+    expect(stackWindow(cyc(), "2026-01-10")).toEqual({ ok: false, reason: "early" }) // seedling
+    const flipped = cyc({ flipDate: "2026-02-15" })
+    expect(stackWindow(flipped, "2026-03-07")).toMatchObject({ ok: true }) // flowering day 21, week 3
+    expect(stackWindow(flipped, "2026-03-08")).toEqual({ ok: false, reason: "late" }) // week 4
+    expect(stackWindow(null, "2026-03-08")).toEqual({ ok: false, reason: "notStarted" })
+  })
+
+  it("dans le bidon : ajouté en dernier, 1–2 mL/gal convertis, absent hors de sa fenêtre ou add-on éteint ; une fois par semaine", () => {
+    for (const line of ["athena-pro", "athena-blended"]) {
+      const r = withStack(line, "veg", { ok: true })
+      const last = r.items.at(-1)!
+      expect(last).toMatchObject({ id: "stack", qty: null, range: [26.4, 52.8], src: { kind: "athenaWeb", ref: "stack", converted: true }, note: "stack" })
+      expect(withStack(line, "veg", { ok: false }).items.map((i) => i.id)).not.toContain("stack")
+      expect(withStack(line, "veg", { ok: true }, ["fade", "cleanse", "balance"] as never[]).items.map((i) => i.id)).not.toContain("stack")
+      expect(withStack(line, "veg", undefined).items.map((i) => i.id)).not.toContain("stack") // by hand or sprayed
+      expect(withStack(line, "veg", { ok: true, doneOn: "2026-02-10" }).items.at(-1)).toMatchObject({ id: "stack", qty: null, note: "stackDone" })
+    }
+    // Last even after the personal products.
+    const own: CustomProduct = { schemaVersion: 2, id: "x", name: "X", unit: "mL", application: "tank", verified: false, source: "label", createdAt: "", dosePer10L: { lo: 1, hi: 1 }, use: { veg: true } }
+    const r = mixRecipe("athena-pro", { phaseId: "veg", volumeL: 10, addons: stackOn, stack: { ok: true }, custom: [own], chosenPer10L: { stack: 3 } })
+    expect(r.items.map((i) => i.id).slice(-2)).toEqual(["x", "stack"])
+    expect(r.items.at(-1)!.qty).toBe(3)
+    // This week's tank or spray that already had Stack.
+    const mixes = [{ schemaVersion: 4, id: "m", date: "2026-02-10", volumeL: 50, spaceIds: ["fl"], createdAt: "", items: [{ id: "stack", qty: 13, unit: "mL" }] }]
+    expect(stackTankThisWeek(mixes as never, ["fl"], "2026-02-16")).toBe("2026-02-10")
+    expect(stackTankThisWeek(mixes as never, ["fl"], "2026-02-17")).toBeUndefined()
+    expect(stackSprayThisWeek([{ schemaVersion: 1, id: "s", date: "2026-02-12", spaceIds: ["fl"], product: "ipw", litres: 2, stackMlPerL: 1.85 }], "fl", "2026-02-14")).toBe("2026-02-12")
+  })
+
+  it("pulvérisation : 7 mL/gal convertis, refusée après la floraison S3 avec un message clair, combinable avec l'IPW", () => {
+    const tool = read("src/screens/tools/stack-spray.tsx")
+    expect(tool).toMatch(/disabled=\{!win\.ok \|\| !sprayed/)
+    expect(tool).toMatch(/t\(`nut\.stackWhy_\$\{win\.reason\}`\)/)
+    expect(fr.nut.stackWhy_late).toBe("Plus de Stack après la floraison S3.")
+    expect(read("src/screens/tools/ipw.tsx")).toMatch(/stackMlPerL: shownPerL\(stackFoliarPerL\(\)\)/)
+    expect(read("src/screens/tools/spray.tsx")).toMatch(/kind === "stack" \? <StackSprayTool \/>/)
+  })
+
+  it("à la main possible (règle du lot 7b), rappel hebdomadaire proposé, jamais créé tout seul", () => {
+    expect(read("src/screens/tools/nutrition-settings.tsx")).toMatch(/STACK_USES\.map/)
+    expect(read("src/screens/tools/stack-card.tsx")).toMatch(/ed\.openReminder\(\{ title: STACK\.name, spaceId, repeat: "weekly"/)
+    for (const f of ["src/calc/reminders.ts", "src/calc/deadlines.ts"]) {
+      let src = ""
+      try {
+        src = read(f)
+      } catch {
+        continue
+      }
+      expect(src).not.toMatch(/stack/i)
+    }
+  })
+
+  it("source dans l'ⓘ et dans À propos ; textes en trois langues", () => {
+    for (const d of [fr, en, de]) {
+      expect(d.info.nutrition).toMatch(/Stack.*20[./]10[./]2026/)
+      expect(d.about.athena4).toMatch(/\{drench\}.*\{foliar\}.*\{week\}/)
+      for (const k of ["stackSub", "stackDone", "stackHandD", "stackFoliarD", "stackShake", "stackReminder", "lbl", "lblD", "lblMissing", "lblTyped", "lblAdd"] as const) expect(d.nut[k]).toBeTruthy()
+    }
+  })
+})
+
+describe("lot 14b — Proper et Cuts : aucune dose publiée par Athena", () => {
+  const product = (x: Partial<CustomProduct>): CustomProduct => ({ schemaVersion: 2, id: x.athena ?? "p", name: "P", unit: "mL", application: "tank", verified: false, source: "label", createdAt: "", ...x })
+  const proper = product({ name: "Proper", athena: "proper" })
+  const cuts = product({ name: "Cuts", athena: "cuts", use: { clone: true } })
+
+  it("sans dose saisie, dans aucune recette (Pro et Blended, toutes les phases)", () => {
+    for (const c of [ATHENA_PRO, ATHENA_BLENDED]) for (const p of c.program) {
+      const ids = mixRecipe(c.id, { phaseId: p.id, volumeL: 100, custom: [proper, cuts] }).items.map((i) => i.id)
+      expect(ids).not.toContain("proper")
+      expect(ids).not.toContain("cuts")
+    }
+    // An older « Proper » typed by hand with the brand Athena is the same product.
+    expect(labelOnlyOf({ name: " proper ", brand: "Athena" })).toBe("proper")
+    expect(labelOnlyOf({ name: "Proper", brand: "Autre" })).toBeUndefined()
+  })
+
+  it("avec la dose de l'étiquette : Proper avec les deux gammes ; Cuts seulement en Blended, au stade bouture", () => {
+    const p = { ...proper, dosePer10L: { lo: 2, hi: 2 }, use: { veg: true } }
+    const c = { ...cuts, dosePer10L: { lo: 1, hi: 1 } }
+    expect(mixRecipe("athena-pro", { phaseId: "veg", volumeL: 10, custom: [p] }).items.map((i) => i.id)).toContain("proper")
+    expect(mixRecipe("athena-blended", { phaseId: "veg", volumeL: 10, custom: [p] }).items.map((i) => i.id)).toContain("proper")
+    expect(mixRecipe("athena-blended", { phaseId: "clone", volumeL: 10, custom: [c] }).items.find((i) => i.id === "cuts")).toMatchObject({ qty: 1, src: { kind: "label" } })
+    expect(mixRecipe("athena-pro", { phaseId: "clone", volumeL: 10, custom: [c] }).items.map((i) => i.id)).not.toContain("cuts")
+    expect(mixRecipe("athena-blended", { phaseId: "veg", volumeL: 10, custom: [c] }).items.map((i) => i.id)).not.toContain("cuts")
+  })
+
+  it("aucune valeur pour Proper ou Cuts dans le code ; proposés dans la liste des produits avec la mention", () => {
+    expect(LABEL_ONLY).toEqual([
+      { id: "proper", name: "Proper", lines: ["athena-pro", "athena-blended"] },
+      { id: "cuts", name: "Cuts", lines: ["athena-blended"], stage: "clone" },
+    ])
+    expect(read("src/data/nutrients/athena-extras.ts")).not.toMatch(/(proper|cuts)[^\n]*\d+\s*mL/i)
+    const parts = read("src/screens/tools/nutrition-parts.tsx")
+    expect(parts).toMatch(/id="nut-label-only"/)
+    expect(parts).toMatch(/athena: x\.id, application: "tank"/)
+    expect(fr.nut.lblMissing).toBe("dose non publiée par Athena : saisis celle de ton étiquette")
+    expect(fr.nut.lblTyped).toBe("dose de l'étiquette, saisie par toi")
   })
 })

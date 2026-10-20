@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { Grid, NumField, Seg } from "@/components/hydro/form"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
-import { ADDONS as ADDON_DEFS, getCatalog, isOwnLine, OWN_LINE, visibleCatalogs, type AddonId } from "@/data/nutrients"
+import { ADDONS as ADDON_DEFS, getCatalog, isOwnLine, OWN_LINE, STACK_USES, visibleCatalogs, type AddonId, type StackUse } from "@/data/nutrients"
 import type { DosingMethod, NutritionSettings, OwnTargets } from "@/model/grow"
 import type { MessageKey } from "@/i18n/types"
 import { joined, segment, toggle } from "@/components/hydro/styles"
@@ -134,6 +134,19 @@ export function NutritionFields({ value, onChange, idPrefix, confirmSwitch }: { 
         </div>
         {value.addons.includes("ipw") && <p className="mt-1 text-[0.75rem] text-fg-3">{t("growSet.ipwNote")}</p>}
       </div>}
+      {/* Lot 14b: how Stack is given, chosen by the grower (once a week, last week of veg → flowering week 3). */}
+      {!own && value.addons.includes("stack") && (
+        <div id={`${idPrefix}-stack`}>
+          <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("growSet.stackUse")}</div>
+          <Seg<StackUse>
+            label={t("growSet.stackUse")}
+            value={value.stack ?? "tank"}
+            onChange={(v) => onChange({ ...value, stack: v })}
+            options={STACK_USES.map((u) => ({ value: u, label: t(u === "tank" ? "growSet.stackInTank" : u === "hand" ? "growSet.stackByHand" : "growSet.stackSprayed") }))}
+          />
+          <p className="mt-1 text-[0.75rem] leading-[1.45] text-fg-3">{t("growSet.stackUseD")}</p>
+        </div>
+      )}
       {concs.length > 0 && (
         <div>
           <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("growSet.dosing")}</div>

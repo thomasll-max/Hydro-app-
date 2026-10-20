@@ -4,9 +4,10 @@
 // powders are dosed weighed (g) or as a dissolved concentrate (mL, published table p. 37); personal products
 // come after the line, with the label dose only (empty until typed).
 import type { CustomProduct } from "@/model/grow"
-import type { Mix, Range, StageKey, Substrate } from "@/model/types"
-import { ADDONS, balanceStepMl, getCatalog, type AddonId, type EcRow, type NutrientCatalog, type Per10L, type ProgramPhase, type ValueSource } from "@/data/nutrients"
+import type { IsoDate, Mix, Range, StageKey, Substrate } from "@/model/types"
+import { ADDONS, LABEL_ONLY, STACK, balanceStepMl, getCatalog, type AddonId, type LabelOnlyId, type EcRow, type NutrientCatalog, type Per10L, type ProgramPhase, type ValueSource } from "@/data/nutrients"
 import type { StageInfo } from "./stage"
+import { stackDrenchPer10L } from "./stack"
 
 // ---------- Where the plants are in the program ----------
 export type Position = { stage: "presoak" | "clone" | "veg" | "flower" | "flush"; week?: number }
@@ -115,7 +116,7 @@ export type MixItem = {
   estimate?: boolean
   src?: ValueSource
   /** Why the quantity is what it is (shown under the line). */
-  note?: "balanceFirst" | "balanceSteps" | "coreAlone" | "replacesCore" | "fadeOff" | "labelMissing" | "labelRange" | "range" | "concentrate"
+  note?: "balanceFirst" | "balanceSteps" | "coreAlone" | "replacesCore" | "fadeOff" | "labelMissing" | "labelRange" | "range" | "concentrate" | "stack" | "stackDone"
   /** Balance titration step for this tank (mL per step). */
   stepMl?: number
 }
@@ -138,6 +139,11 @@ export type MixInput = {
   substrate?: Substrate
   /** Actual flowering week, when the phase spans several (personal products' weeks). */
   week?: number
+  /**
+   * Stack in the tank (lot 14b), when its add-on is on and it goes in the tank: `ok` = inside its window (last week of
+   * veg → flowering week 3); `doneOn` = it already went in a tank this week (once a week).
+   */
+  stack?: { ok: boolean; doneOn?: IsoDate }
 }
 
 export type MixResult = {
@@ -157,11 +163,19 @@ export type MixResult = {
 const r1 = (x: number) => Math.round(x * 10) / 10
 const lohi = (p: Per10L): [number, number] => (typeof p === "number" ? [p, p] : p)
 
+/** Athena product with no published dose (lot 14b), by its flag or, for older data, its name with the brand Athena. */
+export function labelOnlyOf(p: Pick<CustomProduct, "athena" | "brand" | "name">): LabelOnlyId | undefined {
+  if (p.athena) return p.athena
+  if (p.brand?.trim().toLowerCase() !== "athena") return undefined
+  return LABEL_ONLY.find((x) => x.name.toLowerCase() === p.name.trim().toLowerCase())?.id
+}
+
 /** Is a personal product used at this phase (at this flowering week when known, else anywhere in the phase)? */
 export function customApplies(p: CustomProduct, phase: ProgramPhase, week?: number): boolean {
   if (p.application !== "tank" || p.inactive) return false
   const u = p.use
   if (!u) return true // weeks not typed yet: listed, without a dose
+  if (phase.stage === "clone") return !!u.clone
   if (phase.stage === "veg") return !!u.veg
   if (phase.stage === "flower" && u.flowerFrom != null) {
     const to = u.flowerTo ?? u.flowerFrom
@@ -258,6 +272,9 @@ export function mixRecipe(lineId: string, input: MixInput): MixResult {
 
   for (const p of input.custom ?? []) {
     if (!customApplies(p, phase, input.week) || phase.stage === "flush") continue
+    // Proper, Cuts (lot 14b): in no recipe until their dose is typed from the label; Cuts only with Blended.
+    const athena = LABEL_ONLY.find((x) => x.id === labelOnlyOf(p))
+    if (athena && (!p.dosePer10L || !athena.lines.includes(cat.id))) continue
     const d = p.dosePer10L
     const typed = d && p.use
     if (typed && d.lo === d.hi) items.push({ id: p.id, name: p.name, kind: "custom", qty: r1(d.lo * k), unit: p.unit, src: { kind: "label" } })
@@ -265,6 +282,18 @@ export function mixRecipe(lineId: string, input: MixInput): MixResult {
       const chosen = input.chosenPer10L?.[p.id]
       items.push({ id: p.id, name: p.name, kind: "custom", qty: chosen != null ? r1(chosen * k) : null, range: [r1(d.lo * k), r1(d.hi * k)], unit: p.unit, src: { kind: "label" }, note: "labelRange" })
     } else items.push({ id: p.id, name: p.name, kind: "custom", qty: null, unit: p.unit, src: { kind: "label" }, note: "labelMissing" })
+  }
+
+  // Stack (lot 14b): in the week's tank, added last, from the last week of veg to flowering week 3; once a week.
+  if (input.stack?.ok && on.has("stack") && ADDONS.stack.lines.includes(cat.id) && phase.stage !== "flush") {
+    const [lo, hi] = stackDrenchPer10L()
+    const chosen = input.chosenPer10L?.stack
+    const src: ValueSource = { kind: "athenaWeb", ref: "stack", converted: true }
+    items.push(
+      input.stack.doneOn
+        ? { id: "stack", name: STACK.name, kind: "product", qty: null, unit: "mL", src, note: "stackDone" }
+        : { id: "stack", name: STACK.name, kind: "product", qty: chosen != null ? r1(chosen * k) : null, range: [r1(lo * k), r1(hi * k)], unit: "mL", src, note: "stack" },
+    )
   }
 
   // Only doses actually scaled count (a table-driven powder at another EC is still published data).

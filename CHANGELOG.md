@@ -1,5 +1,11 @@
 # Changelog
 
+## Lot 14b — Stack, Proper, Cuts (20/10/2026)
+- **Stack** (Athena, avec Pro Line ou Blended, à activer dans les add-ons) : **dans le bidon** (ajouté en dernier), **à la main** ou **en pulvérisation**, une fois par semaine, de la dernière semaine de végé à la floraison S3. Les doses de la page officielle sont en mL par gallon : l'app montre l'unité d'origine et la valeur convertie en mL/L. Après la floraison S3, la pulvérisation est refusée avec la raison. Il peut aller dans le même pulvérisateur que l'IPW. Un rappel chaque semaine est proposé, jamais créé tout seul.
+- **Proper** et **Cuts** (Cuts en Blended, pour les boutures) : proposés dans « Produits perso », « dose non publiée par Athena : saisis celle de ton étiquette ». Tant que la dose est vide, ils n'entrent dans aucune recette.
+- La fiche Athena a une nouvelle section « Compléments hors Handbook » avec les sources.
+- 488 tests.
+
 ## Lot 14a — Blended partout et choix de la gamme (20/10/2026)
 - **Athena Blended** est maintenant proposée aussi dans la version Claude, à côté de la Pro Line. Les deux gammes ne se mélangent jamais.
 - **Choix de la gamme** dans Réglages, la fiche d'un espace et l'assistant de démarrage : Pro Line, Blended ou ta propre marque, avec une ligne d'explication sous chaque choix.

@@ -8,12 +8,13 @@ import type { MessageKey } from "@/i18n/types"
 import { TARGET } from "@/store"
 import { CURRENT_BUILD, formatVersion } from "@/lib/version"
 import { CREDITS, licenseLabel, type Credit } from "@/data/credits"
+import { STACK } from "@/data/nutrients"
 
 type Block = { id: string; title: MessageKey; lines: MessageKey[]; where?: MessageKey; mark?: MessageKey }
 
 /** The sources, most used first. Pages are the printed ones (docs/athena-fiche.md). */
 export const ABOUT_SOURCES: Block[] = [
-  { id: "athena", title: "about.athena", lines: ["about.athena1", "about.athena2", "about.athena3"], where: "about.athenaWhere", mark: "about.athenaMark" },
+  { id: "athena", title: "about.athena", lines: ["about.athena1", "about.athena2", "about.athena3", "about.athena4"], where: "about.athenaWhere", mark: "about.athenaMark" },
   { id: "sensor", title: "about.sensor", lines: ["about.sensor1"], where: "about.sensorWhere" },
   { id: "makers", title: "about.makers", lines: ["about.makers1"] },
   { id: "formulas", title: "about.formulas", lines: ["about.formulas1", "about.formulas2", "about.formulas3", "about.formulas4", "about.formulas5"] },
@@ -31,7 +32,11 @@ const KINDS: { kind: Credit["kind"]; title: MessageKey }[] = [
 ]
 
 export function AboutTool() {
-  const { t, locale } = useSettings()
+  const { t, locale, num, range } = useSettings()
+  // Stack's figures come from its data (lot 14b), never retyped in a text.
+  const params: Partial<Record<MessageKey, Record<string, string | number>>> = {
+    "about.athena4": { drench: range(STACK.drench.mlPerGal[0], STACK.drench.mlPerGal[1]), foliar: num(STACK.foliar.mlPerGal), week: STACK.lastFlowerWeek },
+  }
   const privacy: MessageKey[] =
     TARGET === "local"
       ? ["about.privacyAccount", "about.privacyLocal", "about.privacyNoClaude", "about.privacySpeech", "about.privacyBackup"]
@@ -56,7 +61,7 @@ export function AboutTool() {
               <h3 className="text-[0.9375rem] leading-snug font-semibold">{t(b.title)}</h3>
               <ul className="mt-1.5 flex flex-col gap-1.5 text-[0.8125rem] leading-[1.45] text-fg-2">
                 {b.lines.map((k) => (
-                  <li key={k}>{t(k)}</li>
+                  <li key={k}>{t(k, params[k])}</li>
                 ))}
               </ul>
               {b.where && <p className="mt-1.5 text-[0.75rem] leading-[1.45] text-fg-3">{t(b.where)}</p>}

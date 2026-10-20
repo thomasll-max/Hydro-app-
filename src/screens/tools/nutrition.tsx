@@ -24,6 +24,9 @@ import { SettingsLink } from "./equipment-shared"
 import { useEditors } from "@/app/editors"
 import { ConcentrateCard, CustomProductsCard } from "./nutrition-parts"
 import { HandProducts, OwnRecipeTool } from "./own-recipe"
+import { StackCard } from "./stack-card"
+import { shownPerL, stackDrenchPerL, stackSprayThisWeek, stackTankThisWeek, stackWindow } from "@/calc/stack"
+import { STACK } from "@/data/nutrients"
 import { equipmentAt } from "@/equipment/calc"
 import type { Equipment, EquipmentAssignment } from "@/model/grow"
 import { joined, segment, tertiary, toggle } from "@/components/hydro/styles"
@@ -46,6 +49,8 @@ export function useSrcLabel() {
     if (s === "spec") return t("nut.srcSpec")
     if (s === "estimate" || s.kind === "estimate") return t("nut.srcEstimate")
     if (s.kind === "label") return t("nut.srcLabel")
+    // The line above already says « converti » with both units (lot 14b).
+    if (s.kind === "athenaWeb") return t("nut.srcStack")
     return s.page ? t("nut.srcPage", { p: s.page }) : t("nut.srcAthena")
   }
 }
@@ -63,7 +68,7 @@ export function NutritionTool() {
 
 function LineNutrition() {
   const { t, num, range, dm, show } = useSettings()
-  const { cycle, cycles, mixes, entries, saveMix, saveCycle, nutrition, space, spaces, grow, equipment, assignments, customProducts } = useGrow()
+  const { cycle, cycles, mixes, entries, saveMix, saveCycle, nutrition, space, spaces, grow, equipment, assignments, customProducts, sprays } = useGrow()
   const cat = getCatalog(nutrition.line)
   const phaseLabel = usePhaseLabel()
   const srcLabel = useSrcLabel()
@@ -74,6 +79,15 @@ function LineNutrition() {
   const pos = cycle ? positionOf(stageOn(cycle, todayIso())) : null
   const cyclePhase = (pos && phaseAt(cat, pos)) || phaseById(cat, "veg") || cat.program[0]
   const firstCycle = !cycle || cycleNumber(cycle, cycles) <= 1
+  // Stack (lot 14b): its add-on on, how it is given, its window today, and this week's tank that already had it.
+  const stackOn = nutrition.addons.includes("stack")
+  const stackUse = nutrition.stack ?? "tank"
+  const stackWin = stackWindow(cycle, todayIso())
+  const stackDone = space ? stackTankThisWeek(mixes, [space.id], todayIso()) : undefined
+  const stackLast =
+    stackUse === "foliar"
+      ? space && stackSprayThisWeek(sprays, space.id, todayIso())
+      : mixes.find((m) => space && m.spaceIds?.includes(space.id) && m.items?.some((i) => i.id === "stack" && i.qty != null))?.date
   const lineMixes = mixes.filter((m) => !m.line || m.line === cat.id)
   const last = lineMixes[0]
   const forecast = cycle?.potCount ? tankForecast(mixes, entries, cycle.potCount) : null
@@ -138,9 +152,11 @@ function LineNutrition() {
         custom: customProducts,
         substrate: cycle?.substrate ?? "coco",
         week: phase.id === cyclePhase.id && pos?.stage === "flower" ? pos.week : undefined,
+        // Stack goes in the tank of the cycle's phase only, inside its window (the date is today's).
+        stack: stackOn && stackUse === "tank" ? { ok: stackWin.ok && phase.id === cyclePhase.id, doneOn: stackDone } : undefined,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cat.id, phase.id, volumeL, ec, conc, nutrition.addons, JSON.stringify(chosen), f.balance, customProducts, cycle?.substrate, cyclePhase.id, pos?.week],
+    [cat.id, phase.id, volumeL, ec, conc, nutrition.addons, JSON.stringify(chosen), f.balance, customProducts, cycle?.substrate, cyclePhase.id, pos?.week, stackOn, stackUse, stackWin.ok, stackDone],
   )
   const items = result.items
   const ph = result.ph
@@ -174,6 +190,12 @@ function LineNutrition() {
         return t("nut.nLabelRange")
       case "concentrate":
         return t("nut.nConcentrate")
+      case "stack": {
+        const [lo, hi] = stackDrenchPerL()
+        return t("nut.stackSub", { gal: range(STACK.drench.mlPerGal[0], STACK.drench.mlPerGal[1]), perL: range(shownPerL(lo), shownPerL(hi), 2) })
+      }
+      case "stackDone":
+        return t("nut.stackDone", { date: dm(stackDone ?? "") })
     }
     return i.unit === "g" ? t("nut.nPowder") : ""
   }
@@ -339,6 +361,8 @@ function LineNutrition() {
           </div>
         </Card>
       </Reveal>
+
+      {stackOn && <StackCard i={2} use={stackUse} win={stackWin} last={stackLast || undefined} spaceId={space?.id} />}
 
       <Reveal i={2}>
         <Card className="gap-2.5">

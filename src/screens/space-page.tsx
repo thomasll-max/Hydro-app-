@@ -135,7 +135,7 @@ function SectionHead({ title, link, onLink, id, info }: { title: string; link?: 
         head
       )}
       {link && (
-        <button type="button" onClick={onLink} className="-my-3 ml-auto min-h-11 text-right text-[0.8125rem] font-semibold text-fg-2 hover:text-fg">
+        <button type="button" onClick={onLink} data-section-link className="-my-3 ml-auto min-h-11 text-right text-[0.8125rem] font-semibold text-fg-2 hover:text-fg">
           <NumText quiet>{link}</NumText>
         </button>
       )}

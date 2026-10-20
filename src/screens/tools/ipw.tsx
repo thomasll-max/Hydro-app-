@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils"
 import { useEditors } from "@/app/editors"
 import { secondary } from "@/components/hydro/styles"
 import { formatInput, locales } from "@/i18n/core"
+import { SwitchRow } from "./equipment-shared"
+import { shownPerL, stackFoliarPerL, stackSprayMl, stackWindow } from "@/calc/stack"
 
 export function IpwTool() {
   const { t, num, settings } = useSettings()
@@ -33,6 +35,9 @@ export function IpwTool() {
   const [protocol, setProtocol] = useState<IpwProtocol>("prevention")
   const [litres, setLitres] = useState("")
   const [checked, setChecked] = useState<IpwCheck[]>([])
+  // Lot 14b: Stack in the same sprayer (compatible), when Stack is set to be sprayed and inside its window.
+  const stackOffered = nutrition.addons.includes("stack") && nutrition.stack === "foliar" && stackWindow(cycle, today).ok
+  const [withStack, setWithStack] = useState(false)
   useEffect(() => {
     const last = mine[0]
     setProtocol((last?.protocol as IpwProtocol) ?? "prevention")
@@ -69,6 +74,7 @@ export function IpwTool() {
         protocol,
         protocolStart: start,
         checked,
+        ...(stackOffered && withStack ? { stackMlPerL: shownPerL(stackFoliarPerL()) } : {}),
         createdAt: new Date().toISOString(),
       })
       toast.success(t("ipw.saved"))
@@ -123,6 +129,15 @@ export function IpwTool() {
               <div className="text-[1.625rem] leading-tight font-semibold tabular">{dose != null ? `${num(dose, dose % 1 ? 1 : 0)} mL` : "—"}</div>
             </div>
           </div>
+          {stackOffered && (
+            <div id="ipw-stack">
+              <SwitchRow id="ipw-with-stack" label={t("spray.stackWith")} checked={withStack} onChange={setWithStack} />
+              <p className="text-[0.75rem] leading-[1.45] text-fg-3">
+                {t("spray.stackWithD")}
+                {withStack && L && L > 0 ? ` ${t("spray.stackDose", { perL: num(shownPerL(stackFoliarPerL()), 2) })}${t("common.colon")}${num(stackSprayMl(L), 1)} mL` : ""}
+              </p>
+            </div>
+          )}
           {plan.length > 0 && allowed.ok && (
             <div>
               <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{running && running.protocol === protocol ? t("ipw.planRunning") : t("ipw.planNew")}</div>

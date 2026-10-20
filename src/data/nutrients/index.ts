@@ -7,6 +7,7 @@ export * from "./types"
 export { ATHENA_PRO, PRO_CONCENTRATES, PRO_GRAMS } from "./athena-pro"
 export { ATHENA_BLENDED } from "./athena-blended"
 export { ADDONS, BALANCE_STEP, CLEANSE_FLUSH, IPW, balanceStepMl } from "./addons"
+export { GALLON_L, LABEL_ONLY, STACK, STACK_USES, perGalToPerL, type LabelOnlyId, type StackUse } from "./athena-extras"
 
 export const CATALOGS: Record<string, NutrientCatalog> = { [ATHENA_PRO.id]: ATHENA_PRO, [ATHENA_BLENDED.id]: ATHENA_BLENDED }
 export const DEFAULT_LINE = ATHENA_PRO.id

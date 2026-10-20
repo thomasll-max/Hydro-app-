@@ -63,7 +63,7 @@ export const ATHENA_BLENDED: NutrientCatalog = {
     week(9, null, 32, 1.5, { camg: false, fade: 32 }),
     { id: "flush", stage: "flush", ec: 0, roWater: true, doses: [{ product: "cleanse", per10L: 26, src: HB }], ph: "high", src: HB },
   ],
-  addons: ["fade", "cleanse", "balance", "ipw", "camg", "pk"],
+  addons: ["fade", "cleanse", "balance", "ipw", "camg", "pk", "stack"],
   defaultAddons: ["fade", "cleanse", "balance", "camg", "pk"],
   manual: [
     { stage: "veg", ecIn: [2.1, 2.1], ph: [5.8, 6.2], ecRunoff: [3.5, 4.5], dryback: [30, 40], src: P60 },

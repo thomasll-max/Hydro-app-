@@ -13,7 +13,8 @@ import type { Reminder } from "@/model/grow"
 import { joined, segment } from "@/components/hydro/styles"
 import { locales } from "@/i18n/core"
 
-export type ReminderInit = { reminder?: Reminder; date?: string; spaceId?: string; title?: string }
+/** `repeat`, `note`, `until`: a reminder offered by a tool, already filled (lot 14b: Stack every week). */
+export type ReminderInit = { reminder?: Reminder; date?: string; spaceId?: string; title?: string; repeat?: "weekly"; note?: string; until?: string }
 
 type Repeat = "none" | "days" | "weekly" | "monthly"
 type End = "never" | "count" | "until"
@@ -28,14 +29,14 @@ function toForm(r: Reminder | undefined, init: ReminderInit): Form {
     spaceId: r?.spaceId ?? init.spaceId ?? "",
     date,
     time: r?.start.slice(11, 16) || "09:00",
-    repeat: "none",
-    every: "3",
+    repeat: init.repeat ?? "none",
+    every: init.repeat === "weekly" ? "1" : "3",
     byDay: [WEEKDAYS[weekdayIndex(date)]],
-    end: "never",
+    end: init.until ? "until" : "never",
     count: "5",
-    until: addDays(date, 28),
+    until: init.until ?? addDays(date, 28),
     alarm: r?.alarmMin == null ? (r ? "none" : "0") : (String(r.alarmMin) as Alarm),
-    note: r?.note ?? "",
+    note: r?.note ?? init.note ?? "",
   }
   if (r?.rrule) {
     try {

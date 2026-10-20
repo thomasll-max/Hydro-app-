@@ -2,13 +2,14 @@
 // Every dose carries its source. Values come from docs/athena-fiche.md (Athena Handbook FR V8, printed pages).
 // A line never borrows a value from another line (tested).
 
-/** Where a figure comes from. `page` is the printed page of the Athena Handbook FR V8 when known. */
-export type ValueSource = { kind: "athena"; page?: number } | { kind: "label" } | { kind: "estimate" }
+/** Where a figure comes from. `page` is the printed page of the Athena Handbook FR V8 when known; `athenaWeb`: an official
+ *  Athena page outside the Handbook (lot 14b, Stack), `converted` when the dose was written per US gallon. */
+export type ValueSource = { kind: "athena"; page?: number } | { kind: "label" } | { kind: "estimate" } | { kind: "athenaWeb"; ref: "stack"; converted?: boolean }
 
 /** Dose per 10 L: a fixed value or a published range [lo, hi]. */
 export type Per10L = number | [number, number]
 
-export type AddonId = "fade" | "cleanse" | "balance" | "ipw" | "camg" | "pk"
+export type AddonId = "fade" | "cleanse" | "balance" | "ipw" | "camg" | "pk" | "stack"
 
 export type CatalogProduct = {
   id: string

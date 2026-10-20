@@ -150,10 +150,10 @@ describe("lot 4a — aucun mélange entre les gammes", () => {
 describe("lot 4a — produits perso (Proper)", () => {
   const seed = thomasGrow(NOW, "2026-10-18")
   const proper = seed.customProducts.find((p) => p.id === "proper")!
-  it("Proper vide tant qu'il n'est pas saisi : listé sans dose, source étiquette", () => {
+  it("Proper vide tant qu'il n'est pas saisi : dans aucune recette (lot 14b : dose non publiée par Athena)", () => {
     expect(proper.dosePer10L).toBeUndefined()
     const r = pro("veg", 100, 3, 226, { custom: seed.customProducts })
-    expect(item(r, "proper")).toMatchObject({ qty: null, note: "labelMissing", src: { kind: "label" } })
+    expect(item(r, "proper")).toBeUndefined()
     expect(item(r, "great-white")).toBeUndefined() // racines, jamais dans le bidon
   })
   it("dose et semaines saisies depuis l'étiquette : utilisé seulement ces semaines-là", () => {

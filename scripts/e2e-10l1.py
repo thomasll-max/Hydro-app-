@@ -36,7 +36,7 @@ PAGE = """() => {
     status: q('#space-status')?.dataset.status, state: txt('#space-status b'), stateSub: txt('#space-status b + span'),
     step: q('#space-status button[id^=step-]') && [q('#space-status button[id^=step-]').id, q('#space-status button[id^=step-]').innerText.replace(/\\s+/g, ' ').trim(), getComputedStyle(q('#space-status button[id^=step-]')).borderTopWidth],
     readings: [...document.querySelectorAll('#readings .grid > div')].map((r) => r.innerText.split(String.fromCharCode(10)).join(' | ')),
-    also: q('#readings-also')?.textContent ?? null, link: txt('#readings-title + button'),
+    also: q('#readings-also')?.textContent ?? null, link: txt('#readings [data-section-link]'),
     water: [...document.querySelectorAll('#water-today [data-water]')].map((w) => w.textContent),
     reservoir: txt('#reservoir'), todo: [...document.querySelectorAll('#space-todo li')].map((l) => l.innerText.split(String.fromCharCode(10)).join(' | ')),
     sources: q('#info-space') ? (q('#info-space').getBoundingClientRect().width >= 44 ? 'ok' : 'small') : null,
@@ -128,7 +128,7 @@ with sync_playwright() as p:
     undone = pg.evaluate(PAGE)
     if after["pill"] is None or "Floraison" not in after["pill"] or after["step"] or not undone["step"] or undone["step"][0] != "step-flip": errors.append(f"step {after['pill']} {after['step']} → {undone['step']}")
     checks["step"] = [after["pill"], undone["step"]]
-    pg.click("#readings-title + button"); pg.wait_for_timeout(1000)
+    pg.click("#readings [data-section-link]"); pg.wait_for_timeout(1000)
     charts = pg.evaluate("location.hash")
     pg.go_back(); pg.wait_for_timeout(1000)
     pg.click("#water-title + button"); pg.wait_for_timeout(1000)

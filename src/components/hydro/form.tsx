@@ -181,6 +181,7 @@ export function NumField({
   hintMono,
   className,
   ghost,
+  doubt,
 }: {
   id: string
   label: string
@@ -192,6 +193,8 @@ export function NumField({
    * replaces it). Never saved unless taken or typed.
    */
   ghost?: string
+  /** What a dictation heard here and why it is doubtful (lot 11): the field is marked « à surveiller ». */
+  doubt?: string
   hint?: string
   /** The hint is a value (« hier 25,3 »): written in mono. */
   hintMono?: boolean
@@ -211,7 +214,7 @@ export function NumField({
         {text}
         {u && <span className="sr-only"> ({u})</span>}
       </UiLabel>
-      <div className={cn(line, bad && lineBad)}>
+      <div className={cn(line, (bad || doubt) && lineBad)} data-doubt={doubt ? "" : undefined}>
         <input
           id={id}
           type="text"
@@ -232,7 +235,7 @@ export function NumField({
             })
           }}
           aria-invalid={bad || undefined}
-          aria-describedby={bad ? `${id}-err` : undefined}
+          aria-describedby={bad ? `${id}-err` : doubt ? `${id}-doubt` : undefined}
           onChange={(e) => onChange(e.target.value.replace(/[^\d.,-]/g, ""))}
           className={cn(fieldCls, "h-12 font-num text-[1.625rem] font-medium tabular-nums", ghost && "placeholder:text-fg-3/35")}
         />
@@ -245,6 +248,10 @@ export function NumField({
       {bad ? (
         <span id={`${id}-err`} className="truncate text-[0.75rem] font-semibold text-warn">
           {t("safe.badNumber")}
+        </span>
+      ) : doubt ? (
+        <span id={`${id}-doubt`} className="text-[0.75rem] leading-snug font-semibold text-warn">
+          {doubt}
         </span>
       ) : (
         hint && <span className={cn("truncate text-[0.75rem] text-fg-3", hintMono && "font-num")}>{hint}</span>

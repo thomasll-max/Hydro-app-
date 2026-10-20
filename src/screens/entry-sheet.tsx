@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { AlarmClockPlus, Camera, Loader2, MoreHorizontal, Trash2, X } from "lucide-react"
+import { AlarmClockPlus, Camera, Loader2, Mic, MoreHorizontal, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { AreaField, Grid, Group, NumField, Seg, Sheet, TagChip, TextField } from "@/components/hydro/form"
 import { ConfirmDelete } from "@/components/hydro/confirm"
+import { Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
-import { useGrow } from "@/app/grow-context"
+import { newId, useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
 import { blankEntry, CARRIED, derive, drybackMethodOf, entryHasContent, entryId, HINTED, previousEntry, resumeFrom } from "@/model/entry"
-import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, type ActionTag, type Entry, type ObsTag, type PlantId, type Severity } from "@/model/types"
+import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, SCHEMA, type ActionTag, type Entry, type Mix, type ObsTag, type PlantId, type Severity } from "@/model/types"
+import type { Space } from "@/model/grow"
+import { spaceNutrition } from "@/model/grow-ops"
+import { mergeVoice, readVoiceReply, voiceCount, voiceKeys, voicePrompt, type VoiceDoubt, type VoiceKey, type VoiceResult, type VoiceSpace } from "@/calc/voice"
+import { useSample, type SampleError } from "@/lib/sample"
+import { VoicePanel } from "./voice-panel"
 import { equipmentAt } from "@/equipment/calc"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { badNums, parseNum } from "@/calc/formulas"
@@ -31,9 +37,10 @@ const NUMS: NumKey[] = [...CARRIED.filter((k) => k !== "mixId"), ...HINTED] as N
 const BAND_TERM: Record<BandKey, Term> = { dryback: "dryback", drybackSensor: "drybackSensor", runoffPct: "runoff", vpd: "vpd", dli: "dli" }
 
 export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpenChange: (o: boolean) => void; init: EntryInit }) {
-  const { t, num, range, dm, show, locale } = useSettings()
+  const { t, num, range, dm, show, locale, settings } = useSettings()
   const ed = useEditors()
-  const { spaces, space: curSpace, all, cycleIn, equipment, assignments, saveEntry, deleteEntry, targetsFor, uploadPhoto, photoUrl, deletePhotos } = useGrow()
+  const { grow, spaces, space: curSpace, all, cycleIn, equipment, assignments, saveEntry, deleteEntry, restoreEntry, saveMix, deleteMix, targetsFor, uploadPhoto, photoUrl, deletePhotos } = useGrow()
+  const sample = useSample()
   const [spaceId, setSpaceId] = useState(init.spaceId ?? curSpace?.id ?? "")
   const space = spaces.find((x) => x.id === spaceId) ?? curSpace ?? null
   const cycle = space ? cycleIn(space.id) : null
@@ -72,6 +79,15 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const [allObs, setAllObs] = useState(false)
   const [allActs, setAllActs] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
+  // Lot 11: the dictation panel, what Claude doubted (kept until the field is typed again), the words and a tank said aloud.
+  const [voiceOpen, setVoiceOpen] = useState(false)
+  const [voiceText, setVoiceText] = useState("")
+  const [voiceBusy, setVoiceBusy] = useState(false)
+  const [voiceErr, setVoiceErr] = useState<string | null>(null)
+  const [doubts, setDoubts] = useState<VoiceDoubt[]>([])
+  const [dictated, setDictated] = useState("")
+  const [voiceMix, setVoiceMix] = useState<VoiceResult["mix"]>()
+  const [moreOpen, setMoreOpen] = useState("")
   const menuRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!menuOpen) return
@@ -108,6 +124,13 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     setAllObs(false)
     setAllActs(false)
     setNoteOpen(false)
+    setVoiceOpen(false)
+    setVoiceText("")
+    setVoiceErr(null)
+    setDoubts([])
+    setDictated("")
+    setVoiceMix(undefined)
+    setMoreOpen("")
     setSpaceId(init.spaceId ?? curSpace?.id ?? spaces[0]?.id ?? "")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, init.date, init.plantId, init.spaceId])
@@ -159,6 +182,11 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     e.actions = acts.length ? acts : undefined
     e.photos = photos.length ? photos : undefined
     e.note = note.trim() || undefined
+    // A dictation went into this entry (lot 11): its trace, the words apart from the note.
+    if (dictated) {
+      e.source = "voice"
+      e.dictation = base.dictation?.trim() ? `${base.dictation.trim()}\n${dictated}` : dictated
+    }
     return e
   }
 
@@ -168,6 +196,8 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const set = (k: NumKey) => (v: string) => {
     touch(k)
     setF((s) => ({ ...s, [k]: v }))
+    // Typed again: the doubt about this field is answered.
+    if (doubts.some((d) => d.field === k)) setDoubts((ds) => ds.filter((d) => d.field !== k))
   }
   // Fields on screen this render that show yesterday's value in grey: what "Reprendre hier" fills.
   const greyed: (typeof HINTED)[number][] = []
@@ -182,6 +212,10 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     const v = prev?.[k] as number | undefined
     return v == null ? undefined : t("entry.hint", { v: show(v) })
   }
+  // What a dictation heard and why it is doubtful, in the app's language (the app's reasons are codes).
+  const why = (d: VoiceDoubt) =>
+    d.code === "space" ? t("voice.codeSpace") : d.code === "plant" ? t("voice.codePlant") : d.code === "number" ? t("voice.codeNumber") : d.code === "range" ? t("voice.codeRange", { min: num(d.min ?? 0), max: num(d.max ?? 0) }) : (d.why ?? "")
+  const doubtText = (d?: VoiceDoubt) => (d ? [d.heard ? t("voice.heard", { heard: d.heard }) : "", why(d)].filter(Boolean).join(" · ") : undefined)
   const nf = (k: NumKey, label: MessageKey, opts: { integer?: boolean } = {}) => {
     if ((HINTED as readonly string[]).includes(k) && prev?.[k] != null) greyed.push(k as (typeof HINTED)[number])
     const hinted = (HINTED as readonly string[]).includes(k)
@@ -193,6 +227,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
         onChange={set(k)}
         ghost={hinted && prev?.[k] != null ? show(prev[k] as number) : undefined}
         hint={hinted ? hint(k) : undefined}
+        doubt={doubtText(doubts.find((d) => d.field === k))}
         hintMono
         integer={opts.integer}
         unit={k === "ecIn" || k === "ecRunoff" ? "mS/cm" : undefined}
@@ -235,6 +270,10 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     if (!entryHasContent(e, blankEntry(date, { spaceId: space.id, cycle }, prev, plantId))) return toast.error(t(existing ? "safe.emptyEntryExisting" : "safe.emptyEntry"))
     setBusy(true)
     try {
+      if (voiceMix) {
+        const saved = await saveVoiceMix(space, voiceMix)
+        if (saved.created) e.mixId = saved.id
+      }
       await saveEntry(e)
       // Photos taken off this entry are removed from the device / the artifact once the entry no longer lists them.
       const kept = new Set(e.photos ?? [])
@@ -248,6 +287,130 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       toast.error(t("common.saveError", { reason: (err as { message?: string })?.message ?? "?" }))
     } finally {
       setBusy(false)
+    }
+  }
+
+  // ---- Dicter (lot 11) ----
+  const voiceSpaceOf = (s: Space): VoiceSpace => {
+    const c = cycleIn(s.id)
+    const tank = equipmentAt(s.id, todayIso(), assignments).some((a) => equipment.find((x) => x.id === a.equipmentId && x.type === "reservoir" && x.reservoir?.kind !== "runoff"))
+    return { id: s.id, name: s.name, modules: s.modules, method: drybackMethodOf(s), reservoir: tank, plants: s.modules.plants && c ? PLANT_IDS.slice(0, Math.max(1, Math.min(PLANT_IDS.length, c.potCount ?? 4))) : [] }
+  }
+  /** The tank of the day completed, or a new one when a volume was said; returns how to put things back. */
+  const saveVoiceMix = async (target: Space, said: NonNullable<VoiceResult["mix"]>): Promise<{ id: string; created: boolean; undo: () => Promise<void> }> => {
+    const day = all.mixes.find((m) => m.date === date && (m.spaceIds ?? []).includes(target.id))
+    if (day) {
+      await saveMix({ ...day, ...said })
+      return { id: day.id, created: false, undo: () => saveMix(day) }
+    }
+    const c = cycleIn(target.id)
+    const m: Mix = {
+      schemaVersion: SCHEMA.mix,
+      id: newId("mix"),
+      date,
+      spaceIds: [target.id],
+      ...(c ? { cycleId: c.id } : {}),
+      volumeL: said.volumeL!,
+      ...(said.ec != null ? { ec: said.ec } : {}),
+      ...(said.ph != null ? { ph: said.ph } : {}),
+      line: spaceNutrition(grow, target).line,
+      createdAt: new Date().toISOString(),
+    }
+    await saveMix(m)
+    return { id: m.id, created: true, undo: () => deleteMix(m.id) }
+  }
+  /** No doubt: the day's entry is saved at once, merged; « Annuler » for 10 seconds puts everything back. */
+  const saveVoice = async (r: VoiceResult, text: string, target: Space) => {
+    const c = cycleIn(target.id)
+    const id = entryId(date, target.id, r.plantId)
+    const before = all.entries.find((e) => e.id === id) ?? null
+    const base = before ?? blankEntry(date, { spaceId: target.id, cycle: c }, previousEntry(all.entries.filter((e) => e.spaceId === target.id), date, r.plantId), r.plantId)
+    const merged = mergeVoice(base, r, text)
+    if (!before && date === todayIso()) {
+      const d = new Date()
+      merged.time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+    }
+    const mix = r.mix ? await saveVoiceMix(target, r.mix) : null
+    if (mix?.created) merged.mixId = mix.id
+    await saveEntry(merged)
+    onOpenChange(false)
+    toast.success(t("voice.done", { n: voiceCount(r) }), {
+      duration: 10_000,
+      action: {
+        label: t("step.undo"),
+        onClick: () => {
+          ;(before ? restoreEntry(before) : deleteEntry(id))
+            .then(() => mix?.undo())
+            .then(
+              () => toast(t("voice.undone")),
+              (e) => toast.error(t("common.saveError", { reason: (e as Error)?.message ?? "?" })),
+            )
+        },
+      },
+    })
+  }
+  /** Doubts, or « Relire avant d'enregistrer »: nothing is saved, the sheet is filled and the doubtful fields marked. */
+  const prefillVoice = (r: VoiceResult, text: string) => {
+    if (r.spaceId !== spaceId) setSpaceId(r.spaceId)
+    if (r.plantId && r.plantId !== plantId) setPlantId(r.plantId)
+    const vals = Object.entries(r.values) as [VoiceKey, number][]
+    vals.forEach(([k]) => touch(k))
+    if (vals.length) setF((cur) => ({ ...cur, ...Object.fromEntries(vals.map(([k, v]) => [k, show(v)])) }))
+    if (r.observations.length) {
+      touch("obs")
+      setObs((cur) => [...cur.filter((o) => !r.observations.some((x) => x.tag === o.tag)), ...r.observations])
+    }
+    if (r.actions.length) {
+      touch("acts")
+      setActs((cur) => [...new Set([...cur, ...r.actions])])
+    }
+    if (r.note) {
+      touch("note")
+      setNote((cur) => (cur.trim() ? `${cur.trim()}\n${r.note}` : r.note!))
+    }
+    setDoubts(r.doubts)
+    setVoiceMix(r.mix)
+    setDictated(text)
+    setVoiceOpen(false)
+    // A value or a doubt in the folded line opens it.
+    const folded = ["heightCm", "reservoirL", "volumePerPotMl", "shots", "ecIn", "phIn", "lightPct", "lightHeightCm", "ppfd", "photoperiodH"]
+    if ([...vals.map(([k]) => k as string), ...r.doubts.map((d) => d.field ?? "")].some((k) => folded.includes(k))) setMoreOpen("more")
+  }
+  const fillFromVoice = async () => {
+    const text = voiceText.trim()
+    if (!text || !sample || !space || voiceBusy) return
+    setVoiceBusy(true)
+    setVoiceErr(null)
+    const known = spaces.map(voiceSpaceOf)
+    const open = known.find((v) => v.id === space.id)!
+    try {
+      const res = await sample(
+        voicePrompt({
+          text,
+          date,
+          open,
+          spaces: spaces.map((s) => ({ id: s.id, name: s.name })),
+          obsLabels: Object.fromEntries(OBS_TAGS.map((x) => [x, t(`obs.${x}`)])) as Record<ObsTag, string>,
+          actionLabels: Object.fromEntries(ACTION_TAGS.map((x) => [x, t(`action.${x}`)])) as Record<ActionTag, string>,
+        }),
+        { cache: false },
+      )
+      const read = readVoiceReply(res.text, { open, spaces: known })
+      if (!read.ok) return setVoiceErr(t("voice.unreadable"))
+      const r = read.result
+      const target = spaces.find((s) => s.id === r.spaceId) ?? space
+      // A new tank needs its volume: without it, a doubt (nothing is made up).
+      if (r.mix && r.mix.volumeL == null && !all.mixes.some((m) => m.date === date && (m.spaceIds ?? []).includes(target.id))) r.doubts.push({ field: "bidon.volumeL", why: t("voice.mixVolume") })
+      if (!voiceCount(r) && !r.doubts.length) return setVoiceErr(t("voice.nothing"))
+      // Something already typed in the sheet, or the review setting: always through the filled sheet.
+      const typedHere = [...typed.current].some((k) => k !== "time")
+      if (!r.doubts.length && !settings.voiceReview && !typedHere) await saveVoice(r, text, target)
+      else prefillVoice(r, text)
+    } catch (e) {
+      const x = e as SampleError
+      setVoiceErr(x.code === "not_granted" ? t("ask.notGranted") : x.code === "rate_limited" ? t("ask.rateLimited") : t("ask.error"))
+    } finally {
+      setVoiceBusy(false)
     }
   }
 
@@ -338,7 +501,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       )}
 
       {/* One folded line: the plant, the reservoir and the settings carried from the day before. */}
-      <Accordion type="single" collapsible className="mt-5 border-y border-line">
+      <Accordion type="single" collapsible value={moreOpen} onValueChange={setMoreOpen} className="mt-5 border-y border-line">
         <AccordionItem value="more" className="border-0">
           <AccordionTrigger id="e-more" className="py-3 text-[0.90625rem] font-semibold hover:no-underline">
             <span className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3">
@@ -474,7 +637,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
         title={t("entry.titleFor", { space: space.name })}
         big
         // Values carried from the quick entry are not saved yet: closing asks first.
-        dirty={Object.values(init.values ?? {}).some((x) => x?.trim()) || undefined}
+        dirty={Object.values(init.values ?? {}).some((x) => x?.trim()) || !!dictated || undefined}
         head={
           <div className="mt-1 text-[0.8125rem] leading-snug text-fg-3" id="e-head">
             <span className="font-num font-medium">{dayLabel}</span>
@@ -496,6 +659,11 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
               </>
             )}
             {existing && <span className="block">{t("entry.existing")}</span>}
+            {existing?.dictation && (
+              <span className="mt-0.5 line-clamp-2 block" id="e-dictation">
+                {t("voice.dictated", { text: existing.dictation })}
+              </span>
+            )}
           </div>
         }
         actions={
@@ -596,10 +764,47 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
             })}
           </div>
         )}
-        {ghostsLeft && (
-          <Button type="button" variant="outline" id="e-resume" onClick={resume} className="mt-4 h-11 w-full text-[0.875rem] font-semibold">
-            {t("entry.resume")}
-          </Button>
+        {/* « Reprendre hier » and « Dicter » side by side (« Dicter » with Claude, lot 11); either takes the width alone. */}
+        {(ghostsLeft || sample) && (
+          <div className="mt-4 flex gap-2.5">
+            {ghostsLeft && (
+              <Button type="button" variant="outline" id="e-resume" onClick={resume} className="h-11 min-w-0 flex-1 text-[0.875rem] font-semibold">
+                {t("entry.resume")}
+              </Button>
+            )}
+            {sample && (
+              <Button type="button" variant="outline" id="e-dictate" aria-expanded={voiceOpen} onClick={() => setVoiceOpen((x) => !x)} className="h-11 min-w-0 flex-1 text-[0.875rem] font-semibold">
+                <Mic className="size-4" /> {t("voice.dictate")}
+              </Button>
+            )}
+          </div>
+        )}
+        {voiceOpen && <VoicePanel text={voiceText} onText={setVoiceText} busy={voiceBusy} error={voiceErr} onFill={fillFromVoice} />}
+        {/* What a dictation left to check outside the fields (space, plant, tank, a field of another space). */}
+        {(doubts.some((d) => !d.field || !(voiceKeys(voiceSpaceOf(space)) as string[]).includes(d.field)) || voiceMix) && (
+          <div className="mt-4 flex flex-col gap-1.5" id="e-doubts">
+            {doubts.some((d) => !d.field || !(voiceKeys(voiceSpaceOf(space)) as string[]).includes(d.field)) && (
+              <Notice>
+                {t("voice.doubts")}
+                <ul className="mt-1 list-disc pl-4">
+                  {doubts
+                    .filter((d) => !d.field || !(voiceKeys(voiceSpaceOf(space)) as string[]).includes(d.field))
+                    .map((d, i) => (
+                      <li key={i}>{[d.field, doubtText(d)].filter(Boolean).join(" : ")}</li>
+                    ))}
+                </ul>
+              </Notice>
+            )}
+            {voiceMix && (
+              <p className="text-[0.8125rem] text-fg-2" id="e-voice-mix">
+                {t("voice.mixLine", {
+                  parts: [voiceMix.volumeL != null ? `${num(voiceMix.volumeL)} L` : null, voiceMix.ec != null ? `EC ${num(voiceMix.ec, 1)}` : null, voiceMix.ph != null ? `pH ${num(voiceMix.ph, 1)}` : null]
+                    .filter(Boolean)
+                    .join(" · "),
+                })}
+              </p>
+            )}
+          </div>
         )}
         {fields}
       </Sheet>

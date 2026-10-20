@@ -162,6 +162,9 @@ export type Entry = {
   actions?: ActionTag[]
   photos?: string[] // asset ids
   note?: string
+  /** Filled by a dictation (lot 11): `source` says so, `dictation` keeps the words, apart from the note. */
+  source?: "voice"
+  dictation?: string
   targets?: TargetsSnapshot
   createdAt: string
   updatedAt: string

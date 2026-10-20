@@ -19,7 +19,7 @@ const CHECKS: Record<CollectionName, (d: Doc) => boolean> = {
   cycles: (d) => str(d.name) && strArr(d.cultivars) && opt(d.spaceId, str) && opt(d.transfers, arr) && opt(d.createdAt, str) && opt(d.harvest, obj) && opt(d.sensor, obj),
   groups: (d) => str(d.cycleId) && opt(d.name, str),
   plants: (d) => str(d.cycleId) && str(d.label) && opt(d.cultivar, str),
-  entries: (d) => iso(d.date) && str(d.spaceId) && opt(d.observations, arr) && opt(d.actions, arr) && opt(d.photos, strArr) && opt(d.note, str) && opt(d.targets, obj),
+  entries: (d) => iso(d.date) && str(d.spaceId) && opt(d.observations, arr) && opt(d.actions, arr) && opt(d.photos, strArr) && opt(d.note, str) && opt(d.targets, obj) && opt(d.dictation, str) && opt(d.source, str),
   events: (d) => iso(d.date) && str(d.type) && opt(d.products, arr) && opt(d.note, str),
   mixes: (d) => iso(d.date) && num(d.volumeL) && opt(d.items, arr) && opt(d.spaceIds, strArr),
   reminders: (d) => str(d.start) && opt(d.title, str) && opt(d.done, strArr) && opt(d.snoozed, obj),

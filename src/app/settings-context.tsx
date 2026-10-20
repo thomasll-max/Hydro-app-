@@ -14,6 +14,7 @@ type Ctx = {
   setActiveCycle: (id: string) => void
   setSpace: (sel: string) => void
   setConcentrate: (c: number) => void
+  setVoiceReview: (on: boolean) => void
   saveState: SaveState
   t: (key: MessageKey, vars?: Vars) => string
   num: (v: number, decimals?: number) => string
@@ -113,7 +114,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, [commit])
 
   const update = React.useCallback(
-    (patch: Partial<Pick<Settings, "theme" | "lang" | "activeCycleId" | "concentrate" | "space">>) => {
+    (patch: Partial<Pick<Settings, "theme" | "lang" | "activeCycleId" | "concentrate" | "space" | "voiceReview">>) => {
       const next: Settings = { ...current.current, ...patch, updatedAt: new Date().toISOString() }
       commit(next)
       writeLocal(next)
@@ -139,6 +140,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setActiveCycle: (id) => update({ activeCycleId: id }),
       setSpace: (sel) => update({ space: sel }),
       setConcentrate: (c) => update({ concentrate: c }),
+      setVoiceReview: (on) => update({ voiceReview: on || undefined }),
       saveState,
       t: (key, vars) => translate(lang, key, vars),
       num: (v, d = 0) => formatNumber(lang, v, d),

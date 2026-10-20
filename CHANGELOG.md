@@ -1,5 +1,15 @@
 # Changelog
 
+## Lot 11a — Dicter le journal à Claude (20/10/2026)
+Demande de Thomas : « lâcher toutes les infos à Claude en lisant mes résultats ».
+- **« Dicter »** en haut de la saisie du jour (version Claude), à côté de « Reprendre hier » : un panneau avec une grande zone de texte et, si le navigateur le permet, un bouton **« Écouter »** qui écrit ce que tu dis au fur et à mesure, en français, anglais ou allemand. Sans micro dans le navigateur, le micro du clavier du téléphone fait la même chose dans la zone de texte.
+- **« Remplir le journal »** : Claude lit ta dictée et remplit **seulement** ce que tu as dit, dans les champs de l'espace ouvert (ou de l'espace que tu nommes). Dryback, % de runoff, VPD et DLI restent calculés par l'app. Ce qui n'a pas de champ va dans la note, avec tes mots.
+- **Tout seul quand c'est clair** : la saisie est enregistrée tout de suite (fusionnée avec celle du jour), et le toast « Journal rempli : 4 valeurs · Annuler » reste 10 secondes ; « Annuler » remet la saisie exactement comme avant.
+- **Quand il y a un doute** (« pH 59 », un espace pas clair, une valeur hors plage) : rien n'est enregistré, la saisie s'ouvre remplie, le champ douteux est marqué en orange avec ce qui a été entendu. Tu corriges, tu enregistres. Le réglage **« Relire avant d'enregistrer »** fait toujours passer par là.
+- Un **bidon** dicté (« bidon de 40 L, EC 2,9, pH 5,8 ») crée ou complète le bidon du jour, seulement si tu dis bien « bidon ».
+- La saisie garde **ta dictée** à part de la note, visible dans le détail du jour.
+- 406 tests.
+
 ## Lot 10l2b — « Ce que tu as vu ou fait » et saisie rapide (20/10/2026)
 - Observations et actions dans une seule section, **« Ce que tu as vu ou fait »** : tes 4 observations et tes 4 actions les plus utilisées d'abord (d'après tes saisies), les autres derrière « +4 ». La gravité se règle toujours en touchant plusieurs fois.
 - Une seule ligne **« Une note, une photo… »** ouvre la note et les photos.

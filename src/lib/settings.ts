@@ -16,6 +16,8 @@ export type Settings = {
   space?: string
   /** Pro Line dosing: 0 = weighed powder (g), else concentrate strength in g/L (Athena: 113, 226 recommended, 282). */
   concentrate?: number
+  /** Dictation (lot 11): always go through the prefilled entry instead of saving straight away. Off by default. */
+  voiceReview?: boolean
   updatedAt: string
 }
 
@@ -43,6 +45,7 @@ export function parseSettings(raw: unknown): Settings {
     activeCycleId: typeof o.activeCycleId === "string" ? o.activeCycleId : undefined,
     space: typeof o.space === "string" && o.space ? o.space : undefined,
     concentrate: [0, 113, 226, 282].includes(o.concentrate as number) ? (o.concentrate as number) : undefined,
+    voiceReview: o.voiceReview === true ? true : undefined,
     updatedAt: typeof o.updatedAt === "string" ? o.updatedAt : DEFAULT_SETTINGS.updatedAt,
   }
 }

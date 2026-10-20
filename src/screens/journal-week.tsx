@@ -2,7 +2,7 @@
 // value (target, the 7 days over the target band, the week's mean, the week before, days in the target), then one card
 // per day; a card opens the entry of that day. Only from the targets recorded in the entries, never an invented opinion.
 import { useEffect, useMemo, useState } from "react"
-import { ChevronDown, ChevronLeft } from "lucide-react"
+import { ChevronDown, ChevronLeft, Mic } from "lucide-react"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { NumText } from "@/components/hydro/value"
 import { useSettings } from "@/app/settings-context"
@@ -195,6 +195,13 @@ function DayCard({ date, entries, drying, onOpen }: { date: IsoDate; entries: En
           </span>
         ))}
       </span>
+      {/* A dictated day keeps the words (lot 11), apart from the note. */}
+      {e.dictation && (
+        <span className="mt-2 flex items-start gap-1.5 text-[0.75rem] leading-snug text-fg-3" data-dictation>
+          <Mic aria-hidden="true" className="mt-px size-3.5 shrink-0" />
+          <span className="line-clamp-2">{t("voice.dictated", { text: e.dictation })}</span>
+        </span>
+      )}
     </button>
   )
 }

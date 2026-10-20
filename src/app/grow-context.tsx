@@ -80,6 +80,8 @@ type GrowCtx = {
   savePlant: (p: Plant) => Promise<void>
   saveEntry: (e: Entry) => Promise<Entry>
   deleteEntry: (id: string) => Promise<void>
+  /** Puts an entry back exactly as it was (« Annuler » after a dictation, lot 11): no new stamp, no new targets. */
+  restoreEntry: (e: Entry) => Promise<void>
   saveEvent: (e: GrowEvent) => Promise<void>
   deleteEvent: (id: string) => Promise<void>
   saveMix: (m: Mix) => Promise<void>
@@ -374,6 +376,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
         return full
       },
       deleteEntry: async (id) => need().delete(`entries/${id}`),
+      restoreEntry: async (e) => need().set(`entries/${e.id}`, e),
       saveEvent: async (e) => need().set(`events/${e.id}`, { ...e, cycleId: e.cycleId ?? cycle?.id, spaceId: e.spaceId ?? (selection.kind === "space" ? selection.space.id : cycle?.spaceId), schemaVersion: SCHEMA.event }),
       deleteEvent: async (id) => need().delete(`events/${id}`),
       saveMix: async (m) =>

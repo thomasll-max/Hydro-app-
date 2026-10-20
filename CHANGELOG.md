@@ -1,5 +1,16 @@
 # Changelog
 
+## Lot 12a — Bilan de récolte et comparaison de cycles (20/10/2026)
+- **Le bilan d'un cycle récolté**, ouvert depuis le Journal (« Bilan » sur la ligne du cycle), Réglages → cycles ou la carte de la dernière récolte. Rien de nouveau à saisir : tout vient de ce que l'app a déjà.
+  - **Résultat** : poids sec et humide, g par watt (la puissance de la récolte, sinon les lampes de l'espace), g par plante, g par m². Sans donnée : « donnée manquante », jamais d'estimation.
+  - **Calendrier** : germination, végé, 12/12, récolte, durée de chaque étape, floraison réelle contre prévue, jours de séchage.
+  - **Conduite** : par étape, la moyenne, la plage et la part des jours dans la cible du jour pour l'EC, le pH, le dryback (pesée et capteur séparés), le runoff, la T°, l'HR, le VPD, le PPFD et le DLI.
+  - **Bidons** (nombre, litres, produits consommés), **incidents** par semaine, **dégustation et notes**.
+- **Poids sec par plante** (facultatif) dans la saisie de récolte. La somme ne remplace jamais le poids sec saisi : un écart s'affiche tel quel. Et une **note de bilan**.
+- **Comparer avec…** : un autre cycle récolté, filtré par variété ou par espace ; deux colonnes, l'écart à droite.
+- **Export** : CSV (pour un tableur) et une version imprimable.
+- 431 tests.
+
 ## Lot 11b — Dicter sans IA (20/10/2026)
 - **« Dicter » aussi dans la version des potes** (Netlify, version locale), sans IA ni clé : même panneau, même micro. L'app reconnaît les mesures simples, en français, anglais ou allemand, en chiffres ou en toutes lettres : « EC runoff 4,2 », « pH cinq neuf », « runoff 380 ml », « température vingt-cinq », « humidité 60 % », « poids matin 4,2 », « EC Zulauf 3,0 »…
 - **Toujours à relire** : la saisie s'ouvre remplie, rien n'est enregistré avant « Enregistrer ». Ce qui n'est pas une mesure va dans la note, avec tes mots.

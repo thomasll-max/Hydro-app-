@@ -10,6 +10,7 @@ import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
+import { navigate } from "@/app/nav"
 import { SaveBar, useSaver } from "@/screens/sheets"
 import { stageLine } from "@/app/labels"
 import { stageOn, todayIso } from "@/calc/stage"
@@ -211,6 +212,11 @@ export function SettingsTool() {
                       </span>
                     </span>
                   </button>
+                  {c.harvestDate && (
+                    <button onClick={() => navigate({ tab: "journal", review: c.id }, { push: true })} className={secondary} data-review={c.id}>
+                      {t("rv.open")}
+                    </button>
+                  )}
                   {!c.harvestDate && g.spaces.length > 1 && (
                     <button onClick={() => setTransfer({ open: true, cycle: c })} className={secondary} aria-label={t("growSet.transfer")}>
                       <ArrowRightLeft className="size-3.5" /> {t("growSet.transfer")}

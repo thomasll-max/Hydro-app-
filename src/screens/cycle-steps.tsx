@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { useEditors } from "@/app/editors"
+import { navigate } from "@/app/nav"
 import { daysBetween, todayIso } from "@/calc/stage"
 import { applyStep, STEP_FIELD, undoStep, type CycleStep } from "@/calc/steps"
 import type { Cycle } from "@/model/types"
@@ -57,9 +58,14 @@ export function LastHarvest({ spaceId }: { spaceId?: string }) {
   return (
     <section className="flex flex-col gap-2" id="last-harvest">
       <h2 className="display text-[1.1875rem] leading-tight">{t("step.lastHarvest", { name: last.name, date: dm(last.harvestDate!) })}</h2>
-      <Button variant="outline" className="h-11 self-start" onClick={() => ed.openCycle({ harvestOnly: true, cycleId: last.id })}>
-        {t("step.harvestDetails")}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" className="h-11" onClick={() => ed.openCycle({ harvestOnly: true, cycleId: last.id })}>
+          {t("step.harvestDetails")}
+        </Button>
+        <Button variant="outline" className="h-11" onClick={() => navigate({ tab: "journal", review: last.id }, { push: true })} id="last-harvest-review">
+          {t("rv.seeReview")}
+        </Button>
+      </div>
     </section>
   )
 }

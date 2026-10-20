@@ -1,6 +1,7 @@
 // Navigation in the browser history (lot 10d): tabs, tools and sheets each take a step, so the phone's back gesture
 // closes the open sheet first, then goes back to the tool list, then to Today, and only then leaves the app.
 // Routes live in the hash: "" (Today), #journal, #calendar, #calendar/2026-10-21, #charts, #tools, #tools/irrigation…
+// A cycle's review: #journal/bilan/{cycleId}, compared: #journal/bilan/{cycleId}/{otherId} (lot 12a).
 // Since lot 10h the Calendar has no tab: it opens over the screen it came from (week strip, date of the top bar, Outils),
 // and back returns there.
 import { useSyncExternalStore } from "react"
@@ -16,6 +17,9 @@ export type Route = {
   day?: string
   /** A week page of the Journal (lot 10k3): « spaceId/2026-02-02 » (its Monday). */
   week?: string
+  /** The review of a cycle (lot 12a): its id; `vs` = the cycle it is compared with. */
+  review?: string
+  vs?: string
 }
 
 const isTool = (s: string | undefined): s is ToolId => !!s && (TOOL_IDS as readonly string[]).includes(s)
@@ -25,6 +29,7 @@ export function parseHash(hash: string): Route {
   const [a, b, c, d] = decodeURIComponent(hash.replace(/^#/, "")).split("/")
   if (a === "tools") return isTool(b) ? { tab: "tools", tool: b } : { tab: "tools" }
   const iso = (x?: string) => /^\d{4}-\d{2}-\d{2}$/.test(x ?? "")
+  if (a === "journal" && b === "bilan" && c) return { tab: "journal", review: c, ...(d ? { vs: d } : {}) }
   if (a === "journal" && b && iso(c)) return { tab: "journal", week: `${b}/${c}`, ...(iso(d) ? { day: d } : {}) }
   if (a === "calendar") return /^\d{4}-\d{2}-\d{2}$/.test(b ?? "") ? { tab: "calendar", day: b } : { tab: "calendar" }
   if (isTool(a)) return { tab: "tools", tool: a }
@@ -36,6 +41,7 @@ export function parseHash(hash: string): Route {
 export function routeHash(r: Route): string {
   if (r.tab === "today") return ""
   if (r.tab === "calendar" && r.day) return `#calendar/${r.day}`
+  if (r.tab === "journal" && r.review) return `#journal/bilan/${encodeURIComponent(r.review)}${r.vs ? `/${encodeURIComponent(r.vs)}` : ""}`
   if (r.tab === "journal" && r.week) return `#journal/${r.week}${r.day ? `/${r.day}` : ""}`
   return r.tab === "tools" && r.tool ? `#tools/${r.tool}` : `#${r.tab}`
 }

@@ -14,7 +14,8 @@ import { PLANT_IDS, type Entry, type StageKey } from "@/model/types"
 import { PhotoThumb } from "./entry-sheet"
 import { WeekCard } from "./journal-weeks"
 import { WeekPage } from "./journal-week"
-import { useRoute } from "@/app/nav"
+import { ReviewPage } from "./cycle-review"
+import { navigate, useRoute } from "@/app/nav"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { cn } from "@/lib/utils"
 import { iconButton, tertiary } from "@/components/hydro/styles"
@@ -32,6 +33,7 @@ export function JournalScreen() {
   const { ready } = useGrow()
   const { t } = useSettings()
   if (!ready) return <Loading label={t("app.loading")} />
+  if (route.review) return <ReviewPage cycleId={route.review} vs={route.vs} />
   if (route.week) {
     const [spaceId, monday] = route.week.split("/")
     return <WeekPage spaceId={spaceId} monday={monday} day={route.day} />
@@ -306,6 +308,11 @@ function JournalWeeks() {
           {(cycle.harvestDate || cycle.flipDate) && (
             <button type="button" className={tertiary} onClick={() => ed.openCycle({ cycleId: cycle.id, harvestOnly: true })}>
               {t("jw.harvest")}
+            </button>
+          )}
+          {cycle.harvestDate && (
+            <button type="button" className={tertiary} onClick={() => navigate({ tab: "journal", review: cycle.id }, { push: true })} id="journal-review">
+              {t("rv.open")}
             </button>
           )}
           {one.modules.plants && (

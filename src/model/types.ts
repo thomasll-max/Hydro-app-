@@ -70,6 +70,10 @@ export type Harvest = {
   curingStart?: IsoDate
   jarRh?: number
   tasting?: string
+  /** Dry weight per plant (lot 12a, optional). Their sum never replaces `dryG` once typed: a gap shows as is. */
+  dryByPlant?: Partial<Record<PlantId, number>>
+  /** Free note of the cycle's review (lot 12a). */
+  reviewNote?: string
 }
 
 export type Plant = {

@@ -10,7 +10,6 @@ import { dayTargets, snapshot, cycleNumber, type DayTargets } from "../../src/ca
 import { rhForVpd } from "../../src/calc/climate"
 import { getCatalog } from "../../src/data/nutrients"
 import { mixRecipe, phaseAt, positionOf, phaseKind, expectedEc, nextBalancePer10L } from "../../src/calc/nutrients"
-import { BACKUP_FORMAT, BACKUP_VERSION } from "../../src/lib/backup"
 
 export const OUT = process.argv[2] ?? "out"
 export const START: IsoDate = "2025-10-20"

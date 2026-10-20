@@ -10,7 +10,7 @@ import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { equipmentPrefill, expectedHarvest } from "@/calc/steps"
 import { spaceNutrition } from "@/model/grow-ops"
-import type { Cycle, Substrate, WaterMode } from "@/model/types"
+import { PLANT_IDS, type Cycle, type PlantId, type Substrate, type WaterMode } from "@/model/types"
 import { defaultCycle, SaveBar, useSaver, useShow } from "./sheets"
 
 /** Numbers of the form. Cleared on an existing cycle = the previous value is kept (lot 10b: never Thomas's values). */
@@ -18,6 +18,8 @@ const NUM_FIELDS = ["flowerWeeks", "potVolumeL", "potCount", "flowMlPerMin", "sh
 /** May stay empty ("donnée manquante"): nothing is put in their place. */
 const OPTIONAL = new Set<string>(["potVolumeL", "potCount", "flowMlPerMin", "plannedDryingDays"])
 const H_FIELDS = ["wetG", "dryG", "watts", "dryingDays", "jarRh"] as const
+/** The plants of a cycle for the dry weight per plant (lot 12a): as many as its pots, P1–P4. */
+const plantIdsOf = (c: Pick<Cycle, "potCount">) => PLANT_IDS.slice(0, Math.max(1, Math.min(PLANT_IDS.length, c.potCount ?? PLANT_IDS.length)))
 
 export function CycleSheet({
   open,
@@ -68,6 +70,7 @@ export function CycleSheet({
     const st: Record<string, string> = { cultivars: base.cultivars.join(", ") }
     for (const k of NUM_FIELDS) st[k] = show(base[k] as number | undefined)
     for (const k of H_FIELDS) st[`h_${k}`] = show(base.harvest?.[k])
+    for (const id of PLANT_IDS) st[`hp_${id}`] = show(base.harvest?.dryByPlant?.[id])
     setS(st)
   }
 
@@ -87,7 +90,7 @@ export function CycleSheet({
 
   const save = () =>
     run(async () => {
-      if (badNums(s, [...NUM_FIELDS, ...H_FIELDS.map((k) => `h_${k}`)]).length) throw new Error(t("safe.fixFields"))
+      if (badNums(s, [...NUM_FIELDS, ...H_FIELDS.map((k) => `h_${k}`), ...PLANT_IDS.map((id) => `hp_${id}`)]).length) throw new Error(t("safe.fixFields"))
       if (!cycle && !c.germinationDate) throw new Error(t("cycleForm.needStart"))
       const next: Cycle = { ...c, name: c.name.trim() || t("cycleForm.newName", { n: cycles.length + 1 }), cultivars: (s.cultivars ?? "").split(",").map((x) => x.trim()).filter(Boolean) }
       for (const k of NUM_FIELDS) {
@@ -99,6 +102,10 @@ export function CycleSheet({
       if (!next.flowerWeeks) throw new Error(t("cycleForm.needFlowerWeeks"))
       const h: NonNullable<Cycle["harvest"]> = { ...(c.harvest ?? {}) }
       for (const k of H_FIELDS) h[k] = parseNum(s[`h_${k}`])
+      // The dry weight per plant: only what was typed; the sum never replaces the dry weight (lot 12a).
+      const byPlant = Object.fromEntries(PLANT_IDS.map((id) => [id, parseNum(s[`hp_${id}`])]).filter(([, v]) => v != null)) as Partial<Record<PlantId, number>>
+      h.dryByPlant = Object.keys(byPlant).length ? byPlant : undefined
+      if (!h.reviewNote?.trim()) h.reviewNote = undefined
       next.harvest = Object.values(h).some((v) => v != null && v !== "") ? h : undefined
       await saveCycle(next)
     })
@@ -203,6 +210,16 @@ export function CycleSheet({
             </Grid>
             <AreaField id="h-dn" label={t("cycleForm.dryingNotes")} value={c.harvest?.dryingNotes ?? ""} onChange={(v) => setC((x) => ({ ...x, harvest: { ...x.harvest, dryingNotes: v || undefined } }))} />
             <AreaField id="h-tast" label={t("cycleForm.tasting")} value={c.harvest?.tasting ?? ""} onChange={(v) => setC((x) => ({ ...x, harvest: { ...x.harvest, tasting: v || undefined } }))} />
+            <div className="flex flex-col gap-1.5" id="h-plants">
+              <span className="text-[0.8125rem] font-semibold text-fg-2">{t("cycleForm.dryPlants")}</span>
+              <div className="grid grid-cols-4 gap-2">
+                {plantIdsOf({ potCount: parseNum(s.potCount) ?? c.potCount }).map((id) => (
+                  <NumField key={id} id={`h-p-${id}`} label={id} value={s[`hp_${id}`] ?? ""} onChange={sv(`hp_${id}`)} />
+                ))}
+              </div>
+              <span className="text-[0.75rem] leading-snug text-fg-3">{t("cycleForm.dryPlantsD")}</span>
+            </div>
+            <AreaField id="h-review" label={t("cycleForm.reviewNote")} value={c.harvest?.reviewNote ?? ""} onChange={(v) => setC((x) => ({ ...x, harvest: { ...x.harvest, reviewNote: v || undefined } }))} />
           </div>
         </Group>
       )}

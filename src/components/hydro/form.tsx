@@ -225,7 +225,11 @@ export function NumField({
             if (!ghost || value) return
             const el = e.currentTarget
             onChange(ghost)
-            requestAnimationFrame(() => el.select())
+            // Selected once React has written it, only if the field still has the focus (select() would take it back
+            // from a field touched right after).
+            requestAnimationFrame(() => {
+              if (document.activeElement === el) el.select()
+            })
           }}
           aria-invalid={bad || undefined}
           aria-describedby={bad ? `${id}-err` : undefined}

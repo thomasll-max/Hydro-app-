@@ -7,7 +7,7 @@ import { addDays } from "./stage"
 import { fr } from "@/i18n/fr"
 import { en } from "@/i18n/en"
 import { de } from "@/i18n/de"
-import { bandCell, bandKeys } from "./entry-day"
+import { bandCell, bandKeys, topTags } from "./entry-day"
 import { blankEntry, derive, entryHasContent, resumeFrom } from "@/model/entry"
 import type { Entry } from "@/model/types"
 
@@ -154,5 +154,36 @@ describe("lot 10l2a — saisie du jour : la feuille", () => {
     expect(at('id="e-sec-climate"')).toBeLessThan(at('id="e-more"'))
     expect(at('id="e-more"')).toBeLessThan(at('nf("heightCm"'))
     expect(fr.entry.more).toBe("Plante, réservoir, réglages")
+  })
+})
+
+describe("lot 10l2b — « Ce que tu as vu ou fait » et saisie rapide", () => {
+  it("les 4 plus utilisées d'après l'historique ; sans historique, l'ordre habituel ; à égalité, l'ordre habituel", () => {
+    const order = ["a", "b", "c", "d", "e", "f"] as const
+    expect(topTags(order, [])).toEqual(["a", "b", "c", "d"])
+    expect(topTags(order, [["f"], ["f", "e"], ["e"], ["f"]])).toEqual(["f", "e", "a", "b"])
+    // Égalité : l'ordre habituel départage ; une puce comptée une fois par saisie.
+    expect(topTags(order, [["d", "c"], ["c", "d"], ["b", "b", "b"]])).toEqual(["c", "d", "b", "a"])
+    expect(topTags(order, [["e"]], 2)).toEqual(["e", "a"])
+  })
+  const sheet = read("src/screens/entry-sheet.tsx")
+  it("observations puis actions, « +N » pour les autres, la gravité réglable ; puis une seule ligne note / photo", () => {
+    expect(sheet).toMatch(/id="e-sec-seen" title=\{t\("entry\.seen"\)\}/)
+    expect(sheet.indexOf('id="e-obs"')).toBeLessThan(sheet.indexOf('id="e-acts"'))
+    expect(sheet).toMatch(/id="e-obs-more"/)
+    expect(sheet).toMatch(/id="e-acts-more"/)
+    expect(sheet).toMatch(/level=\{cur\?\.severity\}/)
+    expect(sheet).toMatch(/id="e-note-open"/)
+    expect(sheet.indexOf('id="e-acts"')).toBeLessThan(sheet.indexOf('id="e-note-open"'))
+    expect(fr.entry.seen).toBe("Ce que tu as vu ou fait")
+    expect(fr.entry.notePhoto).toBe("Une note, une photo…")
+  })
+  it("la saisie rapide garde son fonctionnement, au même style : date derrière « modifier », valeurs d'hier en fantôme", () => {
+    const quick = read("src/screens/quick-sheet.tsx")
+    expect(quick).toMatch(/id="q-when"/)
+    expect(quick).toMatch(/\{whenOpen && <TextField id="q-date"/)
+    expect(quick).toMatch(/ghost=\{ghost\("tempDay"\)\}/)
+    expect(quick).not.toMatch(/placeholder=\{ph\(/)
+    expect(quick).toMatch(/onFull\(s\.id, date, v\[s\.id\] \?\? \{\}\)/)
   })
 })

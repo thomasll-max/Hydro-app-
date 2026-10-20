@@ -848,6 +848,9 @@ export const fr = {
     notes: "Notes",
   },
   entry: {
+    seen: "Ce que tu as vu ou fait",
+    notePhoto: "Une note, une photo…",
+    moreTags: "{n} de plus",
     titleFor: "Saisie · {space}",
     edit: "modifier",
     scopeAll: "tout l'espace",

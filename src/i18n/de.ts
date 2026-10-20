@@ -849,6 +849,9 @@ export const de: Messages = {
     notes: "Notizen",
   },
   entry: {
+    seen: "Was du gesehen oder getan hast",
+    notePhoto: "Eine Notiz, ein Foto…",
+    moreTags: "{n} weitere",
     titleFor: "Eintrag · {space}",
     edit: "ändern",
     scopeAll: "ganzer Bereich",

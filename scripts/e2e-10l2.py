@@ -6,6 +6,10 @@ an existing entry); the band of results stuck under the header, announced, compu
 is there, « plante » in target); « Reprendre hier » takes all the faint values, touching one faint value takes it alone;
 the fields in order (Arrosage with the dryback target, Runoff with the pH target, Climat in 3 columns, the folded line
 « Plante, réservoir, réglages »); one filled button « Enregistrer »; nothing saved that was not typed or taken; 200 %.
+10l2b — « Ce que tu as vu ou fait »: the 4 observations and the 4 actions used most (from the simulation's year), the
+others behind « +4 », a tag ticked from « +4 » stays shown, the severity still steps 1 → 2; one line « Une note, une
+photo… » opens the note and the photos; the quick entry in the same style (date behind « modifier », yesterday's values
+faint, a tap takes one, only what was typed or taken is saved).
 Usage: npm run build:local && npx -y tsx scripts/sim/build.ts <sim dir> && PYTHONPATH=scripts python3 scripts/e2e-10l2.py dist-local <sim dir> <out dir> [fr,en,de]"""
 import sys, json, pathlib, threading, http.server, functools, socketserver, re
 from playwright.sync_api import sync_playwright
@@ -84,7 +88,7 @@ with sync_playwright() as p:
                 c = pg.evaluate(SHEET)
                 ok = (c["title"] == e["title"] and c["head"] == e["head"] and [x[0] for x in c["band"]] == ["dryback", "runoffPct", "vpd", "dli"]
                       and [x[1] for x in c["band"][:3]] == ["—", "—", "—"] and c["live"] == "polite" and c["sticky"] == "sticky" and c["resume"]
-                      and c["sections"] == ["e-sec-water", "e-sec-runoff", "e-sec-climate"] and c["more"] and c["asides"] == e["asides"]
+                      and c["sections"] == ["e-sec-water", "e-sec-runoff", "e-sec-climate", "e-sec-seen"] and c["more"] and c["asides"] == e["asides"]
                       and c["ghosts"].get("e-weightMorningKg") == e["ghost"] and e["hint"] in c["hints"] and c["footer"] == [e["save"]] and c["hidden"] == [False, False] and c["sw"] <= c["cw"])
                 if not ok: errors.append(f"{tag} {json.dumps(c, ensure_ascii=False)[:1200]}")
                 pg.screenshot(path=str(out / f"saisie-{lang}-{theme}-{w}.png"))
@@ -139,6 +143,45 @@ with sync_playwright() as p:
     pg.locator("[role=alertdialog] button").last.click(); pg.wait_for_timeout(1000)
     gone = pg.evaluate(SAVED, "2026-02-08_floraison")
     if not asked or gone is not None: errors.append(f"delete {asked} {gone}")
+    ctx.close()
+
+    # 10l2b: the chips used most, « +4 », the severity, the note line (FR, dark, 390).
+    ctx, pg = open_entry(b, "fr", "dark", 390)
+    seen = pg.evaluate("""() => ({ obs: [...document.querySelectorAll('#e-obs button')].map((x) => x.innerText.trim()), acts: [...document.querySelectorAll('#e-acts button')].map((x) => x.innerText.trim()), note: document.querySelector('#e-note-open')?.innerText, title: document.querySelector('#e-sec-seen h3').textContent })""")
+    if len(seen["obs"]) != 5 or seen["obs"][-1] != "+4" or len(seen["acts"]) != 5 or seen["acts"][-1] != "+4" or seen["note"] != "Une note, une photo…" or seen["title"] != "Ce que tu as vu ou fait": errors.append(f"seen {seen}")
+    pg.click("#e-obs-more"); pg.wait_for_timeout(200)
+    hidden = [x for x in ["Jaunissement", "Pointes brûlées", "Griffes", "Feuilles molles", "Taches", "Odeur", "Insectes", "Autre"] if x not in seen["obs"]]
+    pick = hidden[0]
+    chip = pg.locator("#e-obs button", has_text=pick)
+    chip.click(); chip.click(); pg.wait_for_timeout(200)
+    level = chip.inner_text()
+    pg.evaluate("document.querySelector('#e-sec-seen').scrollIntoView({block: 'center'})"); pg.wait_for_timeout(200)
+    pg.screenshot(path=str(out / "vu-fait-fr.png"))
+    pg.click("#e-note-open"); pg.wait_for_timeout(300)
+    opened = [pg.locator("#e-note").count(), pg.locator("#e-note-box button", has_text="Ajouter").count()]
+    pg.fill("#e-note", "Taches sur deux feuilles"); pg.click("#e-save"); pg.wait_for_timeout(1200)
+    saved = pg.evaluate(SAVED, "2026-02-08_floraison")
+    if not saved or saved.get("note") != "Taches sur deux feuilles" or [o.get("severity") for o in saved.get("observations", [])] != [2] or opened != [1, 1] or "gravité 2 sur 3" not in level: errors.append(f"seen saved {opened} {level!r} {saved and (saved.get('note'), saved.get('observations'))}")
+    # Opened again: the tag ticked from « +4 » stays shown, the note is open.
+    pg.click("#tab-plus"); pg.wait_for_timeout(500); pg.click("#add-entry"); pg.wait_for_selector("#e-when"); pg.wait_for_timeout(700)
+    again = pg.evaluate("""() => ({ obs: [...document.querySelectorAll('#e-obs button')].map((x) => x.innerText.trim().split(String.fromCharCode(10))[0]), note: !!document.querySelector('#e-note') })""")
+    # (Saved once, the tag also counts in the history: it may now be among the 4.)
+    if pick not in again["obs"] or not again["obs"][-1].startswith("+") or not again["note"]: errors.append(f"seen again {pick} {again}")
+    checks["seen"] = {"first": seen, "picked": pick, "again": again}
+    ctx.close()
+
+    # The quick entry, same style: the date behind « modifier », yesterday's values faint; only what is typed or taken is saved.
+    ctx, pg = open_entry(b, "fr", "light", 390)
+    pg.get_by_role("button", name="Fermer").first.click(); pg.wait_for_timeout(700)
+    pg.click("#tab-plus"); pg.wait_for_timeout(500); pg.click("#add-quick"); pg.wait_for_selector("#q-when"); pg.wait_for_timeout(700)
+    q = pg.evaluate("""() => ({ head: document.querySelector('#q-head').innerText.split(String.fromCharCode(10))[0], date: !!document.querySelector('#q-date'), ghosts: Object.fromEntries([...document.querySelectorAll('input[data-ghost]')].map((i) => [i.id, i.placeholder])), titles: [...document.querySelectorAll('[data-quick] h3')].map((h) => h.textContent.trim()) })""")
+    pg.screenshot(path=str(out / "saisie-rapide-fr.png"))
+    pg.click("#q-floraison-t"); pg.fill("#q-colonne-rh", "57"); pg.click("[data-slot=drawer-footer] button"); pg.wait_for_timeout(1200)
+    flo = pg.evaluate(SAVED, "2026-02-08_floraison"); col = pg.evaluate(SAVED, "2026-02-08_colonne"); dry = pg.evaluate(SAVED, "2026-02-08_sechage")
+    if (q["head"] != "dim. 8 févr. modifier" or q["date"] or q["ghosts"].get("q-floraison-t") != "25,4" or q["titles"] != ["Floraison", "Colonne", "Séchage"]
+            or not flo or flo.get("tempDay") != 25.4 or flo.get("rh") is not None or not col or col.get("rh") != 57 or col.get("tempDay") is not None or dry is not None):
+        errors.append(f"quick {q} → {flo and (flo.get('tempDay'), flo.get('rh'))} {col and (col.get('tempDay'), col.get('rh'))} {dry}")
+    checks["quick"] = q
     ctx.close()
 
     # 200 %: 195 px wide, nothing wider than the sheet.

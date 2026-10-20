@@ -30,6 +30,8 @@ with sync_playwright() as p:
         if pg.locator(sel).count():
             pg.fill(sel, val)
     pg.locator("#e-dome").click()
+    # Since lot 10l2b the note is behind the line « Une note, une photo… ».
+    if not pg.locator("#e-note").count(): pg.click("#e-note-open")
     pg.fill("#e-note", "Première levée")
     pg.screenshot(path=str(out / "02-entry-colonne.png"), full_page=False)
     pg.get_by_role("button", name="Enregistrer", exact=True).click()

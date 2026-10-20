@@ -6,7 +6,7 @@
 - Cahier des charges : `docs/cahier-des-charges.md`
 - Fiche Athena (Pro Line, Blended, add-ons) : `docs/athena-fiche.md`
 - Maquette validée : `docs/maquette-aujourdhui.html`
-- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1 ; 38 = lot 10f2 ; 39 = lot 10g ; 40 = lot 10h1 ; 41 = lot 10h2 ; 42 = lot 10h3 ; 43 = lot 10i ; 44 = lot 10j1 ; 45 = lot 10j2 ; 46 = lot 7a ; 47 = lot 7b ; 48 = lot 10k1a ; 49 = lot 10k1b ; 50 = lot 10k2a ; 51 = lot 10k2b ; 52 = lot 10k3a ; 53 = lots 10k3b et 10k3c ; 54 = lot 10k4 ; 55 = lot 10l1 ; 56 = lot 10l2a)
+- **Artefact Hydro (à republier, toujours le même)** : https://claude.ai/artifact/CPfncsJe9Yi21RMwHSLqYC (version 13 = lot 4a ; 14 = lot 4b ; 15 = lot 5a ; 16 = lot 5b ; 17 = lot 6a ; 18 = lot 6b, avec la capacité `sample` ajoutée sur accord de Thomas ; 19 = lot 9a ; 20 = lot 9 ; 21 = menu langue / thème ; 22 = lot 8a ; 23 = lot 8b ; 24 = lot 8c ; 25 = lot 8d ; 26 et 27 = lot 8e, la 27 après intégration du commit README d'une autre session ; 28 = lot 10a ; 29 = lot 10b1 ; 30 = lot 10b2 ; 31 = lot 10c ; 32 = lot 10d1 ; 33 = lot 10d2 ; 34 = lot 10e1 ; 35 = lot 10e2 ; 36 = lot 10e3 ; 37 = lot 10f1 ; 38 = lot 10f2 ; 39 = lot 10g ; 40 = lot 10h1 ; 41 = lot 10h2 ; 42 = lot 10h3 ; 43 = lot 10i ; 44 = lot 10j1 ; 45 = lot 10j2 ; 46 = lot 7a ; 47 = lot 7b ; 48 = lot 10k1a ; 49 = lot 10k1b ; 50 = lot 10k2a ; 51 = lot 10k2b ; 52 = lot 10k3a ; 53 = lots 10k3b et 10k3c ; 54 = lot 10k4 ; 55 = lot 10l1 ; 56 = lot 10l2a ; 57 = lot 10l2b)
 - **Dépôt GitHub (privé)** : `thomasll-max/Hydro-app-` (ancien nom `hydro-app-`, qui redirige), branche `main`
   - Lots 1 à 6b, 9 et 8a à 8e poussés le 18/10/2026. Dernier commit de lot : « Lot 8e : numéro de version et bannière de mise à jour ».
   - `release/hydro.html` = copie de `dist/hydro.html` du dernier lot (à publier depuis une conversation du projet si la session n'a pas l'outil Artifact).
@@ -36,11 +36,11 @@
   - [x] Lot 10k3b : Journal par semaines (cartes, bande des 7 jours, cycle, loupe, filtres) (artefact v53)
   - [x] Lot 10k3c : page d'une semaine (verdict, valeurs clés, carte par jour) (370 tests, artefact v53, même commit que 10k3b)
   - [x] Lot 10k4 : Graphiques (vues prêtes, segments droits, dernière valeur en grand) (377 tests, artefact v54)
-- [ ] Lot 10l : page d'un espace et saisie du jour, version calme (prompt `docs/prompt-lot-10l.md`, juste après 10k)
+- [x] Lot 10l : page d'un espace et saisie du jour, version calme (prompt `docs/prompt-lot-10l.md`, juste après 10k)
   - [x] Lot 10l1 : page d'un espace (384 tests, artefact v55)
-  - [ ] Lot 10l2 : saisie du jour (coupé en deux)
+  - [x] Lot 10l2 : saisie du jour (coupé en deux)
     - [x] Lot 10l2a : structure de la feuille (en-tête, bande des résultats, « Reprendre hier », ordre des champs, valeurs fantômes, un seul bouton, menu « ⋯ ») (390 tests, artefact v56)
-    - [ ] Lot 10l2b : « Ce que tu as vu ou fait » (4 puces les plus utilisées, « +N », note et photo en une ligne) et saisie rapide au même style
+    - [x] Lot 10l2b : « Ce que tu as vu ou fait » (4 puces les plus utilisées, « +N », note et photo en une ligne) et saisie rapide au même style (393 tests, artefact v57)
 - [ ] Lot 11 : saisie vocale, dicter le journal à Claude (après 10k et 10l ; prompt `docs/prompt-lot-11.md`)
 - [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)
 - [x] Lot 8b : assistant de premier lancement, guides (205 tests)
@@ -77,7 +77,7 @@
 - Prompt de la session : `docs/prompt-passe-10.md`. Décisions de Thomas : voir ce prompt.
 - Scripts de simulation : `scripts/sim/`.
 - Point de reprise : premier point non coché de l'audit. **Passe terminée le 19/10/2026 : les 84 points sont cochés** (et l'option « Autre marque » de la section « Hors passe »).
-- **Après la passe** : lots 10f et 10g (identité « hydro. », `docs/prompt-lots-10f-10g.md`) **faits le 19/10 par une session planifiée** ; lots 10h, 10i, 10j et 7 (Athena seule + mes produits) faits le 19/10 ; **prochain lot : le lot 11** (saisie vocale, `docs/prompt-lot-11.md`). Netlify ne met plus en ligne à chaque push (voir `CLAUDE.md`) : aucun commit de la passe ne porte `[deploy]`. Hors passe, non faits : photos dans la sauvegarde (.zip), poids du premier chargement. À vérifier sur le téléphone de Thomas : le geste retour dans l'app Claude (lot 10d1).
+- **Après la passe** : lots 10f et 10g (identité « hydro. », `docs/prompt-lots-10f-10g.md`) **faits le 19/10 par une session planifiée** ; lots 10h, 10i, 10j et 7 (Athena seule + mes produits) faits le 19/10 ; lots 10k (interface calme) et 10l (page d'un espace, saisie du jour) faits les 19 et 20/10 ; **prochain lot : le lot 11** (saisie vocale, `docs/prompt-lot-11.md` : le bouton « Dicter » a sa place à côté de « Reprendre hier »). Netlify ne met plus en ligne à chaque push (voir `CLAUDE.md`) : aucun commit de la passe ne porte `[deploy]`. Hors passe, non faits : photos dans la sauvegarde (.zip), poids du premier chargement. À vérifier sur le téléphone de Thomas : le geste retour dans l'app Claude (lot 10d1).
 - **Branche** (décision de la session du 19/10, Thomas absent) : la session est configurée sur `claude/hydro-passe-10a-10e-pcm10n`. Le prompt demande « push sur main » et `CLAUDE.md` autorise le push direct : chaque lot est poussé **sur cette branche et sur `main`** (mêmes commits), donc pas de PR à ouvrir.
 - Simulation d'un an : résultats notés dans « Lot 10b2 — notes » et « Lot 10e3 — notes » (intermédiaire dans « Lot 10b1 — notes »).
 
@@ -135,6 +135,13 @@ Constat de Thomas après 10j : « toujours un effet plein d'infos éparpillées,
 5. Pas de jargon dans les listes (il reste dans les outils, avec le glossaire).
 6. Lignes de graphique honnêtes : segments droits.
 7. Typographie droite : Fraunces seulement dans le logo et l'écran de démarrage ; titres en Geologica 700 (−0,02 em) ; texte en Figtree ; tous les chiffres en Geologica à chasse fixe (plus de JetBrains Mono) ; liens de titre de section petits (≈ 13 px, Figtree 600).
+
+## Lot 10l2b — notes
+- **« Ce que tu as vu ou fait »** (`#e-sec-seen`, remplace les groupes Observations, Actions, Photos et Note) : une rangée d'observations (`#e-obs`, `role=group`), puis une rangée d'actions (`#e-acts`). Dans chaque rangée, **les 4 les plus utilisées** (`topTags` dans `calc/entry-day.ts`, testé) : chaque puce compte une fois par saisie, sur **toutes** les saisies de l'utilisateur (tous espaces) ; à égalité, et sans historique, l'ordre habituel. Une puce cochée hors des 4 reste affichée. Les autres derrière « +N » (`#e-obs-more`, `#e-acts-more`, bordure en pointillé, `aria-label` « 4 de plus »). La gravité se règle comme avant (1, 2, 3, puis retirée) ; la phrase d'aide ne s'affiche que quand une observation est cochée. **Décision prise seule** : l'historique change avec chaque saisie, donc une puce cochée aujourd'hui peut entrer dans les 4 de demain.
+- **Fantôme repris** : la sélection de la valeur reprise attend que React l'ait écrite et ne se fait que si le champ a encore le focus (`select()` reprenait sinon le focus d'un champ touché juste après, et la frappe suivante allait dans le premier : trouvé par `e2e-10l2` sur la saisie rapide).
+- **« Une note, une photo… »** (`#e-note-open`, ligne de 46 px avec un appareil photo) ouvre la note et les photos (`#e-note-box`) ; elles restent ouvertes quand la saisie a déjà une note ou une photo.
+- **Saisie rapide**, même style : titre 24 px, une ligne « dim. 8 févr. modifier » (`#q-when` ouvre `#q-date`) et la phrase d'explication dessous ; un titre Geologica par espace (`data-quick`) avec « Saisie complète › » ; les valeurs d'hier en fantôme (un toucher en reprend une) et « hier 25,4 » sous le champ. Fonctionnement inchangé (seul ce qui est tapé ou repris est enregistré, une saisie par espace, « Saisie complète » emporte ce qui est tapé).
+- Textes `entry.seen`, `entry.notePhoto`, `entry.moreTags` (FR/EN/DE). Scripts : `e2e-10l2.py` complété (puces 4 + « +4 », gravité 2, note et photo, saisie enregistrée, puce gardée visible ; saisie rapide : ligne, fantômes, enregistrement de ce qui est tapé ou repris seulement) ; `e2e-2b` ouvre la note par sa ligne. 393 tests.
 
 ## Lot 10l2a — notes
 - **Découpage** : 10l2 est coupé en 10l2a (la structure de la feuille) et 10l2b (« Ce que tu as vu ou fait », la saisie rapide).

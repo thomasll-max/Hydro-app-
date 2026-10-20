@@ -1,5 +1,11 @@
 # Changelog
 
+## Lot 10l2b — « Ce que tu as vu ou fait » et saisie rapide (20/10/2026)
+- Observations et actions dans une seule section, **« Ce que tu as vu ou fait »** : tes 4 observations et tes 4 actions les plus utilisées d'abord (d'après tes saisies), les autres derrière « +4 ». La gravité se règle toujours en touchant plusieurs fois.
+- Une seule ligne **« Une note, une photo… »** ouvre la note et les photos.
+- **La saisie rapide** prend le même style : la date derrière « modifier », les valeurs d'hier en fantôme (un toucher en reprend une), un titre par espace.
+- 393 tests.
+
 ## Lot 10l2a — La saisie du jour, plus calme (20/10/2026)
 Planche « Les menus » : la saisie tient sur un écran qu'on lit de haut en bas.
 - **En-tête** : « Saisie · Floraison », et une seule ligne « dim. 8 févr. · 08:30 modifier · tout l'espace ▾ ». La date, l'heure, le choix de l'espace et des plantes ne s'ouvrent que si tu les touches. « ⋯ » en haut à droite : « Enregistrer et ajouter un rappel », et « Supprimer cette saisie » quand tu en modifies une.

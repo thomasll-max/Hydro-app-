@@ -13,10 +13,10 @@ import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, type ActionTag, type Entry, type ObsT
 import { equipmentAt } from "@/equipment/calc"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { badNums, parseNum } from "@/calc/formulas"
-import { bandCell, bandKeys, type BandKey } from "@/calc/entry-day"
+import { bandCell, bandKeys, topTags, type BandKey } from "@/calc/entry-day"
 import { NNBSP } from "@/components/hydro/value"
 import { InfoTip, type Term } from "@/components/hydro/info"
-import { iconButton } from "@/components/hydro/styles"
+import { iconButton, toggle } from "@/components/hydro/styles"
 import { cn } from "@/lib/utils"
 import { addDays, todayIso } from "@/calc/stage"
 import type { MessageKey } from "@/i18n/types"
@@ -43,6 +43,8 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const bySensor = method === "acinfinity" || method === "sensor"
   const sensorLabel = method === "acinfinity" ? "AC Infinity" : space?.irrigation?.sensorName?.trim() || t("entry.sensorOther")
   const entries = useMemo(() => all.entries.filter((e) => e.spaceId === space?.id), [all.entries, space?.id])
+  const usedObs = useMemo(() => all.entries.map((e) => (e.observations ?? []).map((o) => o.tag)), [all.entries])
+  const usedActs = useMemo(() => all.entries.map((e) => e.actions ?? []), [all.entries])
   const mixes = useMemo(() => all.mixes.filter((m) => !m.spaceIds || (space && m.spaceIds.includes(space.id)) || (cycle && m.cycleId === cycle.id)), [all.mixes, space, cycle])
   const hasReservoir = useMemo(
     () => (space ? equipmentAt(space.id, todayIso(), assignments).some((a) => equipment.find((x) => x.id === a.equipmentId && x.type === "reservoir" && x.reservoir?.kind !== "runoff")) : false),
@@ -66,6 +68,10 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const [scopeOpen, setScopeOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [askDelete, setAskDelete] = useState(false)
+  // Lot 10l2b: the chips used most first, the others behind « +N »; the note and the photos behind one line.
+  const [allObs, setAllObs] = useState(false)
+  const [allActs, setAllActs] = useState(false)
+  const [noteOpen, setNoteOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!menuOpen) return
@@ -99,6 +105,9 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     setWhenOpen(false)
     setScopeOpen(false)
     setMenuOpen(false)
+    setAllObs(false)
+    setAllActs(false)
+    setNoteOpen(false)
     setSpaceId(init.spaceId ?? curSpace?.id ?? spaces[0]?.id ?? "")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, init.date, init.plantId, init.spaceId])
@@ -252,6 +261,15 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const dayLabel = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short" }).format(new Date(`${date || todayIso()}T12:00:00`))
   // What the folded line holds, said on it (« hauteur · reste du bidon »).
   const moreList = [on("plants") && t("entry.moreHeight"), hasReservoir && t("entry.moreReservoir")].filter(Boolean).join(" · ") || t("entry.moreSettings")
+  // The 4 observations and the 4 actions used most in all the entries (the usual order on a tie, or without history),
+  // plus those already ticked; the others behind « +N ».
+  const obsTop = topTags(OBS_TAGS, usedObs)
+  const actsTop = topTags(ACTION_TAGS, usedActs)
+  const obsShown = allObs ? [...OBS_TAGS] : [...obsTop, ...OBS_TAGS.filter((x) => !obsTop.includes(x) && obs.some((o) => o.tag === x))]
+  const actsShown = allActs ? [...ACTION_TAGS] : [...actsTop, ...ACTION_TAGS.filter((x) => !actsTop.includes(x) && acts.includes(x))]
+  const obsMore = OBS_TAGS.length - obsShown.length
+  const actsMore = ACTION_TAGS.length - actsShown.length
+  const noteShown = noteOpen || !!note.trim() || photos.length > 0
   // The fields first: they list the faint values « Reprendre hier » can take.
   const fields = (
     <>
@@ -368,17 +386,23 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
         </AccordionItem>
       </Accordion>
 
-      <Group title={t("entry.observations")} aside={<span className="text-[0.75rem] text-fg-3">{t("entry.severityHint")}</span>}>
-        <div className="flex flex-wrap gap-2">
-          {OBS_TAGS.map((tag) => {
+      {/* Ce que tu as vu ou fait (lot 10l2b): the 4 observations and the 4 actions used most, the others behind « +N »;
+          then one line « Une note, une photo… » that opens the note and the photos. */}
+      <Group id="e-sec-seen" title={t("entry.seen")}>
+        <div role="group" aria-label={t("entry.observations")} className="flex flex-wrap gap-2" id="e-obs">
+          {obsShown.map((tag) => {
             const cur = obs.find((o) => o.tag === tag)
             return <TagChip key={tag} label={t(`obs.${tag}`)} on={!!cur} level={cur?.severity} onClick={() => cycleObs(tag)} />
           })}
+          {obsMore > 0 && (
+            <button type="button" id="e-obs-more" onClick={() => setAllObs(true)} aria-label={t("entry.moreTags", { n: obsMore })} className={toggle(false, "border-dashed text-fg-3")}>
+              +{obsMore}
+            </button>
+          )}
         </div>
-      </Group>
-      <Group title={t("entry.actions")}>
-        <div className="flex flex-wrap gap-2">
-          {ACTION_TAGS.map((a) => (
+        {obs.length > 0 && <p className="mt-1.5 text-[0.75rem] leading-snug text-fg-3">{t("entry.severityHint")}</p>}
+        <div role="group" aria-label={t("entry.actions")} className="mt-2.5 flex flex-wrap gap-2" id="e-acts">
+          {actsShown.map((a) => (
             <TagChip
               key={a}
               label={t(`action.${a}`)}
@@ -389,43 +413,53 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
               }}
             />
           ))}
+          {actsMore > 0 && (
+            <button type="button" id="e-acts-more" onClick={() => setAllActs(true)} aria-label={t("entry.moreTags", { n: actsMore })} className={toggle(false, "border-dashed text-fg-3")}>
+              +{actsMore}
+            </button>
+          )}
         </div>
-      </Group>
-      <Group title={t("entry.photos")}>
-        <div className="flex flex-wrap gap-2">
-          {photos.map((id) => (
-            <PhotoThumb
-              key={id}
-              id={id}
-              url={photoUrl}
-              onRemove={() => {
-                touch("photos")
-                setPhotos((p) => p.filter((x) => x !== id))
-              }}
-            />
-          ))}
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="flex size-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line-strong text-[0.75rem] font-semibold text-fg-2"
-          >
-            {uploading ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
-            {uploading ? t("entry.uploading") : t("entry.addPhoto")}
+        {!noteShown ? (
+          <button type="button" id="e-note-open" onClick={() => setNoteOpen(true)} className="mt-3 flex min-h-[46px] w-full items-center gap-2.5 rounded-[10px] border border-line px-3 text-left text-[0.875rem] text-fg-3 hover:text-fg">
+            <Camera className="size-[18px] shrink-0" strokeWidth={1.8} />
+            {t("entry.notePhoto")}
           </button>
-          <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => onFiles(e.target.files).finally(() => (e.target.value = ""))} />
-        </div>
-      </Group>
-      <Group title={t("entry.note")}>
-        <AreaField
-          id="e-note"
-          label={t("entry.note")}
-          value={note}
-          onChange={(v) => {
-            touch("note")
-            setNote(v)
-          }}
-          placeholder={t("entry.notePlaceholder")}
-        />
+        ) : (
+          <div className="mt-3 flex flex-col gap-3" id="e-note-box">
+            <AreaField
+              id="e-note"
+              label={t("entry.note")}
+              value={note}
+              onChange={(v) => {
+                touch("note")
+                setNote(v)
+              }}
+              placeholder={t("entry.notePlaceholder")}
+            />
+            <div className="flex flex-wrap gap-2">
+              {photos.map((id) => (
+                <PhotoThumb
+                  key={id}
+                  id={id}
+                  url={photoUrl}
+                  onRemove={() => {
+                    touch("photos")
+                    setPhotos((p) => p.filter((x) => x !== id))
+                  }}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="flex size-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line-strong text-[0.75rem] font-semibold text-fg-2"
+              >
+                {uploading ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
+                {uploading ? t("entry.uploading") : t("entry.addPhoto")}
+              </button>
+            </div>
+          </div>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => onFiles(e.target.files).finally(() => (e.target.value = ""))} />
       </Group>
     </>
   )

@@ -848,6 +848,9 @@ export const en: Messages = {
     notes: "Notes",
   },
   entry: {
+    seen: "What you saw or did",
+    notePhoto: "A note, a photo…",
+    moreTags: "{n} more",
     titleFor: "Entry · {space}",
     edit: "change",
     scopeAll: "whole space",

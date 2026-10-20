@@ -158,7 +158,7 @@ with sync_playwright() as p:
     pg.evaluate("document.querySelector('#e-sec-seen').scrollIntoView({block: 'center'})"); pg.wait_for_timeout(200)
     pg.screenshot(path=str(out / "vu-fait-fr.png"))
     pg.click("#e-note-open"); pg.wait_for_timeout(300)
-    opened = [pg.locator("#e-note").count(), pg.locator("#e-note-box button", has_text="Ajouter").count()]
+    opened = [pg.locator("#e-note").count(), pg.locator("#e-note-box #e-photo-add", has_text="Ajouter").count()]  # a label around the file field since the 20/10 fix
     pg.fill("#e-note", "Taches sur deux feuilles"); pg.click("#e-save"); pg.wait_for_timeout(1200)
     saved = pg.evaluate(SAVED, "2026-02-08_floraison")
     if not saved or saved.get("note") != "Taches sur deux feuilles" or [o.get("severity") for o in saved.get("observations", [])] != [2] or opened != [1, 1] or "gravité 2 sur 3" not in level: errors.append(f"seen saved {opened} {level!r} {saved and (saved.get('note'), saved.get('observations'))}")

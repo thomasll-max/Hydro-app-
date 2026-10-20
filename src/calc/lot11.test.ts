@@ -172,7 +172,8 @@ describe("lot 11a — dictée : la feuille", () => {
     expect(sheet).toMatch(/if \(!r\.doubts\.length && !settings\.voiceReview && !typedHere\) await saveVoice\(r, text, target\)\s*else prefillVoice\(r, text\)/)
     expect(sheet).toMatch(/duration: 10_000/)
     expect(sheet).toMatch(/\(before \? restoreEntry\(before\) : deleteEntry\(id\)\)/)
-    expect(read("src/app/grow-context.tsx")).toMatch(/restoreEntry: async \(e\) => need\(\)\.set\(`entries\/\$\{e\.id\}`, e\)/)
+    // Exactly as it was, doubtful values included (lot 15b: `stored` puts back what `trusted` set apart).
+    expect(read("src/app/grow-context.tsx")).toMatch(/restoreEntry: async \(e\) => need\(\)\.set\(`entries\/\$\{e\.id\}`, stored\(e\)\)/)
     expect(sheet).toMatch(/doubt=\{doubtText\(doubts\.find\(\(d\) => d\.field === k\)\)\}/)
   })
   it("textes dans les trois langues", () => {

@@ -4,12 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { focusFirstInvalid, Grid, NumField } from "@/components/hydro/form"
+import { focusField, focusFirstInvalid, Grid, NumField } from "@/components/hydro/form"
 import { Chip, Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { badNums, parseNum } from "@/calc/formulas"
+import { outside, TANK_RANGE, type Range } from "@/calc/plausible"
 import { stageOn, todayIso } from "@/calc/stage"
 import { cycleNumber } from "@/calc/targets"
 import { tankForecast } from "@/calc/reminders"
@@ -30,6 +31,16 @@ import { STACK } from "@/data/nutrients"
 import { equipmentAt } from "@/equipment/calc"
 import type { Equipment, EquipmentAssignment } from "@/model/grow"
 import { joined, segment, tertiary, toggle } from "@/components/hydro/styles"
+
+/** The tank's numbers with a range (lot 15b, those of a tank said aloud): field id, form key, range. */
+const TANK_FIELDS: [string, string, Range][] = [
+  ["n-vol", "volume", TANK_RANGE.volumeL],
+  ["n-ec", "ec", TANK_RANGE.ec],
+  ["n-tap", "tap", TANK_RANGE.ec],
+  ["n-phb", "phBefore", TANK_RANGE.ph],
+  ["n-pha", "phAfter", TANK_RANGE.ph],
+  ["n-ecm", "ecMeasured", TANK_RANGE.ec],
+]
 
 function reservoirOf(spaceId: string, equipment: Equipment[], assignments: EquipmentAssignment[]): number | undefined {
   const here = equipmentAt(spaceId, todayIso(), assignments).map((a) => equipment.find((e) => e.id === a.equipmentId))
@@ -133,6 +144,12 @@ function LineNutrition() {
   const longest = Math.max(...cat.program.flatMap((p) => phaseLabel(p).split(/[\s/-]+/).map((w) => w.length)))
   const phaseColumns = cat.program.length > 8 ? { fontSize: "0.8125rem", gridTemplateColumns: `repeat(auto-fit,minmax(min(100%,max(4rem,calc(${longest}ch + 1.25rem))),1fr))` } : undefined
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }))
+  // The ranges of a tank (lot 15b): written under the field at once, the tank waits for the right value.
+  const wrong = TANK_FIELDS.filter(([, k, r]) => outside(parseNum(f[k]), r))
+  const rangeErr = (k: string) => {
+    const r = wrong.find((x) => x[1] === k)?.[2]
+    return r ? t("safe.outOfRange", { min: num(r.min), max: num(r.max) }) : undefined
+  }
   const conc = cat.ecTable ? dosingToConc(nutrition.dosing) : 0
   const concOptions = cat.ecTable ? [0, ...Object.keys(cat.ecTable.concentrates).map(Number).sort((x, y) => x - y)] : []
   const volumeL = parseNum(f.volume) ?? 0
@@ -214,6 +231,7 @@ function LineNutrition() {
       focusFirstInvalid()
       return toast.error(t("safe.fixFields"))
     }
+    if (wrong.length) return focusField(wrong[0][0])
     saving.current = true
     setBusy(true)
     try {
@@ -304,6 +322,7 @@ function LineNutrition() {
               hint={suggested ? t("nut.volumeHint", { v: num(suggested) }) : reservoirL ? t("nut.volumeReservoir", { v: num(reservoirL) }) : t("nut.volumeHintNone")}
               value={f.volume ?? ""}
               onChange={set("volume")}
+              error={rangeErr("volume")}
             />
             {phase.stage !== "flush" && (
               <NumField
@@ -312,9 +331,10 @@ function LineNutrition() {
                 hint={cat.ecTable && firstCycle ? t("nut.ecHint", { ec: num(phase.ec, 1) }) : t("nut.ecHintLine", { ec: num(phase.ec, 1) })}
                 value={f.ec ?? ""}
                 onChange={set("ec")}
+                error={rangeErr("ec")}
               />
             )}
-            {phase.stage !== "flush" && <NumField id="n-tap" label={t("nut.tap")} hint={t("nut.tapHint")} value={f.tap ?? ""} onChange={set("tap")} />}
+            {phase.stage !== "flush" && <NumField id="n-tap" label={t("nut.tap")} hint={t("nut.tapHint")} value={f.tap ?? ""} onChange={set("tap")} error={rangeErr("tap")} />}
             {phase.stage !== "flush" && balanceOn && (
               <NumField id="n-bal" label={t("nut.balance", { name: pname("balance") })} hint={nextBal != null ? t("nut.balanceHint") : undefined} value={f.balance ?? ""} onChange={set("balance")} />
             )}
@@ -433,13 +453,13 @@ function LineNutrition() {
           )}
           <Grid>
             {/* Before / after the pH up (Balance); without it, one pH: the tank's (lot 10d). */}
-            {balanceOn && <NumField id="n-phb" label={t("nut.phBefore", { name: pname("balance") })} hint={t("nut.measuredHint")} value={f.phBefore ?? ""} onChange={set("phBefore")} />}
+            {balanceOn && <NumField id="n-phb" label={t("nut.phBefore", { name: pname("balance") })} hint={t("nut.measuredHint")} value={f.phBefore ?? ""} onChange={set("phBefore")} error={rangeErr("phBefore")} />}
             {balanceOn && <NumField id="n-bala" label={t("nut.balanceAdded", { name: pname("balance") })} value={f.balAdded ?? ""} onChange={set("balAdded")} />}
-            <NumField id="n-pha" label={balanceOn ? t("nut.phAfter", { name: pname("balance") }) : t("nut.phTank")} value={f.phAfter ?? ""} onChange={set("phAfter")} />
-            <NumField id="n-ecm" label={t("nut.ecMeasured")} value={f.ecMeasured ?? ""} onChange={set("ecMeasured")} />
+            <NumField id="n-pha" label={balanceOn ? t("nut.phAfter", { name: pname("balance") }) : t("nut.phTank")} value={f.phAfter ?? ""} onChange={set("phAfter")} error={rangeErr("phAfter")} />
+            <NumField id="n-ecm" label={t("nut.ecMeasured")} value={f.ecMeasured ?? ""} onChange={set("ecMeasured")} error={rangeErr("ecMeasured")} />
           </Grid>
           {balanceOn && balAfter != null && parseNum(f.balAdded) != null && <p className="text-[0.75rem] text-primary">{t("nut.nextBalance", { v: num(balAfter, 2) })}</p>}
-          <Button onClick={save} disabled={volumeL <= 0 || busy} className="h-12">
+          <Button onClick={save} disabled={volumeL <= 0 || busy} className="h-12" id="nut-save">
             {t("nut.save")}
           </Button>
           {last && (

@@ -5,12 +5,13 @@ import { useEffect, useMemo, useState } from "react"
 import { ChevronRight, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { focusFirstInvalid, Grid, NumField, Sheet, TextField } from "@/components/hydro/form"
+import { focusField, focusFirstInvalid, Grid, NumField, Sheet, TextField } from "@/components/hydro/form"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
 import { blankEntry, entryId, previousEntry } from "@/model/entry"
 import { badNums, parseNum } from "@/calc/formulas"
+import { outOfRange } from "@/calc/plausible"
 import { todayIso } from "@/calc/stage"
 import { equipmentAt } from "@/equipment/calc"
 import type { Entry } from "@/model/types"
@@ -18,6 +19,7 @@ import { tertiary } from "@/components/hydro/styles"
 
 const FIELDS = ["tempDay", "rh", "reservoirL"] as const
 type F = (typeof FIELDS)[number]
+const FIELD_ID: Record<F, string> = { tempDay: "t", rh: "rh", reservoirL: "res" }
 
 export function QuickSheet({
   open,
@@ -29,13 +31,15 @@ export function QuickSheet({
   /** The full entry of a space, with what was already typed for it (lot 10d: nothing lost on the way). */
   onFull: (spaceId: string, date: string, values: Partial<Record<F, string>>) => void
 }) {
-  const { t, show, locale } = useSettings()
+  const { t, show, locale, num } = useSettings()
   const { spaces, all, cycleIn, equipment, assignments, saveEntry } = useGrow()
   const [date, setDate] = useState(todayIso())
   const [v, setV] = useState<Record<string, Partial<Record<F, string>>>>({})
   const [busy, setBusy] = useState(false)
   // Lot 10l2b, same look as the day's entry: the date behind « modifier », yesterday's values faint in the fields.
   const [whenOpen, setWhenOpen] = useState(false)
+  // Save was tapped: a value out of its range shows under its field (lot 15b).
+  const [tried, setTried] = useState(false)
 
   const rows = useMemo(
     () =>
@@ -51,6 +55,7 @@ export function QuickSheet({
     if (!open) return
     setDate(todayIso())
     setWhenOpen(false)
+    setTried(false)
   }, [open])
   useEffect(() => {
     if (!open) return
@@ -60,11 +65,20 @@ export function QuickSheet({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, date])
 
+  /** The fields drawn for a space: climate, and the reservoir when one is placed there. */
+  const shownFields = (r: (typeof rows)[number]): F[] => [...(r.s.modules.climate ? (["tempDay", "rh"] as const) : []), ...(r.tank ? (["reservoirL"] as const) : [])]
+
   const save = async () => {
     if (busy) return
     if (rows.some((r) => badNums(v[r.s.id] ?? {}).length)) {
       focusFirstInvalid()
       return toast.error(t("safe.fixFields"))
+    }
+    // Never saved out of its range (lot 15b): the first such field is scrolled to and focused.
+    const wrong = rows.flatMap((r) => shownFields(r).filter((k) => outOfRange(k, parseNum(v[r.s.id]?.[k]))).map((k) => `q-${r.s.id}-${FIELD_ID[k]}`))[0]
+    if (wrong) {
+      setTried(true)
+      return focusField(wrong)
     }
     // Nothing typed: say so, the sheet stays open (no false success, lot 10d).
     if (!rows.some((r) => FIELDS.some((k) => parseNum(v[r.s.id]?.[k]) != null))) return toast.error(t("quick.nothing"))
@@ -131,6 +145,10 @@ export function QuickSheet({
           const set = (k: F) => (x: string) => setV((cur) => ({ ...cur, [s.id]: { ...cur[s.id], [k]: x } }))
           const ghost = (k: F) => (prev?.[k] != null ? show(prev[k] as number) : undefined)
           const hint = (k: F) => (prev?.[k] != null ? t("entry.hint", { v: show(prev[k] as number) }) : undefined)
+          const error = (k: F) => {
+            const r = tried ? outOfRange(k, parseNum(v[s.id]?.[k])) : null
+            return r ? t("safe.outOfRange", { min: num(r.min), max: num(r.max) }) : undefined
+          }
           return (
             <section key={s.id} className="mt-4 first:mt-1" data-quick={s.id}>
               <div className="mb-1 flex flex-wrap items-center justify-between gap-x-2">
@@ -142,9 +160,9 @@ export function QuickSheet({
                 </button>
               </div>
               <Grid cols={tank ? 3 : 2}>
-                {s.modules.climate && <NumField id={`q-${s.id}-t`} label={t("quick.temp")} value={v[s.id]?.tempDay ?? ""} onChange={set("tempDay")} ghost={ghost("tempDay")} hint={hint("tempDay")} hintMono />}
-                {s.modules.climate && <NumField id={`q-${s.id}-rh`} label={t("quick.rh")} value={v[s.id]?.rh ?? ""} onChange={set("rh")} ghost={ghost("rh")} hint={hint("rh")} hintMono />}
-                {tank && <NumField id={`q-${s.id}-res`} label={t("quick.reservoir")} value={v[s.id]?.reservoirL ?? ""} onChange={set("reservoirL")} ghost={ghost("reservoirL")} hint={hint("reservoirL")} hintMono />}
+                {s.modules.climate && <NumField id={`q-${s.id}-t`} label={t("quick.temp")} value={v[s.id]?.tempDay ?? ""} onChange={set("tempDay")} ghost={ghost("tempDay")} hint={hint("tempDay")} hintMono error={error("tempDay")} />}
+                {s.modules.climate && <NumField id={`q-${s.id}-rh`} label={t("quick.rh")} value={v[s.id]?.rh ?? ""} onChange={set("rh")} ghost={ghost("rh")} hint={hint("rh")} hintMono error={error("rh")} />}
+                {tank && <NumField id={`q-${s.id}-res`} label={t("quick.reservoir")} value={v[s.id]?.reservoirL ?? ""} onChange={set("reservoirL")} ghost={ghost("reservoirL")} hint={hint("reservoirL")} hintMono error={error("reservoirL")} />}
               </Grid>
             </section>
           )

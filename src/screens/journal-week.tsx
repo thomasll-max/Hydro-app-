@@ -16,6 +16,7 @@ import type { MessageKey } from "@/i18n/types"
 import type { MetricKey } from "@/calc/advice"
 import { cn } from "@/lib/utils"
 import { dayShort, useValue, useWeekTitle, weekRange } from "./journal-weeks"
+import { DoubtfulLine, ImpossibleMark } from "@/components/hydro/doubtful"
 
 const label = (t: (k: MessageKey) => string, m: WeekMetric | MetricKey) => t(`jw.m.${m}` as MessageKey)
 
@@ -191,10 +192,15 @@ function DayCard({ date, entries, drying, onOpen }: { date: IsoDate; entries: En
         {grid.map((m) => (
           <span key={m} className="min-w-0">
             <span className="block truncate text-[0.75rem] text-fg-3">{t(`jw.k.${m === "runoffPct" ? "runoff" : m === "phRunoff" ? "phRo" : m === "vpd" ? "vpd" : m}` as MessageKey)}</span>
-            <span className={cn("mt-0.5 block font-num text-[1rem] font-semibold tracking-[-0.01em]", status(m) && "text-warn", e[m] == null && "text-fg-3")}>{e[m] != null ? val(m, e[m] as number) : "—"}</span>
+            <span className={cn("mt-0.5 block font-num text-[1rem] font-semibold tracking-[-0.01em]", status(m) && "text-warn", e[m] == null && "text-fg-3")}>
+              {e[m] != null ? val(m, e[m] as number) : "—"}
+              {/* Doubtful (lot 15b): never shown out of what it can be, « — » and a cue. */}
+              {e[m] == null && e.doubtful?.[m] != null && <ImpossibleMark />}
+            </span>
           </span>
         ))}
       </span>
+      <DoubtfulLine e={e} className="mt-2" />
       {/* A dictated day keeps the words (lot 11), apart from the note. */}
       {e.dictation && (
         <span className="mt-2 flex items-start gap-1.5 text-[0.75rem] leading-snug text-fg-3" data-dictation>

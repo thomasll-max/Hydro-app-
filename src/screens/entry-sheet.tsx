@@ -3,7 +3,7 @@ import { AlarmClockPlus, Camera, Loader2, Mic, MoreHorizontal, Tag, Trash2, X } 
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { AreaField, focusFirstInvalid, Grid, Group, NumField, Seg, Sheet, TagChip, TextField } from "@/components/hydro/form"
+import { AreaField, focusField, focusFirstInvalid, Grid, Group, NumField, Seg, Sheet, TagChip, TextField } from "@/components/hydro/form"
 import { ConfirmDelete } from "@/components/hydro/confirm"
 import { Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
@@ -22,8 +22,10 @@ import { TagsEditor } from "./photo-tags"
 import { equipmentAt } from "@/equipment/calc"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { badNums, parseNum } from "@/calc/formulas"
+import { fieldIssues, impossible, stored, type FieldIssue } from "@/calc/plausible"
 import { bandCell, bandKeys, topTags, type BandKey } from "@/calc/entry-day"
 import { NNBSP } from "@/components/hydro/value"
+import { ImpossibleMark } from "@/components/hydro/doubtful"
 import { InfoTip, type Term } from "@/components/hydro/info"
 import { iconButton, toggle } from "@/components/hydro/styles"
 import { cn } from "@/lib/utils"
@@ -35,6 +37,8 @@ export type EntryInit = { date?: string; plantId?: PlantId; spaceId?: string; va
 
 type NumKey = (typeof CARRIED)[number] | (typeof HINTED)[number]
 const NUMS: NumKey[] = [...CARRIED.filter((k) => k !== "mixId"), ...HINTED] as NumKey[]
+/** Fields in the folded line « Plante, réservoir, réglages » (an error there opens it, lot 15b). */
+const FOLDED = new Set<string>(["heightCm", "reservoirL", "volumePerPotMl", "shots", "ecIn", "phIn", "lightPct", "lightHeightCm", "ppfd", "photoperiodH"])
 
 /** The glossary entry of each result of the band (lot 10e2: the jargon keeps its explanation). */
 const BAND_TERM: Record<BandKey, Term> = { dryback: "dryback", drybackSensor: "drybackSensor", runoffPct: "runoff", vpd: "vpd", dli: "dli" }
@@ -74,6 +78,10 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const [tagging, setTagging] = useState<string | null>(null)
   const [note, setNote] = useState("")
   const [existing, setExisting] = useState<Entry | null>(null)
+  // Save was tapped: what is out of range shows under the fields typed since (lot 15b).
+  const [tried, setTried] = useState(false)
+  // The number fields drawn at the last render: only they can block a save.
+  const drawn = useRef<NumKey[]>([])
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(0)
   // Lot 10l2: date and time behind « modifier », space and plant behind « tout l'espace ▾ », Rappel and Supprimer in « ⋯ ».
@@ -136,6 +144,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     setDictated("")
     setVoiceMix(undefined)
     setMoreOpen("")
+    setTried(false)
     setSpaceId(init.spaceId ?? curSpace?.id ?? spaces[0]?.id ?? "")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, init.date, init.plantId, init.spaceId])
@@ -152,7 +161,8 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     const keep = typed.current
     const found = entries.find((e) => e.id === entryId(date, space.id, plantId)) ?? null
     setExisting(found)
-    const src = found ?? blankEntry(date, { spaceId: space.id, cycle }, prev, plantId)
+    // An entry saved before lot 15b keeps its doubtful values in the fields: shown, marked, to be corrected.
+    const src = found ? stored(found) : blankEntry(date, { spaceId: space.id, cycle }, prev, plantId)
     if (!keep.has("domeOn")) setDomeOn(!!src.domeOn)
     setF((cur) => {
       const nf: Partial<Record<NumKey, string>> = {}
@@ -176,7 +186,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   }, [open, date, plantId, space?.id, cycle?.id])
 
   const build = (): Entry => {
-    const base: Entry = existing ?? blankEntry(date, { spaceId: space!.id, cycle }, undefined, plantId)
+    const base: Entry = existing ? stored(existing) : blankEntry(date, { spaceId: space!.id, cycle }, undefined, plantId)
     const e: Entry = { ...base, id: entryId(date, space!.id, plantId), date, plantId, time: time || undefined }
     e.domeOn = on("propagation") ? domeOn : base.domeOn
     for (const k of NUMS) (e as Record<string, unknown>)[k] = parseNum(f[k])
@@ -202,6 +212,11 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
 
   const tg = targetsFor(date, cycle)
   const live = space ? derive(build(), cycle?.leafOffsetC) : null
+  // Out of range or swapped weights (lot 15b): under the field, the save waits.
+  const values = Object.fromEntries(NUMS.map((k) => [k, parseNum(f[k])])) as Partial<Record<NumKey, number>>
+  const issues = fieldIssues(values, NUMS)
+  const issueText = (i: FieldIssue) => (i.code === "swapped" ? t("safe.swapped") : t("safe.outOfRange", { min: num(i.min), max: num(i.max) }))
+  const drawing: NumKey[] = []
 
   const set = (k: NumKey) => (v: string) => {
     touch(k)
@@ -229,12 +244,16 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   const nf = (k: NumKey, label: MessageKey, opts: { integer?: boolean } = {}) => {
     if ((HINTED as readonly string[]).includes(k) && prev?.[k] != null) greyed.push(k as (typeof HINTED)[number])
     const hinted = (HINTED as readonly string[]).includes(k)
+    drawing.push(k)
+    // A value loaded from the data shows its issue at once; a value typed now, once Save was tapped.
+    const issue = issues.find((i) => i.key === k)
     return (
       <NumField
         id={`e-${k}`}
         label={t(label)}
         value={f[k] ?? ""}
         onChange={set(k)}
+        error={issue && (tried || !typed.current.has(k)) ? issueText(issue) : undefined}
         ghost={hinted && prev?.[k] != null ? show(prev[k] as number) : undefined}
         hint={hinted ? hint(k) : undefined}
         doubt={doubtText(doubts.find((d) => d.field === k))}
@@ -278,6 +297,13 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     if (badNums(f).length) {
       focusFirstInvalid()
       return toast.error(t("safe.fixFields"))
+    }
+    // Never saved out of its range, no box to force it (lot 15b): the first wrong field is opened, scrolled to, focused.
+    const wrong = drawn.current.find((k) => issues.some((i) => i.key === k))
+    if (wrong) {
+      setTried(true)
+      if (FOLDED.has(wrong)) setMoreOpen("more")
+      return focusField(`e-${wrong}`)
     }
     const e = build()
     if (!entryHasContent(e, blankEntry(date, { spaceId: space.id, cycle }, prev, plantId))) return toast.error(t(existing ? "safe.emptyEntryExisting" : "safe.emptyEntry"))
@@ -672,6 +698,7 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
       </Group>
     </>
   )
+  drawn.current = drawing
   // « Reprendre hier » while a field on screen still shows yesterday's value faint.
   const ghostsLeft = greyed.some((k) => !(f[k] ?? "").trim())
   const link = "font-semibold text-fg-2 underline decoration-water decoration-[1.5px] underline-offset-[3px] hover:text-fg"
@@ -796,14 +823,17 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
           >
             {band.map((k) => {
               const c = bandCell(k, live, tg)
+              // Its measures are typed but its formula cannot give it (swapped weights, a T° of 400): « — » and a cue.
+              const cue = !!live && impossible(k, live)
               return (
                 <div key={k} className="flex min-w-0 flex-col gap-0.5" data-band={k} data-status={c.status}>
                   <span className="flex min-w-0 items-center gap-1 text-[0.75rem] text-fg-3">
                     <span className="truncate">{bandLabel[k]}</span>
                     <InfoTip term={BAND_TERM[k]} />
                   </span>
-                  <b className={cn("font-num text-[1.125rem] leading-tight font-semibold tabular-nums", c.status === "ok" && "text-leaf-ink", c.status === "warn" && "text-warn", c.status === "bad" && "text-bad")}>
+                  <b className={cn("font-num text-[1.125rem] leading-tight font-semibold tabular-nums", c.status === "ok" && "text-leaf-ink", (c.status === "warn" || cue) && "text-warn", c.status === "bad" && "text-bad")} data-impossible={cue || undefined}>
                     {c.value == null ? "—" : bandText(k, c.value)}
+                    {cue && <ImpossibleMark />}
                   </b>
                 </div>
               )

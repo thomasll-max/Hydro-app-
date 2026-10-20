@@ -1,11 +1,15 @@
 // Entry helpers: ids, computed fields, prefill from the previous entry.
 import { dli, dryback, round, runoffPct, vpd } from "@/calc/formulas"
+import { DERIVED_KEYS, derivedOk } from "@/calc/plausible"
 import { SCHEMA, type Cycle, type DrybackMethod, type Entry, type IsoDate, type PlantId } from "./types"
 
 /** entries/{YYYY-MM-DD}_{spaceId}[_{target}] (spec §12). */
 export const entryId = (date: IsoDate, spaceId: string, plantId?: PlantId) => (plantId ? `${date}_${spaceId}_${plantId}` : `${date}_${spaceId}`)
 
-/** Fill the computed fields (VPD, dryback by weighing or by sensor, runoff %, DLI) from the measured ones. */
+/**
+ * Fill the computed fields (VPD, dryback by weighing or by sensor, runoff %, DLI) from the measured ones. A value its
+ * formula cannot give from plausible measures (a swapped pair of weights, a T° of 400) is left out (lot 15b).
+ */
 export function derive(e: Entry, leafOffsetDefault = -2): Entry {
   const out = { ...e }
   const off = e.leafOffsetC ?? leafOffsetDefault
@@ -22,6 +26,7 @@ export function derive(e: Entry, leafOffsetDefault = -2): Entry {
   // Runoff only from the runoff itself: a substrate moisture reading is not a runoff percentage.
   out.runoffPct = e.volumePerPotMl && e.runoffMl != null ? round(runoffPct(e.volumePerPotMl, e.runoffMl), 1) : undefined
   out.dli = e.ppfd != null && e.photoperiodH != null ? round(dli(e.ppfd, e.photoperiodH), 1) : undefined
+  for (const k of DERIVED_KEYS) if (!derivedOk(k, out[k], { ...out, leafOffsetC: off })) out[k] = undefined
   return out
 }
 

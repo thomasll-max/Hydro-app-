@@ -174,6 +174,11 @@ export type Entry = {
   source?: "voice"
   dictation?: string
   targets?: TargetsSnapshot
+  /**
+   * Values out of their plausible range (lot 15b), taken out for the computations and kept here. Only in memory
+   * (calc/plausible `trusted`): never stored, `stored` puts them back.
+   */
+  doubtful?: Partial<Record<string, number>>
   createdAt: string
   updatedAt: string
 }

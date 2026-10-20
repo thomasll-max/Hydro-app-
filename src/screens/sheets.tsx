@@ -3,11 +3,12 @@ import { isOwnLine } from "@/data/nutrients"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { AreaField, focusFirstInvalid, Grid, NumField, Sheet, TextField } from "@/components/hydro/form"
+import { AreaField, focusField, focusFirstInvalid, Grid, NumField, Sheet, TextField } from "@/components/hydro/form"
 import { ConfirmDelete } from "@/components/hydro/confirm"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { badNums, parseNum } from "@/calc/formulas"
+import { outside, TANK_RANGE } from "@/calc/plausible"
 import { todayIso } from "@/calc/stage"
 import { RootProductsField, useRootProducts } from "./root-products"
 import { EVENT_TYPES, SCHEMA, type Cycle, type EventType, type GrowEvent, type Mix, type Plant, type PlantId } from "@/model/types"
@@ -174,7 +175,7 @@ export function EventSheet({ open, onOpenChange, event }: { open: boolean; onOpe
 }
 
 export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenChange: (o: boolean) => void; mix?: Mix }) {
-  const { t } = useSettings()
+  const { t, num } = useSettings()
   const { saveMix, deleteMix, nutrition } = useGrow()
   // Another brand: one pH (the tank's), no Balance fields (lot 10e).
   const own = isOwnLine(mix?.line ?? nutrition.line)
@@ -182,16 +183,30 @@ export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenCha
   const [date, setDate] = useState(todayIso())
   const [s, setS] = useState({ volume: "", ec: "", ph: "", phBefore: "", balAdded: "" })
   const [note, setNote] = useState("")
+  // Save was tapped: a value out of its range shows under its field (lot 15b).
+  const [tried, setTried] = useState(false)
   const { busy, run } = useSaver(() => onOpenChange(false))
   useEffect(() => {
     if (!open) return
+    setTried(false)
     setDate(mix?.date ?? todayIso())
     setS({ volume: show(mix?.volumeL), ec: show(mix?.ec), ph: show(mix?.ph), phBefore: show(mix?.phBefore), balAdded: show(mix?.balanceAddedMl) })
     setNote(mix?.note ?? "")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, mix])
-  const save = () =>
-    run(async () => {
+  // The ranges of a tank (lot 15b), field by field in the order of the sheet.
+  const ranged: [string, keyof typeof s, (typeof TANK_RANGE)[keyof typeof TANK_RANGE]][] = [["m-vol", "volume", TANK_RANGE.volumeL], ["m-ec", "ec", TANK_RANGE.ec], ["m-ph", "ph", TANK_RANGE.ph], ["m-phb", "phBefore", TANK_RANGE.ph]]
+  const wrong = ranged.filter(([, k, r]) => outside(parseNum(s[k]), r))
+  const rangeErr = (id: string) => {
+    const r = tried ? wrong.find(([x]) => x === id)?.[2] : undefined
+    return r ? t("safe.outOfRange", { min: num(r.min), max: num(r.max) }) : undefined
+  }
+  const save = () => {
+    if (wrong.length && !badNums(s).length) {
+      setTried(true)
+      return focusField(wrong[0][0])
+    }
+    return run(async () => {
       if (badNums(s).length) {
         focusFirstInvalid()
         throw new Error(t("safe.fixFields"))
@@ -215,6 +230,7 @@ export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenCha
         createdAt: mix?.createdAt ?? new Date().toISOString(),
       })
     })
+  }
   return (
     <Sheet
       open={open}
@@ -226,12 +242,12 @@ export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenCha
       <div className="flex flex-col gap-2.5">
         <TextField id="m-date" type="date" label={t("mixForm.date")} value={date} onChange={setDate} />
         <Grid cols={3}>
-          <NumField id="m-vol" label={t("mixForm.volume")} value={s.volume} onChange={(v) => setS((x) => ({ ...x, volume: v }))} />
-          <NumField id="m-ec" label={t("mixForm.ec")} value={s.ec} onChange={(v) => setS((x) => ({ ...x, ec: v }))} />
-          <NumField id="m-ph" label={own ? t("nut.phTank") : t("mixForm.ph")} value={s.ph} onChange={(v) => setS((x) => ({ ...x, ph: v }))} />
+          <NumField id="m-vol" label={t("mixForm.volume")} value={s.volume} onChange={(v) => setS((x) => ({ ...x, volume: v }))} error={rangeErr("m-vol")} />
+          <NumField id="m-ec" label={t("mixForm.ec")} value={s.ec} onChange={(v) => setS((x) => ({ ...x, ec: v }))} error={rangeErr("m-ec")} />
+          <NumField id="m-ph" label={own ? t("nut.phTank") : t("mixForm.ph")} value={s.ph} onChange={(v) => setS((x) => ({ ...x, ph: v }))} error={rangeErr("m-ph")} />
         </Grid>
         {!own && <Grid>
-          <NumField id="m-phb" label={t("nut.phBefore", { name: "Balance" })} value={s.phBefore} onChange={(v) => setS((x) => ({ ...x, phBefore: v }))} />
+          <NumField id="m-phb" label={t("nut.phBefore", { name: "Balance" })} value={s.phBefore} onChange={(v) => setS((x) => ({ ...x, phBefore: v }))} error={rangeErr("m-phb")} />
           <NumField id="m-bal" label={t("nut.balanceAdded", { name: "Balance" })} value={s.balAdded} onChange={(v) => setS((x) => ({ ...x, balAdded: v }))} />
         </Grid>}
         <AreaField id="m-note" label={t("mixForm.note")} value={note} onChange={setNote} />

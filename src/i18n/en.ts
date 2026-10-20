@@ -732,6 +732,7 @@ export const en: Messages = {
     labelMissing: "label dose not typed yet",
   },
   journal: {
+    doubtful: "Doubtful value, left out of the calculations: {list}",
     title: "Journal",
     emptyTitle: "No cycle yet",
     emptyBody: "Create a cycle: a name, the variety and the start date. Anything that can be calculated will be.",
@@ -1721,6 +1722,9 @@ export const en: Messages = {
     emptyEntryExisting: "This entry no longer has any value: delete it instead (bin button).",
     badNumber: "Invalid number",
     fixFields: "Invalid number: fix the field in red before saving.",
+    outOfRange: "Out of range: between {min} and {max}.",
+    swapped: "The peak must be heavier than the morning: swapped?",
+    impossible: "impossible value with these measures",
     deleteFailed: "Not deleted: {reason}",
     fileFailed: "Couldn't read the file.",
     importSkipped: "Unreadable items left out: {n}",

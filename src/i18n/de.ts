@@ -733,6 +733,7 @@ export const de: Messages = {
     labelMissing: "Dosis vom Etikett noch nicht eingegeben",
   },
   journal: {
+    doubtful: "Zweifelhafter Wert, aus den Berechnungen genommen: {list}",
     title: "Journal",
     emptyTitle: "Noch kein Zyklus",
     emptyBody: "Leg einen Zyklus an: einen Namen, die Sorte und das Startdatum. Alles Berechenbare wird berechnet.",
@@ -1722,6 +1723,9 @@ export const de: Messages = {
     emptyEntryExisting: "Dieser Eintrag hat keinen Wert mehr: Lösch ihn lieber (Papierkorb-Taste).",
     badNumber: "Ungültige Zahl",
     fixFields: "Ungültige Zahl: Korrigiere das rote Feld vor dem Speichern.",
+    outOfRange: "Außerhalb des Bereichs: zwischen {min} und {max}.",
+    swapped: "Der Höchstwert muss schwerer sein als der Morgenwert: vertauscht?",
+    impossible: "mit diesen Messwerten unmöglicher Wert",
     deleteFailed: "Nicht gelöscht: {reason}",
     fileFailed: "Datei kann nicht gelesen werden.",
     importSkipped: "Unlesbare Elemente ausgelassen: {n}",

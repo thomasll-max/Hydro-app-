@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils"
 import { iconButton, tertiary } from "@/components/hydro/styles"
 import { Sheet, TextField } from "@/components/hydro/form"
 import { FilterRow } from "@/components/hydro/filter-row"
+import { DoubtfulLine } from "@/components/hydro/doubtful"
 
 const WEEKS = 8
 
@@ -433,8 +434,9 @@ function DayRow({ room, plants, space, onOpen, photoUrl }: { room?: Entry; plant
           ))}
         </span>
         <span className={cn("font-num text-[0.8125rem] font-medium", tone(key?.s) ?? "text-fg")}>{key?.v ?? ""}</span>
-        {(tags.length > 0 || room?.note || room?.photos?.length) && (
+        {(tags.length > 0 || room?.note || room?.photos?.length || room?.doubtful) && (
           <span className="col-start-2 col-end-4 mt-1 flex min-w-0 flex-col gap-1">
+            {room && <DoubtfulLine e={room} />}
             {tags.length > 0 && (
               <span className="truncate text-[0.75rem] text-fg-3">
                 {tags.map((x, i) => (

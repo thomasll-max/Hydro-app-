@@ -732,6 +732,7 @@ export const fr = {
     labelMissing: "dose de l'étiquette pas encore saisie",
   },
   journal: {
+    doubtful: "Valeur douteuse, hors des calculs : {list}",
     title: "Journal",
     emptyTitle: "Aucun cycle pour l'instant",
     emptyBody: "Crée un cycle : un nom, la variété et la date de départ. Tout ce qui se calcule sera calculé.",
@@ -1721,6 +1722,9 @@ export const fr = {
     emptyEntryExisting: "Cette saisie n'a plus aucune valeur : supprime-la plutôt (bouton corbeille).",
     badNumber: "Nombre invalide",
     fixFields: "Nombre invalide : corrige le champ en rouge avant d'enregistrer.",
+    outOfRange: "Hors plage : entre {min} et {max}.",
+    swapped: "Le pic doit être plus lourd que le matin : inversés ?",
+    impossible: "valeur impossible avec ces mesures",
     deleteFailed: "Pas supprimé : {reason}",
     fileFailed: "Lecture du fichier impossible.",
     importSkipped: "Éléments illisibles laissés de côté : {n}",

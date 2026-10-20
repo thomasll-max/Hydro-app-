@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 15b — Les valeurs absurdes ne passent plus (20/10/2026)
+- **Toute saisie** (saisie du jour, saisie rapide, dictée) a maintenant les plages plausibles de la dictée : pH 3–9, EC 0–6 (EC runoff 0–15), T° 5–40, HR 10–100, pot 0–50 kg, hauteur 0–400 cm… Hors plage : « Hors plage : entre 3 et 9. » sous le champ, la page y va, et l'enregistrement attend la correction (pas de case « forcer »).
+- **Pot pic plus léger que le matin** : « Le pic doit être plus lourd que le matin : inversés ? » sous les deux champs, et le dryback n'est pas calculé.
+- **Bidons** (« Nouveau bidon » et l'outil Nutrition) : volume 1–2 000 L, EC 0–6, pH 3–9, avec le même message sous le champ.
+- Le **dryback, le VPD, le DLI et le runoff %** ne s'affichent plus jamais hors de ce qu'ils peuvent valoir : sinon « — » et un « ? » qui dit « valeur impossible avec ces mesures ».
+- **Ce qui a déjà été enregistré** n'est pas effacé, mais une valeur hors plage est marquée « Valeur douteuse, hors des calculs » dans le Journal et n'entre plus dans les moyennes, les verdicts de la semaine, les bilans, les graphiques ni « Maintenant ». La corriger dans la saisie suffit.
+- 498 tests.
+
 ## Lot 15a — Créer son premier cycle sans tourner en rond (20/10/2026)
 - **Sans espace**, Aujourd'hui propose d'abord **« Créer un espace »** (dans « Maintenant » et sous « Espaces ») : son nom et son modèle, puis la feuille du premier cycle s'ouvre toute seule, rangée dans ce nouvel espace.
 - La feuille **« Nouveau cycle »** montre toujours le **choix de l'espace** (l'espace ouvert, ou le seul). S'il n'y a encore aucun espace, elle le crée dans la même feuille. Un cycle ne peut plus être enregistré sans espace.

@@ -7,6 +7,7 @@ import { GROW_SCHEMA, type ConcentrateStock, type Spray, type CustomProduct, typ
 import { cycleOfSpace, DEFAULT_NUTRITION, newGrow, spaceNutrition } from "@/model/grow-ops"
 import { moveEquipment } from "@/equipment/calc"
 import { derive } from "@/model/entry"
+import { stored, trusted } from "@/calc/plausible"
 import { setGrowZone, stageOn, todayIso } from "@/calc/stage"
 import { cycleNumber, dayTargets, snapshot, type DayTargets } from "@/calc/targets"
 import { compressPhoto } from "@/lib/photo"
@@ -267,7 +268,8 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
 
   const cid = cycle?.id
   const plants = React.useMemo(() => list<Plant>("plants").filter((p) => p.cycleId === cid).sort((a, b) => byStr(a.label, b.label)), [raw.plants, cid]) // eslint-disable-line react-hooks/exhaustive-deps
-  const entries = React.useMemo(() => list<Entry>("entries").filter((e) => e.cycleId === cid).sort(byDateDesc), [raw.entries, cid]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Entries as the app computes with them: a value out of its plausible range is kept apart (lot 15b, `trusted`).
+  const entries = React.useMemo(() => list<Entry>("entries").filter((e) => e.cycleId === cid).map(trusted).sort(byDateDesc), [raw.entries, cid]) // eslint-disable-line react-hooks/exhaustive-deps
   const events = React.useMemo(() => list<GrowEvent>("events").filter((e) => e.cycleId === cid || (!e.cycleId && e.spaceId === cycle?.spaceId)).sort(byDateDesc), [raw.events, cid, cycle?.spaceId]) // eslint-disable-line react-hooks/exhaustive-deps
   const mixes = React.useMemo(() => list<Mix>("mixes").filter((m) => m.cycleId === cid || (!!cycle?.spaceId && m.spaceIds?.includes(cycle.spaceId))).sort(byDateDesc), [raw.mixes, cid, cycle?.spaceId]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -283,7 +285,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
   )
   const all = React.useMemo(
     () => ({
-      entries: list<Entry>("entries").sort(byDateDesc),
+      entries: list<Entry>("entries").map(trusted).sort(byDateDesc),
       events: list<GrowEvent>("events").sort(byDateDesc),
       mixes: list<Mix>("mixes").sort(byDateDesc),
       plants: list<Plant>("plants"),
@@ -363,7 +365,8 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
         // Targets come from the cycle the entry belongs to (a space without a cycle has none).
         const spaceId = e.spaceId || cycle?.spaceId || space?.id || ""
         const ec = (e.cycleId ? cycles.find((c) => c.id === e.cycleId) : cycleIn(spaceId)) ?? null
-        const d = derive(e, ec?.leafOffsetC)
+        // The doubtful values put back where nothing replaced them (lot 15b): a save never erases data.
+        const d = derive(stored(e), ec?.leafOffsetC)
         const full: Entry = {
           ...d,
           spaceId,
@@ -376,7 +379,7 @@ export function GrowProvider({ children }: { children: React.ReactNode }) {
         return full
       },
       deleteEntry: async (id) => need().delete(`entries/${id}`),
-      restoreEntry: async (e) => need().set(`entries/${e.id}`, e),
+      restoreEntry: async (e) => need().set(`entries/${e.id}`, stored(e)),
       saveEvent: async (e) => need().set(`events/${e.id}`, { ...e, cycleId: e.cycleId ?? cycle?.id, spaceId: e.spaceId ?? (selection.kind === "space" ? selection.space.id : cycle?.spaceId), schemaVersion: SCHEMA.event }),
       deleteEvent: async (id) => need().delete(`events/${id}`),
       saveMix: async (m) =>

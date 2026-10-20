@@ -1,18 +1,21 @@
 // Cycle form (lot 10b, decisions of Thomas): creating a cycle asks only for a name, the variety(ies), the space and the
 // start date. Planned dates are optional and folded; watering and gear come prefilled from the space's equipment, folded.
 // Steps (veg, 12/12, harvest) are one tap on the day from Today; their dates can be corrected here.
+// Lot 15a: a cycle is never saved without a space (one is created here when there is none) nor without its start date;
+// every error is written under its field, which is scrolled to and focused.
 import { useEffect, useState } from "react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { AreaField, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
+import { AreaField, FieldError, focusField, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
 import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { equipmentPrefill, expectedHarvest } from "@/calc/steps"
-import { spaceNutrition } from "@/model/grow-ops"
+import { freeColor, newSpace, spaceNutrition } from "@/model/grow-ops"
+import { TEMPLATES, type TemplateId } from "@/model/grow"
 import { PLANT_IDS, type Cycle, type PlantId, type Substrate, type WaterMode } from "@/model/types"
 import { defaultCycle, SaveBar, useSaver, useShow } from "./sheets"
-import { tertiary } from "@/components/hydro/styles"
+import { joined, segment, tertiary } from "@/components/hydro/styles"
 import { openVariety } from "./tools/varieties"
 
 /** Numbers of the form. Cleared on an existing cycle = the previous value is kept (lot 10b: never Thomas's values). */
@@ -20,6 +23,27 @@ const NUM_FIELDS = ["flowerWeeks", "potVolumeL", "potCount", "flowMlPerMin", "sh
 /** May stay empty ("donnée manquante"): nothing is put in their place. */
 const OPTIONAL = new Set<string>(["potVolumeL", "potCount", "flowMlPerMin", "plannedDryingDays"])
 const H_FIELDS = ["wetG", "dryG", "watts", "dryingDays", "jarRh"] as const
+/** Where each number is typed, in the order of the form (the first error is the one focused). */
+const FIELD_ID: Record<string, string> = {
+  flowerWeeks: "c-fw",
+  plannedDryingDays: "c-pdry",
+  potVolumeL: "c-pv",
+  potCount: "c-pc",
+  flowMlPerMin: "c-flow",
+  leafOffsetC: "c-leaf",
+  shotPct: "c-shot",
+  p1Shots: "c-p1",
+  p1IntervalMin: "c-p1i",
+  p0DelayMin: "c-p0",
+  h_wetG: "h-wet",
+  h_dryG: "h-dry",
+  h_watts: "h-w",
+  h_dryingDays: "h-dd",
+  h_jarRh: "h-rh",
+  ...Object.fromEntries(PLANT_IDS.map((id) => [`hp_${id}`, `h-p-${id}`])),
+}
+/** The folded part holding a field: an error there opens it first. */
+const PART_OF: Record<string, string> = { "c-fw": "planned", "c-pdry": "planned", "c-pv": "setup", "c-pc": "setup", "c-flow": "setup", "c-leaf": "setup", "c-shot": "setup", "c-p1": "setup", "c-p1i": "setup", "c-p0": "setup" }
 /** The plants of a cycle for the dry weight per plant (lot 12a): as many as its pots, P1–P4. */
 const plantIdsOf = (c: Pick<Cycle, "potCount">) => PLANT_IDS.slice(0, Math.max(1, Math.min(PLANT_IDS.length, c.potCount ?? PLANT_IDS.length)))
 
@@ -38,11 +62,16 @@ export function CycleSheet({
   spaceId?: string
 }) {
   const { t, dm } = useSettings()
-  const { cycle: active, cycles, spaces, space: curSpace, saveCycle, equipment, assignments, grow } = useGrow()
+  const { cycle: active, cycles, spaces, allSpaces, space: curSpace, saveCycle, saveSpace, equipment, assignments, grow } = useGrow()
   const cycle = cycleId === "new" ? null : ((cycleId ? cycles.find((c) => c.id === cycleId) : active) ?? null)
   const show = useShow()
   const [c, setC] = useState<Cycle>(defaultCycle)
   const [s, setS] = useState<Record<string, string>>({})
+  // No space yet: the cycle's space is created with it (name and template, as in the assistant).
+  const [ns, setNs] = useState<{ name: string; template: TemplateId }>({ name: "", template: "flower" })
+  // Errors show once Save is tapped, and go away as soon as the field is right.
+  const [tried, setTried] = useState(false)
+  const [parts, setParts] = useState<string[]>([])
   const { busy, run } = useSaver(() => onOpenChange(false))
 
   /** New cycle in a space: pots, flow, lamps, mode and substrate from its equipment; the line from its nutrition. */
@@ -78,30 +107,67 @@ export function CycleSheet({
 
   useEffect(() => {
     if (!open) return
-    load(cycle ?? fresh(spaceId ?? curSpace?.id ?? spaces[0]?.id, todayIso()))
+    setTried(false)
+    setParts([])
+    setNs({ name: t("onb.firstSpace"), template: "flower" })
+    // A cycle saved without a space (before lot 15a) gets the only space, else waits for a choice.
+    const lost = cycle && !allSpaces.some((x) => x.id === cycle.spaceId)
+    load(cycle ? (lost ? { ...cycle, spaceId: spaces.length === 1 ? spaces[0].id : undefined } : cycle) : fresh(spaceId ?? curSpace?.id ?? spaces[0]?.id, todayIso()))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const txt = (k: keyof Cycle) => (v: string) => setC((x) => ({ ...x, [k]: v || undefined }))
   const sv = (k: string) => (v: string) => setS((x) => ({ ...x, [k]: v }))
-  /** Another space for a new cycle: its equipment fills the folded part again. */
+  /** Another space for a new cycle: its equipment fills the folded part again. A cycle without a space only takes it. */
   const pickSpace = (sid: string) => {
+    if (cycle) return setC((x) => ({ ...x, spaceId: sid }))
     const f = fresh(sid, c.germinationDate ?? todayIso())
     load({ ...f, id: c.id, name: c.name, cultivars: (s.cultivars ?? "").split(",").map((x) => x.trim()).filter(Boolean), germinationDate: c.germinationDate })
   }
 
-  const save = () =>
-    run(async () => {
-      if (badNums(s, [...NUM_FIELDS, ...H_FIELDS.map((k) => `h_${k}`), ...PLANT_IDS.map((id) => `hp_${id}`)]).length) throw new Error(t("safe.fixFields"))
-      if (!cycle && !c.germinationDate) throw new Error(t("cycleForm.needStart"))
-      const next: Cycle = { ...c, name: c.name.trim() || t("cycleForm.newName", { n: cycles.length + 1 }), cultivars: (s.cultivars ?? "").split(",").map((x) => x.trim()).filter(Boolean) }
+  const editing = !!cycle
+  // A new cycle, or one saved without a space before lot 15a (« Cycle sans espace » on Today).
+  const needsSpace = !harvestOnly && (!editing || !allSpaces.some((x) => x.id === cycle.spaceId))
+  /** What blocks Save, by field id, in the order of the form. */
+  const check = (): Record<string, string> => {
+    const e: Record<string, string> = {}
+    if (needsSpace && !spaces.length && !ns.name.trim()) e["c-sp-name"] = t("space.needName")
+    if (needsSpace && spaces.length && !spaces.some((x) => x.id === c.spaceId)) e["c-space"] = t("cycleForm.needSpace")
+    if (!harvestOnly && !c.germinationDate) e["c-germ"] = t("cycleForm.needStart")
+    const bad = new Set(badNums(s, Object.keys(FIELD_ID)))
+    const fw = parseNum(s.flowerWeeks) ?? cycle?.flowerWeeks ?? c.flowerWeeks
+    for (const [k, id] of Object.entries(FIELD_ID)) {
+      if (bad.has(k)) e[id] = t("safe.badNumber")
+      else if (k === "flowerWeeks" && !(fw > 0)) e[id] = t("cycleForm.needFlowerWeeks")
+      else if ((k === "potVolumeL" || k === "potCount") && (parseNum(s[k]) ?? 1) <= 0) e[id] = t("onb.issue.cyclePots")
+    }
+    return e
+  }
+  const errs = tried ? check() : {}
+
+  const save = () => {
+    const first = Object.keys(check())[0]
+    if (first) {
+      setTried(true)
+      const part = PART_OF[first]
+      if (part) setParts((p) => (p.includes(part) ? p : [...p, part]))
+      focusField(first)
+      return
+    }
+    return run(async () => {
+      let sid = c.spaceId
+      if (needsSpace && !spaces.length) {
+        const sp = newSpace({ id: newId("sp"), name: ns.name.trim(), template: ns.template, order: allSpaces.length, now: new Date().toISOString(), color: freeColor(allSpaces.map((x) => x.color)) })
+        await saveSpace(sp)
+        sid = sp.id
+      }
+      const next: Cycle = { ...c, spaceId: sid, name: c.name.trim() || t("cycleForm.newName", { n: cycles.length + 1 }), cultivars: (s.cultivars ?? "").split(",").map((x) => x.trim()).filter(Boolean) }
       for (const k of NUM_FIELDS) {
         const v = parseNum(s[k])
         // Cleared: the previous value stays (an existing cycle), the sourced default stays (a new one), optional ones stay empty.
         const keep = cycle ? (cycle[k] as number | undefined) : OPTIONAL.has(k) ? undefined : (c[k] as number | undefined)
         ;(next as Record<string, unknown>)[k] = v ?? keep
       }
-      if (!next.flowerWeeks) throw new Error(t("cycleForm.needFlowerWeeks"))
       const h: NonNullable<Cycle["harvest"]> = { ...(c.harvest ?? {}) }
       for (const k of H_FIELDS) h[k] = parseNum(s[`h_${k}`])
       // The dry weight per plant: only what was typed; the sum never replaces the dry weight (lot 12a).
@@ -111,9 +177,10 @@ export function CycleSheet({
       next.harvest = Object.values(h).some((v) => v != null && v !== "") ? h : undefined
       await saveCycle(next)
     })
+  }
 
   const expected = expectedHarvest({ ...c, flowerWeeks: parseNum(s.flowerWeeks) ?? c.flowerWeeks })
-  const editing = !!cycle
+  const future = !!c.germinationDate && c.germinationDate > todayIso()
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title={harvestOnly ? t("cycleForm.harvestTitle") : editing ? t("journal.editCycle") : t("growSet.newCycle")} footer={<SaveBar busy={busy} onSave={save} />}>
       {!harvestOnly && (
@@ -140,8 +207,43 @@ export function CycleSheet({
                 ))}
               </div>
             )}
-            {spaces.length > 0 && !editing && <Seg<string> label={t("cycleForm.space")} value={c.spaceId} onChange={pickSpace} options={spaces.map((x) => ({ value: x.id, label: x.name }))} />}
-            <TextField id="c-germ" type="date" label={editing ? t("cycleForm.start") : `${t("cycleForm.start")} · ${t("common.required")}`} hint={t("cycleForm.startHint")} value={c.germinationDate ?? ""} onChange={txt("germinationDate")} />
+            {needsSpace && spaces.length > 0 && (
+              <div id="c-space">
+                <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("cycleForm.space")}</div>
+                <Seg<string> label={t("cycleForm.space")} value={c.spaceId} onChange={pickSpace} options={spaces.map((x) => ({ value: x.id, label: x.name }))} />
+                {errs["c-space"] && <FieldError id="c-space-err">{errs["c-space"]}</FieldError>}
+              </div>
+            )}
+            {needsSpace && !spaces.length && (
+              <div id="c-new-space" className="flex flex-col gap-2.5 rounded-[10px] border border-line p-3">
+                <p className="text-[0.75rem] leading-[1.45] text-fg-2">{t("cycleForm.spaceNew")}</p>
+                <TextField id="c-sp-name" label={`${t("space.name")} · ${t("common.required")}`} value={ns.name} onChange={(v) => setNs((x) => ({ ...x, name: v }))} error={errs["c-sp-name"]} />
+                <div>
+                  <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("space.template")}</div>
+                  <div className={joined(3)} id="c-sp-template">
+                    {TEMPLATES.map((tp) => (
+                      <button key={tp} type="button" aria-pressed={ns.template === tp} onClick={() => setNs((x) => ({ ...x, template: tp }))} className={segment(ns.template === tp)}>
+                        {t(`template.${tp}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            <TextField
+              id="c-germ"
+              type="date"
+              label={`${t("cycleForm.start")} · ${t("common.required")}`}
+              hint={t("cycleForm.startHint")}
+              value={c.germinationDate ?? ""}
+              onChange={txt("germinationDate")}
+              error={errs["c-germ"]}
+            />
+            {future && (
+              <p className="-mt-1.5 text-[0.75rem] leading-snug text-fg-2" id="c-germ-future">
+                {t("cycleForm.startFuture", { date: dm(c.germinationDate!) })}
+              </p>
+            )}
           </div>
 
           {editing && (
@@ -161,15 +263,15 @@ export function CycleSheet({
             </Group>
           )}
 
-          <Accordion type="multiple" className="mt-3 border-y border-line">
+          <Accordion type="multiple" value={parts} onValueChange={setParts} className="mt-3 border-y border-line">
             <AccordionItem value="planned" className="border-line">
               <AccordionTrigger className="py-3 text-[0.8125rem] font-semibold hover:no-underline">{t("cycleForm.planned")}</AccordionTrigger>
               <AccordionContent className="flex flex-col gap-2.5 pb-3">
                 <p className="text-[0.75rem] leading-[1.45] text-fg-3">{t("cycleForm.plannedD")}</p>
                 <Grid>
                   <TextField id="c-pflip" type="date" label={t("cycleForm.plannedFlip")} value={c.plannedFlipDate ?? ""} onChange={txt("plannedFlipDate")} />
-                  <NumField id="c-fw" integer label={t("cycleForm.flowerWeeks")} hint={t("cycleForm.flowerWeeksHint")} value={s.flowerWeeks ?? ""} onChange={sv("flowerWeeks")} />
-                  <NumField id="c-pdry" integer label={t("cycleForm.plannedDrying")} value={s.plannedDryingDays ?? ""} onChange={sv("plannedDryingDays")} />
+                  <NumField id="c-fw" error={errs["c-fw"]} integer label={t("cycleForm.flowerWeeks")} hint={t("cycleForm.flowerWeeksHint")} value={s.flowerWeeks ?? ""} onChange={sv("flowerWeeks")} />
+                  <NumField id="c-pdry" error={errs["c-pdry"]} integer label={t("cycleForm.plannedDrying")} value={s.plannedDryingDays ?? ""} onChange={sv("plannedDryingDays")} />
                   {c.plannedTransferDate && <TextField id="c-ptrans" type="date" label={t("cycleForm.plannedTransfer")} hint={t("cycleForm.plannedTransferHint")} value={c.plannedTransferDate} onChange={txt("plannedTransferDate")} />}
                 </Grid>
                 {!editing && (
@@ -195,8 +297,8 @@ export function CycleSheet({
                 />
                 <Seg<WaterMode> label={t("cycleForm.waterMode")} value={c.waterMode} onChange={(v) => setC((x) => ({ ...x, waterMode: v }))} options={(["auto", "manual"] as const).map((v) => ({ value: v, label: t(`mode.${v}`) }))} />
                 <Grid>
-                  <NumField id="c-pv" label={t("cycleForm.potVolume")} value={s.potVolumeL ?? ""} onChange={sv("potVolumeL")} placeholder={t("equip.missing")} />
-                  <NumField id="c-pc" integer label={t("cycleForm.potCount")} value={s.potCount ?? ""} onChange={sv("potCount")} placeholder={t("equip.missing")} />
+                  <NumField id="c-pv" error={errs["c-pv"]} label={t("cycleForm.potVolume")} value={s.potVolumeL ?? ""} onChange={sv("potVolumeL")} placeholder={t("equip.missing")} />
+                  <NumField id="c-pc" error={errs["c-pc"]} integer label={t("cycleForm.potCount")} value={s.potCount ?? ""} onChange={sv("potCount")} placeholder={t("equip.missing")} />
                 </Grid>
                 {c.waterMode === "auto" && <NumField id="c-flow" integer label={t("cycleForm.flow")} hint={t("cycleForm.flowHint")} value={s.flowMlPerMin ?? ""} onChange={sv("flowMlPerMin")} placeholder={t("equip.missing")} />}
                 <TextField id="c-lights" label={t("cycleForm.lights")} value={c.lights} onChange={(v) => setC((x) => ({ ...x, lights: v }))} />

@@ -3,7 +3,7 @@ import { isOwnLine } from "@/data/nutrients"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { AreaField, Grid, NumField, Sheet, TextField } from "@/components/hydro/form"
+import { AreaField, focusFirstInvalid, Grid, NumField, Sheet, TextField } from "@/components/hydro/form"
 import { ConfirmDelete } from "@/components/hydro/confirm"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
@@ -143,7 +143,10 @@ export function EventSheet({ open, onOpenChange, event }: { open: boolean; onOpe
       onOpenChange={onOpenChange}
       title={t("event.title")}
       footer={<SaveBar busy={busy} onSave={() => run(async () => {
-        if (rooting && rootState.bad) throw new Error(t("safe.fixFields"))
+        if (rooting && rootState.bad) {
+          focusFirstInvalid()
+          throw new Error(t("safe.fixFields"))
+        }
         await saveEvent(build())
       })} onDelete={event ? async () => { await deleteEvent(event.id); onOpenChange(false) } : undefined} />}
     >
@@ -189,7 +192,10 @@ export function MixSheet({ open, onOpenChange, mix }: { open: boolean; onOpenCha
   }, [open, mix])
   const save = () =>
     run(async () => {
-      if (badNums(s).length) throw new Error(t("safe.fixFields"))
+      if (badNums(s).length) {
+        focusFirstInvalid()
+        throw new Error(t("safe.fixFields"))
+      }
       const volumeL = parseNum(s.volume)
       if (!volumeL) throw new Error(t("mixForm.volume"))
       // Editing keeps the recipe, the line and the spaces the tank feeds.

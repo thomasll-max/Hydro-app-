@@ -19,6 +19,8 @@ type Editors = {
   openReminder: (init?: ReminderInit) => void
   /** Settings of a space, scrolled to a section (lot 9: one settings page per space). */
   openSpace: (spaceId: string, section?: SpaceSection) => void
+  /** A new space, then its first cycle (lot 15a: Aujourd'hui without any space). */
+  openNewSpace: () => void
   /** A form is open (entry, cycle…): no update reload is offered meanwhile (lot 8e). */
   editing: boolean
 }
@@ -32,7 +34,7 @@ type State =
   | { kind: "mix"; mix?: Mix }
   | { kind: "quick" }
   | { kind: "reminder"; init: ReminderInit }
-  | { kind: "space"; spaceId: string; section?: SpaceSection }
+  | { kind: "space"; spaceId?: string; section?: SpaceSection }
   | null
 
 export function EditorsProvider({ children }: { children: React.ReactNode }) {
@@ -44,6 +46,14 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
     setState(s)
   }
   const close = (o: boolean) => !o && setState(null)
+  // The space just created from openNewSpace: its cycle sheet opens when the space sheet closes.
+  const created = React.useRef<string | null>(null)
+  const closeSpace = (o: boolean) => {
+    const id = created.current
+    created.current = null
+    if (!o && id) open({ kind: "cycle", cycleId: "new", spaceId: id })
+    else close(o)
+  }
   const api = React.useMemo<Editors>(
     () => ({
       openEntry: (init = {}) => open({ kind: "entry", init }),
@@ -54,6 +64,7 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
       openQuick: () => open({ kind: "quick" }),
       openReminder: (init = {}) => open({ kind: "reminder", init }),
       openSpace: (spaceId, section) => open({ kind: "space", spaceId, section }),
+      openNewSpace: () => open({ kind: "space" }),
       editing: state != null,
     }),
     [state],
@@ -74,16 +85,28 @@ export function EditorsProvider({ children }: { children: React.ReactNode }) {
       <EventSheet open={is("event")} onOpenChange={close} event={last.kind === "event" ? last.event : undefined} />
       <MixSheet open={is("mix")} onOpenChange={close} mix={last.kind === "mix" ? last.mix : undefined} />
       <ReminderSheet open={is("reminder")} onOpenChange={close} init={last.kind === "reminder" ? last.init : {}} />
-      <SpaceSettings open={is("space")} onOpenChange={close} spaceId={last.kind === "space" ? last.spaceId : undefined} section={last.kind === "space" ? last.section : undefined} />
+      {last.kind === "space" && (
+        <SpaceSettings
+          open={is("space")}
+          onOpenChange={closeSpace}
+          spaceId={last.spaceId}
+          section={last.section}
+          onCreated={(id) => {
+            created.current = id
+          }}
+        />
+      )}
       <QuickSheet open={is("quick")} onOpenChange={close} onFull={(spaceId, date, values) => open({ kind: "entry", init: { spaceId, date, values } })} />
     </Ctx.Provider>
   )
 }
 
-function SpaceSettings({ open, onOpenChange, spaceId, section }: { open: boolean; onOpenChange: (o: boolean) => void; spaceId?: string; section?: SpaceSection }) {
+function SpaceSettings({ open, onOpenChange, spaceId, section, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; spaceId?: string; section?: SpaceSection; onCreated: (id: string) => void }) {
   const { allSpaces } = useGrow()
   const space = allSpaces.find((s) => s.id === spaceId)
-  return space ? <SpaceSheet open={open} onOpenChange={onOpenChange} space={space} section={section} /> : null
+  // No id: a new space (openNewSpace).
+  if (spaceId && !space) return null
+  return <SpaceSheet open={open} onOpenChange={onOpenChange} space={space} section={section} onCreated={spaceId ? undefined : onCreated} />
 }
 
 export function useEditors() {

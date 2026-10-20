@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react"
 import { Archive, ArchiveRestore, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
+import { focusFirstInvalid, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
 import { spaceColor } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
@@ -24,7 +24,20 @@ export type SpaceSection = "general" | "nutrition" | "irrigation" | "light" | "a
 import { NutritionFields, useLineInUse } from "./nutrition-settings"
 import { joined, secondary, segment } from "@/components/hydro/styles"
 
-export function SpaceSheet({ open, onOpenChange, space, section }: { open: boolean; onOpenChange: (o: boolean) => void; space?: Space; section?: SpaceSection }) {
+export function SpaceSheet({
+  open,
+  onOpenChange,
+  space,
+  section,
+  onCreated,
+}: {
+  open: boolean
+  onOpenChange: (o: boolean) => void
+  space?: Space
+  section?: SpaceSection
+  /** A new space was saved (Aujourd'hui without any space: its cycle comes next, lot 15a). */
+  onCreated?: (id: string) => void
+}) {
   const { t, num, settings } = useSettings()
   const { allSpaces, sites, grow, assignments, equipment, saveSpace, saveGrow, addAssignment, cycleIn, saveCycle, saveEquipment, assignEquipment } = useGrow()
   const show = useShow()
@@ -34,6 +47,8 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
   const [s, setS] = useState<Space>(() => newSpace({ id: "x", name: "", template: "flower", order: 0, now: "" }))
   const [dims, setDims] = useState({ l: "", w: "", h: "" })
   const [own, setOwn] = useState(false)
+  // The name's error shows once Save is tapped (lot 15a).
+  const [tried, setTried] = useState(false)
   // Operational settings (existing spaces): the running cycle's watering, pots, lamps, extractor.
   const cycle: Cycle | null = space ? cycleIn(space.id) : null
   const today = todayIso()
@@ -54,6 +69,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
   useEffect(() => {
     if (!open) return
     setAll(!section || section === "general")
+    setTried(false)
     setGrowNut(grow?.nutrition)
     const base = space ?? newSpace({ id: newId("sp"), name: "", template: "flower", order: allSpaces.length, now: new Date().toISOString(), color: freeColor(allSpaces.map((x) => x.color)) })
     setS(base)
@@ -94,12 +110,17 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
     else out.nutrition = { ...(grow?.nutrition ?? {}), ...(s.nutrition ?? {}) }
     return out
   }
-  const save = () =>
-    run(async () => {
-      if (badNums(f).length || badNums(dims).length) throw new Error(t("safe.fixFields"))
+  const save = () => {
+    // A wrong field: its message is under it, the sheet scrolls to it (lot 15a).
+    if (badNums(f).length || badNums(dims).length || !s.name.trim()) {
+      setTried(true)
+      setAll(true)
+      return focusFirstInvalid()
+    }
+    return run(async () => {
       const next = build()
-      if (!next.name) throw new Error(t("space.name"))
       await saveSpace(next)
+      if (!space) onCreated?.(next.id)
       if (!own && growNut && JSON.stringify(growNut) !== JSON.stringify(grow?.nutrition)) await saveGrow({ nutrition: growNut })
       if (!space) return
       const now = new Date().toISOString()
@@ -141,6 +162,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
       const sp = parseNum(f.speed)
       if (ext && sp != null && sp !== ext.extractor?.speedPct) await saveEquipment({ ...ext, extractor: { ...ext.extractor, speedPct: Math.min(100, Math.max(0, sp)) } })
     })
+  }
   const duplicate = () =>
     run(async () => {
       const src = build()
@@ -166,7 +188,7 @@ export function SpaceSheet({ open, onOpenChange, space, section }: { open: boole
       {shows("general") && (
         <>
       <Group title={t("space.name")}>
-        <TextField id="sp-name" label={`${t("space.name")} · ${t("common.required")}`} value={s.name} onChange={(v) => setS((x) => ({ ...x, name: v }))} />
+        <TextField id="sp-name" label={`${t("space.name")} · ${t("common.required")}`} value={s.name} onChange={(v) => setS((x) => ({ ...x, name: v }))} error={tried && !s.name.trim() ? t("space.needName") : undefined} />
       </Group>
       <Group title={t("space.template")}>
         <div className={joined(3)}>

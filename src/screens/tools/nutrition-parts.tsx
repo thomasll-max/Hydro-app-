@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
-import { AreaField, Grid, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
+import { AreaField, focusFirstInvalid, Grid, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
 import { Chip, Label, Reveal } from "@/components/hydro/primitives"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { SaveBar, useSaver, useShow } from "@/screens/sheets"
@@ -106,7 +106,10 @@ function ConcentrateSheet({ open, onOpenChange, cat, conc }: { open: boolean; on
   const core = cat.products.find((p) => p.id.toLowerCase().includes("core"))?.name ?? "Core"
   const save = () =>
     run(async () => {
-      if (badNums({ bag }).length) throw new Error(t("safe.fixFields"))
+      if (badNums({ bag }).length) {
+        focusFirstInvalid()
+        throw new Error(t("safe.fixFields"))
+      }
       if (!kg || !final) throw new Error(t("nut.cNeedBag"))
       // A new jug replaces the open one of the same product and strength.
       for (const s of openStocks(concentrateStocks, cat.id).filter((s) => s.productId === product && s.gPerL === gPerL)) await saveConcentrateStock({ ...s, finishedOn: date })
@@ -299,7 +302,10 @@ export function CustomProductSheet({ open, onOpenChange, product, draft }: { ope
     run(async () => {
       const name = f.name.trim()
       if (!name) throw new Error(t("nut.pNeedName"))
-      if (badNums(f, ["lo", "hi", "perL", "from", "to"]).length) throw new Error(t("safe.fixFields"))
+      if (badNums(f, ["lo", "hi", "perL", "from", "to"]).length) {
+        focusFirstInvalid()
+        throw new Error(t("safe.fixFields"))
+      }
       const from = parseNum(f.from)
       const to = parseNum(f.to)
       const use = clone || veg || from != null ? { ...(clone ? { clone: true } : {}), ...(veg ? { veg: true } : {}), ...(from != null ? { flowerFrom: from, flowerTo: to ?? from } : {}) } : undefined

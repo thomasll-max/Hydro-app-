@@ -3,7 +3,7 @@ import { InfoTip } from "@/components/hydro/info"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Grid, NumField, Seg } from "@/components/hydro/form"
+import { focusFirstInvalid, Grid, NumField, Seg } from "@/components/hydro/form"
 import { Chip, Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
@@ -85,7 +85,10 @@ export function IrrigationTool() {
 
   const saveSensor = async () => {
     if (!cycle) return toast(t("irr.noCycle"))
-    if (badNums(f, ["sBase", "sPeak", "sP2"]).length) return toast.error(t("safe.fixFields"))
+    if (badNums(f, ["sBase", "sPeak", "sP2"]).length) {
+      focusFirstInvalid()
+      return toast.error(t("safe.fixFields"))
+    }
     try {
       await saveCycle({ ...cycle, sensor: { phase: sPhase, base: parseNum(f.sBase), peak: parseNum(f.sPeak), p2Pct: parseNum(f.sP2) } } as Cycle)
       toast.success(t("irr.sensorSaved"))

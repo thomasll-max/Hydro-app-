@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react"
 import { ChevronRight, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Grid, NumField, Sheet, TextField } from "@/components/hydro/form"
+import { focusFirstInvalid, Grid, NumField, Sheet, TextField } from "@/components/hydro/form"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
 import { useGrow } from "@/app/grow-context"
@@ -62,7 +62,10 @@ export function QuickSheet({
 
   const save = async () => {
     if (busy) return
-    if (rows.some((r) => badNums(v[r.s.id] ?? {}).length)) return toast.error(t("safe.fixFields"))
+    if (rows.some((r) => badNums(v[r.s.id] ?? {}).length)) {
+      focusFirstInvalid()
+      return toast.error(t("safe.fixFields"))
+    }
     // Nothing typed: say so, the sheet stays open (no false success, lot 10d).
     if (!rows.some((r) => FIELDS.some((k) => parseNum(v[r.s.id]?.[k]) != null))) return toast.error(t("quick.nothing"))
     setBusy(true)

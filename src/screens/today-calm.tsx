@@ -191,8 +191,15 @@ function NowBlock({ now, next, rows }: { now: Now; next?: CalItem; rows: Row[] }
     const item = now.item
     cta = { label: t("calm.deadlineCta"), run: () => act.done(item) }
   }
+  // No space yet (lot 15a): « Maintenant » is the first step, not « Tout est à jour ».
+  const setup = !rows.length
+  if (setup) {
+    title = t("space.empty")
+    context = t("calm.setupBody")
+    cta = { label: t("today.emptySpaceCta"), run: () => ed.openNewSpace() }
+  }
   return (
-    <section id="now" data-kind={now.kind} data-status={now.kind === "alert" ? now.advice.status : undefined} className="flex flex-col gap-3.5 rounded-[18px] border border-line bg-surface p-5">
+    <section id="now" data-kind={setup ? "setup" : now.kind} data-status={now.kind === "alert" ? now.advice.status : undefined} className="flex flex-col gap-3.5 rounded-[18px] border border-line bg-surface p-5">
       <span className="font-num text-[0.75rem] font-semibold tracking-[0.12em] text-water uppercase">{t("calm.now")}</span>
       <div className="flex items-start gap-3.5">
         {/* Very narrow screens (zoom 200 %): the drawing steps aside, the words keep the room. */}
@@ -295,8 +302,10 @@ export function Todo({ items, showSpace, spaceId, here }: { items: CalItem[]; sh
 /** Espaces: one line per space (64 px): its tinted square, its name and stage, one state, a chevron. */
 function Spaces({ rows }: { rows: Row[] }) {
   const { t, setSpace } = useSettings()
-  const { sites } = useGrow()
+  const { sites, cycles, allSpaces } = useGrow()
   const ed = useEditors()
+  // Cycles saved without a space before lot 15a: shown here until their space is picked (nothing lost, nothing renamed).
+  const lost = cycles.filter((c) => !allSpaces.some((s) => s.id === c.spaceId))
   const groups = groupBySite(
     rows.map((r) => r.space),
     sites,
@@ -330,11 +339,22 @@ function Spaces({ rows }: { rows: Row[] }) {
           })}
         </div>
       ))}
+      {lost.map((c) => (
+        <button key={c.id} type="button" onClick={() => ed.openCycle({ cycleId: c.id })} data-lost-cycle={c.id} className="flex min-h-16 w-full items-center gap-3.5 text-left">
+          <SpaceTile emoji="warning" size={40} />
+          <span className="min-w-0 flex-1 py-1">
+            <span className="block truncate text-[0.96875rem] font-semibold">{c.name}</span>
+            <span className="block text-[0.8125rem] leading-snug text-warn">{t("today.orphan")}</span>
+          </span>
+          <ChevronRight aria-hidden="true" className="-ml-1 size-[18px] shrink-0 text-fg-3" />
+        </button>
+      ))}
+      {/* No space yet: the space first (name and template), its first cycle comes right after (lot 15a). */}
       {!rows.length && (
-        <Card framed className="items-center gap-1 text-center">
+        <Card framed className="items-center gap-1 text-center" id="spaces-empty">
           <p className="text-[0.8125rem] text-fg-2">{t("space.empty")}</p>
-          <button onClick={() => ed.openCycle({ cycleId: "new" })} className={tertiary}>
-            {t("today.emptyCta")}
+          <button type="button" onClick={() => ed.openNewSpace()} className={tertiary} id="today-new-space">
+            {t("today.emptySpaceCta")}
           </button>
         </Card>
       )}

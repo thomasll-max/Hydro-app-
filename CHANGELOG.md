@@ -1,5 +1,13 @@
 # Changelog
 
+## Lot 15a — Créer son premier cycle sans tourner en rond (20/10/2026)
+- **Sans espace**, Aujourd'hui propose d'abord **« Créer un espace »** (dans « Maintenant » et sous « Espaces ») : son nom et son modèle, puis la feuille du premier cycle s'ouvre toute seule, rangée dans ce nouvel espace.
+- La feuille **« Nouveau cycle »** montre toujours le **choix de l'espace** (l'espace ouvert, ou le seul). S'il n'y a encore aucun espace, elle le crée dans la même feuille. Un cycle ne peut plus être enregistré sans espace.
+- Un cycle déjà créé sans espace s'affiche sur Aujourd'hui : « Cycle sans espace : choisir son espace ». Rien n'est perdu, rien n'est renommé.
+- **Assistant, étape « Premier cycle »** : les **pots sont facultatifs** (comme dans la feuille) ; la **date de départ est obligatoire** partout, avec le même texte. Une date à venir est acceptée : le cycle reste « À venir » jusque-là.
+- **Chaque erreur s'écrit sous son champ**, en couleur « à surveiller », et la page défile jusqu'à lui en lui donnant le focus (même dans une partie repliée de la feuille). Plus de message seulement en bas de page. Les formulaires qui refusaient un nombre mal tapé font de même.
+- 494 tests.
+
 ## Correctif — la bannière « Nouvelle version disponible » ne cache plus rien (20/10/2026)
 - Dans l'app installée, la bannière de mise à jour flottait par-dessus le haut de l'écran et pouvait prendre le toucher de « Y aller » (Premiers pas) ou des onglets d'espace. Elle se place maintenant sous la barre du haut et pousse le reste vers le bas.
 

@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { AreaField, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
+import { AreaField, focusFirstInvalid, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
 import { LineIcon } from "@/components/hydro/line-icon"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -162,7 +162,10 @@ export function EquipmentSheet({ open, onOpenChange, init }: { open: boolean; on
   const save = () =>
     run(async () => {
       const numeric = ["quantity", ...(spec ? FIELDS[spec].filter((x) => x.kind === "num" || x.kind === "int").map((x) => x.k) : [])]
-      if (badNums(txt, numeric).length) throw new Error(t("safe.fixFields"))
+      if (badNums(txt, numeric).length) {
+        focusFirstInvalid()
+        throw new Error(t("safe.fixFields"))
+      }
       const item = build()
       if (!item.name) throw new Error(t("equip.name"))
       await saveEquipment(item)

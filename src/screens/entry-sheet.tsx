@@ -3,7 +3,7 @@ import { AlarmClockPlus, Camera, Loader2, Mic, MoreHorizontal, Tag, Trash2, X } 
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { AreaField, Grid, Group, NumField, Seg, Sheet, TagChip, TextField } from "@/components/hydro/form"
+import { AreaField, focusFirstInvalid, Grid, Group, NumField, Seg, Sheet, TagChip, TextField } from "@/components/hydro/form"
 import { ConfirmDelete } from "@/components/hydro/confirm"
 import { Notice } from "@/components/hydro/primitives"
 import { useSettings } from "@/app/settings-context"
@@ -275,7 +275,10 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
   /** "+ Rappel" saves the entry first, then opens a reminder for this space (next day by default). */
   const save = async (remind = false) => {
     if (!date || !space || busy) return
-    if (badNums(f).length) return toast.error(t("safe.fixFields"))
+    if (badNums(f).length) {
+      focusFirstInvalid()
+      return toast.error(t("safe.fixFields"))
+    }
     const e = build()
     if (!entryHasContent(e, blankEntry(date, { spaceId: space.id, cycle }, prev, plantId))) return toast.error(t(existing ? "safe.emptyEntryExisting" : "safe.emptyEntry"))
     setBusy(true)

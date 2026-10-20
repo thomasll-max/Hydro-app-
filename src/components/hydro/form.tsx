@@ -182,12 +182,15 @@ export function NumField({
   className,
   ghost,
   doubt,
+  error,
 }: {
   id: string
   label: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
+  /** What is wrong with the value (lot 15a): written under the field, « à surveiller », and saving waits. */
+  error?: string
   /**
    * Yesterday's value, shown very faint in the empty field (lot 10l2): touching the field takes it (selected, so typing
    * replaces it). Never saved unless taken or typed.
@@ -206,6 +209,7 @@ export function NumField({
   const { t } = useSettings()
   // A typo is flagged right away; forms refuse to save while one is left (lot 10a).
   const bad = isBadNum(value)
+  const err = bad ? t("safe.badNumber") : error
   const [text, fromLabel] = splitUnit(label)
   const u = unit ?? fromLabel
   return (
@@ -214,7 +218,7 @@ export function NumField({
         {text}
         {u && <span className="sr-only"> ({u})</span>}
       </UiLabel>
-      <div className={cn(line, (bad || doubt) && lineBad)} data-doubt={doubt ? "" : undefined}>
+      <div className={cn(line, (err || doubt) && lineBad)} data-doubt={doubt ? "" : undefined}>
         <input
           id={id}
           type="text"
@@ -234,8 +238,8 @@ export function NumField({
               if (document.activeElement === el) el.select()
             })
           }}
-          aria-invalid={bad || undefined}
-          aria-describedby={bad ? `${id}-err` : doubt ? `${id}-doubt` : undefined}
+          aria-invalid={!!err || undefined}
+          aria-describedby={err ? `${id}-err` : doubt ? `${id}-doubt` : undefined}
           onChange={(e) => onChange(e.target.value.replace(/[^\d.,-]/g, ""))}
           className={cn(fieldCls, "h-12 font-num text-[1.625rem] font-medium tabular-nums", ghost && "placeholder:text-fg-3/35")}
         />
@@ -245,10 +249,8 @@ export function NumField({
           </span>
         )}
       </div>
-      {bad ? (
-        <span id={`${id}-err`} className="truncate text-[0.75rem] font-semibold text-warn">
-          {t("safe.badNumber")}
-        </span>
+      {err ? (
+        <FieldError id={`${id}-err`}>{err}</FieldError>
       ) : doubt ? (
         <span id={`${id}-doubt`} className="text-[0.75rem] leading-snug font-semibold text-warn">
           {doubt}
@@ -271,6 +273,7 @@ export function TextField({
   className,
   inputMode,
   autoComplete,
+  error,
 }: {
   id: string
   label: string
@@ -283,13 +286,15 @@ export function TextField({
   className?: string
   inputMode?: "numeric" | "text"
   autoComplete?: string
+  /** What is missing or wrong (lot 15a): written under the field, « à surveiller ». */
+  error?: string
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-0.5", className)}>
       <UiLabel htmlFor={id} className={labelCls}>
         {label}
       </UiLabel>
-      <div className={line}>
+      <div className={cn(line, error && lineBad)}>
         <input
           id={id}
           type={type}
@@ -297,13 +302,50 @@ export function TextField({
           placeholder={placeholder}
           inputMode={inputMode}
           autoComplete={autoComplete}
+          aria-invalid={!!error || undefined}
+          aria-describedby={error ? `${id}-err` : undefined}
           onChange={(e) => onChange(e.target.value)}
           className={cn(fieldCls, "h-12 text-[1.0625rem]", type !== "text" && "font-num text-[1rem] tabular-nums")}
         />
       </div>
-      {hint && <span className="truncate text-[0.75rem] text-fg-3">{hint}</span>}
+      {error ? <FieldError id={`${id}-err`}>{error}</FieldError> : hint && <span className="truncate text-[0.75rem] text-fg-3">{hint}</span>}
     </div>
   )
+}
+
+/** The message under a field (lot 15a): « à surveiller », never only at the bottom of the page. */
+export function FieldError({ id, children }: { id: string; children: ReactNode }) {
+  return (
+    <span id={id} className="text-[0.75rem] leading-snug font-semibold text-warn" data-field-error>
+      {children}
+    </span>
+  )
+}
+
+/**
+ * Scrolls to a field and gives it the focus (lot 15a), once React has drawn its message. `id` is the input, or a box
+ * around a choice (its first button takes the focus).
+ */
+export function focusField(id: string) {
+  const scroll = (box: HTMLElement) => box.scrollIntoView({ block: "center", behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
+  requestAnimationFrame(() => {
+    const box = document.getElementById(id)
+    if (!box) return
+    const el = box.matches("input, textarea, button, select") ? box : (box.querySelector<HTMLElement>("input, textarea, button, select") ?? box)
+    scroll(box)
+    el.focus({ preventScroll: true })
+    // A folded part that just opened grows for 200 ms: once it is open, the field is brought to the middle again.
+    setTimeout(() => box.isConnected && scroll(box), 260)
+  })
+}
+
+/** The first field marked wrong in the sheet on top (or the page): scrolled to and focused (lot 15a). */
+export function focusFirstInvalid() {
+  requestAnimationFrame(() => {
+    const sheets = document.querySelectorAll<HTMLElement>("[role=dialog]")
+    const el = (sheets[sheets.length - 1] ?? document).querySelector<HTMLElement>("[aria-invalid=true]")
+    if (el?.id) focusField(el.id)
+  })
 }
 
 export function AreaField({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {

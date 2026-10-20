@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AreaField, Grid, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
+import { AreaField, focusFirstInvalid, Grid, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
 import { Chip, Label, Notice, Reveal, SourceNote } from "@/components/hydro/primitives"
 import { SwitchRow } from "@/screens/tools/equipment-shared"
 import { SaveBar, useSaver } from "@/screens/sheets"
@@ -76,7 +76,10 @@ export function OwnRecipeTool() {
 
   const save = async () => {
     if (saving.current) return
-    if (badNums(f).length) return toast.error(t("safe.fixFields"))
+    if (badNums(f).length) {
+      focusFirstInvalid()
+      return toast.error(t("safe.fixFields"))
+    }
     if (!space) return toast.error(t("nut.needSpace"))
     if (volumeL <= 0) return toast.error(t("nut.invalidVolume"))
     saving.current = true
@@ -368,7 +371,10 @@ function LabelSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (o: b
     run(async () => {
       const name = (f.name ?? "").trim()
       if (!name) throw new Error(t("nut.pNeedName"))
-      if (badNums(f, ["lo", "hi", "from", "to"]).length) throw new Error(t("safe.fixFields"))
+      if (badNums(f, ["lo", "hi", "from", "to"]).length) {
+        focusFirstInvalid()
+        throw new Error(t("safe.fixFields"))
+      }
       const from = parseNum(f.from)
       const to = parseNum(f.to)
       const use = veg || from != null ? { ...(veg ? { veg: true } : {}), ...(from != null ? { flowerFrom: from, flowerTo: to ?? from } : {}) } : undefined

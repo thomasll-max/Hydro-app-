@@ -44,12 +44,17 @@ describe("lot 8b — assistant : étapes", () => {
     expect(s.modules.nutrition).toBe(false)
   })
 
-  it("un premier cycle demande ses pots (rien n'est supposé)", () => {
+  it("un premier cycle demande sa date de départ ; ses pots sont facultatifs, jamais supposés (lot 15a)", () => {
     const d = named()
-    const c = startCycle(d, "Cycle 1")
+    const c = startCycle(d, "Cycle 1", undefined, "2026-10-20")
     expect(c.potL).toBeUndefined()
-    expect(stepIssues({ ...d, cycle: c }, "cycle")).toEqual(["cyclePots"])
+    expect(c.germinationDate).toBe("2026-10-20")
+    expect(stepIssues({ ...d, cycle: c }, "cycle")).toEqual([])
+    expect(stepIssues({ ...d, cycle: { ...c, germinationDate: undefined } }, "cycle")).toEqual(["cycleStart"])
     expect(stepIssues({ ...d, cycle: { ...c, potL: 11, potN: 3 } }, "cycle")).toEqual([])
+    // Typed but wrong (0, or a typo reported as NaN): said under the field.
+    expect(stepIssues({ ...d, cycle: { ...c, potL: 0 } }, "cycle")).toEqual(["cyclePots"])
+    expect(stepIssues({ ...d, cycle: { ...c, potN: NaN } }, "cycle")).toEqual(["cyclePots"])
     // Pots typed at the equipment step are taken over.
     const withGear = { ...d, spaces: [{ ...d.spaces[0], gear: { potL: 15, potN: 4 } }] }
     expect(startCycle(withGear, "Cycle 1")).toMatchObject({ potL: 15, potN: 4 })

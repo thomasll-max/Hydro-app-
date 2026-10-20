@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Grid, NumField } from "@/components/hydro/form"
+import { focusFirstInvalid, Grid, NumField } from "@/components/hydro/form"
 import { Chip, Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { SpaceDot } from "@/components/hydro/space-pill"
 import { useSettings } from "@/app/settings-context"
@@ -210,7 +210,10 @@ function LineNutrition() {
     if (saving.current) return
     const ids = shared.length ? shared : space ? [space.id] : []
     if (!ids.length) return toast(t("nut.needSpace"))
-    if (badNums(f).length) return toast.error(t("safe.fixFields"))
+    if (badNums(f).length) {
+      focusFirstInvalid()
+      return toast.error(t("safe.fixFields"))
+    }
     saving.current = true
     setBusy(true)
     try {

@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { badNums } from "@/calc/formulas"
-import { AreaField, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
+import { AreaField, focusFirstInvalid, Grid, Group, NumField, Seg, Sheet, TextField } from "@/components/hydro/form"
 import { useSettings } from "@/app/settings-context"
 import { useGrow, newId } from "@/app/grow-context"
 import { SaveBar, useSaver } from "./sheets"
@@ -105,6 +105,7 @@ export function ReminderSheet({ open, onOpenChange, init }: { open: boolean; onO
       return
     }
     if (badNums({ every: f.every, count: f.count }).length) {
+      focusFirstInvalid()
       toast.error(t("safe.fixFields"))
       return
     }

@@ -1,5 +1,6 @@
 // Assistant de premier lancement (lot 8b, version locale) : a draft filled step by step, turned into documents at the
-// end. Nothing is guessed: an equipment field left empty creates nothing, a cycle needs its pots typed.
+// end. Nothing is guessed: an equipment field left empty creates nothing. A cycle needs its name and start date; its pots
+// are optional (lot 15a, as in the cycle sheet: « donnée manquante » where they are used).
 import { GROW_SCHEMA, modulesFor, SPACE_COLORS, type SpaceColor, type DimensionsCm, type Equipment, type EquipmentAssignment, type ModuleId, type NutritionSettings, type Space, type TemplateId } from "@/model/grow"
 import { freeColor, newGrow, newSpace } from "@/model/grow-ops"
 import { withPots } from "@/equipment/calc"
@@ -85,13 +86,13 @@ export function removeDraftSpace(d: Draft, key: string): Draft {
   return { ...d, spaces, cycle }
 }
 
-/** A cycle started in the wizard takes the pots typed for its space. */
-export function startCycle(d: Draft, name: string, spaceKey?: string): DraftCycle {
+/** A cycle started in the wizard takes the pots typed for its space, and starts today unless changed (as the sheet). */
+export function startCycle(d: Draft, name: string, spaceKey?: string, today?: IsoDate): DraftCycle {
   const sp = d.spaces.find((s) => s.key === spaceKey) ?? d.spaces.find((s) => s.template === "flower" || s.template === "veg") ?? d.spaces[0]
-  return { name, spaceKey: sp.key, cultivars: "", substrate: "coco", waterMode: "auto", potL: sp.gear.potL, potN: sp.gear.potN, lightsOn: "06:00" }
+  return { name, spaceKey: sp.key, cultivars: "", ...(today ? { germinationDate: today } : {}), substrate: "coco", waterMode: "auto", potL: sp.gear.potL, potN: sp.gear.potN, lightsOn: "06:00" }
 }
 
-export type Issue = "name" | "noSpace" | "spaceName" | "dims" | "gear" | "cycleName" | "cyclePots" | "time"
+export type Issue = "name" | "noSpace" | "spaceName" | "dims" | "gear" | "cycleName" | "cycleStart" | "cyclePots" | "time"
 
 const positive = (v: number | undefined) => v == null || (Number.isFinite(v) && v > 0)
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/
@@ -111,11 +112,45 @@ export function stepIssues(d: Draft, step: Step): Issue[] {
   }
   if (step === "cycle" && d.cycle) {
     if (!d.cycle.name.trim()) out.push("cycleName")
-    if (!d.cycle.potL || !d.cycle.potN || !positive(d.cycle.potL) || !positive(d.cycle.potN)) out.push("cyclePots")
+    if (!d.cycle.germinationDate) out.push("cycleStart")
+    if (!positive(d.cycle.potL) || !positive(d.cycle.potN)) out.push("cyclePots")
     if (!TIME.test(d.cycle.lightsOn)) out.push("time")
   }
   if (step === "digest" && !TIME.test(d.digestTime)) out.push("time")
   return out
+}
+
+const GEAR_FIELDS: [keyof DraftGear, string][] = [["lampW", "lampw"], ["potL", "potl"], ["potN", "potn"], ["tankL", "tank"], ["extM3h", "extm"]]
+
+/** The field an issue is about (lot 15a: its message goes under it, the page scrolls to it); none for « no space ». */
+export function issueField(d: Draft, step: Step, issue: Issue): string | undefined {
+  const i = (bad: (s: DraftSpace) => boolean) => d.spaces.findIndex(bad)
+  switch (issue) {
+    case "name":
+      return "onb-name"
+    case "spaceName":
+      return `onb-sp-name-${i((s) => !s.name.trim())}`
+    case "dims": {
+      const n = i((s) => !positive(s.dims.l) || !positive(s.dims.w) || !positive(s.dims.h))
+      const dims = d.spaces[n]?.dims ?? {}
+      return `onb-${(["l", "w", "h"] as const).find((k) => !positive(dims[k])) ?? "l"}-${n}`
+    }
+    case "gear": {
+      const n = i((s) => !GEAR_FIELDS.every(([k]) => positive(s.gear[k] as number | undefined)))
+      const g = d.spaces[n]?.gear ?? {}
+      return `onb-${GEAR_FIELDS.find(([k]) => !positive(g[k] as number | undefined))?.[1] ?? "lampw"}-${n}`
+    }
+    case "cycleName":
+      return "onb-c-name"
+    case "cycleStart":
+      return "onb-c-germ"
+    case "cyclePots":
+      return positive(d.cycle?.potL) ? "onb-c-potn" : "onb-c-potl"
+    case "time":
+      return step === "digest" ? "onb-digest" : "onb-c-on"
+    default:
+      return undefined
+  }
 }
 
 export function draftIssues(d: Draft): Issue[] {
@@ -167,7 +202,7 @@ export function draftDocs(d: Draft, p: { now: string; today: IsoDate; id: (prefi
   for (const a of assignments) out.push([`equipmentAssignments/${a.id}`, a])
 
   const c = d.cycle
-  if (c && c.potL && c.potN) {
+  if (c) {
     const cycle: Cycle = {
       schemaVersion: SCHEMA.cycle,
       id: "cycle-1",
@@ -179,8 +214,8 @@ export function draftDocs(d: Draft, p: { now: string; today: IsoDate; id: (prefi
       flowerWeeks: 9, // Athena program S1–S9
       substrate: c.substrate,
       waterMode: c.waterMode,
-      potVolumeL: c.potL,
-      potCount: Math.round(c.potN),
+      ...(c.potL ? { potVolumeL: c.potL } : {}),
+      ...(c.potN ? { potCount: Math.round(c.potN) } : {}),
       lights: (lampsIn.get(c.spaceKey) ?? []).join(" · "),
       lightsOn: c.lightsOn,
       shotPct: 3, // Athena: start at 3 % of the pot

@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { ChevronLeft, Copy, Plus, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AreaField, Grid, NumField, Seg, TextField } from "@/components/hydro/form"
+import { AreaField, focusField, Grid, NumField, Seg, TextField } from "@/components/hydro/form"
 import { Wordmark } from "@/components/hydro/wordmark"
 import { Label, Reveal, Notice } from "@/components/hydro/primitives"
 import { LangSwitch } from "@/components/hydro/top-bar"
@@ -14,7 +14,7 @@ import { spaceColor } from "@/components/hydro/space-pill"
 import { navigate } from "@/app/nav"
 import { useSettings } from "@/app/settings-context"
 import { newId, useGrow } from "@/app/grow-context"
-import { parseNum } from "@/calc/formulas"
+import { isBadNum, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { importBackup, MAX_BACKUP_BYTES, parseBackup, type Backup } from "@/lib/backup"
 import type { BatchOp } from "@/store/doc-store"
@@ -28,6 +28,7 @@ import {
   copyGearToOthers,
   duplicateDraftSpace,
   emptyDraft,
+  issueField,
   loadDraft,
   loadStep,
   removeDraftSpace,
@@ -39,6 +40,7 @@ import {
   type Draft,
   type DraftGear,
   type DraftSpace,
+  type Issue,
 } from "@/lib/onboarding"
 import { NutritionFields } from "./tools/nutrition-settings"
 import { SwitchRow } from "./tools/equipment-shared"
@@ -48,6 +50,9 @@ import { formatInput, translate } from "@/i18n/core"
 
 /** Collections the assistant writes before grow/main (cleared if an earlier attempt was cut short). */
 const SETUP_COLLECTIONS = ["spaces", "equipment", "equipmentAssignments", "cycles"] as const
+
+/** Each field's message once Next was tapped (lot 15a): written under the field. */
+type Errs = Record<string, string>
 
 const deviceZone = () => {
   try {
@@ -84,9 +89,32 @@ export function Onboarding() {
   // What is missing shows once Next is tapped, not before anything was typed (lot 10e).
   const [tried, setTried] = useState<number | null>(null)
   const showIssue = tried === step && issues.length > 0
+  // The start date has the cycle sheet's rule and words (lot 15a).
+  const issueText = (i: Issue) => (i === "cycleStart" ? t("cycleForm.needStart") : t(`onb.issue.${i}` as MessageKey))
+  const errs: Errs = {}
+  if (showIssue && key)
+    for (const i of issues) {
+      const f = issueField(draft, key, i)
+      if (f && !errs[f]) errs[f] = issueText(i)
+    }
+  // What is wrong is written under its field, which is scrolled to and focused (lot 15a), not only above the buttons.
   const next = (go: () => void) => () => {
-    if (issues.length) setTried(step)
-    else go()
+    if (issues.length && key) {
+      setTried(step)
+      const f = issueField(draft, key, issues[0])
+      if (f) focusField(f)
+      return
+    }
+    // Terminer: a step left wrong earlier (a draft kept from before) is shown again first.
+    const back = step === STEPS.length ? STEPS.findIndex((x) => stepIssues(draft, x).length > 0) : -1
+    if (back >= 0) {
+      setStep(back + 1)
+      setTried(back + 1)
+      const f = issueField(draft, STEPS[back], stepIssues(draft, STEPS[back])[0])
+      if (f) focusField(f)
+      return
+    }
+    go()
   }
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }))
   const patchSpace = (k: string, p: Partial<DraftSpace>) => setDraft((d) => ({ ...d, spaces: d.spaces.map((s) => (s.key === k ? { ...s, ...p } : s)) }))
@@ -170,14 +198,14 @@ export function Onboarding() {
 
             {key === "name" && (
               <Card className="gap-2.5">
-                <TextField id="onb-name" label={t("growSet.name")} placeholder={t("onb.defaultName")} value={draft.name} onChange={(v) => patch({ name: v })} />
+                <TextField id="onb-name" label={t("growSet.name")} placeholder={t("onb.defaultName")} value={draft.name} onChange={(v) => patch({ name: v })} error={errs["onb-name"]} />
               </Card>
             )}
 
             {key === "spaces" && (
               <div className="flex flex-col gap-3">
                 {draft.spaces.map((s, i) => (
-                  <SpaceCard key={s.key} s={s} i={i} canRemove={draft.spaces.length > 1} onChange={(p) => patchSpace(s.key, p)} onDuplicate={() => duplicate(s.key)} onRemove={() => setDraft((d) => removeDraftSpace(d, s.key))} />
+                  <SpaceCard key={s.key} s={s} i={i} errs={errs} canRemove={draft.spaces.length > 1} onChange={(p) => patchSpace(s.key, p)} onDuplicate={() => duplicate(s.key)} onRemove={() => setDraft((d) => removeDraftSpace(d, s.key))} />
                 ))}
                 <button
                   type="button"
@@ -197,6 +225,7 @@ export function Onboarding() {
                     key={s.key}
                     s={s}
                     i={i}
+                    errs={errs}
                     onChange={(p) => patchGear(s.key, p)}
                     onCopy={
                       draft.spaces.length > 1
@@ -233,12 +262,12 @@ export function Onboarding() {
               </Card>
             )}
 
-            {key === "cycle" && <CycleStep draft={draft} onChange={(c) => patch({ cycle: c })} />}
+            {key === "cycle" && <CycleStep draft={draft} errs={errs} onChange={(c) => patch({ cycle: c })} />}
 
             {key === "digest" && (
               <div className="flex flex-col gap-3">
                 <Card className="gap-2.5">
-                  <TextField id="onb-digest" type="time" label={t("growSet.digest")} value={draft.digestTime} onChange={(v) => patch({ digestTime: v })} />
+                  <TextField id="onb-digest" type="time" label={t("growSet.digest")} value={draft.digestTime} onChange={(v) => patch({ digestTime: v })} error={errs["onb-digest"]} />
                   <p className="text-[0.75rem] leading-snug text-fg-3">{t("onb.digestLocal")}</p>
                 </Card>
                 <Recap draft={draft} />
@@ -255,7 +284,7 @@ export function Onboarding() {
             {showIssue && (
               <p className="flex gap-2 text-[0.75rem] font-medium text-fg-2" id="onb-issue" role="alert">
                 <span aria-hidden="true" className="mt-[5px] size-1.5 shrink-0 rounded-[2px] bg-warn" />
-                {t(`onb.issue.${issues[0]}` as MessageKey)}
+                {issueText(issues[0])}
               </p>
             )}
             <div className="flex gap-2">
@@ -421,8 +450,8 @@ function SpaceTitle({ s, i, aside }: { s: DraftSpace; i: number; aside?: ReactNo
   )
 }
 
-/** Number field holding its own text ("2," while typing), reporting the parsed value. */
-function Num({ id, label, value, onValue, integer, hint }: { id: string; label: string; value?: number; onValue: (v: number | undefined) => void; integer?: boolean; hint?: string }) {
+/** Number field holding its own text ("2," while typing), reporting the parsed value (NaN for a typo: Next waits). */
+function Num({ id, label, value, onValue, integer, hint, error }: { id: string; label: string; value?: number; onValue: (v: number | undefined) => void; integer?: boolean; hint?: string; error?: string }) {
   const { settings } = useSettings()
   const [s, setS] = useState(formatInput(settings.lang, value))
   return (
@@ -432,19 +461,36 @@ function Num({ id, label, value, onValue, integer, hint }: { id: string; label: 
       hint={hint}
       integer={integer}
       value={s}
+      error={error}
       onChange={(v) => {
         setS(v)
-        onValue(parseNum(v))
+        onValue(isBadNum(v) ? NaN : parseNum(v))
       }}
     />
   )
 }
 
-function SpaceCard({ s, i, canRemove, onChange, onDuplicate, onRemove }: { s: DraftSpace; i: number; canRemove: boolean; onChange: (p: Partial<DraftSpace>) => void; onDuplicate: () => void; onRemove: () => void }) {
+function SpaceCard({
+  s,
+  i,
+  errs,
+  canRemove,
+  onChange,
+  onDuplicate,
+  onRemove,
+}: {
+  s: DraftSpace
+  i: number
+  errs: Errs
+  canRemove: boolean
+  onChange: (p: Partial<DraftSpace>) => void
+  onDuplicate: () => void
+  onRemove: () => void
+}) {
   const { t } = useSettings()
   return (
     <Card className="gap-3" id={`onb-space-${i}`}>
-      <TextField id={`onb-sp-name-${i}`} label={t("space.name")} value={s.name} onChange={(v) => onChange({ name: v })} />
+      <TextField id={`onb-sp-name-${i}`} label={t("space.name")} value={s.name} onChange={(v) => onChange({ name: v })} error={errs[`onb-sp-name-${i}`]} />
       <div>
         <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("space.template")}</div>
         <div className={joined(3)}>
@@ -464,9 +510,9 @@ function SpaceCard({ s, i, canRemove, onChange, onDuplicate, onRemove }: { s: Dr
       <div>
         <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("space.dims")}</div>
         <Grid cols={3}>
-          <Num id={`onb-l-${i}`} integer label={t("space.l")} value={s.dims.l} onValue={(v) => onChange({ dims: { ...s.dims, l: v } })} />
-          <Num id={`onb-w-${i}`} integer label={t("space.w")} value={s.dims.w} onValue={(v) => onChange({ dims: { ...s.dims, w: v } })} />
-          <Num id={`onb-h-${i}`} integer label={t("space.h")} value={s.dims.h} onValue={(v) => onChange({ dims: { ...s.dims, h: v } })} />
+          <Num id={`onb-l-${i}`} integer label={t("space.l")} value={s.dims.l} onValue={(v) => onChange({ dims: { ...s.dims, l: v } })} error={errs[`onb-l-${i}`]} />
+          <Num id={`onb-w-${i}`} integer label={t("space.w")} value={s.dims.w} onValue={(v) => onChange({ dims: { ...s.dims, w: v } })} error={errs[`onb-w-${i}`]} />
+          <Num id={`onb-h-${i}`} integer label={t("space.h")} value={s.dims.h} onValue={(v) => onChange({ dims: { ...s.dims, h: v } })} error={errs[`onb-h-${i}`]} />
         </Grid>
       </div>
       <div className="flex gap-2">
@@ -483,7 +529,7 @@ function SpaceCard({ s, i, canRemove, onChange, onDuplicate, onRemove }: { s: Dr
   )
 }
 
-function GearCard({ s, i, onChange, onCopy }: { s: DraftSpace; i: number; onChange: (p: Partial<DraftGear>) => void; onCopy?: () => void }) {
+function GearCard({ s, i, errs, onChange, onCopy }: { s: DraftSpace; i: number; errs: Errs; onChange: (p: Partial<DraftGear>) => void; onCopy?: () => void }) {
   const { t } = useSettings()
   const g = s.gear
   return (
@@ -501,28 +547,29 @@ function GearCard({ s, i, onChange, onCopy }: { s: DraftSpace; i: number; onChan
       />
       <Grid>
         <TextField id={`onb-lamp-${i}`} label={t("onb.lampName")} value={g.lampName ?? ""} onChange={(v) => onChange({ lampName: v || undefined })} />
-        <Num id={`onb-lampw-${i}`} integer label={t("onb.lampW")} value={g.lampW} onValue={(v) => onChange({ lampW: v })} />
-        <Num id={`onb-potl-${i}`} label={t("irr.pot")} value={g.potL} onValue={(v) => onChange({ potL: v })} />
-        <Num id={`onb-potn-${i}`} integer label={t("irr.potCount")} value={g.potN} onValue={(v) => onChange({ potN: v })} />
-        <Num id={`onb-tank-${i}`} label={t("onb.tankL")} value={g.tankL} onValue={(v) => onChange({ tankL: v })} />
+        <Num id={`onb-lampw-${i}`} integer label={t("onb.lampW")} value={g.lampW} onValue={(v) => onChange({ lampW: v })} error={errs[`onb-lampw-${i}`]} />
+        <Num id={`onb-potl-${i}`} label={t("irr.pot")} value={g.potL} onValue={(v) => onChange({ potL: v })} error={errs[`onb-potl-${i}`]} />
+        <Num id={`onb-potn-${i}`} integer label={t("irr.potCount")} value={g.potN} onValue={(v) => onChange({ potN: v })} error={errs[`onb-potn-${i}`]} />
+        <Num id={`onb-tank-${i}`} label={t("onb.tankL")} value={g.tankL} onValue={(v) => onChange({ tankL: v })} error={errs[`onb-tank-${i}`]} />
         <div />
         <TextField id={`onb-ext-${i}`} label={t("onb.extName")} value={g.extName ?? ""} onChange={(v) => onChange({ extName: v || undefined })} />
-        <Num id={`onb-extm-${i}`} integer label={t("onb.extM3h")} value={g.extM3h} onValue={(v) => onChange({ extM3h: v })} />
+        <Num id={`onb-extm-${i}`} integer label={t("onb.extM3h")} value={g.extM3h} onValue={(v) => onChange({ extM3h: v })} error={errs[`onb-extm-${i}`]} />
       </Grid>
     </Card>
   )
 }
 
-function CycleStep({ draft, onChange }: { draft: Draft; onChange: (c: Draft["cycle"]) => void }) {
-  const { t } = useSettings()
+function CycleStep({ draft, errs, onChange }: { draft: Draft; errs: Errs; onChange: (c: Draft["cycle"]) => void }) {
+  const { t, dm } = useSettings()
   const c = draft.cycle
+  const future = !!c?.germinationDate && c.germinationDate > todayIso()
   const set = (p: Partial<NonNullable<Draft["cycle"]>>) => c && onChange({ ...c, ...p })
   return (
     <div className="flex flex-col gap-3">
       <Seg<"no" | "yes">
         label={t("onb.s.cycle")}
         value={c ? "yes" : "no"}
-        onChange={(v) => onChange(v === "yes" ? startCycle(draft, t("onb.cycleName")) : null)}
+        onChange={(v) => onChange(v === "yes" ? startCycle(draft, t("onb.cycleName"), undefined, todayIso()) : null)}
         options={[
           { value: "no", label: t("onb.cycleLater") },
           { value: "yes", label: t("onb.cycleNow") },
@@ -530,7 +577,7 @@ function CycleStep({ draft, onChange }: { draft: Draft; onChange: (c: Draft["cyc
       />
       {c && (
         <Card className="gap-3" id="onb-cycle">
-          <TextField id="onb-c-name" label={t("cycleForm.name")} value={c.name} onChange={(v) => set({ name: v })} />
+          <TextField id="onb-c-name" label={t("cycleForm.name")} value={c.name} onChange={(v) => set({ name: v })} error={errs["onb-c-name"]} />
           {draft.spaces.length > 1 && (
             <div>
               <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("cycleForm.space")}</div>
@@ -546,7 +593,21 @@ function CycleStep({ draft, onChange }: { draft: Draft; onChange: (c: Draft["cyc
             </div>
           )}
           <TextField id="onb-c-cult" label={t("cycleForm.cultivars")} hint={t("cycleForm.cultivarsHint")} value={c.cultivars} onChange={(v) => set({ cultivars: v })} />
-          <TextField id="onb-c-germ" type="date" label={t("cycleForm.germination")} value={c.germinationDate ?? ""} onChange={(v) => set({ germinationDate: v || undefined })} />
+          {/* Same field as the cycle sheet: required, the same words (lot 15a). */}
+          <TextField
+            id="onb-c-germ"
+            type="date"
+            label={`${t("cycleForm.start")} · ${t("common.required")}`}
+            hint={t("cycleForm.startHint")}
+            value={c.germinationDate ?? ""}
+            onChange={(v) => set({ germinationDate: v || undefined })}
+            error={errs["onb-c-germ"]}
+          />
+          {future && (
+            <p className="-mt-1.5 text-[0.75rem] leading-snug text-fg-2" id="onb-c-germ-future">
+              {t("cycleForm.startFuture", { date: dm(c.germinationDate!) })}
+            </p>
+          )}
           <div>
             <div className="mb-1 text-[0.75rem] font-medium text-fg-2">{t("cycleForm.substrate")}</div>
             <Seg<Substrate> label={t("cycleForm.substrate")} value={c.substrate} onChange={(v) => set({ substrate: v })} options={(["coco", "soil", "mix7030"] as const).map((v) => ({ value: v, label: t(`substrate.${v}`) }))} />
@@ -556,10 +617,10 @@ function CycleStep({ draft, onChange }: { draft: Draft; onChange: (c: Draft["cyc
             <Seg<WaterMode> label={t("cycleForm.waterMode")} value={c.waterMode} onChange={(v) => set({ waterMode: v })} options={(["auto", "manual"] as const).map((v) => ({ value: v, label: t(`mode.${v}`) }))} />
           </div>
           <Grid>
-            <Num key={`pl-${c.spaceKey}`} id="onb-c-potl" label={t("cycleForm.potVolume")} value={c.potL} onValue={(v) => set({ potL: v })} />
-            <Num key={`pn-${c.spaceKey}`} id="onb-c-potn" integer label={t("cycleForm.potCount")} value={c.potN} onValue={(v) => set({ potN: v })} />
+            <Num key={`pl-${c.spaceKey}`} id="onb-c-potl" label={t("cycleForm.potVolume")} value={c.potL} onValue={(v) => set({ potL: v })} hint={t("common.optional")} error={errs["onb-c-potl"]} />
+            <Num key={`pn-${c.spaceKey}`} id="onb-c-potn" integer label={t("cycleForm.potCount")} value={c.potN} onValue={(v) => set({ potN: v })} hint={t("common.optional")} error={errs["onb-c-potn"]} />
           </Grid>
-          <TextField id="onb-c-on" type="time" label={t("cycleForm.lightsOn")} value={c.lightsOn} onChange={(v) => set({ lightsOn: v })} />
+          <TextField id="onb-c-on" type="time" label={t("cycleForm.lightsOn")} value={c.lightsOn} onChange={(v) => set({ lightsOn: v })} error={errs["onb-c-on"]} />
           <p className="text-[0.75rem] leading-snug text-fg-3">{t("onb.cycleNote")}</p>
         </Card>
       )}

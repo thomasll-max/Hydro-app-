@@ -1,5 +1,8 @@
 # Changelog
 
+## Correctif — la bannière « Nouvelle version disponible » ne cache plus rien (20/10/2026)
+- Dans l'app installée, la bannière de mise à jour flottait par-dessus le haut de l'écran et pouvait prendre le toucher de « Y aller » (Premiers pas) ou des onglets d'espace. Elle se place maintenant sous la barre du haut et pousse le reste vers le bas.
+
 ## Correctif — dictée sur la version des potes (20/10/2026)
 - Sur le site Netlify, le navigateur refusait le micro à l'app : la dictée n'aurait pas pu écouter. C'est corrigé (le micro est autorisé pour Hydro seulement).
 

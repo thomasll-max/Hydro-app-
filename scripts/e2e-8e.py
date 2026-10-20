@@ -50,6 +50,11 @@ with sync_playwright() as p:
     checks["bannerText"] = pg.inner_text("#update-banner").replace("\n", " | ") if checks["bannerNewBuild"] else None
     pg.goto(url); pg.wait_for_timeout(1500)
     pg.screenshot(path=str(out / "02-banner.png"))
+    # In the flow, never over the screen: what is under it stays touchable (Thomas, 20/10: « Y aller » did nothing).
+    checks["bannerInFlow"] = pg.evaluate("""() => { const b = document.querySelector('#update-banner'); if (!b) return null; const r = b.getBoundingClientRect()
+      const below = [...document.querySelectorAll('main button, [role=tab]')].filter((x) => { const q = x.getBoundingClientRect(); return q.width && q.bottom > r.top && q.top < r.bottom && q.right > r.left && q.left < r.right })
+      return getComputedStyle(b).position !== 'fixed' && below.length === 0 }""")
+    if checks["bannerInFlow"] is not True: errors.append(f"update banner over the screen: {checks['bannerInFlow']}")
 
     # A form open: no update offered meanwhile.
     # The « + » opens its sheet (lot 10k3), or the cycle when there is no space yet: a form either way.

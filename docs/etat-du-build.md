@@ -147,6 +147,13 @@ Constat de Thomas après 10j : « toujours un effet plein d'infos éparpillées,
 6. Lignes de graphique honnêtes : segments droits.
 7. Typographie droite : Fraunces seulement dans le logo et l'écran de démarrage ; titres en Geologica 700 (−0,02 em) ; texte en Figtree ; tous les chiffres en Geologica à chasse fixe (plus de JetBrains Mono) ; liens de titre de section petits (≈ 13 px, Figtree 600).
 
+## Correctif du 20/10 — « Y aller » ne répondait pas (retour de Thomas, version installée)
+- **Cause trouvée** : la bannière « Nouvelle version disponible » (lot 8e) était **fixée par-dessus l'écran**, à 60 px sous le haut (plus la barre d'état). Après les deux mises en ligne du 20/10, l'app installée de Thomas l'affichait : elle recouvrait les onglets d'espace et le haut (ou tout, selon la barre d'état du téléphone) du bouton « Y aller » du bandeau Premiers pas, et prenait ses touchers. Reproduit en navigateur (le centre de « Y aller » tombait sur la bannière dès 24 px de barre d'état).
+- **Corrigé** : la bannière est maintenant **dans le flux de la page**, sous la barre du haut (comme les autres avis) : elle pousse le contenu au lieu de le recouvrir. `lot8e.test.ts` et `e2e-8e` le vérifient (rien de touchable sous la bannière).
+- En attendant une nouvelle mise en ligne : toucher « Mettre à jour » fait disparaître la bannière.
+- « Réinitialiser l'app » n'avait pas disparu : tout en bas de Réglages (engrenage → « Tous les réglages → »), sous « Verrouiller l'app ». Vérifié sur la version installable.
+- **Pas de nouvelle mise en ligne Netlify** faite pour ce correctif (crédits) : il partira avec la prochaine, quand Thomas la demandera.
+
 ## Mise en ligne Netlify du 20/10/2026 (demandée par Thomas)
 - **hydrotom.netlify.app** sert le code jusqu'au **lot 14b** avec le correctif du micro. Deux publications ce jour-là : `7a52659` à 11:19 UTC (lancée côté Netlify par Thomas) puis `3387094` « Mise en ligne [deploy] » à 11:25 UTC (poussé par la session, contenu identique : **un crédit de trop**). Avant de pousser un `[deploy]`, regarder dans Netlify si une publication du même commit vient d'avoir lieu.
 - Vérifié avant : tests unitaires, simulation d'un an, régression navigateur complète (verte jusqu'à 10l1 dans l'ordre, puis 10k4, 10l2, 11a, 11b, 12a, 12b, 12c en parallèle ; 12d, 13, 14, 14b passés sur le même code).

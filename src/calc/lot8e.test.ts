@@ -40,3 +40,11 @@ describe("lot 8e — nouvelle version disponible", () => {
     expect(fs.readFileSync(path.join(root, "vite.config.ts"), "utf8")).toMatch(/fileName: "version\.json"/)
   })
 })
+
+describe("bannière de mise à jour : jamais par-dessus l'écran (retour de Thomas, 20/10)", () => {
+  it("dans le flux de la page sous la barre du haut : ce qui est dessous reste touchable (« Y aller », les onglets d'espace)", () => {
+    const src = fs.readFileSync("src/app/update.tsx", "utf8")
+    expect(src).toMatch(/className="relative mx-auto max-w-\[480px\] px-4 pt-1" role="status" id="update-banner"/)
+    expect(src).not.toMatch(/className="fixed[^"]*" role="status" id="update-banner"/)
+  })
+})

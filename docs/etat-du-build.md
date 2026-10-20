@@ -51,6 +51,7 @@
   - [x] Lot 12d : verrou (456 tests, artefact v61)
 - [x] Lot 13 : sources discrètes (icône ⓘ) et page « À propos » complète, Bonorum crédité sans la mention « facteur 10 » (prompt `docs/prompt-lot-13.md` ; 468 tests, artefact v64)
 - [x] Lot 14 : toute la gamme Athena (Blended visible partout, choix de gamme, Stack, Proper et Cuts) (prompt `docs/prompt-lot-14.md`, après 13 ; demande de Thomas du 20/10 : « Quitte à utiliser Athena, autant faire toute leur gamme. », règle d'or gardée : Pro Line et Blended ne se mélangent jamais dans un même bidon ou un même espace)
+- [ ] Lot 15 : corrections après la mise en ligne du 20/10 (cycle sans espace, assistant bloqué sur les pots, valeurs absurdes, parcours e2e) (prompt `docs/prompt-lot-15.md`, priorité haute)
   - [x] Lot 14a : Blended partout (version Claude comprise) et choix de la gamme (478 tests, artefact v65)
   - [x] Lot 14b : Stack, Proper, Cuts (488 tests, artefact v66)
 - [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)

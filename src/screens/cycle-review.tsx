@@ -24,6 +24,7 @@ import type { Cycle, StageKey } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
 import { useWeekTitle } from "./journal-weeks"
+import { openVariety } from "./tools/varieties"
 
 /** The review of a cycle, computed once per change of the data. */
 function useReview(cycle: Cycle | undefined): CycleReview | null {
@@ -217,6 +218,16 @@ function Review({ cycle }: { cycle: Cycle }) {
         <p className="mt-1 text-[0.8125rem] text-fg-3" id="review-sub">
           <NumText quiet>{sub.text}</NumText>
         </p>
+        {/* Each variety opens its card (lot 12c). */}
+        {cycle.cultivars.length > 0 && (
+          <div className="mt-0.5 flex flex-wrap gap-x-4" id="review-varieties">
+            {cycle.cultivars.map((c) => (
+              <button key={c} type="button" className={tertiary} onClick={() => openVariety(c)} data-variety-link>
+                {t("vr.seeCard", { name: c })}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" className={secondary} onClick={() => setPick(true)} id="review-compare">
             {t("rv.compare")}

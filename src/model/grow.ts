@@ -62,6 +62,11 @@ export type Grow = {
   nutrition: NutritionSettings
   /** « Mon mélange » of Pulvérisation (lot 10k2b): sprays of one's own, as the user describes them. */
   sprayMixes?: SprayMix[]
+  /**
+   * Fiche variété (lot 12c): Thomas's own notes per variety, by its key (case and spaces ignored). A breeder's word
+   * is kept only as a note with its source; the app adds no value of its own.
+   */
+  varietyNotes?: Record<string, { notes?: string; source?: string; updatedAt?: string }>
   createdAt: string
   updatedAt: string
 }

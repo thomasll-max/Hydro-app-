@@ -1,5 +1,11 @@
 # Changelog
 
+## Lot 12c — Fiche variété et photo pour Claude (20/10/2026)
+- **Outils → Variétés** : chaque variété de ta grow, avec **tes notes** (phénotypes, comportement, odeur, stretch ; une info du breeder seulement comme note, avec sa source), **ses cycles** (poids sec par plante, floraison réelle, lien vers le bilan) et **la frise de ses photos**. Rien qui vienne d'une base publique : seulement ce que tu as vécu.
+- Les noms de variété mènent à leur fiche (bilan, cycle, plante). Une variété écrite de deux façons (« Blue Zushi » / « blue zushi ») est regroupée, et l'app propose de **fusionner** les orthographes ; rien n'est renommé sans toi.
+- **Une photo pour Claude** (version Claude) : prête, mais elle demande une autorisation de plus pour l'artefact (envoyer des images à Claude). En attendant ton accord, le bouton n'apparaît pas.
+- 449 tests.
+
 ## Lot 12b — Galerie photo et frise (20/10/2026)
 - **Photos**, en haut du Journal : toutes tes photos regroupées par semaine du cycle (« Floraison S3 »), avec la date sur chaque vignette. Filtres par espace, cycle, plante et étiquette.
 - **Une photo en grand** : balaye à gauche ou à droite pour passer à la suivante ; dessous, les valeurs et la note de ce jour-là.

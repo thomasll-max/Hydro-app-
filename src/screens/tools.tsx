@@ -19,6 +19,7 @@ import { ClimateTool } from "./tools/climate"
 import { AskTool } from "./tools/ask"
 import { DataTool } from "./tools/data"
 import { StartTool } from "./tools/start"
+import { VarietiesTool } from "./tools/varieties"
 import { useSample } from "@/lib/sample"
 import { navigate, useRoute, type ToolId } from "@/app/nav"
 
@@ -40,6 +41,7 @@ const TOOLS: Tool[] = [
   { id: "ipw", emoji: "sweat", title: "tools.ipw", desc: "tools.ipwD", perSpace: true, group: "room", tone: "leaf" },
   { id: "equipment", emoji: "plug", title: "tools.equipment", desc: "tools.equipmentD", group: "setup", tone: "neutral" },
   { id: "reperes", emoji: "compass", title: "tools.reperes", desc: "tools.reperesD", group: "setup", tone: "neutral" },
+  { id: "varieties", emoji: "herb", title: "tools.varieties", desc: "tools.varietiesD", group: "setup", tone: "leaf" },
   { id: "data", emoji: "notebook", title: "tools.data", desc: "tools.dataD", group: "setup", tone: "neutral" },
   { id: "start", emoji: "sprout", title: "tools.start", desc: "tools.startD" },
   { id: "settings", emoji: "gear", title: "tools.settings", desc: "tools.settingsD" },
@@ -57,12 +59,13 @@ export function ToolsScreen() {
   const { t } = useSettings()
   const { space } = useGrow()
   const sample = useSample()
-  const open = useRoute().tool ?? null
+  const route = useRoute()
+  const open = route.tool ?? null
   const setOpen = (tool: ToolId | null) => navigate(tool ? { tab: "tools", tool } : { tab: "tools" })
   useEffect(() => {
     // Block body on purpose: inside the Claude app, scrollTo returns a value React would take for a cleanup function.
     window.scrollTo({ top: 0 })
-  }, [open])
+  }, [open, route.variety])
 
   if (open) {
     const tool = TOOLS.find((x) => x.id === open)!
@@ -103,6 +106,8 @@ export function ToolsScreen() {
           <EquipmentTool />
         ) : open === "settings" ? (
           <SettingsTool />
+        ) : open === "varieties" ? (
+          <VarietiesTool variety={route.variety} />
         ) : (
           <GuideScreen embedded />
         )}

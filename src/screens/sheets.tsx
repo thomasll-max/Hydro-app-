@@ -11,7 +11,9 @@ import { badNums, parseNum } from "@/calc/formulas"
 import { todayIso } from "@/calc/stage"
 import { RootProductsField, useRootProducts } from "./root-products"
 import { EVENT_TYPES, SCHEMA, type Cycle, type EventType, type GrowEvent, type Mix, type Plant, type PlantId } from "@/model/types"
-import { joined, segment } from "@/components/hydro/styles"
+import { joined, segment, tertiary } from "@/components/hydro/styles"
+import { cn } from "@/lib/utils"
+import { openVariety } from "./tools/varieties"
 
 /**
  * Defaults of a new cycle, each one sourced (Athena or the spec). Nothing about pots, pump or lamps: those come from
@@ -98,6 +100,20 @@ export function PlantSheet({ open, onOpenChange, plantId }: { open: boolean; onO
     <Sheet open={open} onOpenChange={onOpenChange} title={t("plantForm.title", { id: plantId })} footer={<SaveBar busy={busy} onSave={() => run(() => savePlant(p))} />}>
       <div className="flex flex-col gap-2.5">
         <TextField id="p-cult" label={t("plantForm.cultivar")} value={p.cultivar} onChange={(v) => setP((x) => ({ ...x, cultivar: v }))} />
+        {/* Its variety's card (lot 12c), for the name already saved. */}
+        {plants.find((x) => x.label === plantId)?.cultivar?.trim() && (
+          <button
+            type="button"
+            className={cn(tertiary, "-mt-1 self-start")}
+            onClick={() => {
+              onOpenChange(false)
+              openVariety(plants.find((x) => x.label === plantId)!.cultivar)
+            }}
+            id="p-variety"
+          >
+            {t("vr.seeCard", { name: plants.find((x) => x.label === plantId)!.cultivar.trim() })}
+          </button>
+        )}
         <TextField id="p-pheno" label={t("plantForm.phenotype")} value={p.phenotype ?? ""} onChange={(v) => setP((x) => ({ ...x, phenotype: v || undefined }))} />
         <AreaField id="p-notes" label={t("plantForm.notes")} value={p.notes ?? ""} onChange={(v) => setP((x) => ({ ...x, notes: v || undefined }))} />
       </div>

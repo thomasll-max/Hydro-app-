@@ -9,7 +9,7 @@ import { useSyncExternalStore } from "react"
 
 export const TAB_IDS = ["today", "journal", "calendar", "charts", "tools"] as const
 export type TabId = (typeof TAB_IDS)[number]
-export const TOOL_IDS = ["start", "irrigation", "nutrition", "ph", "ipw", "light", "climate", "ask", "equipment", "data", "reperes", "settings"] as const
+export const TOOL_IDS = ["start", "irrigation", "nutrition", "ph", "ipw", "light", "climate", "ask", "equipment", "data", "reperes", "settings", "varieties"] as const
 export type ToolId = (typeof TOOL_IDS)[number]
 export type Route = {
   tab: TabId
@@ -23,6 +23,8 @@ export type Route = {
   vs?: string
   /** The photo gallery (lot 12b): "all", or a cycle's id to open it filtered. */
   photos?: string
+  /** A variety's page in Outils → Variétés (lot 12c): its key. */
+  variety?: string
   /** The week-by-week strip of a cycle (lot 12b), and of one of its plants. */
   strip?: string
   plant?: string
@@ -33,7 +35,7 @@ const isTool = (s: string | undefined): s is ToolId => !!s && (TOOL_IDS as reado
 /** Route of a hash. Old links (#irrigation, #guide) still open their tool. */
 export function parseHash(hash: string): Route {
   const [a, b, c, d] = decodeURIComponent(hash.replace(/^#/, "")).split("/")
-  if (a === "tools") return isTool(b) ? { tab: "tools", tool: b } : { tab: "tools" }
+  if (a === "tools") return isTool(b) ? { tab: "tools", tool: b, ...(b === "varieties" && c ? { variety: c } : {}) } : { tab: "tools" }
   const iso = (x?: string) => /^\d{4}-\d{2}-\d{2}$/.test(x ?? "")
   if (a === "journal" && b === "photos") return { tab: "journal", photos: c || "all" }
   if (a === "journal" && b === "frise" && c) return { tab: "journal", strip: c, ...(d ? { plant: d } : {}) }
@@ -53,6 +55,7 @@ export function routeHash(r: Route): string {
   if (r.tab === "journal" && r.strip) return `#journal/frise/${encodeURIComponent(r.strip)}${r.plant ? `/${r.plant}` : ""}`
   if (r.tab === "journal" && r.review) return `#journal/bilan/${encodeURIComponent(r.review)}${r.vs ? `/${encodeURIComponent(r.vs)}` : ""}`
   if (r.tab === "journal" && r.week) return `#journal/${r.week}${r.day ? `/${r.day}` : ""}`
+  if (r.tab === "tools" && r.tool === "varieties" && r.variety) return `#tools/varieties/${encodeURIComponent(r.variety)}`
   return r.tab === "tools" && r.tool ? `#tools/${r.tool}` : `#${r.tab}`
 }
 
@@ -184,6 +187,15 @@ function syncSheets() {
       }
     }
   }, 0)
+}
+
+/**
+ * Runs `fn` once the sheets closed just before are really gone from the history (lot 12c): closing a sheet steps back
+ * in a moment, which would undo a navigation made at once (a variety's card opened from a cycle's sheet).
+ */
+export function whenSheetsClosed(fn: () => void, tries = 40) {
+  if ((layers.length || sheetPushed || ownBack > 0 || syncQueued) && tries > 0) setTimeout(() => whenSheetsClosed(fn, tries - 1), 30)
+  else fn()
 }
 
 /** Registers an open sheet so the back gesture closes it. */

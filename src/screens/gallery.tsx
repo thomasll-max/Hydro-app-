@@ -16,6 +16,8 @@ import { addLayer, goBack, navigate } from "@/app/nav"
 import { filterPhotos, galleryPhotos, groupByWeek, tagKeys, weekPhotoKey, weekStrip, type GalleryFilter, type GalleryPhoto, type TagKey } from "@/calc/gallery"
 import { mondayOf } from "@/calc/weeks"
 import { thumb, type Thumb } from "@/lib/thumbs"
+import { useSampleImages } from "@/lib/sample"
+import { setPendingPhoto } from "@/lib/ask-photo"
 import { PLANT_IDS, type PlantId } from "@/model/types"
 import type { MessageKey } from "@/i18n/types"
 import { cn } from "@/lib/utils"
@@ -244,7 +246,9 @@ export function GalleryPage({ cycleId }: { cycleId?: string }) {
 
 /** Full screen: the photo, swipe or the arrows to go on, the day's entry under it, the tags, « Photo de la semaine ». */
 export function PhotoViewer({ list, index, onIndex, onClose }: { list: GalleryPhoto[]; index: number; onIndex: (i: number) => void; onClose: () => void }) {
-  const { t, dmy } = useSettings()
+  const { t, dmy, setSpace } = useSettings()
+  // « Demander à Claude » with this photo (lot 12c): only where the view may send images.
+  const images = useSampleImages()
   const { all, cycles, spaces, photoUrl, saveEntry, saveCycle } = useGrow()
   const ed = useEditors()
   const keyValues = useKeyValues()
@@ -357,6 +361,21 @@ export function PhotoViewer({ list, index, onIndex, onClose }: { list: GalleryPh
               <Star className={cn("size-4", isWeek && "fill-current")} /> {t("ph.weekPhoto")}
             </button>
           )}
+          {images && !broken && (
+            <button
+              type="button"
+              className={secondary}
+              onClick={() => {
+                setPendingPhoto({ id: p.id, date: p.date, space: space?.name, plant: p.plantId, tags: [...(p.tags.obs ?? []).map((x) => t(`obs.${x}` as MessageKey)), ...(p.tags.free ?? [])] })
+                onClose()
+                setSpace(p.spaceId)
+                navigate({ tab: "tools", tool: "ask" }, { push: true })
+              }}
+              id="viewer-ask"
+            >
+              {t("ask.askPhoto")}
+            </button>
+          )}
           {entry && (
             <button
               type="button"
@@ -455,7 +474,7 @@ export function StripPage({ cycleId, plant }: { cycleId: string; plant?: string 
   )
 }
 
-function StripThumb({ w, on, onClick }: { w: ReturnType<typeof weekStrip>[number]; on: boolean; onClick: () => void }) {
+export function StripThumb({ w, on, onClick }: { w: ReturnType<typeof weekStrip>[number]; on: boolean; onClick: () => void }) {
   const ref = useRef<HTMLButtonElement>(null)
   const th = useThumb(w.photo.id, ref)
   const weekTitle = useWeekTitle()

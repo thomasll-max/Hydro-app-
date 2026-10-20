@@ -91,7 +91,25 @@ export function askContext(d: AskData, today: IsoDate): string {
 }
 
 /** Prompt for one question, with the conversation so far (memoryless calls). */
-export function askPrompt(context: string, question: string, history: AskTurn[], lang: Lang): AskTurn[] {
+/** What goes with a photo (lot 12c): when and where it was taken, its tags; nothing more is said about it. */
+export type AskPhoto = { date: IsoDate; space?: string; plant?: string; tags?: string[] }
+
+/**
+ * The rules for a photo sent with the question (lot 12c): describe, tie to the measures, suggest leads; never a
+ * diagnosis given as certain; say when the photo is not enough.
+ */
+export function askPhotoNote(p: AskPhoto): string {
+  const meta = [`prise le ${p.date}`, p.space ? `espace « ${p.space} »` : null, p.plant ? `plante ${p.plant}` : null, p.tags?.length ? `étiquettes du cultivateur : ${p.tags.join(", ")}` : null].filter(Boolean).join(", ")
+  return [
+    `PHOTO JOINTE (${meta}).`,
+    "Décris ce que tu vois sur la photo, relie-le aux mesures ci-dessus, et propose des pistes à vérifier.",
+    "Ne présente jamais un diagnostic comme certain : dis ce qui est possible, et comment le vérifier.",
+    "Si la photo ne suffit pas (flou, trop loin, lumière de la lampe qui change les couleurs, partie de la plante qu'on ne voit pas), dis-le et dis quelle photo aiderait.",
+  ].join(" ")
+}
+
+export function askPrompt(context: string, question: string, history: AskTurn[], lang: Lang, photo?: AskPhoto): AskTurn[] {
+  if (photo) question = `${question}\n\n${askPhotoNote(photo)}`
   const rules = [
     lang === "fr" ? "Réponds en français." : lang === "de" ? "Antworte auf Deutsch (du-Form)." : "Answer in English.",
     "Tu aides un cultivateur dans sa tente, au téléphone : réponse courte (moins de 150 mots), concrète, une seule correction prioritaire si quelque chose cloche.",

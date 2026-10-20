@@ -179,10 +179,11 @@ describe("lot 10k2a — Outils en trois groupes", () => {
   it("Chaque jour, Régler la pièce, Mon installation ; Premiers pas et Réglages hors de la liste, leurs routes gardées", () => {
     expect(ids("daily")).toEqual(["nutrition", "irrigation", "ph", "calendar", "ask"])
     expect(ids("room")).toEqual(["light", "climate", "ipw"])
-    expect(ids("setup")).toEqual(["equipment", "reperes", "data"])
+    // Lot 12c adds « Variétés » to the setup group.
+    expect(ids("setup")).toEqual(["equipment", "reperes", "varieties", "data"])
     expect(tools).toMatch(/\{ id: "start", emoji: "sprout", title: "tools\.start", desc: "tools\.startD" \}/)
     expect(tools).toMatch(/\{ id: "settings", emoji: "gear", title: "tools\.settings", desc: "tools\.settingsD" \}/)
-    expect(read("src/app/nav.ts")).toMatch(/TOOL_IDS = \["start",[^\]]*"settings"\]/)
+    expect(read("src/app/nav.ts")).toMatch(/TOOL_IDS = \["start",[^\]]*"settings"[^\]]*\]/)
     expect(read("src/components/hydro/top-bar.tsx")).toMatch(/id="menu-start"/)
   })
   it("icônes au trait colorées par sujet, lignes de 54 px, plus de « Calculs testés »", () => {

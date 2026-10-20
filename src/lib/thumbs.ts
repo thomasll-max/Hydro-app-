@@ -117,6 +117,22 @@ export function thumb(id: string, full: (id: string) => Promise<string>): Promis
   return run
 }
 
+/** A photo as a JPEG blob for Claude (lot 12c): read as an image, the longest side at most `side`. */
+export async function photoBlob(src: string, side = 1600): Promise<Blob | null> {
+  const img = await load(src)
+  if (!img) return null
+  try {
+    const k = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight))
+    const c = document.createElement("canvas")
+    c.width = Math.max(1, Math.round(img.naturalWidth * k))
+    c.height = Math.max(1, Math.round(img.naturalHeight * k))
+    c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height)
+    return await new Promise((res) => c.toBlob((b) => res(b), "image/jpeg", 0.85))
+  } catch {
+    return null
+  }
+}
+
 /** Whether a photo can still be read (the viewer shows a warning instead of an empty frame). */
 export async function photoReadable(src: string): Promise<boolean> {
   return !!(await load(src))

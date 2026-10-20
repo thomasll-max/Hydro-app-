@@ -12,6 +12,8 @@ import { equipmentPrefill, expectedHarvest } from "@/calc/steps"
 import { spaceNutrition } from "@/model/grow-ops"
 import { PLANT_IDS, type Cycle, type PlantId, type Substrate, type WaterMode } from "@/model/types"
 import { defaultCycle, SaveBar, useSaver, useShow } from "./sheets"
+import { tertiary } from "@/components/hydro/styles"
+import { openVariety } from "./tools/varieties"
 
 /** Numbers of the form. Cleared on an existing cycle = the previous value is kept (lot 10b: never Thomas's values). */
 const NUM_FIELDS = ["flowerWeeks", "potVolumeL", "potCount", "flowMlPerMin", "shotPct", "p1Shots", "p1IntervalMin", "p0DelayMin", "leafOffsetC", "plannedDryingDays"] as const
@@ -119,6 +121,25 @@ export function CycleSheet({
           <div className="flex flex-col gap-2.5" id="cycle-essentials">
             <TextField id="c-name" label={t("cycleForm.name")} value={c.name} onChange={(v) => setC((x) => ({ ...x, name: v }))} />
             <TextField id="c-cult" label={t("cycleForm.cultivars")} hint={t("cycleForm.cultivarsHint")} value={s.cultivars ?? ""} onChange={sv("cultivars")} />
+            {/* The card of each variety already saved with the cycle (lot 12c). */}
+            {cycle && cycle.cultivars.length > 0 && (
+              <div className="-mt-1 flex flex-wrap gap-x-4" id="c-varieties">
+                {cycle.cultivars.map((x) => (
+                  <button
+                    key={x}
+                    type="button"
+                    className={tertiary}
+                    onClick={() => {
+                      onOpenChange(false)
+                      openVariety(x)
+                    }}
+                    data-variety-link
+                  >
+                    {t("vr.seeCard", { name: x })}
+                  </button>
+                ))}
+              </div>
+            )}
             {spaces.length > 0 && !editing && <Seg<string> label={t("cycleForm.space")} value={c.spaceId} onChange={pickSpace} options={spaces.map((x) => ({ value: x.id, label: x.name }))} />}
             <TextField id="c-germ" type="date" label={editing ? t("cycleForm.start") : `${t("cycleForm.start")} · ${t("common.required")}`} hint={t("cycleForm.startHint")} value={c.germinationDate ?? ""} onChange={txt("germinationDate")} />
           </div>

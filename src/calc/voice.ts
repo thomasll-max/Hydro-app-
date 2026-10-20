@@ -91,8 +91,18 @@ export function voiceKeys(s: VoiceSpace): VoiceKey[] {
   return keys
 }
 
-/** A doubt: Claude's (its own words in `why`) or the app's (`code`: unknown space or plant, not a number, out of range). */
-export type VoiceDoubt = { field?: string; heard?: string; why?: string; code?: "space" | "plant" | "number" | "range"; min?: number; max?: number }
+/**
+ * A doubt: Claude's (its own words in `why`) or the app's (`code`: unknown space or plant, not a number, out of range;
+ * for the rules of lot 11b also: a unit missing or wrong, a field said without which one, a computed value, another space).
+ */
+export type VoiceDoubt = {
+  field?: string
+  heard?: string
+  why?: string
+  code?: "space" | "plant" | "number" | "range" | "unit" | "which" | "computed" | "otherSpace"
+  min?: number
+  max?: number
+}
 export type VoiceResult = {
   spaceId: string
   plantId?: PlantId

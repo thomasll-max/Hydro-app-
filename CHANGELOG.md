@@ -1,5 +1,11 @@
 # Changelog
 
+## Lot 11b — Dicter sans IA (20/10/2026)
+- **« Dicter » aussi dans la version des potes** (Netlify, version locale), sans IA ni clé : même panneau, même micro. L'app reconnaît les mesures simples, en français, anglais ou allemand, en chiffres ou en toutes lettres : « EC runoff 4,2 », « pH cinq neuf », « runoff 380 ml », « température vingt-cinq », « humidité 60 % », « poids matin 4,2 », « EC Zulauf 3,0 »…
+- **Toujours à relire** : la saisie s'ouvre remplie, rien n'est enregistré avant « Enregistrer ». Ce qui n'est pas une mesure va dans la note, avec tes mots.
+- **Rien de deviné** : « pH 59 » (hors plage), « EC deux huit » (2,8 ou 28 ?), « runoff 15 » sans unité deviennent des doutes, rien n'est rempli. Une EC ou un pH dit sans « runoff » ni « entrée » est mis dans la solution et marqué « à vérifier ». « VPD », « DLI », « dryback » et « runoff 15 % » sont calculés par l'app : ils restent dans la note.
+- 414 tests.
+
 ## Lot 11a — Dicter le journal à Claude (20/10/2026)
 Demande de Thomas : « lâcher toutes les infos à Claude en lisant mes résultats ».
 - **« Dicter »** en haut de la saisie du jour (version Claude), à côté de « Reprendre hier » : un panneau avec une grande zone de texte et, si le navigateur le permet, un bouton **« Écouter »** qui écrit ce que tu dis au fur et à mesure, en français, anglais ou allemand. Sans micro dans le navigateur, le micro du clavier du téléphone fait la même chose dans la zone de texte.

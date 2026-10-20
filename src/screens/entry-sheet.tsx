@@ -14,6 +14,7 @@ import { ACTION_TAGS, OBS_TAGS, PLANT_IDS, SCHEMA, type ActionTag, type Entry, t
 import type { Space } from "@/model/grow"
 import { spaceNutrition } from "@/model/grow-ops"
 import { mergeVoice, readVoiceReply, voiceCount, voiceKeys, voicePrompt, type VoiceDoubt, type VoiceKey, type VoiceResult, type VoiceSpace } from "@/calc/voice"
+import { parseVoice } from "@/calc/voice-rules"
 import { useSample, type SampleError } from "@/lib/sample"
 import { VoicePanel } from "./voice-panel"
 import { equipmentAt } from "@/equipment/calc"
@@ -213,8 +214,8 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     return v == null ? undefined : t("entry.hint", { v: show(v) })
   }
   // What a dictation heard and why it is doubtful, in the app's language (the app's reasons are codes).
-  const why = (d: VoiceDoubt) =>
-    d.code === "space" ? t("voice.codeSpace") : d.code === "plant" ? t("voice.codePlant") : d.code === "number" ? t("voice.codeNumber") : d.code === "range" ? t("voice.codeRange", { min: num(d.min ?? 0), max: num(d.max ?? 0) }) : (d.why ?? "")
+  const CODE = { space: "voice.codeSpace", plant: "voice.codePlant", number: "voice.codeNumber", unit: "voice.codeUnit", which: "voice.codeWhich", computed: "voice.codeComputed", otherSpace: "voice.codeOtherSpace" } as const
+  const why = (d: VoiceDoubt) => (d.code === "range" ? t("voice.codeRange", { min: num(d.min ?? 0), max: num(d.max ?? 0) }) : d.code ? t(CODE[d.code]) : (d.why ?? ""))
   const doubtText = (d?: VoiceDoubt) => (d ? [d.heard ? t("voice.heard", { heard: d.heard }) : "", why(d)].filter(Boolean).join(" · ") : undefined)
   const nf = (k: NumKey, label: MessageKey, opts: { integer?: boolean } = {}) => {
     if ((HINTED as readonly string[]).includes(k) && prev?.[k] != null) greyed.push(k as (typeof HINTED)[number])
@@ -376,9 +377,20 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
     const folded = ["heightCm", "reservoirL", "volumePerPotMl", "shots", "ecIn", "phIn", "lightPct", "lightHeightCm", "ppfd", "photoperiodH"]
     if ([...vals.map(([k]) => k as string), ...r.doubts.map((d) => d.field ?? "")].some((k) => folded.includes(k))) setMoreOpen("more")
   }
-  const fillFromVoice = async () => {
+  /** Without Claude (lot 11b): the rules read the simple forms; the sheet is always filled to check, never saved at once. */
+  const fillByRules = () => {
     const text = voiceText.trim()
-    if (!text || !sample || !space || voiceBusy) return
+    if (!text || !space) return
+    setVoiceErr(null)
+    const known = spaces.map(voiceSpaceOf)
+    const r = parseVoice(text, { open: known.find((v) => v.id === space.id)!, spaces: known, lang: settings.lang })
+    if (!voiceCount(r) && !r.doubts.length) return setVoiceErr(t("voice.nothing"))
+    prefillVoice(r, text)
+  }
+  const fillFromVoice = async () => {
+    if (!sample) return fillByRules()
+    const text = voiceText.trim()
+    if (!text || !space || voiceBusy) return
     setVoiceBusy(true)
     setVoiceErr(null)
     const known = spaces.map(voiceSpaceOf)
@@ -764,22 +776,18 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
             })}
           </div>
         )}
-        {/* « Reprendre hier » and « Dicter » side by side (« Dicter » with Claude, lot 11); either takes the width alone. */}
-        {(ghostsLeft || sample) && (
-          <div className="mt-4 flex gap-2.5">
-            {ghostsLeft && (
-              <Button type="button" variant="outline" id="e-resume" onClick={resume} className="h-11 min-w-0 flex-1 text-[0.875rem] font-semibold">
-                {t("entry.resume")}
-              </Button>
-            )}
-            {sample && (
-              <Button type="button" variant="outline" id="e-dictate" aria-expanded={voiceOpen} onClick={() => setVoiceOpen((x) => !x)} className="h-11 min-w-0 flex-1 text-[0.875rem] font-semibold">
-                <Mic className="size-4" /> {t("voice.dictate")}
-              </Button>
-            )}
-          </div>
-        )}
-        {voiceOpen && <VoicePanel text={voiceText} onText={setVoiceText} busy={voiceBusy} error={voiceErr} onFill={fillFromVoice} />}
+        {/* « Reprendre hier » and « Dicter » side by side (lot 11: with Claude, or with the rules of lot 11b without it). */}
+        <div className="mt-4 flex gap-2.5">
+          {ghostsLeft && (
+            <Button type="button" variant="outline" id="e-resume" onClick={resume} className="h-11 min-w-0 flex-1 text-[0.875rem] font-semibold">
+              {t("entry.resume")}
+            </Button>
+          )}
+          <Button type="button" variant="outline" id="e-dictate" aria-expanded={voiceOpen} onClick={() => setVoiceOpen((x) => !x)} className="h-11 min-w-0 flex-1 text-[0.875rem] font-semibold">
+            <Mic className="size-4" /> {t("voice.dictate")}
+          </Button>
+        </div>
+        {voiceOpen && <VoicePanel ai={!!sample} text={voiceText} onText={setVoiceText} busy={voiceBusy} error={voiceErr} onFill={fillFromVoice} />}
         {/* What a dictation left to check outside the fields (space, plant, tank, a field of another space). */}
         {(doubts.some((d) => !d.field || !(voiceKeys(voiceSpaceOf(space)) as string[]).includes(d.field)) || voiceMix) && (
           <div className="mt-4 flex flex-col gap-1.5" id="e-doubts">
@@ -790,7 +798,8 @@ export function EntrySheet({ open, onOpenChange, init }: { open: boolean; onOpen
                   {doubts
                     .filter((d) => !d.field || !(voiceKeys(voiceSpaceOf(space)) as string[]).includes(d.field))
                     .map((d, i) => (
-                      <li key={i}>{[d.field, doubtText(d)].filter(Boolean).join(" : ")}</li>
+                      // The words heard say it for a space, a plant, a computed value: no key in front.
+                      <li key={i}>{[d.code && ["space", "plant", "computed", "otherSpace"].includes(d.code) ? null : d.field, doubtText(d)].filter(Boolean).join(" : ")}</li>
                     ))}
                 </ul>
               </Notice>

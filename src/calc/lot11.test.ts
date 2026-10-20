@@ -156,13 +156,14 @@ describe("lot 11a — dictée : fusion avec la saisie du jour et trace", () => {
 
 describe("lot 11a — dictée : la feuille", () => {
   const sheet = read("src/screens/entry-sheet.tsx")
-  it("« Dicter » à côté de « Reprendre hier », seulement avec Claude ; le panneau : texte, micro du navigateur ou clavier, relire, remplir", () => {
-    expect(sheet).toMatch(/\{sample && \(\s*<Button[^>]*id="e-dictate"/)
+  it("« Dicter » à côté de « Reprendre hier » (avec Claude, ou les règles du lot 11b) ; le panneau : texte, micro du navigateur ou clavier, relire, remplir", () => {
+    expect(sheet).toMatch(/<Button[^>]*id="e-dictate"/)
+    expect(sheet).toMatch(/<VoicePanel ai=\{!!sample\}/)
     const panel = read("src/screens/voice-panel.tsx")
     expect(panel).toMatch(/id="e-voice-text"/)
     expect(panel).toMatch(/speech\.available \?/)
     expect(panel).toMatch(/id="e-voice-nomic"/)
-    expect(panel).toMatch(/id="e-voice-review"/)
+    expect(panel).toMatch(/\{ai && \(\s*<div data-instant[\s\S]*id="e-voice-review"/)
     expect(panel).toMatch(/id="e-voice-fill"/)
     expect(read("src/lib/speech.ts")).toMatch(/SpeechRecognition \?\? w\.webkitSpeechRecognition/)
     expect(read("src/lib/speech.ts")).toMatch(/fr: "fr-FR", en: "en-US", de: "de-DE"/)

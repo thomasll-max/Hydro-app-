@@ -147,6 +147,9 @@ Constat de Thomas après 10j : « toujours un effet plein d'infos éparpillées,
 6. Lignes de graphique honnêtes : segments droits.
 7. Typographie droite : Fraunces seulement dans le logo et l'écran de démarrage ; titres en Geologica 700 (−0,02 em) ; texte en Figtree ; tous les chiffres en Geologica à chasse fixe (plus de JetBrains Mono) ; liens de titre de section petits (≈ 13 px, Figtree 600).
 
+## Correctif du 20/10 — le micro sur Netlify (avant la mise en ligne demandée par Thomas)
+- `netlify.toml` envoyait `Permissions-Policy: … microphone=() …`, qui **interdit le micro** à la page : sur Netlify, la dictée de la version installée (lot 11b) n'aurait jamais pu écouter. Les tests navigateur servent l'app sans ces en-têtes et ne pouvaient pas le voir. Devenu `microphone=(self)` (Hydro seulement, comme `camera=(self)` pour les photos). `src/calc/netlify.test.ts` vérifie maintenant ces en-têtes (micro et appareil photo pour l'app, empreinte jamais bloquée) et la règle « construit seulement sur un commit [deploy] ».
+
 ## Lot 14b — notes
 - **Sources** recopiées dans `docs/athena-fiche.md`, nouvelle section « Compléments hors Handbook » (page officielle Stack consultée le 20/10/2026 ; Proper et Cuts sans dose publiée). Données dans `src/data/nutrients/athena-extras.ts` (`STACK`, `LABEL_ONLY`, `GALLON_L = 3,785`, `perGalToPerL`) ; calculs dans `src/calc/stack.ts`.
 - **Stack** : nouvel add-on Athena (`AddonId` « stack », `ADDONS.stack`), proposé avec Pro **et** Blended, **désactivé par défaut**. Son usage se choisit dans les réglages de nutrition (grow ou espace ; l'outil Nutrition y mène par « Réglages ») : **dans le bidon** (par défaut), **à la main** dans l'arrosoir (règle du lot 7b : jamais dans le bidon ni dans son EC) ou **pulvérisé** (`NutritionSettings.stack`).

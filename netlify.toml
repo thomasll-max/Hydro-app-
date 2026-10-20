@@ -18,7 +18,8 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer"
     X-Frame-Options = "DENY"
-    Permissions-Policy = "camera=(self), microphone=(), geolocation=(), payment=(), usb=()"
+    # Camera (photos) and microphone (the dictation, lot 11b) for Hydro itself only; the rest switched off.
+    Permissions-Policy = "camera=(self), microphone=(self), geolocation=(), payment=(), usb=()"
     Cross-Origin-Opener-Policy = "same-origin"
 
 # Le service worker doit toujours être relu pour que les mises à jour arrivent.

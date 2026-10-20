@@ -1,5 +1,8 @@
 # Changelog
 
+## Correctif — dictée sur la version des potes (20/10/2026)
+- Sur le site Netlify, le navigateur refusait le micro à l'app : la dictée n'aurait pas pu écouter. C'est corrigé (le micro est autorisé pour Hydro seulement).
+
 ## Lot 14b — Stack, Proper, Cuts (20/10/2026)
 - **Stack** (Athena, avec Pro Line ou Blended, à activer dans les add-ons) : **dans le bidon** (ajouté en dernier), **à la main** ou **en pulvérisation**, une fois par semaine, de la dernière semaine de végé à la floraison S3. Les doses de la page officielle sont en mL par gallon : l'app montre l'unité d'origine et la valeur convertie en mL/L. Après la floraison S3, la pulvérisation est refusée avec la raison. Il peut aller dans le même pulvérisateur que l'IPW. Un rappel chaque semaine est proposé, jamais créé tout seul.
 - **Proper** et **Cuts** (Cuts en Blended, pour les boutures) : proposés dans « Produits perso », « dose non publiée par Athena : saisis celle de ton étiquette ». Tant que la dose est vide, ils n'entrent dans aucune recette.

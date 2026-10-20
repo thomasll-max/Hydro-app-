@@ -49,6 +49,7 @@
   - [x] Lot 12b : galerie photo et frise (441 tests, artefact v61, publié avec 12c et 12d)
   - [x] Lot 12c : fiche variété et photo pour Claude (449 tests, artefact v61 ; capacité `sample: {images: true}` ajoutée avec l'accord de Thomas)
   - [x] Lot 12d : verrou (456 tests, artefact v61)
+- [ ] Lot 13 : sources discrètes (icône ⓘ) et page « À propos » complète, Bonorum crédité sans la mention « facteur 10 » (prompt `docs/prompt-lot-13.md`)
 - [x] Lot 8a : version locale installable et hors ligne, Netlify, réinitialiser, transfert entre apps (193 tests)
 - [x] Lot 8b : assistant de premier lancement, guides (205 tests)
 - [x] Lot 8c : guide de démarrage « Premiers pas » (211 tests)
